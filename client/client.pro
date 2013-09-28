@@ -92,7 +92,9 @@ OTHER_FILES += \
     data/project.xml \
     data/init.xml \
     data/tracker.xml \
-    data/style.css
+    data/style.css \
+    traquera-win.rc \
+    traquera.ico
 
 
 datafolder.source = data
@@ -103,3 +105,5 @@ include(deploy.pri)
 qtcAddDeployment()
 
 DEFINES -= CONSOLE_APP
+
+RC_FILE = traquera-win.rc

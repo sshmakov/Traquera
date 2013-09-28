@@ -168,7 +168,7 @@ public:
     NameVid nameVids;
     RecordTypeDef(TrkToolProject *project = 0)
         : prj(project), fieldDefs(), nameVids(), recType(-1), isReadOnly(true) {}
-    RecordTypeDef(const RecordTypeDef & src): prj(src.prj), fieldDefs(src.fieldDefs), nameVids(src.nameVids) {}
+    //RecordTypeDef(const RecordTypeDef & src): prj(src.prj), fieldDefs(src.fieldDefs), nameVids(src.nameVids) {}
     ~RecordTypeDef()
     {
         fieldDefs.clear();

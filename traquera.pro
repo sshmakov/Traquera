@@ -6,3 +6,5 @@ TEMPLATE = subdirs
 
 # Directories
 SUBDIRS += client trindex
+
+TARGET = traquera
