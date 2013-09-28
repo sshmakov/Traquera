@@ -1,0 +1,7 @@
+<init>
+	<userdb type="QSQLITE" path="data/tracks_data" user ="" password=""/>
+        <trindex solr="http://localhost:8983/solr/collection1/select">
+            <params fl="Id_i" wt="xml" defType="edismax" qf="Title_t+Description_t+note_txt" stopwords="true" lowercaseOperators="true" />
+            <scrid name="Id_i"/>
+        </trindex>
+</init>

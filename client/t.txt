@@ -1,0 +1,261 @@
+‘à ¢­¥­¨¥ ä ©«®¢ C:\GITS\TRAQUERA\COMMON\TRACKER\trkview.cpp ¨ C:\GITS\TRAQUERA\CLIENT\TRKVIEW.CPP
+***** C:\GITS\TRAQUERA\COMMON\TRACKER\trkview.cpp
+#include "trkview.h"
+#ifndef CONSOLE_APP
+#include "settings.h"
+#include "ttglobal.h"
+#include "trkdecorator.h"
+#include <QHeaderView>
+#include "messager.h"
+#endif
+#include "ttutils.h"
+
+***** C:\GITS\TRAQUERA\CLIENT\TRKVIEW.CPP
+#include "trkview.h"
+#include "settings.h"
+#include "ttutils.h"
+#include "ttglobal.h"
+#include "messager.h"
+#include "trkdecorator.h"
+
+*****
+
+***** C:\GITS\TRAQUERA\COMMON\TRACKER\trkview.cpp
+#include <QSettings>
+#include <QXmlSimpleReader>
+***** C:\GITS\TRAQUERA\CLIENT\TRKVIEW.CPP
+#include <QSettings>
+#include <QHeaderView>
+#include <QXmlSimpleReader>
+*****
+
+***** C:\GITS\TRAQUERA\COMMON\TRACKER\trkview.cpp
+        error = QString(QObject::tr("Îøèáêà Tracker %1")).arg(result);
+#ifndef CONSOLE_APP
+
+    if(show)
+***** C:\GITS\TRAQUERA\CLIENT\TRKVIEW.CPP
+        error = QString(QObject::tr("Îøèáêà Tracker %1")).arg(result);
+    if(show)
+*****
+
+***** C:\GITS\TRAQUERA\COMMON\TRACKER\trkview.cpp
+        TTGlobal::global()->showError(error);
+#endif
+    return false;
+***** C:\GITS\TRAQUERA\CLIENT\TRKVIEW.CPP
+        TTGlobal::global()->showError(error);
+    return false;
+*****
+
+***** C:\GITS\TRAQUERA\COMMON\TRACKER\trkview.cpp
+
+#ifndef CONSOLE_APP
+// =================== TrkView ===============
+***** C:\GITS\TRAQUERA\CLIENT\TRKVIEW.CPP
+
+// =================== TrkView ===============
+*****
+
+***** C:\GITS\TRAQUERA\COMMON\TRACKER\trkview.cpp
+}
+#endif
+
+***** C:\GITS\TRAQUERA\CLIENT\TRKVIEW.CPP
+}
+
+*****
+
+***** C:\GITS\TRAQUERA\COMMON\TRACKER\trkview.cpp
+        res = TrkProjectLogin(handle,
+        user.toLocal8Bit().constData(),
+                pass.toLocal8Bit().constData(),
+***** C:\GITS\TRAQUERA\CLIENT\TRKVIEW.CPP
+        res = TrkProjectLogin(handle,
+                user.toLocal8Bit().constData(), 
+                pass.toLocal8Bit().constData(),
+*****
+
+***** C:\GITS\TRAQUERA\COMMON\TRACKER\trkview.cpp
+    else
+#ifdef CONSOLE_APP
+        qDebug() << tr("Îøèáêà îòêðûòèÿ ïðîåêòà %1 (%2)").arg(project).arg(res);
+#else
+        QMessageBox::critical(0,tr("Îøèáêà ïîäêëþ÷åíèÿ"),
+***** C:\GITS\TRAQUERA\CLIENT\TRKVIEW.CPP
+    else
+        QMessageBox::critical(0,tr("Îøèáêà ïîäêëþ÷åíèÿ"),
+*****
+
+***** C:\GITS\TRAQUERA\COMMON\TRACKER\trkview.cpp
+                              .arg(project).arg(res));
+#endif
+        return opened;
+***** C:\GITS\TRAQUERA\CLIENT\TRKVIEW.CPP
+                              .arg(project).arg(res));
+        return opened;
+*****
+
+***** C:\GITS\TRAQUERA\COMMON\TRACKER\trkview.cpp
+        recordTypes.clear();
+        foreach(RecordTypeDef *p, recordDef)
+                delete p;
+    recordDef.clear();
+***** C:\GITS\TRAQUERA\CLIENT\TRKVIEW.CPP
+        recordTypes.clear();
+    recordDef.clear();
+*****
+
+***** C:\GITS\TRAQUERA\COMMON\TRACKER\trkview.cpp
+
+#ifndef CONSOLE_APP
+QAbstractItemModel *TrkToolProject::createProxyQueryModel(TrkQryFilter::Filter filter, QObject *parent, TRK_RECORD_TYPE /* type
+***** C:\GITS\TRAQUERA\CLIENT\TRKVIEW.CPP
+
+QAbstractItemModel *TrkToolProject::createProxyQueryModel(TrkQryFilter::Filter filter, QObject *parent, TRK_RECORD_TYPE /* type
+*****
+
+***** C:\GITS\TRAQUERA\COMMON\TRACKER\trkview.cpp
+}
+#endif
+
+***** C:\GITS\TRAQUERA\CLIENT\TRKVIEW.CPP
+}
+
+*****
+
+***** C:\GITS\TRAQUERA\COMMON\TRACKER\trkview.cpp
+
+TrkToolModel *TrkToolProject::openRecentModel(int afterTransId, const QString &name, TRK_RECORD_TYPE type)
+{
+    TrkToolModel *model = new TrkToolModel(this, type, this);
+    model->openQuery(name,afterTransId);
+    return model;
+}
+
+TrkToolModel *TrkToolProject::openIdsModel(const QList<int> &ids, TRK_RECORD_TYPE type, bool emitEvent)
+***** C:\GITS\TRAQUERA\CLIENT\TRKVIEW.CPP
+
+TrkToolModel *TrkToolProject::openIdsModel(const QList<int> &ids, TRK_RECORD_TYPE type, bool emitEvent)
+*****
+
+***** C:\GITS\TRAQUERA\COMMON\TRACKER\trkview.cpp
+        rectype(type),
+    BaseRecModel<PTrkToolRecord>(parent),
+    prevTransId(0)
+    //, rset(parent)
+***** C:\GITS\TRAQUERA\CLIENT\TRKVIEW.CPP
+        rectype(type),
+    BaseRecModel<PTrkToolRecord>(parent)
+    //, rset(parent)
+*****
+
+***** C:\GITS\TRAQUERA\COMMON\TRACKER\trkview.cpp
+
+bool TrkToolModel::openQuery(const QString &queryName, TRK_TRANSACTION_ID afterTransId)
+{
+***** C:\GITS\TRAQUERA\CLIENT\TRKVIEW.CPP
+
+bool TrkToolModel::openQuery(const QString &queryName)
+{
+*****
+
+***** C:\GITS\TRAQUERA\COMMON\TRACKER\trkview.cpp
+    {
+        prevTransId = afterTransId;
+        rc = isTrkOK(TrkQueryInitRecordList(recHandle, queryName.toLocal8Bit().constData(), prevTransId, &lastTransId));
+        while(rc = (TRK_SUCCESS == (TrkGetNextRecord(recHandle))))
+***** C:\GITS\TRAQUERA\CLIENT\TRKVIEW.CPP
+    {
+        transId=0;
+        TRK_TRANSACTION_ID newTransId;
+        rc = isTrkOK(TrkQueryInitRecordList(recHandle, queryName.toLocal8Bit().constData(), transId, &newTransId));
+        transId = newTransId;
+        while(rc = (TRK_SUCCESS == (TrkGetNextRecord(recHandle))))
+*****
+
+***** C:\GITS\TRAQUERA\COMMON\TRACKER\trkview.cpp
+    {
+        prevTransId=0;
+        //TRK_TRANSACTION_ID newTransId;
+***** C:\GITS\TRAQUERA\CLIENT\TRKVIEW.CPP
+    {
+        transId=0;
+        //TRK_TRANSACTION_ID newTransId;
+*****
+
+***** C:\GITS\TRAQUERA\COMMON\TRACKER\trkview.cpp
+        }
+#ifndef CONSOLE_APP
+    if(role == Qt::FontRole)
+***** C:\GITS\TRAQUERA\CLIENT\TRKVIEW.CPP
+        }
+    if(role == Qt::FontRole)
+*****
+
+***** C:\GITS\TRAQUERA\COMMON\TRACKER\trkview.cpp
+    }
+#endif
+    return BaseRecModel::data(index, role);
+}
+***** C:\GITS\TRAQUERA\CLIENT\TRKVIEW.CPP
+    }
+        return BaseRecModel::data(index, role);
+}
+*****
+
+***** C:\GITS\TRAQUERA\COMMON\TRACKER\trkview.cpp
+        QString q = queryName;
+        openQuery(q,prevTransId);
+    }
+***** C:\GITS\TRAQUERA\CLIENT\TRKVIEW.CPP
+        QString q = queryName;
+        openQuery(q);
+    }
+*****
+
+***** C:\GITS\TRAQUERA\COMMON\TRACKER\trkview.cpp
+    QXmlQuery query;
+#ifndef CONSOLE_APP
+    query.setMessageHandler(sysMessager);
+#endif
+
+***** C:\GITS\TRAQUERA\CLIENT\TRKVIEW.CPP
+    QXmlQuery query;
+    query.setMessageHandler(sysMessager);
+
+*****
+
+***** C:\GITS\TRAQUERA\COMMON\TRACKER\trkview.cpp
+
+#ifndef CONSOLE_APP
+//TrkQryFilter
+***** C:\GITS\TRAQUERA\CLIENT\TRKVIEW.CPP
+
+//TrkQryFilter
+*****
+
+***** C:\GITS\TRAQUERA\COMMON\TRACKER\trkview.cpp
+}
+#endif
+
+***** C:\GITS\TRAQUERA\CLIENT\TRKVIEW.CPP
+}
+
+
+*****
+
+***** C:\GITS\TRAQUERA\COMMON\TRACKER\trkview.cpp
+            ch.fieldValue=QVariant();
+            p_choiceList->append(ch); // leak 24 bytes
+        }
+        p_choiceList->append(*list);// leak 24 bytes
+        delete list;
+***** C:\GITS\TRAQUERA\CLIENT\TRKVIEW.CPP
+            ch.fieldValue=QVariant();
+            p_choiceList->append(ch);
+        }
+        p_choiceList->append(*list);
+        delete list;
+*****
+

@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>751</width>
+    <height>557</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout_2">
+    <item>
+     <widget class="QFrame" name="frame">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>36</height>
+       </size>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <widget class="QComboBox" name="comboBox">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>10</y>
+         <width>171</width>
+         <height>22</height>
+        </rect>
+       </property>
+      </widget>
+     </widget>
+    </item>
+    <item>
+     <widget class="QSplitter" name="splitter_4">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <widget class="QToolBox" name="toolBox">
+       <property name="maximumSize">
+        <size>
+         <width>141</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="currentIndex">
+        <number>0</number>
+       </property>
+       <widget class="QWidget" name="page">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>69</width>
+          <height>402</height>
+         </rect>
+        </property>
+        <attribute name="label">
+         <string>Page 1</string>
+        </attribute>
+       </widget>
+       <widget class="QWidget" name="page_2">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>98</width>
+          <height>28</height>
+         </rect>
+        </property>
+        <attribute name="label">
+         <string>Page 2</string>
+        </attribute>
+       </widget>
+      </widget>
+      <widget class="QSplitter" name="splitter">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <widget class="QTabWidget" name="tabWidget">
+        <property name="currentIndex">
+         <number>0</number>
+        </property>
+        <widget class="QWidget" name="tab">
+         <attribute name="title">
+          <string>Tab 1</string>
+         </attribute>
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <item>
+           <widget class="QTableView" name="tableView"/>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="tab_2">
+         <attribute name="title">
+          <string>Tab 2</string>
+         </attribute>
+         <layout class="QHBoxLayout" name="horizontalLayout_3"/>
+        </widget>
+       </widget>
+       <widget class="QWidget" name="horizontalLayoutWidget_2">
+        <layout class="QHBoxLayout" name="horizontalLayout_5">
+         <item>
+          <widget class="QSplitter" name="splitter_3">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <widget class="QWebView" name="webView_2">
+            <property name="url">
+             <url>
+              <string>about:blank</string>
+             </url>
+            </property>
+           </widget>
+           <widget class="QTabWidget" name="tabWidget_2">
+            <property name="minimumSize">
+             <size>
+              <width>249</width>
+              <height>0</height>
+             </size>
+            </property>
+            <widget class="QWidget" name="tab_3">
+             <attribute name="title">
+              <string>Tab 1</string>
+             </attribute>
+             <layout class="QVBoxLayout" name="verticalLayout">
+              <item>
+               <widget class="QSplitter" name="splitter_2">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+                <widget class="QTableView" name="tableView_2"/>
+                <widget class="QWidget" name="formLayoutWidget">
+                 <layout class="QFormLayout" name="formLayout">
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label">
+                    <property name="text">
+                     <string>TextLabel</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+            <widget class="QWidget" name="tab_4">
+             <attribute name="title">
+              <string>Tab 2</string>
+             </attribute>
+            </widget>
+           </widget>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+   <zorder>splitter_4</zorder>
+   <zorder>frame</zorder>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>751</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu_Tracker">
+    <property name="title">
+     <string>&amp;Tracker</string>
+    </property>
+    <addaction name="actionOpen_Project"/>
+    <addaction name="actionClose_Project"/>
+    <addaction name="separator"/>
+    <addaction name="actionExit"/>
+   </widget>
+   <widget class="QMenu" name="menuProject">
+    <property name="title">
+     <string>Project</string>
+    </property>
+    <addaction name="actionOpen_Project_2"/>
+    <addaction name="actionClose_Project_2"/>
+   </widget>
+   <addaction name="menu_Tracker"/>
+   <addaction name="menuProject"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionOpen_Project">
+   <property name="text">
+    <string>Open Tracker...</string>
+   </property>
+  </action>
+  <action name="actionClose_Project">
+   <property name="text">
+    <string>Close Tracker...</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionOpen_Project_2">
+   <property name="text">
+    <string>Open Project...</string>
+   </property>
+  </action>
+  <action name="actionClose_Project_2">
+   <property name="text">
+    <string>Close Project...</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QWebView</class>
+   <extends>QWidget</extends>
+   <header>QtWebKit/QWebView</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

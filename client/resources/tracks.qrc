@@ -1,0 +1,47 @@
+<RCC>
+    <qresource prefix="/images">
+        <file>EMail_48.png</file>
+        <file>add.png</file>
+        <file>cancel.png</file>
+        <file>copy.png</file>
+        <file>cut.png</file>
+        <file>edit.png</file>
+        <file>edit_add.png</file>
+        <file>edit_remove.png</file>
+        <file>editcopy.png</file>
+        <file>editcut.png</file>
+        <file>editdelete.png</file>
+        <file>edit-delete.png</file>
+        <file>edit-find.png</file>
+        <file>editpaste.png</file>
+        <file>editredo.png</file>
+        <file>editundo.png</file>
+        <file>fileopen.png</file>
+        <file>fileprint.png</file>
+        <file>filesave.png</file>
+        <file>find.png</file>
+        <file>ok.png</file>
+        <file>ok_1.png</file>
+        <file>paste.png</file>
+        <file>textedit.png</file>
+        <file>undo.png</file>
+        <file>next.png</file>
+        <file>closetab.png</file>
+        <file>plus.png</file>
+        <file>previous.png</file>
+        <file>exit.png</file>
+        <file>view-refresh.png</file>
+        <file>resetproperty.png</file>
+        <file>cleartext.png</file>
+        <file>refresh-24.png</file>
+        <file>file.png</file>
+        <file>plan.png</file>
+        <file>trackerTable.png</file>
+    </qresource>
+    <qresource prefix="/sql">
+        <file>upgrade1.sql</file>
+    </qresource>
+    <qresource prefix="/js">
+        <file>test.js</file>
+    </qresource>
+</RCC>

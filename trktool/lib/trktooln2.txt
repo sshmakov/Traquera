@@ -1,0 +1,1287 @@
+
+---------- TRKTOOLN.TXT
+    1EDF6 _TrkHandleAlloc@8
+    1F036 _TrkHandleFree@4
+    26A5A _TrkProjectLogin@36
+    2713C _TrkProjectLoginEx@20
+    27382 _TrkProjectLogout@4
+    2AD2E _TrkSetIniFile@8
+    1236C _TrkGetIniFile@12
+    2BAC6 _TrkSetNumericAttribute@12
+    185CA _TrkGetNumericAttribute@12
+    24372 _TrkInitProjectList@24
+    155AA _TrkGetNextProject@12
+    2313C _TrkInitDBMSTypeList@4
+    1412A _TrkGetNextDBMSType@12
+    12C8E _TrkGetLoginUserName@12
+    12A3E _TrkGetLoginProjectName@12
+    127F4 _TrkGetLoginDBMSType@12
+    125AA _TrkGetLoginDBMSName@12
+    24A54 _TrkInitRecordTypeList@4
+    15C7E _TrkGetNextRecordType@8
+    1A19A _TrkGetRecordTypeName@16
+    23384 _TrkInitFieldList@8
+    14372 _TrkGetNextField@16
+    117F4 _TrkGetFieldType@16
+    107C6 _TrkGetFieldMaxDataLength@16
+    10318 _TrkGetFieldDefaultStringValue@20
+    100B8 _TrkGetFieldDefaultNumericValue@16
+    10C6A _TrkGetFieldRange@20
+    24808 _TrkInitQueryNameList@4
+    157F0 _TrkGetNextQueryName@16
+    19168 _TrkGetQueryRecordType@12
+    2538C _TrkInitUserList@4
+    1680C _TrkGetNextUser@12
+    1E268 _TrkGetUserFullName@16
+    1E026 _TrkGetUserEmail@16
+    22C9C _TrkInitChoiceList@12
+    13C92 _TrkGetNextChoice@12
+    18A6C _TrkGetProjectTransactionID@12
+    27F0C _TrkRecordHandleAlloc@8
+    28158 _TrkRecordHandleFree@4
+    27A64 _TrkQueryInitRecordList@16
+    22366 _TrkInTrayInitRecordList@16
+    15A3A _TrkGetNextRecord@4
+    1C466 _TrkGetSingleRecord@12
+    26142 _TrkNewRecordBegin@8
+    26386 _TrkNewRecordCommit@8
+    27CB4 _TrkRecordCancelTransaction@4
+    2CF98 _TrkUpdateRecordBegin@4
+    2D434 _TrkUpdateRecordCommit@8
+     B3DA _TrkDeleteRecord@4
+    19CF2 _TrkGetRecordTransactionID@12
+    19AA2 _TrkGetRecordRecordType@8
+    1881A _TrkGetNumericFieldValue@12
+    1D24A _TrkGetStringFieldValue@16
+    2BD16 _TrkSetNumericFieldValue@12
+    2C3F4 _TrkSetStringFieldValue@12
+    115A0 _TrkGetFieldTransactionID@12
+     FC10 _TrkGetFieldAccessRights@12
+     F50A _TrkGetDescriptionDataLength@8
+     F2BC _TrkGetDescriptionData@16
+    2AAE0 _TrkSetDescriptionData@16
+     F060 _TrkGetDescriptionAccessRights@8
+     F9B0 _TrkGetDescriptionTransactionID@8
+    265CE _TrkNoteHandleAlloc@8
+    26816 _TrkNoteHandleFree@4
+    23EE6 _TrkInitNoteList@4
+    15120 _TrkGetNextNote@4
+     95F0 _TrkAddNewNote@4
+     AF5C _TrkDeleteNote@4
+    18138 _TrkGetNoteTitle@12
+    2B886 _TrkSetNoteTitle@8
+    16CA0 _TrkGetNoteAuthor@12
+    2AF6A _TrkSetNoteAuthor@8
+    16EE4 _TrkGetNoteCreateTime@8
+    2B1AE _TrkSetNoteCreateTime@8
+    17CA0 _TrkGetNoteModifyTime@8
+    2B63A _TrkSetNoteModifyTime@8
+    17370 _TrkGetNoteDataLength@8
+    17130 _TrkGetNoteData@16
+    2B3FA _TrkSetNoteData@16
+    1837A _TrkGetNoteTransactionID@8
+    177FC _TrkGetNoteMaxDataLength@8
+    17A4C _TrkGetNoteMaxTitleLength@8
+     9F24 _TrkAttachedFileHandleAlloc@8
+     A17C _TrkAttachedFileHandleFree@4
+    22808 _TrkInitAttachedFileList@4
+    135AA _TrkGetNextAttachedFile@4
+     93A2 _TrkAddNewAttachedFile@12
+     AD10 _TrkDeleteAttachedFile@4
+     DB6C _TrkGetAttachedFileName@12
+    2A890 _TrkSetAttachedFileName@8
+     E276 _TrkGetAttachedFileTime@8
+     E01A _TrkGetAttachedFileStorageMode@8
+     B85A _TrkExtractAttachedFile@8
+     E4C6 _TrkGetAttachedFileTransactionID@8
+     9A7C _TrkAssociationHandleAlloc@8
+     9CD0 _TrkAssociationHandleFree@4
+    225B8 _TrkInitAssociationList@4
+    1335E _TrkGetNextAssociation@4
+     9156 _TrkAddNewAssociation@4
+     AAC4 _TrkDeleteAssociation@4
+     C1A2 _TrkGetAssociationModuleName@12
+    2982E _TrkSetAssociationModuleName@8
+     D6CE _TrkGetAssociationUser@12
+    2A644 _TrkSetAssociationUser@8
+     C8B8 _TrkGetAssociationRevisionFound@12
+    29CE6 _TrkSetAssociationRevisionFound@8
+     C658 _TrkGetAssociationRevisionFixed@12
+    29A86 _TrkSetAssociationRevisionFixed@8
+     D216 _TrkGetAssociationTimeFound@8
+    2A3EC _TrkSetAssociationTimeFound@8
+     CFBE _TrkGetAssociationTimeFixed@8
+    2A194 _TrkSetAssociationTimeFixed@8
+     CD66 _TrkGetAssociationTextLength@8
+     CB18 _TrkGetAssociationText@16
+    29F46 _TrkSetAssociationText@16
+     D46E _TrkGetAssociationTransactionID@8
+    285E2 _TrkRegisterCallback@16
+    2CD4C _TrkUnregisterCallback@8
+    25812 _TrkLoginInternal@12
+    25A56 _TrkLogoutInternal@4
+    26C9C _TrkProjectLoginDialog@76
+    2BF68 _TrkSetPassword@8
+    26EEA _TrkProjectLoginDialogEx@56
+    2882C _TrkRegisterWindowHandle@8
+    255CC _TrkInvokeCallback@24
+     EE1C _TrkGetDcsSession@8
+     EBD8 _TrkGetDcsProcess@8
+    19F48 _TrkGetRecordTypeFromVid@12
+    10A1A _TrkGetFieldNameFromVid@20
+    11EDA _TrkGetFieldVid@16
+    10576 _TrkGetFieldIsNullValid@16
+     FE62 _TrkGetFieldDefaultGroupId@16
+    10EAE _TrkGetFieldRawData@36
+    235C8 _TrkInitFormNameList@4
+    14806 _TrkGetNextFormName@24
+    1211A _TrkGetFormEntryInternal@36
+     A868 _TrkCustomQueryInitRecordList@16
+    293AA _TrkSaveQuery@24
+    23CA2 _TrkInitMacroList@4
+    14EDE _TrkGetNextMacro@20
+    12ED8 _TrkGetMacroInfo@20
+    1311A _TrkGetMacroValue@24
+     B61A _TrkExpandMacro@20
+    2D8C0 _TrkUserIsMemberOfGroup@16
+    2D680 _TrkUserIsAdmin@12
+    13ED6 _TrkGetNextChoiceInternal@24
+    23A56 _TrkInitGroupUserList@12
+    14C94 _TrkGetNextGroupUser@12
+    25C9A _TrkModuleInitRecordList@24
+    19606 _TrkGetRecordInternalID@8
+    1C6AE _TrkGetSingleRecordByInternalId@12
+     F762 _TrkGetDescriptionName@12
+    1134E _TrkGetFieldSubmitRights@16
+    11C88 _TrkGetFieldUpdateRights@16
+     E726 _TrkGetBuildQueryPermission@4
+    24126 _TrkInitNoteTitleList@4
+    15360 _TrkGetNextNoteTitle@16
+     A61C _TrkClearInTrayRecords@4
+     A3D0 _TrkClearInTrayRecord@4
+    19856 _TrkGetRecordIsLocked@16
+    1A644 _TrkGetRecordVersionLabel@12
+    22A58 _TrkInitChangeList@4
+    137FA _TrkGetNextChange@12
+    13A3E _TrkGetNextChangeInternal@24
+    28A7C _TrkRevisionHandleAlloc@8
+    28CCC _TrkRevisionHandleFree@4
+    25EEC _TrkModuleInitRevisionList@16
+    15ECA _TrkGetNextRevision@4
+    1AF8C _TrkGetRevisionModuleName@12
+    1BD74 _TrkGetRevisionUser@12
+    1AAE2 _TrkGetRevisionFound@12
+    1A898 _TrkGetRevisionFixed@12
+    1B8CC _TrkGetRevisionTimeFound@8
+    1B67C _TrkGetRevisionTimeFixed@8
+    1B428 _TrkGetRevisionTextLength@8
+    1B1E0 _TrkGetRevisionText@16
+    1AD2C _TrkGetRevisionInternalRecordID@8
+    1BB1C _TrkGetRevisionTransactionID@8
+     E97E _TrkGetDateTimeDisplayString@16
+    1D936 _TrkGetTimeDisplayString@16
+    1E4B0 _TrkGetUserIsDeleted@12
+    2D1E4 _TrkUpdateRecordBeginEx@8
+     D91C _TrkGetAttachedFileInfo@24
+     DDBC _TrkGetAttachedFilePermissions@12
+    175BC _TrkGetNoteInfo@28
+    17EEC _TrkGetNotePermissions@8
+     BCF4 _TrkGetAssociationInfo@28
+     C3FC _TrkGetAssociationPermissions@8
+     BF42 _TrkGetAssociationMaxDataLength@20
+    275C6 _TrkProjectRefresh
+    21C5E _TrkHtmlStyleSheetHandleAlloc@8
+    21EBA _TrkHtmlStyleSheetHandleFree@4
+    210AA _TrkHtmlSetStyleSheet@12
+    21552 _TrkHtmlSetStyleSheetFromTemp@8
+    212F6 _TrkHtmlSetStyleSheetFromQuery@8
+    217AE _TrkHtmlStyleSheetGenerate@24
+    21A04 _TrkHtmlStyleSheetGenerateEx@24
+    1FE0E _TrkHtmlFormHandleAlloc@8
+    2005E _TrkHtmlFormHandleFree@4
+    209B4 _TrkHtmlFormSetFormRecord@12
+    20C08 _TrkHtmlFormSetStyleSheet@12
+    202AA _TrkHtmlFormInitFieldList@4
+    204FE _TrkHtmlFormSetDefaultFieldValue@12
+    20760 _TrkHtmlFormSetFieldValue@16
+    1F4CE _TrkHtmlFormGenerate@28
+    1F718 _TrkHtmlFormGenerateEx@28
+    2DB10 _TrkValidateHandle@4
+    1EBAC _TrkGetWindowHandle@8
+    245BA _TrkInitProjectListEx@8
+    145B4 _TrkGetNextFieldAndIds@28
+    11A36 _TrkGetFieldTypeFromId@12
+    110F6 _TrkGetFieldRawDataFromId@32
+    24EF6 _TrkInitStateList@4
+    16366 _TrkGetNextState@16
+    1CB56 _TrkGetStateFlagsFromId@16
+    1C90E _TrkGetStateFlags@16
+    1CFF8 _TrkGetStateNameFromId@16
+    1CDAA _TrkGetStateFormName@24
+    193B6 _TrkGetRecordFormName@20
+    2C644 _TrkStateTransitionIsAllowed@16
+    18CC4 _TrkGetQueryFieldFromVid@20
+    1E6FA _TrkGetUserQueryFieldFromVid@16
+    18F1A _TrkGetQueryIsPublic@12
+    1E958 _TrkGetUserQueryIsPublic@8
+    295E6 _TrkSaveUserQuery@12
+     B198 _TrkDeleteQuery@8
+    16A4C _TrkGetNextUserInternal@20
+    23810 _TrkInitGroupList@4
+    14A4E _TrkGetNextGroup@20
+    22EE2 _TrkInitChoiceListFromFldId@8
+    27808 _TrkQueryByIDInitRecordList@16
+    2DD58 _TrkVerifyQuery@16
+    2DF9C _TrkVerifyQueryByID@16
+    2C1A8 _TrkSetQuerySortVid@12
+    1A3E6 _TrkGetRecordUpdatePermission@8
+    283A0 _TrkRecordLock@12
+    1D6E6 _TrkGetTimeDisplayInt@12
+    22112 _TrkInTrayGetRecordCount@8
+    28F18 _TrkRuleHandleAlloc@8
+    29162 _TrkRuleHandleFree@4
+    24CA0 _TrkInitRuleListInternal@12
+    16112 _TrkGetNextRuleInternal@28
+    1C20E _TrkGetRuleConditionType1@24
+    1BFBC _TrkGetRuleActionType1@20
+     982C _TrkApplyRuleInternal@20
+    2C8A2 _TrkTransitionHandleAlloc@8
+    2CAF8 _TrkTransitionHandleFree@4
+    2513C _TrkInitTransitionList@4
+    165AC _TrkGetNextTransitionInternal@20
+    1DDD4 _TrkGetTransitionEntry@28
+     BAAA _TrkGetAdmRefreshId@8
+    1F272 _TrkHtmlFormClearFieldValues@8
+    20E5C _TrkHtmlGetFieldName@16
+    1F966 _TrkHtmlFormGetHelpUrl@12
+    1FBB8 _TrkHtmlFormGetLastError@12
+    1D49A _TrkGetTempFileName@12
+    1DB88 _TrkGetTrackerBinDir@8
+       66 _TrkAddNewAssociation@4
+       5A _TrkAddNewAttachedFile@12
+       46 _TrkAddNewNote@4
+      1B4 _TrkApplyRuleInternal@20
+       62 _TrkAssociationHandleAlloc@8
+       63 _TrkAssociationHandleFree@4
+       56 _TrkAttachedFileHandleAlloc@8
+       57 _TrkAttachedFileHandleFree@4
+       A2 _TrkClearInTrayRecord@4
+       A1 _TrkClearInTrayRecords@4
+       8C _TrkCustomQueryInitRecordList@16
+       67 _TrkDeleteAssociation@4
+       5B _TrkDeleteAttachedFile@4
+       47 _TrkDeleteNote@4
+      11C _TrkDeleteQuery@8
+       34 _TrkDeleteRecord@4
+       92 _TrkExpandMacro@20
+       60 _TrkExtractAttachedFile@8
+      1BD _TrkGetAdmRefreshId@8
+       BE _TrkGetAssociationInfo@28
+       C0 _TrkGetAssociationMaxDataLength@20
+       68 _TrkGetAssociationModuleName@12
+       BF _TrkGetAssociationPermissions@8
+       6E _TrkGetAssociationRevisionFixed@12
+       6C _TrkGetAssociationRevisionFound@12
+       75 _TrkGetAssociationText@16
+       74 _TrkGetAssociationTextLength@8
+       72 _TrkGetAssociationTimeFixed@8
+       70 _TrkGetAssociationTimeFound@8
+       77 _TrkGetAssociationTransactionID@8
+       6A _TrkGetAssociationUser@12
+       BA _TrkGetAttachedFileInfo@24
+       5C _TrkGetAttachedFileName@12
+       BB _TrkGetAttachedFilePermissions@12
+       5F _TrkGetAttachedFileStorageMode@8
+       5E _TrkGetAttachedFileTime@8
+       61 _TrkGetAttachedFileTransactionID@8
+       9E _TrkGetBuildQueryPermission@4
+       B6 _TrkGetDateTimeDisplayString@16
+       82 _TrkGetDcsProcess@8
+       81 _TrkGetDcsSession@8
+       40 _TrkGetDescriptionAccessRights@8
+       3E _TrkGetDescriptionData@16
+       3D _TrkGetDescriptionDataLength@8
+       9B _TrkGetDescriptionName@12
+       41 _TrkGetDescriptionTransactionID@8
+       3C _TrkGetFieldAccessRights@12
+       87 _TrkGetFieldDefaultGroupId@16
+       1D _TrkGetFieldDefaultNumericValue@16
+       1C _TrkGetFieldDefaultStringValue@20
+       86 _TrkGetFieldIsNullValid@16
+       1B _TrkGetFieldMaxDataLength@16
+       84 _TrkGetFieldNameFromVid@20
+       1E _TrkGetFieldRange@20
+       88 _TrkGetFieldRawData@36
+      102 _TrkGetFieldRawDataFromId@32
+       9C _TrkGetFieldSubmitRights@16
+       3B _TrkGetFieldTransactionID@12
+       1A _TrkGetFieldType@16
+       F8 _TrkGetFieldTypeFromId@12
+       9D _TrkGetFieldUpdateRights@16
+       85 _TrkGetFieldVid@16
+       8B _TrkGetFormEntryInternal@36
+        A _TrkGetIniFile@12
+       14 _TrkGetLoginDBMSName@12
+       13 _TrkGetLoginDBMSType@12
+       12 _TrkGetLoginProjectName@12
+       11 _TrkGetLoginUserName@12
+       90 _TrkGetMacroInfo@20
+       91 _TrkGetMacroValue@24
+       65 _TrkGetNextAssociation@4
+       59 _TrkGetNextAttachedFile@4
+       A6 _TrkGetNextChange@12
+       A7 _TrkGetNextChangeInternal@24
+       27 _TrkGetNextChoice@12
+       95 _TrkGetNextChoiceInternal@24
+       10 _TrkGetNextDBMSType@12
+       19 _TrkGetNextField@16
+       F6 _TrkGetNextFieldAndIds@28
+       8A _TrkGetNextFormName@24
+      128 _TrkGetNextGroup@20
+       97 _TrkGetNextGroupUser@12
+       8F _TrkGetNextMacro@20
+       45 _TrkGetNextNote@4
+       A0 _TrkGetNextNoteTitle@16
+        E _TrkGetNextProject@12
+       20 _TrkGetNextQueryName@16
+       2D _TrkGetNextRecord@4
+       16 _TrkGetNextRecordType@8
+       AB _TrkGetNextRevision@4
+      1B1 _TrkGetNextRuleInternal@28
+      107 _TrkGetNextState@16
+      1B8 _TrkGetNextTransitionInternal@20
+       23 _TrkGetNextUser@12
+      11F _TrkGetNextUserInternal@20
+       4A _TrkGetNoteAuthor@12
+       4C _TrkGetNoteCreateTime@8
+       51 _TrkGetNoteData@16
+       50 _TrkGetNoteDataLength@8
+       BC _TrkGetNoteInfo@28
+       54 _TrkGetNoteMaxDataLength@8
+       55 _TrkGetNoteMaxTitleLength@8
+       4E _TrkGetNoteModifyTime@8
+       BD _TrkGetNotePermissions@8
+       48 _TrkGetNoteTitle@12
+       53 _TrkGetNoteTransactionID@8
+        C _TrkGetNumericAttribute@12
+       37 _TrkGetNumericFieldValue@12
+       28 _TrkGetProjectTransactionID@12
+      116 _TrkGetQueryFieldFromVid@20
+      118 _TrkGetQueryIsPublic@12
+       21 _TrkGetQueryRecordType@12
+      10C _TrkGetRecordFormName@20
+       99 _TrkGetRecordInternalID@8
+       A3 _TrkGetRecordIsLocked@16
+       36 _TrkGetRecordRecordType@8
+       35 _TrkGetRecordTransactionID@12
+       83 _TrkGetRecordTypeFromVid@12
+       17 _TrkGetRecordTypeName@16
+      143 _TrkGetRecordUpdatePermission@8
+       A4 _TrkGetRecordVersionLabel@12
+       AF _TrkGetRevisionFixed@12
+       AE _TrkGetRevisionFound@12
+       B4 _TrkGetRevisionInternalRecordID@8
+       AC _TrkGetRevisionModuleName@12
+       B3 _TrkGetRevisionText@16
+       B2 _TrkGetRevisionTextLength@8
+       B1 _TrkGetRevisionTimeFixed@8
+       B0 _TrkGetRevisionTimeFound@8
+       B5 _TrkGetRevisionTransactionID@8
+       AD _TrkGetRevisionUser@12
+      1B3 _TrkGetRuleActionType1@20
+      1B2 _TrkGetRuleConditionType1@24
+       2E _TrkGetSingleRecord@12
+       9A _TrkGetSingleRecordByInternalId@12
+      109 _TrkGetStateFlags@16
+      108 _TrkGetStateFlagsFromId@16
+      10B _TrkGetStateFormName@24
+      10A _TrkGetStateNameFromId@16
+       38 _TrkGetStringFieldValue@16
+      1D2 _TrkGetTempFileName@12
+      1AA _TrkGetTimeDisplayInt@12
+       B7 _TrkGetTimeDisplayString@16
+      1D3 _TrkGetTrackerBinDir@8
+      1B9 _TrkGetTransitionEntry@28
+       25 _TrkGetUserEmail@16
+       24 _TrkGetUserFullName@16
+       B8 _TrkGetUserIsDeleted@12
+      117 _TrkGetUserQueryFieldFromVid@16
+      119 _TrkGetUserQueryIsPublic@8
+       E0 _TrkGetWindowHandle@8
+        4 _TrkHandleAlloc@8
+        5 _TrkHandleFree@4
+      1CB _TrkHtmlFormClearFieldValues@8
+       D0 _TrkHtmlFormGenerate@28
+       D1 _TrkHtmlFormGenerateEx@28
+      1CD _TrkHtmlFormGetHelpUrl@12
+      1D1 _TrkHtmlFormGetLastError@12
+       C9 _TrkHtmlFormHandleAlloc@8
+       CA _TrkHtmlFormHandleFree@4
+       CD _TrkHtmlFormInitFieldList@4
+       CE _TrkHtmlFormSetDefaultFieldValue@12
+       CF _TrkHtmlFormSetFieldValue@16
+       CB _TrkHtmlFormSetFormRecord@12
+       CC _TrkHtmlFormSetStyleSheet@12
+      1CC _TrkHtmlGetFieldName@16
+       C4 _TrkHtmlSetStyleSheet@12
+       C6 _TrkHtmlSetStyleSheetFromQuery@8
+       C5 _TrkHtmlSetStyleSheetFromTemp@8
+       C7 _TrkHtmlStyleSheetGenerate@24
+       C8 _TrkHtmlStyleSheetGenerateEx@24
+       C2 _TrkHtmlStyleSheetHandleAlloc@8
+       C3 _TrkHtmlStyleSheetHandleFree@4
+      1AB _TrkInTrayGetRecordCount@8
+       2C _TrkInTrayInitRecordList@16
+       64 _TrkInitAssociationList@4
+       58 _TrkInitAttachedFileList@4
+       A5 _TrkInitChangeList@4
+       26 _TrkInitChoiceList@12
+      12A _TrkInitChoiceListFromFldId@8
+        F _TrkInitDBMSTypeList@4
+       18 _TrkInitFieldList@8
+       89 _TrkInitFormNameList@4
+      127 _TrkInitGroupList@4
+       96 _TrkInitGroupUserList@12
+       8E _TrkInitMacroList@4
+       44 _TrkInitNoteList@4
+       9F _TrkInitNoteTitleList@4
+        D _TrkInitProjectList@24
+       E8 _TrkInitProjectListEx@8
+       1F _TrkInitQueryNameList@4
+       15 _TrkInitRecordTypeList@4
+      1B0 _TrkInitRuleListInternal@12
+      106 _TrkInitStateList@4
+      1B7 _TrkInitTransitionList@4
+       22 _TrkInitUserList@4
+       80 _TrkInvokeCallback@24
+       7A _TrkLoginInternal@12
+       7B _TrkLogoutInternal@4
+       98 _TrkModuleInitRecordList@24
+       AA _TrkModuleInitRevisionList@16
+       2F _TrkNewRecordBegin@8
+       30 _TrkNewRecordCommit@8
+       42 _TrkNoteHandleAlloc@8
+       43 _TrkNoteHandleFree@4
+        6 _TrkProjectLogin@36
+       7C _TrkProjectLoginDialog@76
+       7E _TrkProjectLoginDialogEx@56
+        7 _TrkProjectLoginEx@20
+        8 _TrkProjectLogout@4
+       C1 _TrkProjectRefresh
+      134 _TrkQueryByIDInitRecordList@16
+       2B _TrkQueryInitRecordList@16
+       31 _TrkRecordCancelTransaction@4
+       29 _TrkRecordHandleAlloc@8
+       2A _TrkRecordHandleFree@4
+      145 _TrkRecordLock@12
+       78 _TrkRegisterCallback@16
+       7F _TrkRegisterWindowHandle@8
+       A8 _TrkRevisionHandleAlloc@8
+       A9 _TrkRevisionHandleFree@4
+      1AE _TrkRuleHandleAlloc@8
+      1AF _TrkRuleHandleFree@4
+       8D _TrkSaveQuery@24
+      11B _TrkSaveUserQuery@12
+       69 _TrkSetAssociationModuleName@8
+       6F _TrkSetAssociationRevisionFixed@8
+       6D _TrkSetAssociationRevisionFound@8
+       76 _TrkSetAssociationText@16
+       73 _TrkSetAssociationTimeFixed@8
+       71 _TrkSetAssociationTimeFound@8
+       6B _TrkSetAssociationUser@8
+       5D _TrkSetAttachedFileName@8
+       3F _TrkSetDescriptionData@16
+        9 _TrkSetIniFile@8
+       4B _TrkSetNoteAuthor@8
+       4D _TrkSetNoteCreateTime@8
+       52 _TrkSetNoteData@16
+       4F _TrkSetNoteModifyTime@8
+       49 _TrkSetNoteTitle@8
+        B _TrkSetNumericAttribute@12
+       39 _TrkSetNumericFieldValue@12
+       7D _TrkSetPassword@8
+      137 _TrkSetQuerySortVid@12
+       3A _TrkSetStringFieldValue@12
+      10D _TrkStateTransitionIsAllowed@16
+      1B5 _TrkTransitionHandleAlloc@8
+      1B6 _TrkTransitionHandleFree@4
+       79 _TrkUnregisterCallback@8
+       32 _TrkUpdateRecordBegin@4
+       B9 _TrkUpdateRecordBeginEx@8
+       33 _TrkUpdateRecordCommit@8
+       94 _TrkUserIsAdmin@12
+       93 _TrkUserIsMemberOfGroup@16
+       D6 _TrkValidateHandle@4
+      135 _TrkVerifyQuery@16
+      136 _TrkVerifyQueryByID@16
+         COMDAT; sym= _TrkAddNewAssociation@4
+003 00000000 SECT1  notype ()    External     | _TrkAddNewAssociation@4
+         COMDAT; sym= _TrkAddNewAttachedFile@12
+003 00000000 SECT1  notype ()    External     | _TrkAddNewAttachedFile@12
+         COMDAT; sym= _TrkAddNewNote@4
+003 00000000 SECT1  notype ()    External     | _TrkAddNewNote@4
+         COMDAT; sym= _TrkApplyRuleInternal@20
+003 00000000 SECT1  notype ()    External     | _TrkApplyRuleInternal@20
+         COMDAT; sym= _TrkAssociationHandleAlloc@8
+003 00000000 SECT1  notype ()    External     | _TrkAssociationHandleAlloc@8
+         COMDAT; sym= _TrkAssociationHandleFree@4
+003 00000000 SECT1  notype ()    External     | _TrkAssociationHandleFree@4
+         COMDAT; sym= _TrkAttachedFileHandleAlloc@8
+003 00000000 SECT1  notype ()    External     | _TrkAttachedFileHandleAlloc@8
+         COMDAT; sym= _TrkAttachedFileHandleFree@4
+003 00000000 SECT1  notype ()    External     | _TrkAttachedFileHandleFree@4
+         COMDAT; sym= _TrkClearInTrayRecord@4
+003 00000000 SECT1  notype ()    External     | _TrkClearInTrayRecord@4
+         COMDAT; sym= _TrkClearInTrayRecords@4
+003 00000000 SECT1  notype ()    External     | _TrkClearInTrayRecords@4
+         COMDAT; sym= _TrkCustomQueryInitRecordList@16
+003 00000000 SECT1  notype ()    External     | _TrkCustomQueryInitRecordList@16
+         COMDAT; sym= _TrkDeleteAssociation@4
+003 00000000 SECT1  notype ()    External     | _TrkDeleteAssociation@4
+         COMDAT; sym= _TrkDeleteAttachedFile@4
+003 00000000 SECT1  notype ()    External     | _TrkDeleteAttachedFile@4
+         COMDAT; sym= _TrkDeleteNote@4
+003 00000000 SECT1  notype ()    External     | _TrkDeleteNote@4
+         COMDAT; sym= _TrkDeleteQuery@8
+003 00000000 SECT1  notype ()    External     | _TrkDeleteQuery@8
+         COMDAT; sym= _TrkDeleteRecord@4
+003 00000000 SECT1  notype ()    External     | _TrkDeleteRecord@4
+         COMDAT; sym= _TrkExpandMacro@20
+003 00000000 SECT1  notype ()    External     | _TrkExpandMacro@20
+         COMDAT; sym= _TrkExtractAttachedFile@8
+003 00000000 SECT1  notype ()    External     | _TrkExtractAttachedFile@8
+         COMDAT; sym= _TrkGetAdmRefreshId@8
+003 00000000 SECT1  notype ()    External     | _TrkGetAdmRefreshId@8
+         COMDAT; sym= _TrkGetAssociationInfo@28
+003 00000000 SECT1  notype ()    External     | _TrkGetAssociationInfo@28
+         COMDAT; sym= _TrkGetAssociationMaxDataLength@20
+003 00000000 SECT1  notype ()    External     | _TrkGetAssociationMaxDataLength@20
+         COMDAT; sym= _TrkGetAssociationModuleName@12
+003 00000000 SECT1  notype ()    External     | _TrkGetAssociationModuleName@12
+         COMDAT; sym= _TrkGetAssociationPermissions@8
+003 00000000 SECT1  notype ()    External     | _TrkGetAssociationPermissions@8
+         COMDAT; sym= _TrkGetAssociationRevisionFixed@12
+003 00000000 SECT1  notype ()    External     | _TrkGetAssociationRevisionFixed@12
+         COMDAT; sym= _TrkGetAssociationRevisionFound@12
+003 00000000 SECT1  notype ()    External     | _TrkGetAssociationRevisionFound@12
+         COMDAT; sym= _TrkGetAssociationText@16
+003 00000000 SECT1  notype ()    External     | _TrkGetAssociationText@16
+         COMDAT; sym= _TrkGetAssociationTextLength@8
+003 00000000 SECT1  notype ()    External     | _TrkGetAssociationTextLength@8
+         COMDAT; sym= _TrkGetAssociationTimeFixed@8
+003 00000000 SECT1  notype ()    External     | _TrkGetAssociationTimeFixed@8
+         COMDAT; sym= _TrkGetAssociationTimeFound@8
+003 00000000 SECT1  notype ()    External     | _TrkGetAssociationTimeFound@8
+         COMDAT; sym= _TrkGetAssociationTransactionID@8
+003 00000000 SECT1  notype ()    External     | _TrkGetAssociationTransactionID@8
+         COMDAT; sym= _TrkGetAssociationUser@12
+003 00000000 SECT1  notype ()    External     | _TrkGetAssociationUser@12
+         COMDAT; sym= _TrkGetAttachedFileInfo@24
+003 00000000 SECT1  notype ()    External     | _TrkGetAttachedFileInfo@24
+         COMDAT; sym= _TrkGetAttachedFileName@12
+003 00000000 SECT1  notype ()    External     | _TrkGetAttachedFileName@12
+         COMDAT; sym= _TrkGetAttachedFilePermissions@12
+003 00000000 SECT1  notype ()    External     | _TrkGetAttachedFilePermissions@12
+         COMDAT; sym= _TrkGetAttachedFileStorageMode@8
+003 00000000 SECT1  notype ()    External     | _TrkGetAttachedFileStorageMode@8
+         COMDAT; sym= _TrkGetAttachedFileTime@8
+003 00000000 SECT1  notype ()    External     | _TrkGetAttachedFileTime@8
+         COMDAT; sym= _TrkGetAttachedFileTransactionID@8
+003 00000000 SECT1  notype ()    External     | _TrkGetAttachedFileTransactionID@8
+         COMDAT; sym= _TrkGetBuildQueryPermission@4
+003 00000000 SECT1  notype ()    External     | _TrkGetBuildQueryPermission@4
+         COMDAT; sym= _TrkGetDateTimeDisplayString@16
+003 00000000 SECT1  notype ()    External     | _TrkGetDateTimeDisplayString@16
+         COMDAT; sym= _TrkGetDcsProcess@8
+003 00000000 SECT1  notype ()    External     | _TrkGetDcsProcess@8
+         COMDAT; sym= _TrkGetDcsSession@8
+003 00000000 SECT1  notype ()    External     | _TrkGetDcsSession@8
+         COMDAT; sym= _TrkGetDescriptionAccessRights@8
+003 00000000 SECT1  notype ()    External     | _TrkGetDescriptionAccessRights@8
+         COMDAT; sym= _TrkGetDescriptionData@16
+003 00000000 SECT1  notype ()    External     | _TrkGetDescriptionData@16
+         COMDAT; sym= _TrkGetDescriptionDataLength@8
+003 00000000 SECT1  notype ()    External     | _TrkGetDescriptionDataLength@8
+         COMDAT; sym= _TrkGetDescriptionName@12
+003 00000000 SECT1  notype ()    External     | _TrkGetDescriptionName@12
+         COMDAT; sym= _TrkGetDescriptionTransactionID@8
+003 00000000 SECT1  notype ()    External     | _TrkGetDescriptionTransactionID@8
+         COMDAT; sym= _TrkGetFieldAccessRights@12
+003 00000000 SECT1  notype ()    External     | _TrkGetFieldAccessRights@12
+         COMDAT; sym= _TrkGetFieldDefaultGroupId@16
+003 00000000 SECT1  notype ()    External     | _TrkGetFieldDefaultGroupId@16
+         COMDAT; sym= _TrkGetFieldDefaultNumericValue@16
+003 00000000 SECT1  notype ()    External     | _TrkGetFieldDefaultNumericValue@16
+         COMDAT; sym= _TrkGetFieldDefaultStringValue@20
+003 00000000 SECT1  notype ()    External     | _TrkGetFieldDefaultStringValue@20
+         COMDAT; sym= _TrkGetFieldIsNullValid@16
+003 00000000 SECT1  notype ()    External     | _TrkGetFieldIsNullValid@16
+         COMDAT; sym= _TrkGetFieldMaxDataLength@16
+003 00000000 SECT1  notype ()    External     | _TrkGetFieldMaxDataLength@16
+         COMDAT; sym= _TrkGetFieldNameFromVid@20
+003 00000000 SECT1  notype ()    External     | _TrkGetFieldNameFromVid@20
+         COMDAT; sym= _TrkGetFieldRange@20
+003 00000000 SECT1  notype ()    External     | _TrkGetFieldRange@20
+         COMDAT; sym= _TrkGetFieldRawData@36
+003 00000000 SECT1  notype ()    External     | _TrkGetFieldRawData@36
+         COMDAT; sym= _TrkGetFieldRawDataFromId@32
+003 00000000 SECT1  notype ()    External     | _TrkGetFieldRawDataFromId@32
+         COMDAT; sym= _TrkGetFieldSubmitRights@16
+003 00000000 SECT1  notype ()    External     | _TrkGetFieldSubmitRights@16
+         COMDAT; sym= _TrkGetFieldTransactionID@12
+003 00000000 SECT1  notype ()    External     | _TrkGetFieldTransactionID@12
+         COMDAT; sym= _TrkGetFieldType@16
+003 00000000 SECT1  notype ()    External     | _TrkGetFieldType@16
+         COMDAT; sym= _TrkGetFieldTypeFromId@12
+003 00000000 SECT1  notype ()    External     | _TrkGetFieldTypeFromId@12
+         COMDAT; sym= _TrkGetFieldUpdateRights@16
+003 00000000 SECT1  notype ()    External     | _TrkGetFieldUpdateRights@16
+         COMDAT; sym= _TrkGetFieldVid@16
+003 00000000 SECT1  notype ()    External     | _TrkGetFieldVid@16
+         COMDAT; sym= _TrkGetFormEntryInternal@36
+003 00000000 SECT1  notype ()    External     | _TrkGetFormEntryInternal@36
+         COMDAT; sym= _TrkGetIniFile@12
+003 00000000 SECT1  notype ()    External     | _TrkGetIniFile@12
+         COMDAT; sym= _TrkGetLoginDBMSName@12
+003 00000000 SECT1  notype ()    External     | _TrkGetLoginDBMSName@12
+         COMDAT; sym= _TrkGetLoginDBMSType@12
+003 00000000 SECT1  notype ()    External     | _TrkGetLoginDBMSType@12
+         COMDAT; sym= _TrkGetLoginProjectName@12
+003 00000000 SECT1  notype ()    External     | _TrkGetLoginProjectName@12
+         COMDAT; sym= _TrkGetLoginUserName@12
+003 00000000 SECT1  notype ()    External     | _TrkGetLoginUserName@12
+         COMDAT; sym= _TrkGetMacroInfo@20
+003 00000000 SECT1  notype ()    External     | _TrkGetMacroInfo@20
+         COMDAT; sym= _TrkGetMacroValue@24
+003 00000000 SECT1  notype ()    External     | _TrkGetMacroValue@24
+         COMDAT; sym= _TrkGetNextAssociation@4
+003 00000000 SECT1  notype ()    External     | _TrkGetNextAssociation@4
+         COMDAT; sym= _TrkGetNextAttachedFile@4
+003 00000000 SECT1  notype ()    External     | _TrkGetNextAttachedFile@4
+         COMDAT; sym= _TrkGetNextChange@12
+003 00000000 SECT1  notype ()    External     | _TrkGetNextChange@12
+         COMDAT; sym= _TrkGetNextChangeInternal@24
+003 00000000 SECT1  notype ()    External     | _TrkGetNextChangeInternal@24
+         COMDAT; sym= _TrkGetNextChoice@12
+003 00000000 SECT1  notype ()    External     | _TrkGetNextChoice@12
+         COMDAT; sym= _TrkGetNextChoiceInternal@24
+003 00000000 SECT1  notype ()    External     | _TrkGetNextChoiceInternal@24
+         COMDAT; sym= _TrkGetNextDBMSType@12
+003 00000000 SECT1  notype ()    External     | _TrkGetNextDBMSType@12
+         COMDAT; sym= _TrkGetNextField@16
+003 00000000 SECT1  notype ()    External     | _TrkGetNextField@16
+         COMDAT; sym= _TrkGetNextFieldAndIds@28
+003 00000000 SECT1  notype ()    External     | _TrkGetNextFieldAndIds@28
+         COMDAT; sym= _TrkGetNextFormName@24
+003 00000000 SECT1  notype ()    External     | _TrkGetNextFormName@24
+         COMDAT; sym= _TrkGetNextGroup@20
+003 00000000 SECT1  notype ()    External     | _TrkGetNextGroup@20
+         COMDAT; sym= _TrkGetNextGroupUser@12
+003 00000000 SECT1  notype ()    External     | _TrkGetNextGroupUser@12
+         COMDAT; sym= _TrkGetNextMacro@20
+003 00000000 SECT1  notype ()    External     | _TrkGetNextMacro@20
+         COMDAT; sym= _TrkGetNextNote@4
+003 00000000 SECT1  notype ()    External     | _TrkGetNextNote@4
+         COMDAT; sym= _TrkGetNextNoteTitle@16
+003 00000000 SECT1  notype ()    External     | _TrkGetNextNoteTitle@16
+         COMDAT; sym= _TrkGetNextProject@12
+003 00000000 SECT1  notype ()    External     | _TrkGetNextProject@12
+         COMDAT; sym= _TrkGetNextQueryName@16
+003 00000000 SECT1  notype ()    External     | _TrkGetNextQueryName@16
+         COMDAT; sym= _TrkGetNextRecord@4
+003 00000000 SECT1  notype ()    External     | _TrkGetNextRecord@4
+         COMDAT; sym= _TrkGetNextRecordType@8
+003 00000000 SECT1  notype ()    External     | _TrkGetNextRecordType@8
+         COMDAT; sym= _TrkGetNextRevision@4
+003 00000000 SECT1  notype ()    External     | _TrkGetNextRevision@4
+         COMDAT; sym= _TrkGetNextRuleInternal@28
+003 00000000 SECT1  notype ()    External     | _TrkGetNextRuleInternal@28
+         COMDAT; sym= _TrkGetNextState@16
+003 00000000 SECT1  notype ()    External     | _TrkGetNextState@16
+         COMDAT; sym= _TrkGetNextTransitionInternal@20
+003 00000000 SECT1  notype ()    External     | _TrkGetNextTransitionInternal@20
+         COMDAT; sym= _TrkGetNextUser@12
+003 00000000 SECT1  notype ()    External     | _TrkGetNextUser@12
+         COMDAT; sym= _TrkGetNextUserInternal@20
+003 00000000 SECT1  notype ()    External     | _TrkGetNextUserInternal@20
+         COMDAT; sym= _TrkGetNoteAuthor@12
+003 00000000 SECT1  notype ()    External     | _TrkGetNoteAuthor@12
+         COMDAT; sym= _TrkGetNoteCreateTime@8
+003 00000000 SECT1  notype ()    External     | _TrkGetNoteCreateTime@8
+         COMDAT; sym= _TrkGetNoteData@16
+003 00000000 SECT1  notype ()    External     | _TrkGetNoteData@16
+         COMDAT; sym= _TrkGetNoteDataLength@8
+003 00000000 SECT1  notype ()    External     | _TrkGetNoteDataLength@8
+         COMDAT; sym= _TrkGetNoteInfo@28
+003 00000000 SECT1  notype ()    External     | _TrkGetNoteInfo@28
+         COMDAT; sym= _TrkGetNoteMaxDataLength@8
+003 00000000 SECT1  notype ()    External     | _TrkGetNoteMaxDataLength@8
+         COMDAT; sym= _TrkGetNoteMaxTitleLength@8
+003 00000000 SECT1  notype ()    External     | _TrkGetNoteMaxTitleLength@8
+         COMDAT; sym= _TrkGetNoteModifyTime@8
+003 00000000 SECT1  notype ()    External     | _TrkGetNoteModifyTime@8
+         COMDAT; sym= _TrkGetNotePermissions@8
+003 00000000 SECT1  notype ()    External     | _TrkGetNotePermissions@8
+         COMDAT; sym= _TrkGetNoteTitle@12
+003 00000000 SECT1  notype ()    External     | _TrkGetNoteTitle@12
+         COMDAT; sym= _TrkGetNoteTransactionID@8
+003 00000000 SECT1  notype ()    External     | _TrkGetNoteTransactionID@8
+         COMDAT; sym= _TrkGetNumericAttribute@12
+003 00000000 SECT1  notype ()    External     | _TrkGetNumericAttribute@12
+         COMDAT; sym= _TrkGetNumericFieldValue@12
+003 00000000 SECT1  notype ()    External     | _TrkGetNumericFieldValue@12
+         COMDAT; sym= _TrkGetProjectTransactionID@12
+003 00000000 SECT1  notype ()    External     | _TrkGetProjectTransactionID@12
+         COMDAT; sym= _TrkGetQueryFieldFromVid@20
+003 00000000 SECT1  notype ()    External     | _TrkGetQueryFieldFromVid@20
+         COMDAT; sym= _TrkGetQueryIsPublic@12
+003 00000000 SECT1  notype ()    External     | _TrkGetQueryIsPublic@12
+         COMDAT; sym= _TrkGetQueryRecordType@12
+003 00000000 SECT1  notype ()    External     | _TrkGetQueryRecordType@12
+         COMDAT; sym= _TrkGetRecordFormName@20
+003 00000000 SECT1  notype ()    External     | _TrkGetRecordFormName@20
+         COMDAT; sym= _TrkGetRecordInternalID@8
+003 00000000 SECT1  notype ()    External     | _TrkGetRecordInternalID@8
+         COMDAT; sym= _TrkGetRecordIsLocked@16
+003 00000000 SECT1  notype ()    External     | _TrkGetRecordIsLocked@16
+         COMDAT; sym= _TrkGetRecordRecordType@8
+003 00000000 SECT1  notype ()    External     | _TrkGetRecordRecordType@8
+         COMDAT; sym= _TrkGetRecordTransactionID@12
+003 00000000 SECT1  notype ()    External     | _TrkGetRecordTransactionID@12
+         COMDAT; sym= _TrkGetRecordTypeFromVid@12
+003 00000000 SECT1  notype ()    External     | _TrkGetRecordTypeFromVid@12
+         COMDAT; sym= _TrkGetRecordTypeName@16
+003 00000000 SECT1  notype ()    External     | _TrkGetRecordTypeName@16
+         COMDAT; sym= _TrkGetRecordUpdatePermission@8
+003 00000000 SECT1  notype ()    External     | _TrkGetRecordUpdatePermission@8
+         COMDAT; sym= _TrkGetRecordVersionLabel@12
+003 00000000 SECT1  notype ()    External     | _TrkGetRecordVersionLabel@12
+         COMDAT; sym= _TrkGetRevisionFixed@12
+003 00000000 SECT1  notype ()    External     | _TrkGetRevisionFixed@12
+         COMDAT; sym= _TrkGetRevisionFound@12
+003 00000000 SECT1  notype ()    External     | _TrkGetRevisionFound@12
+         COMDAT; sym= _TrkGetRevisionInternalRecordID@8
+003 00000000 SECT1  notype ()    External     | _TrkGetRevisionInternalRecordID@8
+         COMDAT; sym= _TrkGetRevisionModuleName@12
+003 00000000 SECT1  notype ()    External     | _TrkGetRevisionModuleName@12
+         COMDAT; sym= _TrkGetRevisionText@16
+003 00000000 SECT1  notype ()    External     | _TrkGetRevisionText@16
+         COMDAT; sym= _TrkGetRevisionTextLength@8
+003 00000000 SECT1  notype ()    External     | _TrkGetRevisionTextLength@8
+         COMDAT; sym= _TrkGetRevisionTimeFixed@8
+003 00000000 SECT1  notype ()    External     | _TrkGetRevisionTimeFixed@8
+         COMDAT; sym= _TrkGetRevisionTimeFound@8
+003 00000000 SECT1  notype ()    External     | _TrkGetRevisionTimeFound@8
+         COMDAT; sym= _TrkGetRevisionTransactionID@8
+003 00000000 SECT1  notype ()    External     | _TrkGetRevisionTransactionID@8
+         COMDAT; sym= _TrkGetRevisionUser@12
+003 00000000 SECT1  notype ()    External     | _TrkGetRevisionUser@12
+         COMDAT; sym= _TrkGetRuleActionType1@20
+003 00000000 SECT1  notype ()    External     | _TrkGetRuleActionType1@20
+         COMDAT; sym= _TrkGetRuleConditionType1@24
+003 00000000 SECT1  notype ()    External     | _TrkGetRuleConditionType1@24
+         COMDAT; sym= _TrkGetSingleRecord@12
+003 00000000 SECT1  notype ()    External     | _TrkGetSingleRecord@12
+         COMDAT; sym= _TrkGetSingleRecordByInternalId@12
+003 00000000 SECT1  notype ()    External     | _TrkGetSingleRecordByInternalId@12
+         COMDAT; sym= _TrkGetStateFlags@16
+003 00000000 SECT1  notype ()    External     | _TrkGetStateFlags@16
+         COMDAT; sym= _TrkGetStateFlagsFromId@16
+003 00000000 SECT1  notype ()    External     | _TrkGetStateFlagsFromId@16
+         COMDAT; sym= _TrkGetStateFormName@24
+003 00000000 SECT1  notype ()    External     | _TrkGetStateFormName@24
+         COMDAT; sym= _TrkGetStateNameFromId@16
+003 00000000 SECT1  notype ()    External     | _TrkGetStateNameFromId@16
+         COMDAT; sym= _TrkGetStringFieldValue@16
+003 00000000 SECT1  notype ()    External     | _TrkGetStringFieldValue@16
+         COMDAT; sym= _TrkGetTempFileName@12
+003 00000000 SECT1  notype ()    External     | _TrkGetTempFileName@12
+         COMDAT; sym= _TrkGetTimeDisplayInt@12
+003 00000000 SECT1  notype ()    External     | _TrkGetTimeDisplayInt@12
+         COMDAT; sym= _TrkGetTimeDisplayString@16
+003 00000000 SECT1  notype ()    External     | _TrkGetTimeDisplayString@16
+         COMDAT; sym= _TrkGetTrackerBinDir@8
+003 00000000 SECT1  notype ()    External     | _TrkGetTrackerBinDir@8
+         COMDAT; sym= _TrkGetTransitionEntry@28
+003 00000000 SECT1  notype ()    External     | _TrkGetTransitionEntry@28
+         COMDAT; sym= _TrkGetUserEmail@16
+003 00000000 SECT1  notype ()    External     | _TrkGetUserEmail@16
+         COMDAT; sym= _TrkGetUserFullName@16
+003 00000000 SECT1  notype ()    External     | _TrkGetUserFullName@16
+         COMDAT; sym= _TrkGetUserIsDeleted@12
+003 00000000 SECT1  notype ()    External     | _TrkGetUserIsDeleted@12
+         COMDAT; sym= _TrkGetUserQueryFieldFromVid@16
+003 00000000 SECT1  notype ()    External     | _TrkGetUserQueryFieldFromVid@16
+         COMDAT; sym= _TrkGetUserQueryIsPublic@8
+003 00000000 SECT1  notype ()    External     | _TrkGetUserQueryIsPublic@8
+         COMDAT; sym= _TrkGetWindowHandle@8
+003 00000000 SECT1  notype ()    External     | _TrkGetWindowHandle@8
+         COMDAT; sym= _TrkHandleAlloc@8
+003 00000000 SECT1  notype ()    External     | _TrkHandleAlloc@8
+         COMDAT; sym= _TrkHandleFree@4
+003 00000000 SECT1  notype ()    External     | _TrkHandleFree@4
+         COMDAT; sym= _TrkHtmlFormClearFieldValues@8
+003 00000000 SECT1  notype ()    External     | _TrkHtmlFormClearFieldValues@8
+         COMDAT; sym= _TrkHtmlFormGenerate@28
+003 00000000 SECT1  notype ()    External     | _TrkHtmlFormGenerate@28
+         COMDAT; sym= _TrkHtmlFormGenerateEx@28
+003 00000000 SECT1  notype ()    External     | _TrkHtmlFormGenerateEx@28
+         COMDAT; sym= _TrkHtmlFormGetHelpUrl@12
+003 00000000 SECT1  notype ()    External     | _TrkHtmlFormGetHelpUrl@12
+         COMDAT; sym= _TrkHtmlFormGetLastError@12
+003 00000000 SECT1  notype ()    External     | _TrkHtmlFormGetLastError@12
+         COMDAT; sym= _TrkHtmlFormHandleAlloc@8
+003 00000000 SECT1  notype ()    External     | _TrkHtmlFormHandleAlloc@8
+         COMDAT; sym= _TrkHtmlFormHandleFree@4
+003 00000000 SECT1  notype ()    External     | _TrkHtmlFormHandleFree@4
+         COMDAT; sym= _TrkHtmlFormInitFieldList@4
+003 00000000 SECT1  notype ()    External     | _TrkHtmlFormInitFieldList@4
+         COMDAT; sym= _TrkHtmlFormSetDefaultFieldValue@12
+003 00000000 SECT1  notype ()    External     | _TrkHtmlFormSetDefaultFieldValue@12
+         COMDAT; sym= _TrkHtmlFormSetFieldValue@16
+003 00000000 SECT1  notype ()    External     | _TrkHtmlFormSetFieldValue@16
+         COMDAT; sym= _TrkHtmlFormSetFormRecord@12
+003 00000000 SECT1  notype ()    External     | _TrkHtmlFormSetFormRecord@12
+         COMDAT; sym= _TrkHtmlFormSetStyleSheet@12
+003 00000000 SECT1  notype ()    External     | _TrkHtmlFormSetStyleSheet@12
+         COMDAT; sym= _TrkHtmlGetFieldName@16
+003 00000000 SECT1  notype ()    External     | _TrkHtmlGetFieldName@16
+         COMDAT; sym= _TrkHtmlSetStyleSheet@12
+003 00000000 SECT1  notype ()    External     | _TrkHtmlSetStyleSheet@12
+         COMDAT; sym= _TrkHtmlSetStyleSheetFromQuery@8
+003 00000000 SECT1  notype ()    External     | _TrkHtmlSetStyleSheetFromQuery@8
+         COMDAT; sym= _TrkHtmlSetStyleSheetFromTemp@8
+003 00000000 SECT1  notype ()    External     | _TrkHtmlSetStyleSheetFromTemp@8
+         COMDAT; sym= _TrkHtmlStyleSheetGenerate@24
+003 00000000 SECT1  notype ()    External     | _TrkHtmlStyleSheetGenerate@24
+         COMDAT; sym= _TrkHtmlStyleSheetGenerateEx@24
+003 00000000 SECT1  notype ()    External     | _TrkHtmlStyleSheetGenerateEx@24
+         COMDAT; sym= _TrkHtmlStyleSheetHandleAlloc@8
+003 00000000 SECT1  notype ()    External     | _TrkHtmlStyleSheetHandleAlloc@8
+         COMDAT; sym= _TrkHtmlStyleSheetHandleFree@4
+003 00000000 SECT1  notype ()    External     | _TrkHtmlStyleSheetHandleFree@4
+         COMDAT; sym= _TrkInTrayGetRecordCount@8
+003 00000000 SECT1  notype ()    External     | _TrkInTrayGetRecordCount@8
+         COMDAT; sym= _TrkInTrayInitRecordList@16
+003 00000000 SECT1  notype ()    External     | _TrkInTrayInitRecordList@16
+         COMDAT; sym= _TrkInitAssociationList@4
+003 00000000 SECT1  notype ()    External     | _TrkInitAssociationList@4
+         COMDAT; sym= _TrkInitAttachedFileList@4
+003 00000000 SECT1  notype ()    External     | _TrkInitAttachedFileList@4
+         COMDAT; sym= _TrkInitChangeList@4
+003 00000000 SECT1  notype ()    External     | _TrkInitChangeList@4
+         COMDAT; sym= _TrkInitChoiceList@12
+003 00000000 SECT1  notype ()    External     | _TrkInitChoiceList@12
+         COMDAT; sym= _TrkInitChoiceListFromFldId@8
+003 00000000 SECT1  notype ()    External     | _TrkInitChoiceListFromFldId@8
+         COMDAT; sym= _TrkInitDBMSTypeList@4
+003 00000000 SECT1  notype ()    External     | _TrkInitDBMSTypeList@4
+         COMDAT; sym= _TrkInitFieldList@8
+003 00000000 SECT1  notype ()    External     | _TrkInitFieldList@8
+         COMDAT; sym= _TrkInitFormNameList@4
+003 00000000 SECT1  notype ()    External     | _TrkInitFormNameList@4
+         COMDAT; sym= _TrkInitGroupList@4
+003 00000000 SECT1  notype ()    External     | _TrkInitGroupList@4
+         COMDAT; sym= _TrkInitGroupUserList@12
+003 00000000 SECT1  notype ()    External     | _TrkInitGroupUserList@12
+         COMDAT; sym= _TrkInitMacroList@4
+003 00000000 SECT1  notype ()    External     | _TrkInitMacroList@4
+         COMDAT; sym= _TrkInitNoteList@4
+003 00000000 SECT1  notype ()    External     | _TrkInitNoteList@4
+         COMDAT; sym= _TrkInitNoteTitleList@4
+003 00000000 SECT1  notype ()    External     | _TrkInitNoteTitleList@4
+         COMDAT; sym= _TrkInitProjectList@24
+003 00000000 SECT1  notype ()    External     | _TrkInitProjectList@24
+         COMDAT; sym= _TrkInitProjectListEx@8
+003 00000000 SECT1  notype ()    External     | _TrkInitProjectListEx@8
+         COMDAT; sym= _TrkInitQueryNameList@4
+003 00000000 SECT1  notype ()    External     | _TrkInitQueryNameList@4
+         COMDAT; sym= _TrkInitRecordTypeList@4
+003 00000000 SECT1  notype ()    External     | _TrkInitRecordTypeList@4
+         COMDAT; sym= _TrkInitRuleListInternal@12
+003 00000000 SECT1  notype ()    External     | _TrkInitRuleListInternal@12
+         COMDAT; sym= _TrkInitStateList@4
+003 00000000 SECT1  notype ()    External     | _TrkInitStateList@4
+         COMDAT; sym= _TrkInitTransitionList@4
+003 00000000 SECT1  notype ()    External     | _TrkInitTransitionList@4
+         COMDAT; sym= _TrkInitUserList@4
+003 00000000 SECT1  notype ()    External     | _TrkInitUserList@4
+         COMDAT; sym= _TrkInvokeCallback@24
+003 00000000 SECT1  notype ()    External     | _TrkInvokeCallback@24
+         COMDAT; sym= _TrkLoginInternal@12
+003 00000000 SECT1  notype ()    External     | _TrkLoginInternal@12
+         COMDAT; sym= _TrkLogoutInternal@4
+003 00000000 SECT1  notype ()    External     | _TrkLogoutInternal@4
+         COMDAT; sym= _TrkModuleInitRecordList@24
+003 00000000 SECT1  notype ()    External     | _TrkModuleInitRecordList@24
+         COMDAT; sym= _TrkModuleInitRevisionList@16
+003 00000000 SECT1  notype ()    External     | _TrkModuleInitRevisionList@16
+         COMDAT; sym= _TrkNewRecordBegin@8
+003 00000000 SECT1  notype ()    External     | _TrkNewRecordBegin@8
+         COMDAT; sym= _TrkNewRecordCommit@8
+003 00000000 SECT1  notype ()    External     | _TrkNewRecordCommit@8
+         COMDAT; sym= _TrkNoteHandleAlloc@8
+003 00000000 SECT1  notype ()    External     | _TrkNoteHandleAlloc@8
+         COMDAT; sym= _TrkNoteHandleFree@4
+003 00000000 SECT1  notype ()    External     | _TrkNoteHandleFree@4
+         COMDAT; sym= _TrkProjectLogin@36
+003 00000000 SECT1  notype ()    External     | _TrkProjectLogin@36
+         COMDAT; sym= _TrkProjectLoginDialog@76
+003 00000000 SECT1  notype ()    External     | _TrkProjectLoginDialog@76
+         COMDAT; sym= _TrkProjectLoginDialogEx@56
+003 00000000 SECT1  notype ()    External     | _TrkProjectLoginDialogEx@56
+         COMDAT; sym= _TrkProjectLoginEx@20
+003 00000000 SECT1  notype ()    External     | _TrkProjectLoginEx@20
+         COMDAT; sym= _TrkProjectLogout@4
+003 00000000 SECT1  notype ()    External     | _TrkProjectLogout@4
+         COMDAT; sym= _TrkProjectRefresh
+003 00000000 SECT1  notype ()    External     | _TrkProjectRefresh
+         COMDAT; sym= _TrkQueryByIDInitRecordList@16
+003 00000000 SECT1  notype ()    External     | _TrkQueryByIDInitRecordList@16
+         COMDAT; sym= _TrkQueryInitRecordList@16
+003 00000000 SECT1  notype ()    External     | _TrkQueryInitRecordList@16
+         COMDAT; sym= _TrkRecordCancelTransaction@4
+003 00000000 SECT1  notype ()    External     | _TrkRecordCancelTransaction@4
+         COMDAT; sym= _TrkRecordHandleAlloc@8
+003 00000000 SECT1  notype ()    External     | _TrkRecordHandleAlloc@8
+         COMDAT; sym= _TrkRecordHandleFree@4
+003 00000000 SECT1  notype ()    External     | _TrkRecordHandleFree@4
+         COMDAT; sym= _TrkRecordLock@12
+003 00000000 SECT1  notype ()    External     | _TrkRecordLock@12
+         COMDAT; sym= _TrkRegisterCallback@16
+003 00000000 SECT1  notype ()    External     | _TrkRegisterCallback@16
+         COMDAT; sym= _TrkRegisterWindowHandle@8
+003 00000000 SECT1  notype ()    External     | _TrkRegisterWindowHandle@8
+         COMDAT; sym= _TrkRevisionHandleAlloc@8
+003 00000000 SECT1  notype ()    External     | _TrkRevisionHandleAlloc@8
+         COMDAT; sym= _TrkRevisionHandleFree@4
+003 00000000 SECT1  notype ()    External     | _TrkRevisionHandleFree@4
+         COMDAT; sym= _TrkRuleHandleAlloc@8
+003 00000000 SECT1  notype ()    External     | _TrkRuleHandleAlloc@8
+         COMDAT; sym= _TrkRuleHandleFree@4
+003 00000000 SECT1  notype ()    External     | _TrkRuleHandleFree@4
+         COMDAT; sym= _TrkSaveQuery@24
+003 00000000 SECT1  notype ()    External     | _TrkSaveQuery@24
+         COMDAT; sym= _TrkSaveUserQuery@12
+003 00000000 SECT1  notype ()    External     | _TrkSaveUserQuery@12
+         COMDAT; sym= _TrkSetAssociationModuleName@8
+003 00000000 SECT1  notype ()    External     | _TrkSetAssociationModuleName@8
+         COMDAT; sym= _TrkSetAssociationRevisionFixed@8
+003 00000000 SECT1  notype ()    External     | _TrkSetAssociationRevisionFixed@8
+         COMDAT; sym= _TrkSetAssociationRevisionFound@8
+003 00000000 SECT1  notype ()    External     | _TrkSetAssociationRevisionFound@8
+         COMDAT; sym= _TrkSetAssociationText@16
+003 00000000 SECT1  notype ()    External     | _TrkSetAssociationText@16
+         COMDAT; sym= _TrkSetAssociationTimeFixed@8
+003 00000000 SECT1  notype ()    External     | _TrkSetAssociationTimeFixed@8
+         COMDAT; sym= _TrkSetAssociationTimeFound@8
+003 00000000 SECT1  notype ()    External     | _TrkSetAssociationTimeFound@8
+         COMDAT; sym= _TrkSetAssociationUser@8
+003 00000000 SECT1  notype ()    External     | _TrkSetAssociationUser@8
+         COMDAT; sym= _TrkSetAttachedFileName@8
+003 00000000 SECT1  notype ()    External     | _TrkSetAttachedFileName@8
+         COMDAT; sym= _TrkSetDescriptionData@16
+003 00000000 SECT1  notype ()    External     | _TrkSetDescriptionData@16
+         COMDAT; sym= _TrkSetIniFile@8
+003 00000000 SECT1  notype ()    External     | _TrkSetIniFile@8
+         COMDAT; sym= _TrkSetNoteAuthor@8
+003 00000000 SECT1  notype ()    External     | _TrkSetNoteAuthor@8
+         COMDAT; sym= _TrkSetNoteCreateTime@8
+003 00000000 SECT1  notype ()    External     | _TrkSetNoteCreateTime@8
+         COMDAT; sym= _TrkSetNoteData@16
+003 00000000 SECT1  notype ()    External     | _TrkSetNoteData@16
+         COMDAT; sym= _TrkSetNoteModifyTime@8
+003 00000000 SECT1  notype ()    External     | _TrkSetNoteModifyTime@8
+         COMDAT; sym= _TrkSetNoteTitle@8
+003 00000000 SECT1  notype ()    External     | _TrkSetNoteTitle@8
+         COMDAT; sym= _TrkSetNumericAttribute@12
+003 00000000 SECT1  notype ()    External     | _TrkSetNumericAttribute@12
+         COMDAT; sym= _TrkSetNumericFieldValue@12
+003 00000000 SECT1  notype ()    External     | _TrkSetNumericFieldValue@12
+         COMDAT; sym= _TrkSetPassword@8
+003 00000000 SECT1  notype ()    External     | _TrkSetPassword@8
+         COMDAT; sym= _TrkSetQuerySortVid@12
+003 00000000 SECT1  notype ()    External     | _TrkSetQuerySortVid@12
+         COMDAT; sym= _TrkSetStringFieldValue@12
+003 00000000 SECT1  notype ()    External     | _TrkSetStringFieldValue@12
+         COMDAT; sym= _TrkStateTransitionIsAllowed@16
+003 00000000 SECT1  notype ()    External     | _TrkStateTransitionIsAllowed@16
+         COMDAT; sym= _TrkTransitionHandleAlloc@8
+003 00000000 SECT1  notype ()    External     | _TrkTransitionHandleAlloc@8
+         COMDAT; sym= _TrkTransitionHandleFree@4
+003 00000000 SECT1  notype ()    External     | _TrkTransitionHandleFree@4
+         COMDAT; sym= _TrkUnregisterCallback@8
+003 00000000 SECT1  notype ()    External     | _TrkUnregisterCallback@8
+         COMDAT; sym= _TrkUpdateRecordBegin@4
+003 00000000 SECT1  notype ()    External     | _TrkUpdateRecordBegin@4
+         COMDAT; sym= _TrkUpdateRecordBeginEx@8
+003 00000000 SECT1  notype ()    External     | _TrkUpdateRecordBeginEx@8
+         COMDAT; sym= _TrkUpdateRecordCommit@8
+003 00000000 SECT1  notype ()    External     | _TrkUpdateRecordCommit@8
+         COMDAT; sym= _TrkUserIsAdmin@12
+003 00000000 SECT1  notype ()    External     | _TrkUserIsAdmin@12
+         COMDAT; sym= _TrkUserIsMemberOfGroup@16
+003 00000000 SECT1  notype ()    External     | _TrkUserIsMemberOfGroup@16
+         COMDAT; sym= _TrkValidateHandle@4
+003 00000000 SECT1  notype ()    External     | _TrkValidateHandle@4
+         COMDAT; sym= _TrkVerifyQuery@16
+003 00000000 SECT1  notype ()    External     | _TrkVerifyQuery@16
+         COMDAT; sym= _TrkVerifyQueryByID@16
+003 00000000 SECT1  notype ()    External     | _TrkVerifyQueryByID@16
+                  _TrkAddNewAssociation@4
+                  _TrkAddNewAttachedFile@12
+                  _TrkAddNewNote@4
+                  _TrkApplyRuleInternal@20
+                  _TrkAssociationHandleAlloc@8
+                  _TrkAssociationHandleFree@4
+                  _TrkAttachedFileHandleAlloc@8
+                  _TrkAttachedFileHandleFree@4
+                  _TrkClearInTrayRecord@4
+                  _TrkClearInTrayRecords@4
+                  _TrkCustomQueryInitRecordList@16
+                  _TrkDeleteAssociation@4
+                  _TrkDeleteAttachedFile@4
+                  _TrkDeleteNote@4
+                  _TrkDeleteQuery@8
+                  _TrkDeleteRecord@4
+                  _TrkExpandMacro@20
+                  _TrkExtractAttachedFile@8
+                  _TrkGetAdmRefreshId@8
+                  _TrkGetAssociationInfo@28
+                  _TrkGetAssociationMaxDataLength@20
+                  _TrkGetAssociationModuleName@12
+                  _TrkGetAssociationPermissions@8
+                  _TrkGetAssociationRevisionFixed@12
+                  _TrkGetAssociationRevisionFound@12
+                  _TrkGetAssociationText@16
+                  _TrkGetAssociationTextLength@8
+                  _TrkGetAssociationTimeFixed@8
+                  _TrkGetAssociationTimeFound@8
+                  _TrkGetAssociationTransactionID@8
+                  _TrkGetAssociationUser@12
+                  _TrkGetAttachedFileInfo@24
+                  _TrkGetAttachedFileName@12
+                  _TrkGetAttachedFilePermissions@12
+                  _TrkGetAttachedFileStorageMode@8
+                  _TrkGetAttachedFileTime@8
+                  _TrkGetAttachedFileTransactionID@8
+                  _TrkGetBuildQueryPermission@4
+                  _TrkGetDateTimeDisplayString@16
+                  _TrkGetDcsProcess@8
+                  _TrkGetDcsSession@8
+                  _TrkGetDescriptionAccessRights@8
+                  _TrkGetDescriptionData@16
+                  _TrkGetDescriptionDataLength@8
+                  _TrkGetDescriptionName@12
+                  _TrkGetDescriptionTransactionID@8
+                  _TrkGetFieldAccessRights@12
+                  _TrkGetFieldDefaultGroupId@16
+                  _TrkGetFieldDefaultNumericValue@16
+                  _TrkGetFieldDefaultStringValue@20
+                  _TrkGetFieldIsNullValid@16
+                  _TrkGetFieldMaxDataLength@16
+                  _TrkGetFieldNameFromVid@20
+                  _TrkGetFieldRange@20
+                  _TrkGetFieldRawData@36
+                  _TrkGetFieldRawDataFromId@32
+                  _TrkGetFieldSubmitRights@16
+                  _TrkGetFieldTransactionID@12
+                  _TrkGetFieldType@16
+                  _TrkGetFieldTypeFromId@12
+                  _TrkGetFieldUpdateRights@16
+                  _TrkGetFieldVid@16
+                  _TrkGetFormEntryInternal@36
+                  _TrkGetIniFile@12
+                  _TrkGetLoginDBMSName@12
+                  _TrkGetLoginDBMSType@12
+                  _TrkGetLoginProjectName@12
+                  _TrkGetLoginUserName@12
+                  _TrkGetMacroInfo@20
+                  _TrkGetMacroValue@24
+                  _TrkGetNextAssociation@4
+                  _TrkGetNextAttachedFile@4
+                  _TrkGetNextChange@12
+                  _TrkGetNextChangeInternal@24
+                  _TrkGetNextChoice@12
+                  _TrkGetNextChoiceInternal@24
+                  _TrkGetNextDBMSType@12
+                  _TrkGetNextField@16
+                  _TrkGetNextFieldAndIds@28
+                  _TrkGetNextFormName@24
+                  _TrkGetNextGroup@20
+                  _TrkGetNextGroupUser@12
+                  _TrkGetNextMacro@20
+                  _TrkGetNextNote@4
+                  _TrkGetNextNoteTitle@16
+                  _TrkGetNextProject@12
+                  _TrkGetNextQueryName@16
+                  _TrkGetNextRecord@4
+                  _TrkGetNextRecordType@8
+                  _TrkGetNextRevision@4
+                  _TrkGetNextRuleInternal@28
+                  _TrkGetNextState@16
+                  _TrkGetNextTransitionInternal@20
+                  _TrkGetNextUser@12
+                  _TrkGetNextUserInternal@20
+                  _TrkGetNoteAuthor@12
+                  _TrkGetNoteCreateTime@8
+                  _TrkGetNoteData@16
+                  _TrkGetNoteDataLength@8
+                  _TrkGetNoteInfo@28
+                  _TrkGetNoteMaxDataLength@8
+                  _TrkGetNoteMaxTitleLength@8
+                  _TrkGetNoteModifyTime@8
+                  _TrkGetNotePermissions@8
+                  _TrkGetNoteTitle@12
+                  _TrkGetNoteTransactionID@8
+                  _TrkGetNumericAttribute@12
+                  _TrkGetNumericFieldValue@12
+                  _TrkGetProjectTransactionID@12
+                  _TrkGetQueryFieldFromVid@20
+                  _TrkGetQueryIsPublic@12
+                  _TrkGetQueryRecordType@12
+                  _TrkGetRecordFormName@20
+                  _TrkGetRecordInternalID@8
+                  _TrkGetRecordIsLocked@16
+                  _TrkGetRecordRecordType@8
+                  _TrkGetRecordTransactionID@12
+                  _TrkGetRecordTypeFromVid@12
+                  _TrkGetRecordTypeName@16
+                  _TrkGetRecordUpdatePermission@8
+                  _TrkGetRecordVersionLabel@12
+                  _TrkGetRevisionFixed@12
+                  _TrkGetRevisionFound@12
+                  _TrkGetRevisionInternalRecordID@8
+                  _TrkGetRevisionModuleName@12
+                  _TrkGetRevisionText@16
+                  _TrkGetRevisionTextLength@8
+                  _TrkGetRevisionTimeFixed@8
+                  _TrkGetRevisionTimeFound@8
+                  _TrkGetRevisionTransactionID@8
+                  _TrkGetRevisionUser@12
+                  _TrkGetRuleActionType1@20
+                  _TrkGetRuleConditionType1@24
+                  _TrkGetSingleRecord@12
+                  _TrkGetSingleRecordByInternalId@12
+                  _TrkGetStateFlags@16
+                  _TrkGetStateFlagsFromId@16
+                  _TrkGetStateFormName@24
+                  _TrkGetStateNameFromId@16
+                  _TrkGetStringFieldValue@16
+                  _TrkGetTempFileName@12
+                  _TrkGetTimeDisplayInt@12
+                  _TrkGetTimeDisplayString@16
+                  _TrkGetTrackerBinDir@8
+                  _TrkGetTransitionEntry@28
+                  _TrkGetUserEmail@16
+                  _TrkGetUserFullName@16
+                  _TrkGetUserIsDeleted@12
+                  _TrkGetUserQueryFieldFromVid@16
+                  _TrkGetUserQueryIsPublic@8
+                  _TrkGetWindowHandle@8
+                  _TrkHandleAlloc@8
+                  _TrkHandleFree@4
+                  _TrkHtmlFormClearFieldValues@8
+                  _TrkHtmlFormGenerate@28
+                  _TrkHtmlFormGenerateEx@28
+                  _TrkHtmlFormGetHelpUrl@12
+                  _TrkHtmlFormGetLastError@12
+                  _TrkHtmlFormHandleAlloc@8
+                  _TrkHtmlFormHandleFree@4
+                  _TrkHtmlFormInitFieldList@4
+                  _TrkHtmlFormSetDefaultFieldValue@12
+                  _TrkHtmlFormSetFieldValue@16
+                  _TrkHtmlFormSetFormRecord@12
+                  _TrkHtmlFormSetStyleSheet@12
+                  _TrkHtmlGetFieldName@16
+                  _TrkHtmlSetStyleSheet@12
+                  _TrkHtmlSetStyleSheetFromQuery@8
+                  _TrkHtmlSetStyleSheetFromTemp@8
+                  _TrkHtmlStyleSheetGenerate@24
+                  _TrkHtmlStyleSheetGenerateEx@24
+                  _TrkHtmlStyleSheetHandleAlloc@8
+                  _TrkHtmlStyleSheetHandleFree@4
+                  _TrkInTrayGetRecordCount@8
+                  _TrkInTrayInitRecordList@16
+                  _TrkInitAssociationList@4
+                  _TrkInitAttachedFileList@4
+                  _TrkInitChangeList@4
+                  _TrkInitChoiceList@12
+                  _TrkInitChoiceListFromFldId@8
+                  _TrkInitDBMSTypeList@4
+                  _TrkInitFieldList@8
+                  _TrkInitFormNameList@4
+                  _TrkInitGroupList@4
+                  _TrkInitGroupUserList@12
+                  _TrkInitMacroList@4
+                  _TrkInitNoteList@4
+                  _TrkInitNoteTitleList@4
+                  _TrkInitProjectList@24
+                  _TrkInitProjectListEx@8
+                  _TrkInitQueryNameList@4
+                  _TrkInitRecordTypeList@4
+                  _TrkInitRuleListInternal@12
+                  _TrkInitStateList@4
+                  _TrkInitTransitionList@4
+                  _TrkInitUserList@4
+                  _TrkInvokeCallback@24
+                  _TrkLoginInternal@12
+                  _TrkLogoutInternal@4
+                  _TrkModuleInitRecordList@24
+                  _TrkModuleInitRevisionList@16
+                  _TrkNewRecordBegin@8
+                  _TrkNewRecordCommit@8
+                  _TrkNoteHandleAlloc@8
+                  _TrkNoteHandleFree@4
+                  _TrkProjectLogin@36
+                  _TrkProjectLoginDialog@76
+                  _TrkProjectLoginDialogEx@56
+                  _TrkProjectLoginEx@20
+                  _TrkProjectLogout@4
+                  _TrkProjectRefresh
+                  _TrkQueryByIDInitRecordList@16
+                  _TrkQueryInitRecordList@16
+                  _TrkRecordCancelTransaction@4
+                  _TrkRecordHandleAlloc@8
+                  _TrkRecordHandleFree@4
+                  _TrkRecordLock@12
+                  _TrkRegisterCallback@16
+                  _TrkRegisterWindowHandle@8
+                  _TrkRevisionHandleAlloc@8
+                  _TrkRevisionHandleFree@4
+                  _TrkRuleHandleAlloc@8
+                  _TrkRuleHandleFree@4
+                  _TrkSaveQuery@24
+                  _TrkSaveUserQuery@12
+                  _TrkSetAssociationModuleName@8
+                  _TrkSetAssociationRevisionFixed@8
+                  _TrkSetAssociationRevisionFound@8
+                  _TrkSetAssociationText@16
+                  _TrkSetAssociationTimeFixed@8
+                  _TrkSetAssociationTimeFound@8
+                  _TrkSetAssociationUser@8
+                  _TrkSetAttachedFileName@8
+                  _TrkSetDescriptionData@16
+                  _TrkSetIniFile@8
+                  _TrkSetNoteAuthor@8
+                  _TrkSetNoteCreateTime@8
+                  _TrkSetNoteData@16
+                  _TrkSetNoteModifyTime@8
+                  _TrkSetNoteTitle@8
+                  _TrkSetNumericAttribute@12
+                  _TrkSetNumericFieldValue@12
+                  _TrkSetPassword@8
+                  _TrkSetQuerySortVid@12
+                  _TrkSetStringFieldValue@12
+                  _TrkStateTransitionIsAllowed@16
+                  _TrkTransitionHandleAlloc@8
+                  _TrkTransitionHandleFree@4
+                  _TrkUnregisterCallback@8
+                  _TrkUpdateRecordBegin@4
+                  _TrkUpdateRecordBeginEx@8
+                  _TrkUpdateRecordCommit@8
+                  _TrkUserIsAdmin@12
+                  _TrkUserIsMemberOfGroup@16
+                  _TrkValidateHandle@4
+                  _TrkVerifyQuery@16
+                  _TrkVerifyQueryByID@16
