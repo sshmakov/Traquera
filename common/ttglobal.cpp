@@ -1,6 +1,8 @@
 #include "ttglobal.h"
 #include "settings.h"
+#ifndef CONSOLE_APP
 #include "mainwindow.h"
+#endif
 #include <QDomDocument>
 #include <QtSql>
 #include <QtCore>

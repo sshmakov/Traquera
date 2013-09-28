@@ -40,7 +40,6 @@ HEADERS += \
     gsmodel.h \
     modifypanel.h \
     messager.h \
-    ttglobal.h \
     ttfolders.h \
     unionmodel.h \
     ttdelegate.h \
