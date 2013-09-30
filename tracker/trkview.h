@@ -53,9 +53,14 @@ public slots:
 class TrkToolProject;
 class TrkToolModel;
 
-struct TrkToolChoice {
+class TrkToolChoice {
+public:
     QString displayText;
     QVariant fieldValue;
+    TrkToolChoice() {}
+    TrkToolChoice(const TrkToolChoice &src)
+        :displayText(src.displayText), fieldValue(src.fieldValue)
+    {}
     //TRK_UINT weight;
     //TRK_UINT order;
     //TRK_UINT res;
@@ -160,22 +165,35 @@ typedef QHash<TRK_VID, TrkFieldDef> TrkIntDef;
 typedef QHash<QString, TRK_VID> NameVid;
 
 class RecordTypeDef {
-public:
+protected:
     TrkToolProject *prj;
     TRK_RECORD_TYPE recType;
     bool isReadOnly;
     TrkIntDef fieldDefs;
     NameVid nameVids;
+    QHash<TRK_VID, ChoiceList *> choices;
+private:
+    ChoiceList emptyChoices;
+public:
     RecordTypeDef(TrkToolProject *project = 0)
-        : prj(project), fieldDefs(), nameVids(), recType(-1), isReadOnly(true) {}
+        : prj(project), fieldDefs(), nameVids(), recType(-1), isReadOnly(true), choices()
+    {}
     //RecordTypeDef(const RecordTypeDef & src): prj(src.prj), fieldDefs(src.fieldDefs), nameVids(src.nameVids) {}
     ~RecordTypeDef()
     {
         fieldDefs.clear();
         nameVids.clear();
+        QHash<TRK_VID, ChoiceList *>::iterator i = choices.begin();
+        while (i != choices.end()) {
+            delete i.value();
+            i.value() = 0;
+            choices.erase(i);
+            ++i;
+        }
+        choices.clear();
     }
 
-    QStringList getFieldList() const
+    QStringList fieldNames() const
     {
         return nameVids.keys();
     }
@@ -204,8 +222,48 @@ public:
     {
         return getFieldDef(name).fType;
     }
+    TRK_FIELD_TYPE fieldType(TRK_VID vid) const
+    {
+        if(fieldDefs.contains(vid))
+            return fieldDefs.value(vid).fType;
+        return TRK_FIELD_TYPE_NONE;
+    }
+
     bool canFieldSubmit(const QString &name) const;
     bool canFieldUpdate(const QString &name) const;
+    const ChoiceList &choiceList(const QString &fieldName);
+
+    const TrkFieldDef *fieldVidDef(TRK_VID vid) const
+    {
+        return &fieldDefs[vid];
+    }
+    QList<TRK_VID> fieldVids() const
+    {
+        return nameVids.values();
+    }
+    TRK_VID fieldVid(const QString &name)
+    {
+        return nameVids.value(name);
+    }
+
+    QList<int> fieldIds() const
+    {
+        QList<int> vids;
+        foreach(int vid, nameVids.values())
+            vids << vid;
+        return vids;
+    }
+    TRK_RECORD_TYPE recordType() const { return recType; }
+    QString fieldName(TRK_VID vid) const
+    {
+        if(fieldDefs.contains(vid))
+            return fieldDefs.value(vid).name;
+        return QString();
+    }
+    TrkToolProject *project() const { return prj; }
+
+
+    friend class TrkToolProject;
 };
 
 
@@ -445,7 +503,7 @@ protected:
 	QStringList dbmsTypeList;
 	QHash<QString, QStringList> projectList; // by DBMStype
 	static QHash<QString, TrkToolProject *> openedProjects;
-    friend TrkToolProject;
+    friend class TrkToolProject;
 };
 
 
@@ -498,7 +556,6 @@ public:
     void setSelectedId(TRK_UINT id, bool value, TRK_RECORD_TYPE recType = TRK_SCR_TYPE);
     void clearSelected(TRK_RECORD_TYPE recType = TRK_SCR_TYPE);
     void initQueryModel(TRK_RECORD_TYPE type = TRK_SCR_TYPE);
-    ChoiceList *fieldChoiceList(const QString &name, TRK_RECORD_TYPE recType  = TRK_SCR_TYPE);
     TRK_FIELD_TYPE fieldType(const QString &name, TRK_RECORD_TYPE recType  = TRK_SCR_TYPE);
     TrkToolModel *selectedModel(TRK_RECORD_TYPE recType = TRK_SCR_TYPE);
     bool canFieldSubmit(const QString &name, TRK_RECORD_TYPE recType = TRK_SCR_TYPE);
@@ -506,6 +563,7 @@ public:
     QString userFullName(const QString &login);
     TrkToolRecord *getRecordId(TRK_UINT id, TRK_RECORD_TYPE rectype = TRK_SCR_TYPE);
 protected:
+    ChoiceList *fieldChoiceList(const QString &name, TRK_RECORD_TYPE recType  = TRK_SCR_TYPE);
     bool login(
         const QString &user,
         const QString &pass,
@@ -526,6 +584,7 @@ signals:
     friend class TrkToolDB;
     friend class TrkToolModel;
     friend class TrkToolRecord;
+    friend class RecordTypeDef;
 };
 
 struct TrkHistoryItem
@@ -575,8 +634,8 @@ public:
 	void clear();
 	void readQuery(QSqlQuery * query);
 
-	friend TrkToolModel;
-	friend TrkToolRecord;
+    friend class TrkToolModel;
+    friend class TrkToolRecord;
 };
 
 typedef TrkToolRecord *PTrkToolRecord;
@@ -685,15 +744,19 @@ protected:
 	TRK_RECORD_TYPE rectype;
 	QHash<int, QVariant> values; // by VID
 	RecMode recMode;
-	TRK_RECORD_HANDLE lockHandle;
+    TRK_RECORD_HANDLE lockHandle; //, recHandle;
 	TRK_TRANSACTION_ID lastTransaction;
 	QStringList fieldList;
 
-	void readHandle(TRK_RECORD_HANDLE handle);
+    void readHandle(TRK_RECORD_HANDLE handle, bool force=false);
     void readFieldValue(TRK_RECORD_HANDLE handle, TRK_VID vid);
     int links;
     //NotesCol addedNotes;
     QList<int> deletedNotes;
+    // void needRecHandle();
+    // void freeRecHandle();
+    bool readed;
+    void readFullRecord();
 public:
     TrkToolRecord(TrkToolProject *parent=0, TRK_RECORD_TYPE rtype=TRK_SCR_TYPE);
     TrkToolRecord(const TrkToolRecord& src);
@@ -704,8 +767,8 @@ public:
         return prj!=0;
     }
 
-    Q_INVOKABLE QVariant value(const QString& fieldName, int role = Qt::DisplayRole) const;
-    Q_INVOKABLE QVariant value(TRK_VID vid, int role = Qt::DisplayRole) const;
+    Q_INVOKABLE QVariant value(const QString& fieldName, int role = Qt::DisplayRole);
+    Q_INVOKABLE QVariant value(TRK_VID vid, int role = Qt::DisplayRole);
 	TrkToolRecord::RecMode mode() const { return recMode; }
     Q_INVOKABLE TRK_UINT recordId() const { return values[VID_Id].toUInt(); }
     Q_INVOKABLE void setValue(const QString& fieldName, const QVariant& value, int role = Qt::EditRole);
@@ -713,7 +776,7 @@ public:
     Q_INVOKABLE bool updateBegin();
     Q_INVOKABLE bool commit();
     Q_INVOKABLE bool cancel();
-    QDomDocument toXML() const;
+    QDomDocument toXML();
     Q_INVOKABLE QString toHTML(const QString &xqCodeFile);
     Q_INVOKABLE QStringList historyList() const;
     QString description() const;

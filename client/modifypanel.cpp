@@ -143,7 +143,7 @@ void ModifyPanel::selectedRecordsChanged(const QList<TrkToolRecord *> newSelecti
     fillValues(newSelection);
 }
 
-void ModifyPanel::fillValues(const TrkToolRecord * rec)
+void ModifyPanel::fillValues( TrkToolRecord * rec)
 {
     for(int r = 0; r<rows.count(); r++)
     {

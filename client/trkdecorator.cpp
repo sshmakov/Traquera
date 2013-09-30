@@ -24,7 +24,7 @@ void TrkDecorator::fillEditPanels(QTabWidget *tabs, const RecordTypeDef * recDef
     //QList<EditDef> edits;
     //const QStringList & fieldList = record->fields();
 
-    if(def.isFilled && def.recType == recDef->recType)
+    if(def.isFilled && def.recType == recDef->recordType())
         return;
     def.onlyView = onlyView;
     clearEdits(tabs, def);
@@ -38,7 +38,7 @@ void TrkDecorator::fillEditPanels(QTabWidget *tabs, const RecordTypeDef * recDef
     if(doc.isNull())
         return ;
 
-    QStringList fieldList = recDef->getFieldList();
+    QStringList fieldList = recDef->fieldNames();
 
 
     QDomElement panels = doc.firstChildElement("panels");
@@ -292,7 +292,7 @@ FieldGroupsDef TrkDecorator::loadGroups(const RecordTypeDef *recDef)
     if(doc.isNull())
         return res;
 
-    QStringList fieldList = recDef->getFieldList();
+    QStringList fieldList = recDef->fieldNames();
     QDomElement panels = doc.firstChildElement("panels");
     if(!panels.isNull())
     {

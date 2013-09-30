@@ -5,7 +5,9 @@
 #include <QtNetwork>
 #include "main.h"
 
+#ifdef USE_VLD
 #include <vld.h>
+#endif
 
 
 int main(int argc, char *argv[])

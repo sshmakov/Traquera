@@ -42,6 +42,9 @@ OTHER_FILES += \
     trindex.ini
 
 build_pass:CONFIG(debug, debug|release) {
+    DEFINES += USE_VLD
     win32: INCLUDEPATH += "C:/Program Files (x86)/Visual Leak Detector/include"
     win32: LIBS += -L"C:/Program Files (x86)/Visual Leak Detector/lib/win32"
+} else {
+    DEFINES -= USE_VLD
 }

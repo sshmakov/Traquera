@@ -585,7 +585,7 @@ QString QueryPage::makeRecordsPage(const QList<TrkToolRecord *> &records, const 
     QDomDocument xml("records");
     QDomElement root=xml.createElement("records");
     xml.appendChild(root);
-    foreach(const TrkToolRecord *rec, records)
+    foreach( TrkToolRecord *rec, records)
     {
         QDomDocument recxml = rec->toXML();
         root.appendChild(recxml);
@@ -1188,7 +1188,7 @@ TrkToolRecord *QueryPage::currentRecord()
 void QueryPage::on_actionAdd_Note_triggered()
 {
     NoteDialog *nd=new NoteDialog();
-    nd->titleEdit->addItems(tmodel->typeDef()->prj->noteTitles);
+    nd->titleEdit->addItems(tmodel->typeDef()->project()->noteTitles);
     if(settings->contains("LastNote"))
         nd->titleEdit->setEditText(settings->value("LastNote").toString());
     if(nd->exec())

@@ -1020,13 +1020,10 @@ TrkToolModel::TrkToolModel(TrkToolProject *project, TRK_RECORD_TYPE type, QObjec
 {
     //char name[1024];
     //strncpy(name, prj->fields[rectype][VID_Id].name.toLocal8Bit().constData(), sizeof(name));
-    idFieldName = prj->recordDef[rectype]->fieldDefs[VID_Id].name; //.toLocal8Bit().constData();
+    idFieldName = prj->recordDef[rectype]->fieldName(VID_Id); //.toLocal8Bit().constData();
 	QHash<TRK_VID, TrkFieldDef>::const_iterator fi;
-    for(fi = prj->recordDef[rectype]->fieldDefs.constBegin(); fi!= prj->recordDef[rectype]->fieldDefs.constEnd(); ++fi)
-	{
-		headers << fi.value().name;
-		vids << fi.key();
-	}
+    headers = prj->recordDef[rectype]->fieldNames();
+    vids = prj->recordDef[rectype]->fieldIds();
     idCol = vids.indexOf(VID_Id);
     connect(project,SIGNAL(recordChanged(int)),this,SLOT(recordChanged(int)));
 }
@@ -1073,7 +1070,6 @@ bool TrkToolModel::openIds(const QList<int> &ids)
     QList <int> unique = uniqueIntList(ids);
 	TRK_RECORD_HANDLE recHandle;
     rc = isTrkOK(TrkRecordHandleAlloc(prj->handle, &recHandle));
-    bool res =rc;
     if(rc)
     {
         prevTransId=0;
@@ -1100,7 +1096,7 @@ bool TrkToolModel::appendRecord(TRK_RECORD_HANDLE recHandle)
     if(rowOfRecordId(Id)!=-1)
         return false;
 	TrkToolRecord *rec = new TrkToolRecord(prj, rectype);
-	rec->readHandle(recHandle);
+    rec->readHandle(recHandle); // no immediate read
 	append(rec);
     rec->addLink();
     connect(rec,SIGNAL(changed(int)),this,SLOT(recordChanged(int)));
@@ -1391,12 +1387,7 @@ TrkToolRecord::TrkToolRecord(TrkToolProject *parent, TRK_RECORD_TYPE rtype)
       lockHandle(0), fieldList(), links(0)
       //addedNotes()
 {
-    const TrkIntDef & def = prj->recordDef[rectype]->fieldDefs;
-	QHash<TRK_VID, TrkFieldDef>::const_iterator fd;
-	for(fd = def.constBegin(); fd != def.constEnd(); fd++)
-	{
-		fieldList.append(fd.value().name);
-    }
+    fieldList = prj->recordDef[rectype]->fieldNames();
 }
 
 TrkToolRecord::TrkToolRecord(const TrkToolRecord &src)
@@ -1404,12 +1395,7 @@ TrkToolRecord::TrkToolRecord(const TrkToolRecord &src)
       lockHandle(0), fieldList(), links(0)
       //addedNotes()
 {
-    const TrkIntDef & def = prj->recordDef[rectype]->fieldDefs;
-    QHash<TRK_VID, TrkFieldDef>::const_iterator fd;
-    for(fd = def.constBegin(); fd != def.constEnd(); fd++)
-    {
-        fieldList.append(fd.value().name);
-    }
+    fieldList = prj->recordDef[rectype]->fieldNames();
 }
 
 
@@ -1422,12 +1408,7 @@ TrkToolRecord &TrkToolRecord::operator =(const TrkToolRecord &src)
     fieldList.clear();
     links = 0;
 
-    const TrkIntDef & def = prj->recordDef[rectype]->fieldDefs;
-    QHash<TRK_VID, TrkFieldDef>::const_iterator fd;
-    for(fd = def.constBegin(); fd != def.constEnd(); fd++)
-    {
-        fieldList.append(fd.value().name);
-    }
+    fieldList = prj->recordDef[rectype]->fieldNames();
     return *this;
 }
 
@@ -1443,14 +1424,16 @@ TrkToolRecord::~TrkToolRecord()
     //QObject::~QObject();
 }
 
-QVariant TrkToolRecord::value(const QString& fieldName, int role) const
+QVariant TrkToolRecord::value(const QString& fieldName, int role)
 {
 	TRK_VID vid = prj->fieldName2VID(rectype, fieldName);
     return value(vid, role);
 }
 
-QVariant TrkToolRecord::value(TRK_VID vid, int role) const
+QVariant TrkToolRecord::value(TRK_VID vid, int role)
 {
+    if(!values.contains(vid))
+        readFullRecord();
     QVariant v = values[vid];
     if(role == Qt::DisplayRole)
     {
@@ -1489,7 +1472,7 @@ bool TrkToolRecord::updateBegin()
 			return false;
     if(!isTrkOK(TrkGetSingleRecord(lockHandle, recordId(), rectype)))
 		return false;
-	readHandle(lockHandle);
+    readHandle(lockHandle,true);
     if(!isTrkOK(TrkUpdateRecordBegin(lockHandle)))
 		return false;
 	recMode = Edit;
@@ -1506,7 +1489,7 @@ bool TrkToolRecord::commit()
 			res = TrkUpdateRecordCommit(lockHandle, &lastTransaction);
             if(isTrkOK(res))
 			{
-				readHandle(lockHandle);
+                readHandle(lockHandle,true);
 				TrkRecordHandleFree(&lockHandle);
 				lockHandle=0;
 				recMode = View;
@@ -1521,7 +1504,7 @@ bool TrkToolRecord::commit()
 			res = TrkNewRecordCommit(lockHandle, &lastTransaction);
             if(isTrkOK(res))
 			{
-                readHandle(lockHandle);
+                readHandle(lockHandle,true);
                 TrkRecordHandleFree(&lockHandle);
                 lockHandle=0;
 				recMode = View;
@@ -1548,7 +1531,7 @@ bool TrkToolRecord::cancel()
     if(recMode != View && isTrkOK(TrkRecordCancelTransaction(lockHandle)))
 	{
 		if(recMode == Edit)
-			readHandle(lockHandle);
+            readHandle(lockHandle,true);
 		TrkRecordHandleFree(&lockHandle);
 		lockHandle=0;
         //addedNotes.clear();
@@ -1561,54 +1544,35 @@ bool TrkToolRecord::cancel()
 	return false;
 }
 
-void TrkToolRecord::readHandle(TRK_RECORD_HANDLE handle)
+void TrkToolRecord::readHandle(TRK_RECORD_HANDLE handle, bool force)
 {
+    readed = false;
     //char buf[1024];
-    QHash<TRK_VID, TrkFieldDef>::const_iterator fi;
-    for(fi = prj->recordDef[rectype]->fieldDefs.constBegin(); fi!= prj->recordDef[rectype]->fieldDefs.constEnd(); ++fi)
-	{
-        TRK_VID vid = fi.key();
+    //TRK_VID v = prj->recordDef[rectype]->fieldVid(VID_Id);
+    readFieldValue(handle, VID_Id);
+    if(!force)
+        return;
+    QList<int> vids = prj->recordDef[rectype]->fieldIds();
+    foreach(int vid, vids)
         readFieldValue(handle, vid);
-        /*
-        TrkFieldDef def = fi.value();
-        switch(def.fType)
-		{
-        case TRK_FIELD_TYPE_DATE:
-            if(isTrkOK(TrkGetStringFieldValue(handle, def.name.toLocal8Bit().constData(), sizeof(buf), buf)))
-            {
-                QDateTime dt = QDateTime::fromString(QString::fromLocal8Bit(buf),TT_DATETIME_FORMAT);
-                values[vid] = QVariant::fromValue<QDateTime>(dt);
-            }
-            break;
-        //case TRK_FIELD_TYPE_NONE:
-		case TRK_FIELD_TYPE_CHOICE:
-		case TRK_FIELD_TYPE_SUBMITTER:
-		case TRK_FIELD_TYPE_OWNER:
-		case TRK_FIELD_TYPE_USER:
-		case TRK_FIELD_TYPE_ELAPSED_TIME:
-		case TRK_FIELD_TYPE_STATE:
-		case TRK_FIELD_TYPE_STRING:
-            if(isTrkOK(TrkGetStringFieldValue(handle, def.name.toLocal8Bit().constData(), sizeof(buf), buf)))
-				values[vid] = QVariant::fromValue<QString>(QString::fromLocal8Bit(buf));
-			break;
-		case TRK_FIELD_TYPE_NUMBER:
-			TRK_UINT value;
-            if(isTrkOK(TrkGetNumericFieldValue(handle, def.name.toLocal8Bit().constData(), &value)))
-				values[vid] = QVariant::fromValue<int>(value);
-			break;
-		}
-        */
-    }
+
+//    QHash<TRK_VID, TrkFieldDef>::const_iterator fi;
+//    for(fi = prj->recordDef[rectype]->fieldDefs.constBegin(); fi!= prj->recordDef[rectype]->fieldDefs.constEnd(); ++fi)
+//	{
+//        TRK_VID vid = fi.key();
+//        readFieldValue(handle, vid);
+//    }
 }
 
 void TrkToolRecord::readFieldValue(TRK_RECORD_HANDLE handle, TRK_VID vid)
 {
     char buf[1024];
-    const TrkFieldDef &def = prj->recordDef[rectype]->fieldDefs[vid];
-    switch(def.fType)
+    TRK_FIELD_TYPE fType = prj->recordDef[rectype]->fieldType(vid);
+    QString fname = prj->recordDef[rectype]->fieldName(vid);
+    switch(fType)
     {
     case TRK_FIELD_TYPE_DATE:
-        if(isTrkOK(TrkGetStringFieldValue(handle, def.name.toLocal8Bit().constData(), sizeof(buf), buf)))
+        if(isTrkOK(TrkGetStringFieldValue(handle, fname.toLocal8Bit().constData(), sizeof(buf), buf)))
         {
             QDateTime dt = QDateTime::fromString(QString::fromLocal8Bit(buf),TT_DATETIME_FORMAT);
             values[vid] = QVariant::fromValue<QDateTime>(dt);
@@ -1622,16 +1586,50 @@ void TrkToolRecord::readFieldValue(TRK_RECORD_HANDLE handle, TRK_VID vid)
     case TRK_FIELD_TYPE_ELAPSED_TIME:
     case TRK_FIELD_TYPE_STATE:
     case TRK_FIELD_TYPE_STRING:
-        if(isTrkOK(TrkGetStringFieldValue(handle, def.name.toLocal8Bit().constData(), sizeof(buf), buf)))
+        if(isTrkOK(TrkGetStringFieldValue(handle, fname.toLocal8Bit().constData(), sizeof(buf), buf)))
             values[vid] = QVariant::fromValue<QString>(QString::fromLocal8Bit(buf));
         break;
     case TRK_FIELD_TYPE_NUMBER:
         TRK_UINT value;
-        if(isTrkOK(TrkGetNumericFieldValue(handle, def.name.toLocal8Bit().constData(), &value)))
+        if(isTrkOK(TrkGetNumericFieldValue(handle, fname.toLocal8Bit().constData(), &value)))
             values[vid] = QVariant::fromValue<int>(value);
         break;
     }
 }
+
+void TrkToolRecord::readFullRecord()
+{
+    bool ch=!lockHandle;
+    TRK_RECORD_HANDLE handle;
+    if(ch)
+    {
+        if(!isTrkOK(TrkRecordHandleAlloc(prj->handle, &handle)))
+            return;
+    }
+    else
+        handle=lockHandle;
+    if(isTrkOK(TrkGetSingleRecord(handle, recordId(), rectype)))
+    {
+        readHandle(handle,true);
+    }
+    if(ch)
+        TrkRecordHandleFree(&handle);
+}
+
+//void TrkToolRecord::needRecHandle()
+//{
+//    if(!recHandle)
+//        isTrkOK(TrkRecordHandleAlloc(prj->handle, &recHandle));
+//}
+
+//void TrkToolRecord::freeRecHandle()
+//{
+//    if(recHandle)
+//    {
+//        TrkRecordHandleFree(&recHandle);
+//        recHandle = 0;
+//    }
+//}
 
 QList<TrkToolFile> TrkToolRecord::fileList()
 {
@@ -1724,13 +1722,14 @@ void TrkToolRecord::refresh()
 
 void TrkToolRecord::setValue(const QString& fieldName, const QVariant& value, int role)
 {
+    Q_UNUSED(role)
 	if(recMode != Edit && recMode !=Insert)
 		return;
 	TRK_VID vid = prj->fieldName2VID(rectype, fieldName);
-    TrkFieldDef def = prj->recordDef[rectype]->fieldDefs[vid];
+    const TrkFieldDef *def = prj->recordDef[rectype]->fieldVidDef(vid);
     QString s;
     QDateTime dt;
-    switch(def.fType)
+    switch(def->fType)
 	{
     case TRK_FIELD_TYPE_DATE:
         dt = value.toDateTime();
@@ -1774,17 +1773,19 @@ void TrkToolRecord::setValue(const QString& fieldName, const QVariant& value, in
 	}
 }
 
-QDomDocument TrkToolRecord::toXML() const
+QDomDocument TrkToolRecord::toXML()
 {
 	QDomDocument xml("scr");
 	QDomElement root=xml.createElement("scr");
 	xml.appendChild(root);
 	QDomElement flds =xml.createElement("fields");
-	QHash<TRK_VID, TrkFieldDef>::const_iterator fi;
-    for(fi = prj->recordDef[rectype]->fieldDefs.constBegin(); fi!= prj->recordDef[rectype]->fieldDefs.constEnd(); ++fi)
+    QHash<TRK_VID, TrkFieldDef>::const_iterator fi;
+    QList<TRK_VID> vids = prj->recordDef[rectype]->fieldVids();
+    foreach(TRK_VID vid, vids) //fi = prj->recordDef[rectype]->fieldDefs.constBegin(); fi!= prj->recordDef[rectype]->fieldDefs.constEnd(); ++fi)
 	{
-		QString fname = fi.value().name;
-		TRK_VID vid = fi.key();
+        //QString fname = fi.value().name;
+        //TRK_VID vid = fi.key();
+        QString fname = prj->recordDef[rectype]->fieldName(vid);
         QVariant ftext = value(vid,Qt::DisplayRole);
         QVariant fvalue = value(vid,Qt::EditRole);
 
@@ -2303,7 +2304,7 @@ const ChoiceList &TrkFieldDef::choiceList() const
 
     if(recDef && !p_choiceList->count())
     {
-        ChoiceList *list = recDef->prj->fieldChoiceList(name, recDef->recType);
+        const ChoiceList &list = recDef->choiceList(name);
         p_choiceList->clear();
         if(isNullable())
         {
@@ -2312,8 +2313,7 @@ const ChoiceList &TrkFieldDef::choiceList() const
             ch.fieldValue=QVariant();
             p_choiceList->append(ch); // leak 24 bytes
         }
-        p_choiceList->append(*list);// leak 24 bytes
-        delete list;
+        p_choiceList->append(list);// leak 24 bytes
     }
     return *p_choiceList;
 }
@@ -2370,7 +2370,7 @@ QString TrkFieldDef::valueToDisplay(const QVariant &value) const
     case TRK_FIELD_TYPE_OWNER:
     case TRK_FIELD_TYPE_USER:
     {
-        return recDef->prj->userFullName(value.toString());
+        return recDef->project()->userFullName(value.toString());
     }
 
     }
@@ -2433,6 +2433,13 @@ bool RecordTypeDef::canFieldUpdate(const QString &name) const
     return prj->canFieldUpdate(name, recType);
 }
 
+const ChoiceList &RecordTypeDef::choiceList(const QString &fieldName)
+{
+    TRK_VID vid = nameVids.contains(fieldName) ? nameVids[fieldName] : -1;
+    if(vid == -1)
+        return emptyChoices;
+    return *prj->fieldChoiceList(fieldName, recType);
+}
 
 TrkScopeRecHandle::TrkScopeRecHandle(TRK_HANDLE prjHandle)
     :handle(0)

@@ -44,7 +44,7 @@ public:
     void setQueryPage(QueryPage *page);
     void setModel(TrkToolModel *newModel);
     void loadDefinitions(const RecordTypeDef *typeDef);
-    void fillValues(const TrkToolRecord *record);
+    void fillValues(TrkToolRecord *record);
     void fillValues(const QList<TrkToolRecord *> records);
     QTableWidget *tableWidget();
     const ModifyRow &fieldRow(int row)
