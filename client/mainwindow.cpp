@@ -79,7 +79,15 @@ MainWindow::MainWindow(QWidget *parent)
     //connect(queriesView,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(openQuery(QModelIndex)));
     //connect(planListView,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(openProject(QModelIndex)));
 
+    tabWidget->setTabsClosable(false);
+    QToolButton *closeBtn = new QToolButton(this);
+    closeBtn->setIcon(QIcon(":/images/closetab_1.png"));
+    closeBtn->setShortcut(QKeySequence(tr("Ctrl+F4","Tab|Close")));
+    closeBtn->setAutoRaise(true);
+    tabWidget->setCornerWidget(closeBtn);
+
 	connect(tabWidget,SIGNAL(tabCloseRequested(int)),this,SLOT(closeTab(int)));
+    connect(closeBtn,SIGNAL(clicked()),this,SLOT(closeCurTab()));
 
     //createConnection();
 	//trkdb = new TrkDb();
@@ -842,13 +850,20 @@ void MainWindow::readModifications()
 
 void MainWindow::closeTab(int index)
 {
-	QObject *w = tabWidget->widget(index);
+    QObject *w;
+    w = tabWidget->widget(index);
 	QueryPage *qpage = qobject_cast<QueryPage *>(w);
 	ProjectPage *ppage = qobject_cast<ProjectPage *>(w);
 	if(!qpage && !ppage)
 		return;
 	delete w;
-	//tabWidget->removeTab(index);
+    //tabWidget->removeTab(index);
+}
+
+void MainWindow::closeCurTab()
+{
+    int index = tabWidget->currentIndex();
+    closeTab(index);
 }
 
 void MainWindow::about()

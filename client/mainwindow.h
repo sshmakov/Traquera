@@ -75,7 +75,8 @@ public slots:
     void connectTracker();
     void setDbmsType();
     void setProject();
-	void closeTab(int index);
+    void closeTab(int index);
+    void closeCurTab();
 	void sendEmail();
     void loadSettings();
     void saveSettings();

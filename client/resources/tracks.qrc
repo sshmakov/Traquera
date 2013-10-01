@@ -37,6 +37,7 @@
         <file>file.png</file>
         <file>plan.png</file>
         <file>trackerTable.png</file>
+        <file>closetab_1.png</file>
     </qresource>
     <qresource prefix="/sql">
         <file>upgrade1.sql</file>
