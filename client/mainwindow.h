@@ -56,6 +56,8 @@ private:
     QComboBox *openIdEdit;
     UnionModel *treeModel;
     QLabel *statusLine;
+    QProgressBar *progressBar;
+    int progressLevel;
     QNetworkAccessManager *am;
 //    QString solrUrl;
 public slots:
@@ -80,6 +82,8 @@ public slots:
 	void sendEmail();
     void loadSettings();
     void saveSettings();
+    void showProgressBar();
+    void hideProgressBar();
 public:
 	void initProjectModel();
     //QMenu MainWindow::planMenu(bool forLink=false);
@@ -92,7 +96,7 @@ public:
     void openCurItem(bool reuse);
     void calcCountRecords();
     ProjectPage *openPlanPage(const QString &fileName);
-    void findTrkRecords(const QString &line);
+    void findTrkRecords(const QString &line, bool reuse=true);
 protected:
     QMenu *menuQueryList;
     QMenu *menuId;

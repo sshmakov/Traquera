@@ -264,6 +264,9 @@
    <property name="text">
     <string>Копировать номера запросов</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+C</string>
+   </property>
    <property name="shortcutContext">
     <enum>Qt::WindowShortcut</enum>
    </property>
@@ -296,6 +299,9 @@
    <property name="shortcut">
     <string>Shift+F5</string>
    </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetShortcut</enum>
+   </property>
   </action>
   <action name="actionDeleteFromFolder">
    <property name="text">
@@ -303,6 +309,9 @@
    </property>
    <property name="shortcut">
     <string>F8</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetShortcut</enum>
    </property>
   </action>
   <action name="actionTest">
@@ -316,6 +325,45 @@
    </property>
    <property name="shortcut">
     <string>Ins</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetShortcut</enum>
+   </property>
+  </action>
+  <action name="actionCopyRecords">
+   <property name="text">
+    <string>Копировать запросы</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+C</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetShortcut</enum>
+   </property>
+  </action>
+  <action name="actionCopyMarkedId">
+   <property name="text">
+    <string>Копировать номера запросов</string>
+   </property>
+  </action>
+  <action name="actionCopyMarkedTable">
+   <property name="text">
+    <string>Копировать запросы как таблицу</string>
+   </property>
+  </action>
+  <action name="actionDeleteMarked">
+   <property name="text">
+    <string>Удалить из списка</string>
+   </property>
+  </action>
+  <action name="actionSelectMarked">
+   <property name="text">
+    <string>Выделить</string>
+   </property>
+  </action>
+  <action name="actionCopyMarkedRecords">
+   <property name="text">
+    <string>Копировать запросы</string>
    </property>
   </action>
  </widget>

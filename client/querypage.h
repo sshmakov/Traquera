@@ -74,9 +74,12 @@ public:
     void printPreview();
     QModelIndexList selectedRows();
     QList<TrkToolRecord *> selectedRecords();
+    QList<TrkToolRecord *> allRecords();
+    QList<TrkToolRecord *> markedRecords();
     TrkToolRecord *currentRecord();
     TrkToolRecord *recordOnIndex(const QModelIndex &index);
     void initWidgets();
+    bool hasMarked();
 protected:
 	QList<QAction*> headerActions;
 	void initPopupMenu();
@@ -131,6 +134,8 @@ private slots:
     void on_actionFilter_toggled(bool arg1);
     void on_filterFieldComboBox_currentIndexChanged(int index);
     void on_actionCopyId_triggered();
+    void on_actionCopyTable_triggered();
+    void on_actionCopyRecords_triggered();
     void on_actionSelectRecords_triggered();
     void on_actionDeselectRecords_triggered();
     void on_actionDeleteFromList_triggered();
@@ -143,6 +148,11 @@ private slots:
     void on_actionSelectTrigger_triggered();
     void slotCheckPlannedIds();
     void slotCheckNoPlannedIds();
+    void on_actionCopyMarkedId_triggered();
+    void on_actionCopyMarkedTable_triggered();
+    void on_actionDeleteMarked_triggered();
+    void on_actionSelectMarked_triggered();
+    void on_actionCopyMarkedRecords_triggered();
 };
 
 #endif //_QUERYPAGE_H_

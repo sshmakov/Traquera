@@ -40,6 +40,13 @@ MainWindow::MainWindow(QWidget *parent)
     am = new QNetworkAccessManager(this);
     connect(am,SIGNAL(finished(QNetworkReply*)),SLOT(finishedSearch(QNetworkReply*)));
     //solrUrl = "http://localhost:8983/solr/collection1/select?q=%1&fl=Id_i&wt=xml&defType=edismax&qf=Description_t+note_txt&stopwords=true&lowercaseOperators=true";
+    progressBar = new QProgressBar(this);
+    progressBar->setTextVisible(false);
+    progressBar->setMaximumWidth(100);
+    progressBar->setValue(100);
+    progressBar->setVisible(false);
+    progressLevel = 0;
+    statusBar()->addPermanentWidget(progressBar);
     statusBar()->addPermanentWidget(statusLine);
     //splitterMain->setStretchFactor(1,2);
     //QSizePolicy policy = tabWidget->sizePolicy();
@@ -49,7 +56,7 @@ MainWindow::MainWindow(QWidget *parent)
     sysMessager = new Messager(this);
     //toolBox->setCurrentIndex(0);
     journal = 0;
-	setWindowTitle("TrackTasks");
+    setWindowTitle("Traquera");
 #ifdef DECORATOR
     decorator = new TrkDecorator(this);
 #endif
@@ -184,7 +191,19 @@ void MainWindow::saveSettings()
             settings->setValue(QString::number(i) + ".RO", projects->plans[i].readOnly);
         }
 	}
-	settings->endGroup();
+    settings->endGroup();
+}
+
+void MainWindow::showProgressBar()
+{
+    progressBar->setVisible(true);
+    progressLevel++;
+}
+
+void MainWindow::hideProgressBar()
+{
+    if(--progressLevel <= 0)
+        progressBar->setVisible(false);
 }
 
 void MainWindow::makeMenus()
@@ -212,7 +231,7 @@ void MainWindow::setupToolbar()
 
     //Добавляем строку поиска по Id
     toolBar_2->addSeparator();
-    QLabel *idLabel = new QLabel("&Id: ",this);
+    QLabel *idLabel = new QLabel(tr("&Id или текст: "),this);
     toolBar_2->addWidget(idLabel);
     toolBar_2->addWidget(openIdEdit);
     idLabel->setBuddy(openIdEdit);
@@ -328,7 +347,14 @@ void MainWindow::idEntered()
 void MainWindow::idEnteredNewPage()
 {
     QString s = openIdEdit->currentText().trimmed();
-    openQueryById(s,false);
+    if(s.isEmpty())
+        return;
+    bool ok;
+    s.left(1).toInt(&ok);
+    if(ok)
+        openQueryById(s,false);
+    else
+        findTrkRecords(s,false);
     saveIdsToList(s);
 }
 
@@ -451,36 +477,41 @@ void MainWindow::finishedSearch(QNetworkReply *reply)
     if(reply->error())
     {
         ttglobal()->showError("No connect to index");
-        return;
     }
-    QString query(reply->request().rawHeader("QueryString").constData());
-    if(query.isEmpty())
-        query = tr("Search");
-    QXmlInputSource source(reply);
-    QDomDocument dom;
-    if(!dom.setContent(&source,false))
+    else
     {
-        ttglobal()->showError("Query error");
-        return;
+        QString query(reply->request().rawHeader("QueryString").constData());
+        bool reuse = QVariant(reply->request().rawHeader("ReuseWindow")).toBool();
+        if(query.isEmpty())
+            query = tr("Search");
+        QXmlInputSource source(reply);
+        QDomDocument dom;
+        if(!dom.setContent(&source,false))
+            ttglobal()->showError("Query error");
+        else
+        {
+            QDomElement resDoc = dom.documentElement();
+            if(!resDoc.isNull())
+            {
+                QDomElement result = resDoc.firstChildElement("result");
+                ScrSet ids;
+                for(QDomElement doc = result.firstChildElement("doc");
+                    !doc.isNull();
+                    doc = doc.nextSiblingElement("doc"))
+                {
+                    QDomElement idNode = doc.firstChildElement("int");
+                    QString s = idNode.text();
+                    bool ok;
+                    int id = s.toInt(&ok);
+                    if(!ok)
+                        continue;
+                    ids << id;
+                }
+                openQueryById(ids.toList(),query,reuse);
+            }
+        }
     }
-    QDomElement resDoc = dom.documentElement();
-    if(resDoc.isNull())
-        return;
-    QDomElement result = resDoc.firstChildElement("result");
-    ScrSet ids;
-    for(QDomElement doc = result.firstChildElement("doc");
-        !doc.isNull();
-        doc = doc.nextSiblingElement("doc"))
-    {
-        QDomElement idNode = doc.firstChildElement("int");
-        QString s = idNode.text();
-        bool ok;
-        int id = s.toInt(&ok);
-        if(!ok)
-            continue;
-        ids << id;
-    }
-    openQueryById(ids.toList(),query,true);
+    hideProgressBar();
 }
 
 void MainWindow::calcCountRecords()
@@ -657,7 +688,9 @@ void MainWindow::openQueryById(const QString &numbers, bool reusePage)
         tabWidget->setTabText(tabWidget->currentIndex(),minTitle(numbers));
     else
         page = createNewPage(minTitle(numbers));
+    showProgressBar();
     page->openIds(trkproject, numbers, numbers);
+    hideProgressBar();
 }
 
 void MainWindow::openQueryById(const QList<int> &idList, const QString &title, bool reusePage)
@@ -670,7 +703,9 @@ void MainWindow::openQueryById(const QList<int> &idList, const QString &title, b
         page = createNewPage(minTitle(newTitle));
     else
         tabWidget->setTabText(tabWidget->currentIndex(),minTitle(newTitle));
+    showProgressBar();
     page->openIds(trkproject,idList,title);
+    hideProgressBar();
 }
 
 QueryPage *MainWindow::createNewPage(const QString &title)
@@ -719,7 +754,7 @@ ProjectPage *MainWindow::openPlanPage(const QString& fileName)
     return page;
 }
 
-void MainWindow::findTrkRecords(const QString &line)
+void MainWindow::findTrkRecords(const QString &line, bool reuse)
 {
     QFile file("data/init.xml");
     QXmlInputSource *source = new QXmlInputSource(&file);
@@ -736,11 +771,15 @@ void MainWindow::findTrkRecords(const QString &line)
         return;
     QDomElement params = trindex.firstChildElement("params");
     QUrl solrUrl(href);
+    QString prj = trkproject->name;
+    prj.replace(" ","_");
     QDomNamedNodeMap pmap = params.attributes();
     for(int i=0; i<pmap.count(); i++)
     {
         QDomNode n = pmap.item(i);
-        solrUrl.addQueryItem(n.nodeName(), n.nodeValue());
+        QString value = n.nodeValue();
+        value.replace("{project}",prj);
+        solrUrl.addQueryItem(n.nodeName(), value);
     }
     QString queryText = line;
     queryText.replace(' ',"+");
@@ -750,6 +789,8 @@ void MainWindow::findTrkRecords(const QString &line)
     req.setUrl(solrUrl);
     req.setHeader(QNetworkRequest::ContentTypeHeader,"application/xml");
     req.setRawHeader("QueryString", line.toLocal8Bit().constData());
+    req.setRawHeader("ReuseWindow", QVariant(reuse).toString().toLocal8Bit().constData());
+    showProgressBar();
     am->post(req,line.toLocal8Bit().constData());
 }
 

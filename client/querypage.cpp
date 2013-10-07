@@ -33,6 +33,7 @@
 #include "ttglobal.h"
 #include "ttfileiconprovider.h"
 #include "preview.h"
+#include "cliputil.h"
 //#include <Shlwapi.h>
 
 QueryPage::QueryPage(QWidget *parent)
@@ -41,6 +42,7 @@ QueryPage::QueryPage(QWidget *parent)
     , planViewModel(this)
 	, history()
     , itIsFolder(false)
+    , isInteractive(true)
 {
     setupUi(this);
     initWidgets();
@@ -132,6 +134,7 @@ void QueryPage::initWidgets()
     planTreeView->setObjectName(QString::fromUtf8("planTreeView"));
     planTreeView->setSelectionMode(QAbstractItemView::ContiguousSelection);
     planTreeView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    //planTreeView->setAlternatingRowColors(true);
     planTreeView->setIndentation(5);
     subLay->addWidget(planTreeView);
 
@@ -166,6 +169,11 @@ void QueryPage::initWidgets()
             this,SLOT(slotUnsupportedContent(QNetworkReply*)));
     webView_2->page()->setForwardUnsupportedContent(true);
     webView_2->page()->mainFrame()->setUrl(QUrl("about:blank"));
+}
+
+bool QueryPage::hasMarked()
+{
+    return !markedRecords().isEmpty();
 }
 
 void QueryPage::closeTab(int index)
@@ -460,17 +468,27 @@ void QueryPage::headerChanged()
 void QueryPage::initPopupMenu()
 {
 	QHeaderView *hv=queryView->horizontalHeader();
-	for(int i=0; i<hv->count(); i++)
+    QHash<QString, int> fieldPos;
+    QStringList labels;
+    for(int i=0; i<hv->count(); i++)
+    {
+        QString label = queryView->model()->headerData(i,Qt::Horizontal).toString().trimmed();
+        fieldPos[label] = i;
+        labels << label;
+    }
+    labels.sort();
+    for(int i=0; i<labels.count(); i++)
 	{
-		QString label = queryView->model()->headerData(i,Qt::Horizontal).toString().trimmed(); 
+        QString label = labels[i];
+        int pos = fieldPos[label];
         QAction *action = new QAction(label,this);
 		action->setCheckable(true);
-		action->setChecked(!hv->isSectionHidden(i));
+        action->setChecked(!hv->isSectionHidden(pos));
+        action->setProperty("HeaderPos", pos);
 		connect(action,SIGNAL(toggled(bool)),this,SLOT(headerToggled(bool)));
 		//hv->addAction(action);
 		headerActions.append(action);
 	}
-
     hv->addActions(headerActions);
 	hv->setContextMenuPolicy(Qt::ActionsContextMenu);
 }
@@ -480,7 +498,11 @@ void QueryPage::headerToggled(bool checked)
 	QAction *a = qobject_cast<QAction*>(sender());
 	if(a)
 	{
-		int i = headerActions.indexOf(a);
+        bool ok;
+        int i = a->property("HeaderPos").toInt(&ok);
+        if(!ok)
+            return;
+        //int i = headerActions.indexOf(a);
 		if(i>=0)
             if(checked)
             {
@@ -1168,6 +1190,31 @@ QList<TrkToolRecord *> QueryPage::selectedRecords()
     return list;
 }
 
+QList<TrkToolRecord *> QueryPage::allRecords()
+{
+    QList<TrkToolRecord *> list;
+    for(int r=0; r<queryView->model()->rowCount(); r++)
+    {
+        QModelIndex index = queryView->model()->index(r,0);
+        TrkToolRecord *rec = recordOnIndex(index);
+        list << rec;
+    }
+    return list;
+}
+
+QList<TrkToolRecord *> QueryPage::markedRecords()
+{
+    QList<TrkToolRecord *> list;
+    for(int r=0; r<queryView->model()->rowCount(); r++)
+    {
+        QModelIndex index = queryView->model()->index(r,0);
+        TrkToolRecord *rec = recordOnIndex(index);
+        if(rec->isSelected())
+            list << rec;
+    }
+    return list;
+}
+
 TrkToolRecord *QueryPage::currentRecord()
 {
     QModelIndex cur = queryView->currentIndex();
@@ -1393,6 +1440,47 @@ void QueryPage::on_actionCopyId_triggered()
     clipboard->setText(numbers);
 }
 
+void QueryPage::on_actionCopyTable_triggered()
+{
+    QHeaderView *hv=queryView->horizontalHeader();
+    QHash<int, QString> titles;
+    //QStringList labels;
+    for(int i=0; i<hv->count(); i++)
+    {
+        QString label = queryView->model()->headerData(i,Qt::Horizontal).toString().trimmed();
+        if(!hv->isSectionHidden(i))
+            titles[hv->visualIndex(i)] = label;
+    }
+    QStringList labels;
+    foreach(const QString &label, titles)
+        labels << label;
+    QString html = copyRecordsToHTMLTable(selectedRecords(), labels);
+    QMimeData *data = new QMimeData();
+    data->setHtml(html);
+    QClipboard *clipboard = QApplication::clipboard();
+    clipboard->setMimeData(data);
+}
+
+void QueryPage::on_actionCopyRecords_triggered()
+{
+    QList<TrkToolRecord *> records = selectedRecords();
+    if(records.isEmpty())
+        return;
+    QString page = makeRecordsPage(records,"data/print.xq");
+    QMimeData *data = new QMimeData();
+    data->setHtml(page);
+    QClipboard *clipboard = QApplication::clipboard();
+    clipboard->setMimeData(data);
+
+    // old
+    /*
+    QPrintPreviewDialog *ppd = new QPrintPreviewDialog();
+    connect(ppd,SIGNAL(paintRequested(QPrinter*)),webView_2,SLOT(print(QPrinter*)));
+    ppd->exec();
+    delete ppd;
+    */
+}
+
 void QueryPage::on_actionSelectRecords_triggered()
 {
     foreach(TrkToolRecord *rec, selectedRecords())
@@ -1421,6 +1509,67 @@ void QueryPage::on_actionDeselectRecords_triggered()
         */
 }
 
+void QueryPage::on_actionCopyMarkedId_triggered()
+{
+    QStringList numList;
+    QString numbers;
+    foreach(const TrkToolRecord *rec, markedRecords())
+    {
+        int id = rec->recordId();
+        numList.append(QString::number(id));
+    }
+    if(numList.isEmpty())
+        return;
+    numbers = numList.join(", ");
+    QClipboard *clipboard = QApplication::clipboard();
+    clipboard->setText(numbers);
+}
+
+void QueryPage::on_actionCopyMarkedTable_triggered()
+{
+    QHeaderView *hv=queryView->horizontalHeader();
+    QHash<int, QString> titles;
+    //QStringList labels;
+    for(int i=0; i<hv->count(); i++)
+    {
+        QString label = queryView->model()->headerData(i,Qt::Horizontal).toString().trimmed();
+        if(!hv->isSectionHidden(i))
+            titles[hv->visualIndex(i)] = label;
+    }
+    QStringList labels;
+    foreach(const QString &label, titles)
+        labels << label;
+    QString html = copyRecordsToHTMLTable(markedRecords(), labels);
+    QMimeData *data = new QMimeData();
+    data->setHtml(html);
+    QClipboard *clipboard = QApplication::clipboard();
+    clipboard->setMimeData(data);
+}
+
+
+void QueryPage::on_actionCopyMarkedRecords_triggered()
+{
+    QList<TrkToolRecord *> records = markedRecords();
+    if(records.isEmpty())
+        return;
+    QString page = makeRecordsPage(records,"data/print.xq");
+    QMimeData *data = new QMimeData();
+    data->setHtml(page);
+    QClipboard *clipboard = QApplication::clipboard();
+    clipboard->setMimeData(data);
+}
+
+void QueryPage::on_actionDeleteMarked_triggered()
+{
+    foreach(TrkToolRecord *rec, markedRecords())
+        tmodel->removeRecordId(rec->recordId());
+}
+
+void QueryPage::on_actionSelectMarked_triggered()
+{
+
+}
+
 void QueryPage::on_actionDeleteFromList_triggered()
 {
     foreach(TrkToolRecord *rec, selectedRecords())
@@ -1433,8 +1582,21 @@ void QueryPage::on_queryView_customContextMenuRequested(const QPoint &pos)
     //queryView->setContextMenuPolicy(Qt::CustomContextMenu);
     QMenu menu;
     menu.addAction(actionCopyId);
+    menu.addAction(actionCopyTable);
+    menu.addAction(actionCopyRecords);
     menu.addAction(actionSelectRecords);
     menu.addAction(actionDeselectRecords);
+    if(hasMarked())
+    {
+        menu.addSeparator();
+        QMenu *subMenu = menu.addMenu(tr("Отмеченные запросы"));
+        subMenu->addAction(actionCopyMarkedId);
+        subMenu->addAction(actionCopyMarkedTable);
+        subMenu->addAction(actionCopyMarkedRecords);
+        subMenu->addSeparator();
+        subMenu->addAction(actionDeleteMarked);
+    }
+    menu.addSeparator();
     menu.addAction(actionDeleteFromList);
     if(itIsFolder)
     {
@@ -1555,3 +1717,5 @@ void QueryPage::slotCheckNoPlannedIds()
             setIdChecked(id,true);
     }
 }
+
+

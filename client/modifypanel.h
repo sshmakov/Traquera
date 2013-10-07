@@ -51,8 +51,8 @@ public:
     {
         return rows[row];
     }
-    const TrkFieldDef fieldDef(int row) const;
-    const TrkFieldDef fieldDef(const QString &fieldName) const;
+    const TrkFieldType fieldDef(int row) const;
+    const TrkFieldType fieldDef(const QString &fieldName) const;
     void setRowValue(int row, const QVariant &value, int role = Qt::EditRole);
     QString fieldName(const QModelIndex &index);
     QVariant fieldValue(const QString &fieldName);

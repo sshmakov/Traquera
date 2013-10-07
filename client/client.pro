@@ -53,7 +53,8 @@ HEADERS += \
     ../tracker/tracker.h \
     ../common/settings.h \
     ../common/ttutils.h \
-    ../common/ttglobal.h
+    ../common/ttglobal.h \
+    ../common/cliputil.h
 SOURCES += database.cpp main.cpp mainwindow.cpp project.cpp querypage.cpp projectpage.cpp \
 	trklogin.cpp filterpage.cpp flowlayout.cpp plans.cpp planproxy.cpp \
 	scrwidg.cpp \
@@ -74,7 +75,8 @@ SOURCES += database.cpp main.cpp mainwindow.cpp project.cpp querypage.cpp projec
     ../common/ttutils.cpp \
     ../common/ttglobal.cpp \
     ../tracker/trkview.cpp \
-    ../tracker/tracker.cpp
+    ../tracker/tracker.cpp \
+    ../common/cliputil.cpp
 RESOURCES += resources/tracks.qrc
 
 win32: LIBS += -L$$PWD/../trktool/lib/ -ltrktooln -lshell32 -lshlwapi
@@ -94,12 +96,16 @@ OTHER_FILES += \
     data/tracker.xml \
     data/style.css \
     traquera-win.rc \
-    traquera.ico
+    traquera.ico \
+    lang/tracks_ru.ts \
+    lang/tracks_en.ts
 
 
 datafolder.source = data
 datafolder.target = .
-DEPLOYMENTFOLDERS = datafolder
+langfolder.source = lang
+langfolder.target = .
+DEPLOYMENTFOLDERS = datafolder langfolder
 
 include(deploy.pri)
 qtcAddDeployment()

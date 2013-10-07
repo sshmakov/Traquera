@@ -542,24 +542,24 @@ bool TrkToolProject::readDefs()
                 TrkGetFieldIsNullValid(handle,bufname,ri.key(), &nullValid);
                 recordDef[ri.key()]->nameVids[fieldName] = vid;
                 RecordTypeDef *rDef = recordDef[ri.key()];
-                TrkFieldDef id(rDef);
-                id.name = fieldName;
-                id.fType = fType;
-                id.nullable = nullValid;
+                TrkFieldDef *id = new TrkFieldDef(rDef);
+                id->name = fieldName;
+                id->fType = fType;
+                id->nullable = nullValid;
 
                 if(fType == TRK_FIELD_TYPE_NUMBER)
                 {
                     TRK_UINT minV=0, maxV=INT_MAX;
                     if(TRK_SUCCESS == TrkGetFieldRange(handle,bufname,ri.key(),&minV,&maxV))
                     {
-                        id.minValue = minV;
-                        id.maxValue = maxV;
+                        id->minValue = minV;
+                        id->maxValue = maxV;
                     }
                     TRK_UINT v;
                     if(TRK_SUCCESS == TrkGetFieldDefaultNumericValue(handle,bufname,ri.key(),&v))
-                        id.defaultValue = QVariant::fromValue<int>(v);
+                        id->defaultValue = QVariant::fromValue<int>(v);
                     else
-                        id.defaultValue = 0;
+                        id->defaultValue = 0;
                 }
                 if(fType == TRK_FIELD_TYPE_STRING
                         || fType ==  TRK_FIELD_TYPE_SUBMITTER
@@ -571,9 +571,9 @@ bool TrkToolProject::readDefs()
                 {
                     char buf[1024];
                     if(TRK_SUCCESS == TrkGetFieldDefaultStringValue(handle,bufname,ri.key(),sizeof(buf),buf))
-                        id.defaultValue = QString::fromLocal8Bit(buf);
+                        id->defaultValue = QString::fromLocal8Bit(buf);
                     else
-                        id.defaultValue = "";
+                        id->defaultValue = "";
                 }
                 //id.p_choiceList->clear();
                 /*
@@ -743,7 +743,7 @@ ChoiceList *TrkToolProject::fieldChoiceList(const QString &name, TRK_RECORD_TYPE
 TRK_FIELD_TYPE TrkToolProject::fieldType(const QString &name, TRK_RECORD_TYPE recType)
 {
     const RecordTypeDef *rdef = recordDef[recType];
-    TRK_FIELD_TYPE fType = rdef->getFieldDef(name).fType;
+    TRK_FIELD_TYPE fType = rdef->getFieldDef(name).fType();
     return fType;
 }
 
@@ -1437,7 +1437,7 @@ QVariant TrkToolRecord::value(TRK_VID vid, int role)
     QVariant v = values[vid];
     if(role == Qt::DisplayRole)
     {
-        TrkFieldDef fdef = fieldDef(vid);
+        TrkFieldType fdef = fieldDef(vid);
         return fdef.valueToDisplay(v);
     }
 //    if(role == Qt::DisplayRole && v.type() == QMetaType::QDateTime)
@@ -1726,10 +1726,10 @@ void TrkToolRecord::setValue(const QString& fieldName, const QVariant& value, in
 	if(recMode != Edit && recMode !=Insert)
 		return;
 	TRK_VID vid = prj->fieldName2VID(rectype, fieldName);
-    const TrkFieldDef *def = prj->recordDef[rectype]->fieldVidDef(vid);
+    TrkFieldType def = prj->recordDef[rectype]->getFieldDef(vid);
     QString s;
     QDateTime dt;
-    switch(def->fType)
+    switch(def.fType())
 	{
     case TRK_FIELD_TYPE_DATE:
         dt = value.toDateTime();
@@ -2296,6 +2296,8 @@ void TrkQryFilter::setSourceModel(QAbstractItemModel *sourceModel)
     sort(0);
 }
 #endif
+
+ChoiceList TrkFieldDef::emptyChoices;
 
 const ChoiceList &TrkFieldDef::choiceList() const
 {

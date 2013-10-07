@@ -15,15 +15,20 @@ int main(int argc, char *argv[])
     QCoreApplication a(argc, argv);
     QTextCodec::setCodecForCStrings(QTextCodec::codecForName("windows-1251"));
     QTextCodec::setCodecForTr(QTextCodec::codecForName("windows-1251"));
-    MainClass m(&a);
+    QString iniFile;
+    if(argc)
+        iniFile = argv[1];
+    else
+        iniFile = "./trindex.ini";
+    MainClass m(&a,iniFile);
     if(!m.isOk())
         return 1;
     m.start();
     return a.exec();
 }
 
-MainClass::MainClass(QObject *parent)
-    : sout(stdout), sets("./trindex.ini", QSettings::IniFormat)
+MainClass::MainClass(QObject *parent, const QString &iniFile)
+    : QObject(parent), sout(stdout), sets(iniFile, QSettings::IniFormat)
 {
     connect(this,SIGNAL(startProcess()),SLOT(process()),Qt::QueuedConnection);
     connect(this,SIGNAL(next()),SLOT(sendNextRecord()),Qt::QueuedConnection);

@@ -59,7 +59,7 @@ void TrkDecorator::fillEditPanels(QTabWidget *tabs, const RecordTypeDef * recDef
                     QString fname = field.attribute("name");
                     if(!fieldList.contains(fname,Qt::CaseInsensitive))
                         continue;
-                    TrkFieldDef fdef = recDef->getFieldDef(fname);
+                    TrkFieldType fdef = recDef->getFieldDef(fname);
                     EditDef f;
                     QWidget *w;
                     //QLineEdit *ie = 0;
@@ -227,7 +227,7 @@ static int findColumn(QHeaderView *hv, const QString &label)
 void TrkDecorator::loadViewDef(QTableView *view)
 {
     const QString KEY = Settings_Grid;
-    QXmlSimpleReader xmlReader;
+    //QXmlSimpleReader xmlReader;
     QFile *file = new QFile("data/tracker.xml");
     QXmlInputSource *source = new QXmlInputSource(file);
     QDomDocument dom;

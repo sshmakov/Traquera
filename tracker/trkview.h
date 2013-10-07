@@ -83,6 +83,7 @@ class TrkFieldDef {
 protected:
     mutable ChoiceList *p_choiceList;
     RecordTypeDef *recDef;
+    static ChoiceList emptyChoices;
 public:
 	QString name;
     TRK_FIELD_TYPE fType;
@@ -90,8 +91,6 @@ public:
     int minValue;
     int maxValue;
     QVariant defaultValue;
-    const ChoiceList &choiceList() const;
-    QStringList choiceStringList(bool isDisplayText = true) const;
     //const ChoiceList *userList();
 
     TrkFieldDef(RecordTypeDef *recordDef=0)
@@ -128,6 +127,8 @@ public:
         return *this;
     }
 
+    const ChoiceList &choiceList() const;
+    QStringList choiceStringList(bool isDisplayText = true) const;
     bool isChoice() const
     {
         return (fType == TRK_FIELD_TYPE_CHOICE)
@@ -159,9 +160,104 @@ public:
     QVariant displayToValue(const QString &text) const;
 
     friend class TrkToolProject;
+    friend class TrkFieldType;
 };
 
-typedef QHash<TRK_VID, TrkFieldDef> TrkIntDef;
+class TrkFieldType {
+protected:
+    TrkFieldDef *def;
+    TrkFieldType(TrkFieldDef *srcDef):def(srcDef) {}
+    TrkFieldType(TrkFieldDef &srcDef):def(&srcDef) {}
+public:
+    TrkFieldType():def(0) {}
+    TrkFieldType(const TrkFieldType &src)
+        :def(src.def)
+    {}
+    inline bool isValid() const { return def!=0; }
+    TRK_FIELD_TYPE fType() const
+    {
+        if(isValid())
+            return def->fType;
+        return TRK_FIELD_TYPE_NONE;
+    }
+    const ChoiceList &choiceList() const
+    {
+        if(isValid())
+            return def->choiceList();
+        return TrkFieldDef::emptyChoices;
+    }
+    QStringList choiceStringList(bool isDisplayText = true) const
+    {
+        if(isValid())
+            return def->choiceStringList(isDisplayText);
+        return QStringList();
+    }
+    inline bool isChoice() const
+    {
+        if(isValid())
+            return def->isChoice();
+        return false;
+    }
+    inline bool isUser() const
+    {
+        if(isValid())
+            return def->isUser();
+        return false;
+    }
+    inline bool isNullable() const
+    {
+        if(isValid())
+            return def->isNullable();
+        return false;
+    }
+    inline bool canSubmit() const
+    {
+        if(isValid())
+            return def->canSubmit();
+        return false;
+    }
+    inline bool canUpdate() const
+    {
+        if(isValid())
+            return def->canUpdate();
+        return false;
+    }
+
+    inline QString valueToDisplay(const QVariant &value) const
+    {
+        if(isValid())
+            return def->valueToDisplay(value);
+        return "";
+    }
+    inline QVariant displayToValue(const QString &text) const
+    {
+        if(isValid())
+            return def->displayToValue(text);
+        return QVariant();
+    }
+    inline QVariant defaultValue() const
+    {
+        if(isValid())
+            return def->defaultValue;
+        return QVariant();
+    }
+    inline int minValue() const
+    {
+        if(isValid())
+            return def->minValue;
+        return 0;
+    }
+    inline int maxValue() const
+    {
+        if(isValid())
+            return def->maxValue;
+        return 0;
+    }
+
+    friend class RecordTypeDef;
+};
+
+typedef QHash<TRK_VID, TrkFieldDef *> TrkIntDef;
 typedef QHash<QString, TRK_VID> NameVid;
 
 class RecordTypeDef {
@@ -172,6 +268,18 @@ protected:
     TrkIntDef fieldDefs;
     NameVid nameVids;
     QHash<TRK_VID, ChoiceList *> choices;
+    void clearFieldDefs()
+    {
+        TrkIntDef::iterator i;
+        while((i = fieldDefs.begin()) != fieldDefs.end())
+        {
+            TrkFieldDef *def = i.value();
+            fieldDefs.erase(i);
+            delete def;
+        }
+        fieldDefs.clear();
+    }
+
 private:
     ChoiceList emptyChoices;
 public:
@@ -181,7 +289,7 @@ public:
     //RecordTypeDef(const RecordTypeDef & src): prj(src.prj), fieldDefs(src.fieldDefs), nameVids(src.nameVids) {}
     ~RecordTypeDef()
     {
-        fieldDefs.clear();
+        clearFieldDefs();
         nameVids.clear();
         QHash<TRK_VID, ChoiceList *>::iterator i = choices.begin();
         while (i != choices.end()) {
@@ -197,13 +305,13 @@ public:
     {
         return nameVids.keys();
     }
-    TrkFieldDef getFieldDef(TRK_VID vid, bool *ok = 0) const
+    TrkFieldType getFieldDef(TRK_VID vid, bool *ok = 0) const
     {
         if(ok)
             *ok = fieldDefs.contains(vid);
-        return fieldDefs[vid];
+        return TrkFieldType(fieldDefs[vid]);
     }
-    TrkFieldDef getFieldDef(const QString &name, bool *ok = 0) const
+    TrkFieldType getFieldDef(const QString &name, bool *ok = 0) const
     {
         TRK_VID vid = nameVids[name];
         return getFieldDef(vid,ok);
@@ -220,12 +328,12 @@ public:
     */
     TRK_FIELD_TYPE fieldType(const QString &name) const
     {
-        return getFieldDef(name).fType;
+        return getFieldDef(name).fType();
     }
     TRK_FIELD_TYPE fieldType(TRK_VID vid) const
     {
         if(fieldDefs.contains(vid))
-            return fieldDefs.value(vid).fType;
+            return getFieldDef(vid).fType();
         return TRK_FIELD_TYPE_NONE;
     }
 
@@ -233,10 +341,10 @@ public:
     bool canFieldUpdate(const QString &name) const;
     const ChoiceList &choiceList(const QString &fieldName);
 
-    const TrkFieldDef *fieldVidDef(TRK_VID vid) const
-    {
-        return &fieldDefs[vid];
-    }
+//    TrkFieldType fieldVidType(TRK_VID vid) const
+//    {
+//        return fieldDefs[vid];
+//    }
     QList<TRK_VID> fieldVids() const
     {
         return nameVids.values();
@@ -257,7 +365,7 @@ public:
     QString fieldName(TRK_VID vid) const
     {
         if(fieldDefs.contains(vid))
-            return fieldDefs.value(vid).name;
+            return fieldDefs.value(vid)->name;
         return QString();
     }
     TrkToolProject *project() const { return prj; }
@@ -789,11 +897,11 @@ public:
     {
         return prj->recordDef[rectype];
     }
-    const TrkFieldDef fieldDef(TRK_VID vid) const
+    TrkFieldType fieldDef(TRK_VID vid) const
     {
         return typeDef()->getFieldDef(vid);
     }
-    const TrkFieldDef fieldDef(const QString &name) const
+    TrkFieldType fieldDef(const QString &name) const
     {
         return typeDef()->getFieldDef(name);
     }

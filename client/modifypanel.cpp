@@ -210,7 +210,7 @@ QTableWidget *ModifyPanel::tableWidget()
     return ui->fieldsTableWidget;
 }
 
-const TrkFieldDef ModifyPanel::fieldDef(int row) const
+const TrkFieldType ModifyPanel::fieldDef(int row) const
 {
     return fieldDef(rows[row].fieldName);
     /*
@@ -223,13 +223,13 @@ const TrkFieldDef ModifyPanel::fieldDef(int row) const
     */
 }
 
-const TrkFieldDef ModifyPanel::fieldDef(const QString &fieldName) const
+const TrkFieldType ModifyPanel::fieldDef(const QString &fieldName) const
 {
     //if(!a_model)
     //    return TrkFieldDef();
     //const RecordTypeDef *rdef = a_model->typeDef();
     if(!rdef)
-        return TrkFieldDef();
+        return TrkFieldType();
     return rdef->getFieldDef(fieldName);
 }
 
@@ -363,7 +363,7 @@ void ModifyPanel::clearField(const QString &fieldName)
     if(fieldDef(fieldName).isNullable())
         setFieldValue(fieldName, QVariant());
     else
-        setFieldValue(fieldName, fieldDef(fieldName).defaultValue);
+        setFieldValue(fieldName, fieldDef(fieldName).defaultValue());
 }
 
 void ModifyPanel::modelChanged(TrkToolModel *newmodel)

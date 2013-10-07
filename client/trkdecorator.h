@@ -8,7 +8,7 @@
 #include <QStringList>
 #include "trkview.h"
 
-#define Settings_Grid "TrackerGrid2"
+#define Settings_Grid "TrackerGrid3"
 
 struct EditDef {
     QWidget *edit;

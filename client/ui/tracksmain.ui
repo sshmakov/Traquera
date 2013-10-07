@@ -539,7 +539,7 @@
   </action>
   <action name="actionCopy">
    <property name="icon">
-    <iconset resource="tracks.qrc">
+    <iconset resource="../resources/tracks.qrc">
      <normaloff>:/images/copy.png</normaloff>:/images/copy.png</iconset>
    </property>
    <property name="text">
@@ -557,9 +557,12 @@
     <string>Ctrl+X</string>
    </property>
   </action>
-  <action name="action_3">
+  <action name="action_Paste">
    <property name="text">
     <string>Вставить</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+V</string>
    </property>
   </action>
   <action name="action_4">
@@ -579,7 +582,7 @@
   </action>
   <action name="actionQueryByIdClip">
    <property name="icon">
-    <iconset resource="tracks.qrc">
+    <iconset resource="../resources/tracks.qrc">
      <normaloff>:/images/paste.png</normaloff>:/images/paste.png</iconset>
    </property>
    <property name="text">
@@ -588,7 +591,7 @@
   </action>
   <action name="actionSendEmail">
    <property name="icon">
-    <iconset resource="tracks.qrc">
+    <iconset resource="../resources/tracks.qrc">
      <normaloff>:/images/EMail_48.png</normaloff>:/images/EMail_48.png</iconset>
    </property>
    <property name="text">
@@ -597,7 +600,7 @@
   </action>
   <action name="actionPrevious">
    <property name="icon">
-    <iconset resource="tracks.qrc">
+    <iconset resource="../resources/tracks.qrc">
      <normaloff>:/images/previous.png</normaloff>:/images/previous.png</iconset>
    </property>
    <property name="text">
@@ -609,7 +612,7 @@
   </action>
   <action name="actionForward">
    <property name="icon">
-    <iconset resource="tracks.qrc">
+    <iconset resource="../resources/tracks.qrc">
      <normaloff>:/images/next.png</normaloff>:/images/next.png</iconset>
    </property>
    <property name="text">
@@ -637,7 +640,7 @@
   </action>
   <action name="actionPrint_Preview">
    <property name="icon">
-    <iconset resource="tracks.qrc">
+    <iconset resource="../resources/tracks.qrc">
      <normaloff>:/images/fileprint.png</normaloff>:/images/fileprint.png</iconset>
    </property>
    <property name="text">
@@ -649,7 +652,7 @@
   </action>
   <action name="actionRefresh_Query">
    <property name="icon">
-    <iconset resource="tracks.qrc">
+    <iconset resource="../resources/tracks.qrc">
      <normaloff>:/images/view-refresh.png</normaloff>:/images/view-refresh.png</iconset>
    </property>
    <property name="text">
@@ -763,7 +766,7 @@
   </action>
  </widget>
  <resources>
-  <include location="tracks.qrc"/>
+  <include location="../resources/tracks.qrc"/>
  </resources>
  <connections/>
  <slots>

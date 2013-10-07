@@ -193,8 +193,8 @@ void TTItemEditor::setEditorData(const QModelIndex &index)
     QSpinBox *sb;
     QComboBox *cb;
     QDateTimeEdit *dt;
-    const TrkFieldDef fdef = panel->fieldDef(index.row());
-    int type = fdef.fType;
+    TrkFieldType fdef = panel->fieldDef(index.row());
+    int type = fdef.fType();
     if(0!=(ed = qobject_cast<QLineEdit*>(subeditor)))
         ed->setText(index.data().toString());
     else if(0!=(pe = qobject_cast<QPlainTextEdit*>(subeditor)))
@@ -225,7 +225,7 @@ void TTItemEditor::setModelData(const QModelIndex &index)
     QString fieldName = panel->fieldName(index);
     if(fieldName.isEmpty())
         return;
-    const TrkFieldDef fdef = panel->fieldDef(index.row());
+    TrkFieldType fdef = panel->fieldDef(index.row());
     if(0!=(ed = qobject_cast<QLineEdit*>(subeditor)))
         panel->setFieldValue(fieldName,ed->text());
         //model->setData(index,ed->text());
@@ -262,8 +262,8 @@ QWidget * TTItemEditor::createSubEditor(const QStyleOptionViewItem &option, cons
     QDateTimeEdit *dt;
     QWidget *res;
     QStringList sl;
-    const TrkFieldDef fdef = panel->fieldDef(index.row());
-    int type = fdef.fType; // panel->fieldRow(index.row()).fieldType;
+    TrkFieldType fdef = panel->fieldDef(index.row());
+    int type = fdef.fType(); // panel->fieldRow(index.row()).fieldType;
     switch((TRK_FIELD_TYPE)type)
     {
     case TRK_FIELD_TYPE_SUBMITTER:
@@ -283,8 +283,8 @@ QWidget * TTItemEditor::createSubEditor(const QStyleOptionViewItem &option, cons
 
     case TRK_FIELD_TYPE_NUMBER:
         sb = new QSpinBox(this);
-        sb->setMinimum(fdef.minValue);
-        sb->setMaximum(fdef.maxValue);
+        sb->setMinimum(fdef.minValue());
+        sb->setMaximum(fdef.maxValue());
         //sb->setMaximum(100);
         return sb;
     case TRK_FIELD_TYPE_DATE:

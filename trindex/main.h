@@ -23,7 +23,7 @@ protected:
 public:
     QNetworkAccessManager man;
     QNetworkReply *reply;
-    MainClass(QObject *parent=0);
+    MainClass(QObject *parent, const QString &iniFile);
     void start();
     void send(const QDomDocument &dom);
     QDomDocument recFieldsXml(TrkToolRecord *rec);
