@@ -71,7 +71,7 @@ void TrkDecorator::fillEditPanels(QTabWidget *tabs, const RecordTypeDef * recDef
                         //c->setLineEdit(ie);
                         //c->setEditable(false);
                         TrkToolChoice choice;
-                        foreach(choice,fdef.choiceList())
+                        foreach(choice,*fdef.choiceList())
                         {
                             c->addItem(choice.displayText, choice.fieldValue /*  QVariant((int)(choice.order)) */);
                         }

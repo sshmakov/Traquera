@@ -15,8 +15,8 @@ int main(int argc, char *argv[])
     QCoreApplication a(argc, argv);
     QTextCodec::setCodecForCStrings(QTextCodec::codecForName("windows-1251"));
     QTextCodec::setCodecForTr(QTextCodec::codecForName("windows-1251"));
-    QString iniFile;
-    if(argc)
+    char * iniFile;
+    if(argc > 1)
         iniFile = argv[1];
     else
         iniFile = "./trindex.ini";
@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
     return a.exec();
 }
 
-MainClass::MainClass(QObject *parent, const QString &iniFile)
+MainClass::MainClass(QObject *parent, char *iniFile)
     : QObject(parent), sout(stdout), sets(iniFile, QSettings::IniFormat)
 {
     connect(this,SIGNAL(startProcess()),SLOT(process()),Qt::QueuedConnection);
@@ -135,9 +135,12 @@ void MainClass::send(const QDomDocument &dom)
 void MainClass::process()
 {
     model = prj->openRecentModel(0,sets.value("query","All_SCRs").toString());
+    sout << QString("Found %1 records\n").arg(model->rowCount());
     row = 0;
     emit next();
 }
+
+#define DELETE_RECORDS
 
 void MainClass::sendNextRecord()
 {
@@ -148,6 +151,7 @@ void MainClass::sendNextRecord()
     }
     PTrkToolRecord rec = model->at(row);
     QDomDocument xml = recFieldsXml(rec);
+    rec->releaseBuffer();
     QDomDocument add("add");
     QDomElement root=add.createElement("add");
     root.setAttribute("overwrite", "true");
@@ -155,7 +159,11 @@ void MainClass::sendNextRecord()
     root.appendChild(xml.documentElement());
     //root.save(sout,4);
     send(add);
+#ifdef DELETE_RECORDS
+    model->removeRecordId(rec->recordId());
+#else
     row++;
+#endif
 }
 
 

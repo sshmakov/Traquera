@@ -61,6 +61,7 @@ public:
     TrkToolChoice(const TrkToolChoice &src)
         :displayText(src.displayText), fieldValue(src.fieldValue)
     {}
+    ~TrkToolChoice() {}
     //TRK_UINT weight;
     //TRK_UINT order;
     //TRK_UINT res;
@@ -100,16 +101,16 @@ public:
 
     }
     TrkFieldDef(const TrkFieldDef& src)
-        : recDef(src.recDef), name(src.name), fType(src.fType), p_choiceList(new ChoiceList()),
+        : recDef(src.recDef), name(src.name), fType(src.fType), p_choiceList(new ChoiceList(*src.p_choiceList)),
           nullable(src.nullable), minValue(src.minValue), maxValue(src.maxValue), defaultValue(src.defaultValue)
-    { // leak 4b
+    {
 
     }
     ~TrkFieldDef()
     {
 		if(p_choiceList)
 		{
-			//delete p_choiceList;  //leak
+            delete p_choiceList;
 			p_choiceList = 0;
 		}
     }
@@ -127,7 +128,7 @@ public:
         return *this;
     }
 
-    const ChoiceList &choiceList() const;
+    const ChoiceList *choiceList() const;
     QStringList choiceStringList(bool isDisplayText = true) const;
     bool isChoice() const
     {
@@ -180,11 +181,11 @@ public:
             return def->fType;
         return TRK_FIELD_TYPE_NONE;
     }
-    const ChoiceList &choiceList() const
+    const ChoiceList *choiceList() const
     {
         if(isValid())
             return def->choiceList();
-        return TrkFieldDef::emptyChoices;
+        return &TrkFieldDef::emptyChoices;
     }
     QStringList choiceStringList(bool isDisplayText = true) const
     {
@@ -293,10 +294,9 @@ public:
         nameVids.clear();
         QHash<TRK_VID, ChoiceList *>::iterator i = choices.begin();
         while (i != choices.end()) {
-            delete i.value();
-            i.value() = 0;
-            choices.erase(i);
-            ++i;
+			ChoiceList *list = i.value();
+            i++;
+			delete list;
         }
         choices.clear();
     }
@@ -339,7 +339,7 @@ public:
 
     bool canFieldSubmit(const QString &name) const;
     bool canFieldUpdate(const QString &name) const;
-    const ChoiceList &choiceList(const QString &fieldName);
+    const ChoiceList *choiceList(const QString &fieldName);
 
 //    TrkFieldType fieldVidType(TRK_VID vid) const
 //    {
@@ -933,6 +933,7 @@ public:
     }
 
     Q_INVOKABLE void refresh();
+    Q_INVOKABLE void releaseBuffer();
     TRK_RECORD_TYPE recordType() const { return rectype; }
 signals:
 	void changedState(TrkToolRecord::RecMode newmode);

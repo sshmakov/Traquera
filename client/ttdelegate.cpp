@@ -235,10 +235,10 @@ void TTItemEditor::setModelData(const QModelIndex &index)
         panel->setFieldValue(fieldName,sb->value());
     else if(0!=(cb = qobject_cast<QComboBox*>(subeditor)))
     {
-        const ChoiceList &ch = fdef.choiceList();
+        const ChoiceList *ch = fdef.choiceList();
         int i = cb->currentIndex();
-        if(i>=0 && i<ch.count())
-            panel->setFieldValue(fieldName,ch.value(i).fieldValue);
+        if(i>=0 && i<ch->count())
+            panel->setFieldValue(fieldName,ch->value(i).fieldValue);
         else
             panel->setFieldValue(fieldName,QVariant());
     }

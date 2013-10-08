@@ -481,6 +481,8 @@ void TrkToolProject::close()
     recordDef.clear();
 	opened = false;
     db->openedProjects.remove(name);
+    foreach(QStringList *list, qList)
+        delete list;
 }
 
 const QStringList &TrkToolProject::queryList(TRK_RECORD_TYPE type) const
@@ -500,7 +502,7 @@ bool TrkToolProject::readQueryList()
 	{
 		QString name(buf);
 		if(!qList[recType])
-			qList[recType] = new QStringList();
+            qList[recType] = new QStringList();
 		qList[recType]->append(name);
 	}
     initQueryModel();
@@ -630,10 +632,10 @@ void TrkToolProject::readNoteTitles()
 {
     noteTitles.clear();
     QXmlSimpleReader xmlReader;
-    QFile *file = new QFile("data/tracker.xml");
-    QXmlInputSource *source = new QXmlInputSource(file);
+    QFile file("data/tracker.xml");
+    QXmlInputSource source(&file);
     QDomDocument dom;
-    if(!dom.setContent(source,false))
+    if(!dom.setContent(&source,false))
         return;
     QDomElement doc = dom.documentElement();
     QDomElement notes = doc.firstChildElement("notes");
@@ -1720,6 +1722,15 @@ void TrkToolRecord::refresh()
     }
 }
 
+void TrkToolRecord::releaseBuffer()
+{
+    foreach(int key, values.keys())
+    {
+        if(key != VID_Id)
+            values.remove(key);
+    }
+}
+
 void TrkToolRecord::setValue(const QString& fieldName, const QVariant& value, int role)
 {
     Q_UNUSED(role)
@@ -2299,32 +2310,32 @@ void TrkQryFilter::setSourceModel(QAbstractItemModel *sourceModel)
 
 ChoiceList TrkFieldDef::emptyChoices;
 
-const ChoiceList &TrkFieldDef::choiceList() const
+const ChoiceList *TrkFieldDef::choiceList() const
 {
     if(!isChoice())
-        return *p_choiceList;
+        return &emptyChoices;
 
     if(recDef && !p_choiceList->count())
     {
-        const ChoiceList &list = recDef->choiceList(name);
+        const ChoiceList *list = recDef->choiceList(name);
         p_choiceList->clear();
         if(isNullable())
         {
             TrkToolChoice ch;
             ch.displayText="";
             ch.fieldValue=QVariant();
-            p_choiceList->append(ch); // leak 24 bytes
+            p_choiceList->append(ch);
         }
-        p_choiceList->append(list);// leak 24 bytes
+        p_choiceList->append(*list);
     }
-    return *p_choiceList;
+    return p_choiceList;
 }
 
 QStringList TrkFieldDef::choiceStringList(bool isDisplayText) const
 {
     QStringList list;
     //const ChoiceList &chList = choiceList();
-    foreach(const TrkToolChoice &item, choiceList())
+    foreach(const TrkToolChoice &item, *choiceList())
     {
         if(isDisplayText)
             list.append(item.displayText);
@@ -2356,8 +2367,8 @@ QString TrkFieldDef::valueToDisplay(const QVariant &value) const
     case TRK_FIELD_TYPE_CHOICE:
     case TRK_FIELD_TYPE_STATE:
     {
-        const ChoiceList &list = choiceList();
-        foreach(const TrkToolChoice &c, list)
+        const ChoiceList *list = choiceList();
+        foreach(const TrkToolChoice &c, *list)
         {
             if(c.fieldValue == value)
                 return c.displayText;
@@ -2394,8 +2405,8 @@ QVariant TrkFieldDef::displayToValue(const QString &text) const
     case TRK_FIELD_TYPE_USER:
     case TRK_FIELD_TYPE_STATE:
     {
-        const ChoiceList &list = choiceList();
-        foreach(const TrkToolChoice &c, list)
+        const ChoiceList *list = choiceList();
+        foreach(const TrkToolChoice &c, *list)
         {
             if(c.displayText.compare(text,Qt::CaseInsensitive) == 0)
                 return c.fieldValue;
@@ -2435,12 +2446,14 @@ bool RecordTypeDef::canFieldUpdate(const QString &name) const
     return prj->canFieldUpdate(name, recType);
 }
 
-const ChoiceList &RecordTypeDef::choiceList(const QString &fieldName)
+const ChoiceList *RecordTypeDef::choiceList(const QString &fieldName)
 {
     TRK_VID vid = nameVids.contains(fieldName) ? nameVids[fieldName] : -1;
     if(vid == -1)
-        return emptyChoices;
-    return *prj->fieldChoiceList(fieldName, recType);
+        return &emptyChoices;
+    if(!choices.contains(vid))
+        choices.insert(vid, prj->fieldChoiceList(fieldName, recType));
+    return choices[vid];
 }
 
 TrkScopeRecHandle::TrkScopeRecHandle(TRK_HANDLE prjHandle)
