@@ -27,6 +27,30 @@ int main(int argc, char *argv[])
     return a.exec();
 }
 
+static QRegExp fReg("[\x00-\x08\x0B\x0C\x0E-\x1F]");
+
+inline QString &filter(QString &src)
+{
+    return src.replace(fReg," ");
+}
+
+inline QString filter(const QString &src)
+{
+    return QString(src).replace(fReg," ");
+}
+
+inline QString &filterName(QString &src)
+{
+    return src.replace(' ',"_");
+}
+
+inline QString filterName(const QString &src)
+{
+    return QString(src).replace(' ',"_");
+}
+
+
+
 MainClass::MainClass(QObject *parent, char *iniFile)
     : QObject(parent), sout(stdout), sets(iniFile, QSettings::IniFormat)
 {
@@ -49,6 +73,8 @@ MainClass::MainClass(QObject *parent, char *iniFile)
      prj = db->openProject(dbType,project,user,password);
     if(!prj->isOpened())
         sout << "Error opening project\n";
+    prjName = prj->name;
+    filterName(prjName);
 }
 
 void MainClass::start()
@@ -90,14 +116,14 @@ QDomDocument MainClass::recFieldsXml(TrkToolRecord *rec)
     sout << tr("Posting SCR #%1\n").arg(id);
     root.appendChild(eField(xml,"id",
                             QString("%1-%2")
-                            .arg(prj->name.replace(' ',"_"))
+                            .arg(prjName)
                             .arg(v.toString())));
     root.appendChild(eField(xml,"project_s",prj->name));
-    foreach(const QString &fi, rec->fields())
+    foreach(QString fi, rec->fields())
     {
         int ftype = prj->fieldType(fi, rec->recordType());
-        root.appendChild(eField(xml,fi + QString(suffix[ftype]),
-                                rec->value(fi).toString()));
+        root.appendChild(eField(xml,filterName(fi) + QString(suffix[ftype]),
+                                filter(rec->value(fi).toString())));
     }
     root.appendChild(eField(xml,"Description_t", rec->description()));
 
@@ -105,10 +131,10 @@ QDomDocument MainClass::recFieldsXml(TrkToolRecord *rec)
     {
         root.appendChild(eField(xml, "note_txt",
                                 QString("%1 [%2 (%3)] %4")
-                                .arg(note.title)
+                                .arg(filter(note.title))
                                 .arg(note.crdate.toString(TT_DATETIME_FORMAT))
-                                .arg(note.author)
-                                .arg(note.text)));
+                                .arg(filter(note.author))
+                                .arg(filter(note.text))));
     }
     return xml;
 }

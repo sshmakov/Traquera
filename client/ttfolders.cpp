@@ -32,8 +32,9 @@ void TTFolderModel::refreshAll()
     pf.childrens.clear();
     folders.insert(0,pf);
     QSqlQuery query(db);
-    if(query.exec(QString("select id, parentId, title from folders") /* .arg(tableName).arg(filterValue) */))
+    if(query.exec(QString("select id, parentId, title from folders order by title") /* .arg(tableName).arg(filterValue) */))
     {
+        QList<int> keys;
         while(query.next())
         {
             TTFolder f;
@@ -41,9 +42,10 @@ void TTFolderModel::refreshAll()
             f.parentId = query.value(1).toInt();
             f.title = query.value(2).toString();
             folders.insert(f.id, f);
+            keys.append(f.id);
             //rows.append(f.id);
         }
-        foreach(const int fid, folders.keys())
+        foreach(const int fid, keys)
         {
             TTFolder &f = folders[fid];
             if(f.id && f.parentId>=0)

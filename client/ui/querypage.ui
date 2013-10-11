@@ -264,9 +264,6 @@
    <property name="text">
     <string>Копировать номера запросов</string>
    </property>
-   <property name="shortcut">
-    <string>Ctrl+Shift+C</string>
-   </property>
    <property name="shortcutContext">
     <enum>Qt::WindowShortcut</enum>
    </property>

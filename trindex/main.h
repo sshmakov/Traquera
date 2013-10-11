@@ -20,6 +20,7 @@ protected:
     int row;
     QTextStream sout;
     QSettings sets;
+    QString prjName;
 public:
     QNetworkAccessManager man;
     QNetworkReply *reply;

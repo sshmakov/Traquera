@@ -96,9 +96,9 @@ OTHER_FILES += \
     data/tracker.xml \
     data/style.css \
     traquera-win.rc \
-    traquera.ico \
     lang/tracks_ru.ts \
-    lang/tracks_en.ts
+    lang/tracks_en.ts \
+    baloons.ico
 
 
 datafolder.source = data

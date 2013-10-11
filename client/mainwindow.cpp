@@ -42,8 +42,9 @@ MainWindow::MainWindow(QWidget *parent)
     //solrUrl = "http://localhost:8983/solr/collection1/select?q=%1&fl=Id_i&wt=xml&defType=edismax&qf=Description_t+note_txt&stopwords=true&lowercaseOperators=true";
     progressBar = new QProgressBar(this);
     progressBar->setTextVisible(false);
+    progressBar->setMaximumHeight(10);
     progressBar->setMaximumWidth(100);
-    progressBar->setValue(100);
+    progressBar->setValue(50);
     progressBar->setVisible(false);
     progressLevel = 0;
     statusBar()->addPermanentWidget(progressBar);
