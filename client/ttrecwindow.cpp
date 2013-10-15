@@ -4,11 +4,15 @@
 #include "trkview.h"
 #include "settings.h"
 #include "ttglobal.h"
+#include "scrpluginfactory.h"
 
 #include <QtWebKit>
 
 const QString TTRecordState = "TTRecWinState";
 const QString TTRecordGeometry = "TTRecWinGeometry";
+
+//QScriptEngine engine;
+   //QScriptEngineDebugger debugger;
 
 TTRecordWindow::TTRecordWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -30,6 +34,10 @@ TTRecordWindow::TTRecordWindow(QWidget *parent) :
             this, SLOT(populateJavaScriptWindowObject()));
     connect(ui->webView,SIGNAL(statusBarMessage(QString)),
             ttglobal(),SLOT(statusBarMessage(QString)));
+    QWebSettings::globalSettings()->setAttribute(QWebSettings::PluginsEnabled, true);
+    QWebSettings::globalSettings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
+    factory = new ScrPluginFactory(ui->webView,this);
+    ui->webView->page()->setPluginFactory(factory);
     connect(ui->noteTextEdit,SIGNAL(textChanged()),this,SLOT(valueChanged()));
 
     //ui->noteTextEdit->addAction(ui->actionSaveExit);
@@ -98,6 +106,7 @@ TrkToolRecord *TTRecordWindow::getRecord()
 void TTRecordWindow::setRecord(TrkToolRecord *rec)
 {
     a_record = rec;
+    factory->setRecord(rec);
     refreshValues();
     /*
     props->fillValues(a_record);
@@ -110,6 +119,7 @@ void TTRecordWindow::setRecord(TrkToolRecord *rec)
     changed = false;
     */
     refreshState();
+    setWindowTitle(QString(tr("Запрос %1")).arg(rec->recordId()));
 }
 
 bool TTRecordWindow::setNote(int index, const QString &title, const QString &text)
@@ -127,6 +137,16 @@ bool TTRecordWindow::setNote(int index, const QString &title, const QString &tex
     }
     return false;
     */
+}
+
+QString TTRecordWindow::noteTitle(int index)
+{
+    return a_record->noteTitle(index);
+}
+
+QString TTRecordWindow::noteText(int index)
+{
+    return a_record->noteText(index);
 }
 
 bool TTRecordWindow::setValue(const QString &field, const QVariant &value)

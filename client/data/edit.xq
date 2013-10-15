@@ -64,10 +64,18 @@ abackground-color: white;
 border: 1px inset lightgray;
 padding: 3px
 }
+
+.btn {
+float: right;
+top: 5 px;
+right: 5 px;
+margin: 5 px;
+padding: 2px 10px;
+}
 "}
 </style>
 <script  type="text/javascript">
-{"
+<!--
 function setNote(index,title,text)
 {
 	editor.setNote(index,title,text);
@@ -130,8 +138,114 @@ function r()
          }
 }
 
+function showEditor(index, visible)
+{
+  var sIndex;
+  if(index === -1)
+	sIndex = "Desc";
+  else
+	sIndex = index;
+  var blockNode = document.getElementById('block'+sIndex);
+  var widgetNode = document.getElementById('widget'+sIndex);
+  if(visible)
+  {
+    blockNode.style.display = "none";
+    widgetNode.style.display = "";
+  }
+  else
+  {
+    blockNode.style.display = "";
+    widgetNode.style.display = "none";
+  }
+}
 
-"}
+
+function initNoteWidget(index)
+{
+  if(editor.enableModify())
+    showEditor(index,true);
+}
+
+function connectWidget(widget)
+{
+  widget.submitTriggered.connect(submitNoteWidget);
+  widget.cancelTriggered.connect(cancelNoteWidget);
+}
+
+function closeNoteWidget(index)
+{
+  showEditor(index,false);
+}
+
+function submitNoteWidget(index)
+{
+  //var blockNode = document.getElementById('block'+index);
+  if(index === -1)
+  {
+     var newDesc = widgetDesc.noteText();
+     if(editor.setDescription(newDesc))
+     {
+       descText.innerText = newDesc;
+       showEditor(-1,false);
+     }
+  }
+  else
+  {
+     var widgetNode = document.getElementById('widget'+index);
+     var newTitle = widgetNode.noteTitle();
+     var newText = widgetNode.noteText();
+     if(editor.setNote(index, newTitle, newText))
+     {
+       var titleNode = document.getElementById('title'+index);
+       var textNode = document.getElementById('note'+index);
+       titleNode.innerText = newTitle;
+       textNode.innerText = newText;
+       showEditor(index,false);
+     }
+  }
+}
+
+function cancelNoteWidget(index)
+{
+  var blockNode = document.getElementById('block'+index);
+  var widgetNode = document.getElementById('widget'+index);
+  blockNode.style.display = "";
+  widgetNode.style.display = "none";
+}
+
+function editNote(index)
+{
+  var titleNode = document.getElementById('title'+index);
+  var textNode = document.getElementById('note'+index);
+  titleNode.disabled = "";
+  textNode.contentEditable = true;
+  //debug.innerText = 'Debug';
+}
+
+function saveNote(index)
+{
+  var titleNode = document.getElementById('title'+index);
+  var textNode = document.getElementById('note'+index);
+	editor.setNote(index,titleNode.value,textNode.innerText);
+  titleNode.disabled = true;
+  textNode.contentEditable = false;
+  titleNode.value = editor.noteTitle(index);
+  textNode.innerText = editor.noteText(index);
+	return false;
+}
+
+function resetNote(index)
+{
+  var titleNode = document.getElementById('title'+index);
+  var textNode = document.getElementById('note'+index);
+  titleNode.disabled = true;
+  textNode.contentEditable = false;
+  titleNode.value = editor.noteTitle(index);
+  textNode.innerText = editor.noteText(index);
+  return false;
+}
+
+-->
 </script>
 </head>
 <body>
@@ -141,11 +255,15 @@ function r()
 for $d in doc($scrdoc)/*/Description
 return (
 	<div id="desc">
-		<h4>{$d/string(@name)}</h4>
-		<blockquote><pre style="white-space: pre-wrap; font-family: serif" contentEditable="true" id="descText">
-			{$d/node()}
-		</pre></blockquote>
-                <script  type="text/javascript">descText.addEventListener("input", changedDesc, false);</script>
+		<div id="blockDesc">
+        		<div><img src="qrc:/images/edit.png" onclick="javascript:initNoteWidget(-1); return false;" class="btn" width="12" height="12"/><h4>{$d/string(@name)}</h4></div>
+        		<blockquote><pre style="white-space: pre-wrap; font-family: serif" id="descText">
+        			{$d/node()}
+        		</pre></blockquote>
+		</div>
+                <object type="application/scrnote" width="100%" height="400" id="widgetDesc" data="dddd" style="display:none">
+                     <param name="noteIndex" value="-1" />
+                </object>
 	</div>
 )
 }
@@ -154,25 +272,30 @@ for $i in doc($scrdoc)/*/notes/note
 order by xs:dateTime($i/@cdatetime)
 return (
 <div class="note" index="{$i/@index}">
-<p>
-<span id="title{$i/@index}" class="noteTitle" contentEditable="{"false" (: $i/@editable :)}" index="{$i/@index}">{$i/string(@title)}</span> 
-<span class="noteInfo">{$i/string(@author)}</span>
+<div id="block{$i/@index}">
+<img src="qrc:/images/edit.png" onclick="javascript:initNoteWidget({$i/@index}); return false;" class="btn" width="12" height="12"/>
+<p><span id="title{$i/@index}" class="noteTitle" index="{$i/@index}">{$i/string(@title)}</span>
+[ {$i/string(@author)} ({$i/string(@createdate)})] 
 </p>
-<p>
-<div class="nd">
-<div class="noteDate">
-  {$i/string(@createdate)}
-</div>
-</div>
-</p>
-<blockquote><pre style="white-space: pre-wrap; font-family: serif" contentEditable="{$i/@editable}" id="note{$i/@index}" index="{$i/@index}">
+
+<blockquote><pre style="white-space: pre-wrap; font-family: serif" id="note{$i/@index}" index="{$i/@index}">
 	{string($i/node())}
 </pre></blockquote>
+</div>
+<!-- 
 <script  type="text/javascript">{fn:concat("title",$i/@index, ".addEventListener(""input"", changedTitle, false);")}</script>
 <script  type="text/javascript">{fn:concat("note",$i/@index, ".addEventListener(""input"", changedText, false);")}</script>
+-->
+<object type="application/scrnote" width="100%" height="400" id="widget{$i/@index}" data="dddd" style="display:none">
+     <param name="noteIndex" value="{$i/@index}" />
+</object>
 </div>
 )
 }
 </body>
-<script  type="text/javascript">{"r();"}</script>
+<script  type="text/javascript">
+<!--
+//r();
+-->
+</script>
 </html> 

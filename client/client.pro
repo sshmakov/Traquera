@@ -27,7 +27,8 @@ FORMS += ui/tracksmain.ui ui/querypage.ui ui/projectpage.ui ui/trklogin.ui ui/fi
     ui/modifypanel.ui \
     ui/ttrecwindow.ui \
     ui/preview.ui \
-    ui/planfilesform.ui
+    ui/planfilesform.ui \
+    notewidget.ui
 
 HEADERS += \
 	mainwindow.h project.h querypage.h projectpage.h trklogin.h \
@@ -54,7 +55,9 @@ HEADERS += \
     ../common/settings.h \
     ../common/ttutils.h \
     ../common/ttglobal.h \
-    ../common/cliputil.h
+    ../common/cliputil.h \
+    notewidget.h \
+    scrpluginfactory.h
 SOURCES += database.cpp main.cpp mainwindow.cpp project.cpp querypage.cpp projectpage.cpp \
 	trklogin.cpp filterpage.cpp flowlayout.cpp plans.cpp planproxy.cpp \
 	scrwidg.cpp \
@@ -76,7 +79,9 @@ SOURCES += database.cpp main.cpp mainwindow.cpp project.cpp querypage.cpp projec
     ../common/ttglobal.cpp \
     ../tracker/trkview.cpp \
     ../tracker/tracker.cpp \
-    ../common/cliputil.cpp
+    ../common/cliputil.cpp \
+    notewidget.cpp \
+    scrpluginfactory.cpp
 RESOURCES += resources/tracks.qrc
 
 win32: LIBS += -L$$PWD/../trktool/lib/ -ltrktooln -lshell32 -lshlwapi

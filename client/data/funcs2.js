@@ -95,4 +95,3 @@ function replaceHTTP()
     notes[i].innerHTML = ns;
   }
 }
-

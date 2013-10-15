@@ -821,8 +821,9 @@ struct TrkToolFile
 
 struct TrkScopeRecHandle
 {
+    bool isTemp;
     TRK_RECORD_HANDLE handle;
-    TrkScopeRecHandle(TRK_HANDLE prjHandle);
+    TrkScopeRecHandle(TRK_HANDLE prjHandle, TRK_RECORD_HANDLE recHandle=0);
     ~TrkScopeRecHandle();
     inline bool isValid() { return handle != 0; }
     inline TRK_RECORD_HANDLE & operator*() { return handle; }
@@ -922,6 +923,8 @@ public:
     Q_INVOKABLE bool setNoteText(int index, const QString &text);
     Q_INVOKABLE bool deleteNote(int index);
     Q_INVOKABLE bool appendNote(const QString &noteTitle, const QString &note);
+    Q_INVOKABLE QString noteTitle(int index);
+    Q_INVOKABLE QString noteText(int index);
     void addLink();
     void removeLink(const QObject *receiver=0);
     NotesCol getNotes() const;

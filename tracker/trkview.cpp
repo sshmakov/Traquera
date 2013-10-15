@@ -2080,7 +2080,6 @@ bool TrkToolRecord::deleteNote(int index)
     if(isTrkOK(TrkInitNoteList(*noteHandle)))
     {
         int i=0;
-        bool res;
         for(int i=0; i<=index; ++i)
             if(!isTrkOK(TrkGetNextNote(*noteHandle)))
                 return false;
@@ -2122,6 +2121,63 @@ bool TrkToolRecord::appendNote(const QString &noteTitle, const QString &note)
             cancel();
     emit changed(recordId());
     return res;
+}
+
+QString TrkToolRecord::noteTitle(int index)
+{
+    TRK_RECORD_HANDLE handle=0;
+    if(isEditing())
+        handle = lockHandle;
+    TrkScopeRecHandle rec(project()->handle, handle);
+    if(!isEditing())
+        rec.getRecord(recordId(),recordType());
+    TrkScopeNoteHandle noteHandle(*rec);
+    if(isTrkOK(TrkInitNoteList(*noteHandle)))
+    {
+        for(int i=0; i<=index; ++i)
+            if(!isTrkOK(TrkGetNextNote(*noteHandle)))
+                return QString();
+        char buf[1024];
+        TrkGetNoteTitle(*noteHandle,sizeof(buf),buf);
+        return QString::fromLocal8Bit(buf);
+    }
+    return QString();
+}
+
+QString TrkToolRecord::noteText(int index)
+{
+    TRK_RECORD_HANDLE handle=0;
+    if(isEditing())
+        handle = lockHandle;
+    TrkScopeRecHandle rec(project()->handle, handle);
+    if(!isEditing())
+        rec.getRecord(recordId(),recordType());
+    TrkScopeNoteHandle noteHandle(*rec);
+    if(isTrkOK(TrkInitNoteList(*noteHandle)))
+    {
+        for(int i=0; i<=index; ++i)
+            if(!isTrkOK(TrkGetNextNote(*noteHandle)))
+                return QString();
+        QString text;
+        TRK_UINT len;
+        if(isTrkOK(TrkGetNoteDataLength(*noteHandle, &len) && len))
+        {
+            char buf[1024];
+            TRK_UINT remain = len;
+            text = "";
+            TRK_UINT res;
+            while(remain)
+            {
+                //int blen = remain < sizeof(buf) ? remain : sizeof(buf);
+                res = TrkGetNoteData(*noteHandle, sizeof(buf), buf, &remain);
+                text += QString::fromLocal8Bit(buf);
+                if(res!=TRK_SUCCESS && res !=TRK_E_DATA_TRUNCATED)
+                    break;
+            }
+        }
+        return text;
+    }
+    return QString();
 }
 
 void TrkToolRecord::addLink()
@@ -2456,15 +2512,25 @@ const ChoiceList *RecordTypeDef::choiceList(const QString &fieldName)
     return choices[vid];
 }
 
-TrkScopeRecHandle::TrkScopeRecHandle(TRK_HANDLE prjHandle)
+TrkScopeRecHandle::TrkScopeRecHandle(TRK_HANDLE prjHandle, TRK_RECORD_HANDLE recHandle)
     :handle(0)
 {
-    TrkRecordHandleAlloc(prjHandle, &handle);
+    if(recHandle)
+    {
+        handle = recHandle;
+        isTemp = false;
+    }
+    else
+    {
+        TrkRecordHandleAlloc(prjHandle, &handle);
+        isTemp = true;
+    }
 }
 
 TrkScopeRecHandle::~TrkScopeRecHandle()
 {
-    TrkRecordHandleFree(&handle);
+    if(isTemp)
+        TrkRecordHandleFree(&handle);
 }
 
 int TrkScopeRecHandle::getRecord(TRK_UINT id, TRK_RECORD_TYPE rectype)

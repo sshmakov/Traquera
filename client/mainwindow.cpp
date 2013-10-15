@@ -57,7 +57,7 @@ MainWindow::MainWindow(QWidget *parent)
     sysMessager = new Messager(this);
     //toolBox->setCurrentIndex(0);
     journal = 0;
-    setWindowTitle("Traquera");
+    //setWindowTitle("TraQuera");
 #ifdef DECORATOR
     decorator = new TrkDecorator(this);
 #endif

@@ -10,6 +10,7 @@ class TTRecordWindow;
 
 class ModifyPanel;
 class TrkToolRecord;
+class ScrPluginFactory;
 
 class TTRecordWindow : public QMainWindow
 {
@@ -24,6 +25,8 @@ public:
     Q_INVOKABLE TrkToolRecord *getRecord();
     void setRecord(TrkToolRecord *rec);
     Q_INVOKABLE bool setNote(int index, const QString &title, const QString &text);
+    Q_INVOKABLE QString noteTitle(int index);
+    Q_INVOKABLE QString noteText(int index);
     Q_INVOKABLE bool setValue(const QString &field, const QVariant &value);
     Q_INVOKABLE QVariant value(const QString &field);
     Q_INVOKABLE QString description();
@@ -38,6 +41,7 @@ protected:
     ModifyPanel *props;
     RecordTypeDef *recDef;
     TrkToolRecord *a_record;
+    ScrPluginFactory *factory;
     bool changed;
     struct NoteValue {
         QString title;

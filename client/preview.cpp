@@ -22,6 +22,7 @@ Preview::Preview(QWidget *parent) :
     ui->setupUi(this);
     //view = ui->axWidget;
     view = new QAxObject(this);
+    mode = NoPreview;
     //QLayout *lay = new QVBoxLayout(this);
     //lay->addWidget(view);
 }
@@ -119,14 +120,16 @@ bool Preview::setSourceFile(const QString &file)
 
 void Preview::clear()
 {
-    if(view->isNull())
-        return;
-    IPreviewHandler *handler=0;
-    if(view->queryInterface(IID_IPreviewHandler, (void**)&handler))
-        return;
-    if(handler)
-        handler->Unload();
-    view->clear();
+    if(!view->isNull())
+    {
+        IPreviewHandler *handler=0;
+        if(!view->queryInterface(IID_IPreviewHandler, (void**)&handler))
+        {
+            if(handler)
+                handler->Unload();
+            view->clear();
+        }
+    }
 }
 
 bool Preview::isActive()
