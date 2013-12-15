@@ -1,6 +1,9 @@
 #include "preview.h"
 #include "ui_preview.h"
+#include "previewfactory.h"
+#include "highlighter.h"
 
+#include <QtGui>
 #include <QAxObject>
 #include <QAxWidget>
 #include <QSettings>
@@ -15,11 +18,9 @@
 const char *CLASS_IPreviewHandler = "{8895b1c6-b41f-4c1c-a562-0d564250836f}";
 
 
-Preview::Preview(QWidget *parent) :
-    QWidget(parent),
-    ui(new Ui::Preview)
+PreviewActiveX::PreviewActiveX(QWidget *parent) :
+    Preview(parent)
 {
-    ui->setupUi(this);
     //view = ui->axWidget;
     view = new QAxObject(this);
     mode = NoPreview;
@@ -27,19 +28,18 @@ Preview::Preview(QWidget *parent) :
     //lay->addWidget(view);
 }
 
-Preview::~Preview()
+PreviewActiveX::~PreviewActiveX()
 {
     //delete view;
-    delete ui;
 }
 
 #define STR_IInitializeWithFile "b7d14566-0509-4cce-a71f-0a554233bd9b"
 
-bool Preview::setSourceFile(const QString &file)
+bool PreviewActiveX::setSourceFile(const QString &fileName)
 {
     clear();
     QString ext;
-    QFileInfo info(file);
+    QFileInfo info(fileName);
     QString filePath = QDir::toNativeSeparators(info.absoluteFilePath());
     ext = info.suffix();
     if(ext.isEmpty())
@@ -118,7 +118,16 @@ bool Preview::setSourceFile(const QString &file)
     return true;
 }
 
-void Preview::clear()
+QString PreviewActiveX::previewClass(const QString& ext)
+{
+    QString regPath = "HKEY_CLASSES_ROOT\\" + ext + "\\shellex\\" + CLASS_IPreviewHandler;
+    QSettings set(regPath, QSettings::NativeFormat);
+    if(!set.contains("."))
+        return false;
+    return set.value(".").toString();
+}
+
+void PreviewActiveX::clear()
 {
     if(!view->isNull())
     {
@@ -132,12 +141,12 @@ void Preview::clear()
     }
 }
 
-bool Preview::isActive()
+bool PreviewActiveX::isActive()
 {
     return !view->isNull();
 }
 
-void Preview::resizeEvent(QResizeEvent *event)
+void PreviewActiveX::resizeEvent(QResizeEvent *event)
 {
     QWidget::resizeEvent(event);
     if(!isActive())
@@ -158,3 +167,139 @@ void Preview::resizeEvent(QResizeEvent *event)
     }
 
 }
+
+
+Preview::Preview(QWidget *parent)
+    : QWidget(parent),
+      ui(new Ui::Preview)
+{
+    ui->setupUi(this);
+}
+
+Preview::~Preview()
+{
+    delete ui;
+}
+
+
+PreviewTxt::PreviewTxt(QWidget *parent)
+    : Preview(parent)
+{
+    QVBoxLayout *lay = new QVBoxLayout();
+    setLayout(lay);
+    editor = new QPlainTextEdit(this);
+    highlighter = new Highlighter(editor->document());
+    lay->addWidget(editor);
+    //layout()->addWidget(editor);
+    setVisible(true);
+}
+
+PreviewTxt::~PreviewTxt()
+{
+}
+
+bool PreviewTxt::setSourceFile(const QString &fileName)
+{
+    QFile file(fileName);
+    if(!file.open(QIODevice::ReadOnly))
+        return false;
+    QString buf(file.readAll());
+    editor->setPlainText(buf);
+    return true;
+}
+
+void PreviewTxt::clear()
+{
+    editor->clear();
+}
+
+void PreviewTxt::setSyntax(const QString &syntax)
+{
+    highlighter->setSyntax(syntax);
+}
+
+// MasterPreview
+
+MasterPreview::MasterPreview(QWidget *parent)
+    :Preview(parent), view(0)
+{
+    lay = new QVBoxLayout(this);
+    lay->setContentsMargins(0, 0, 0, 0);
+    factory = new PreviewFactory(this);
+}
+
+MasterPreview::~MasterPreview()
+{
+}
+
+bool MasterPreview::setSourceFile(const QString &fileName)
+{
+    clear();
+    view = factory->createPreview(fileName,this);
+    if(view)
+    {
+        lay->addWidget(view);
+        return view->setSourceFile(fileName);
+    }
+    return false;
+}
+
+void MasterPreview::clear()
+{
+    if(view)
+    {
+        view->clear();
+        delete view;
+        view = 0;
+    }
+
+}
+
+
+PreviewImage::PreviewImage(QWidget *parent)
+{
+}
+
+PreviewImage::~PreviewImage()
+{
+    clear();
+}
+
+bool PreviewImage::setSourceFile(const QString &fileName)
+{
+    return image.load(fileName);
+}
+
+void PreviewImage::clear()
+{
+    image = QImage();
+}
+
+void PreviewImage::paintEvent(QPaintEvent *event)
+{
+    QPainter p(this);
+    int marginH=10, marginV=10;
+    QRectF src(0,0,image.width(),image.height());
+    qreal aspect,w = image.width(),h = image.height();
+    qreal pw = width() - 2 * marginH;
+    qreal ph = height() - 2 * marginV;
+    if(image.height() && image.width())
+        aspect = src.width()/src.height();
+    else
+        aspect = 1;
+    if(w>pw)
+    {
+        w = pw;
+        h = w / aspect;
+    }
+    if(h>ph)
+    {
+        h = ph;
+        w = h * aspect;
+    }
+    QRectF target(0,0,w,h);
+    QPointF c(this->rect().center());
+    target.moveCenter(c);
+    p.drawImage(target,image,src);
+}
+

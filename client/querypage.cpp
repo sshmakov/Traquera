@@ -62,9 +62,11 @@ QueryPage::QueryPage(QWidget *parent)
     QVBoxLayout * v = new QVBoxLayout(pageWithPreview);
     v->setContentsMargins(0, 0, 0, 0);
     v->setObjectName(QString::fromUtf8("verticalLayout"));
-    previewWidget = new Preview(pageWithPreview);
+
+    previewWidget = new MasterPreview(pageWithPreview);
     previewWidget->setObjectName("previewWidget");
     v->addWidget(previewWidget);
+
     stackedWidget->setCurrentIndex(0);
 
 	planModel=NULL;
@@ -162,6 +164,7 @@ void QueryPage::initWidgets()
     subLay->addWidget(filesTable);
     connect(filesTable,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(slotFilesTable_doubleClicked(QModelIndex)));
     connect(filesTable,SIGNAL(clicked(QModelIndex)),this,SLOT(slotFilesTable_pressed(QModelIndex)));
+    connect(filesTable,SIGNAL(itemSelectionChanged()),SLOT(slotCurrentFileChanged()));
     connect(tabBar,SIGNAL(currentChanged(int)),this,SLOT(slotTabChanged(int)));
     connect(webView_2->page()->mainFrame(), SIGNAL(javaScriptWindowObjectCleared()),
             this, SLOT(populateJavaScriptWindowObject()));
@@ -1652,22 +1655,33 @@ void QueryPage::slotFilesTable_doubleClicked(const QModelIndex &index)
 
 void QueryPage::slotFilesTable_pressed(const QModelIndex &index)
 {
-    previewTimer->start(250);
+    previewTimer->start(100);
 }
 
 void QueryPage::slotFilePreview()
 {
     QModelIndex recIndex = queryView->currentIndex();
-    QModelIndex fileIndex = filesTable->currentIndex();
-    if(!recIndex.isValid() || !fileIndex.isValid())
-        return;
-    TrkToolRecord *rec = recordOnIndex(recIndex);
-    if(!rec)
-        return;
-    QString fileName = filesTable->item(fileIndex.row(),0)->text();
-    QString tempFile = QDir::temp().absoluteFilePath(fileName);
-    rec->saveFile(fileIndex.row(), tempFile);
-    previewFile(tempFile);
+    QTableWidgetItem *fileItem = filesTable->currentItem();
+    if(recIndex.isValid() && fileItem && fileItem->isSelected())
+    {
+        TrkToolRecord *rec = recordOnIndex(recIndex);
+        if(rec)
+        {
+            QString fileName = fileItem->text();
+            QString tempFile = QDir::temp().absoluteFilePath(fileName);
+            if(rec->saveFile(fileItem->row(), tempFile))
+                previewFile(tempFile);
+            return;
+        }
+    }
+    previewWidget->clear();
+}
+
+void QueryPage::slotCurrentFileChanged()
+{
+    QTableWidgetItem *fileItem = filesTable->currentItem();
+    if(!fileItem || !fileItem->isSelected())
+        previewWidget->clear();
 }
 
 void QueryPage::on_actionTest_triggered()

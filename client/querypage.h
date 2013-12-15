@@ -144,6 +144,7 @@ private slots:
     void slotFilesTable_doubleClicked(const QModelIndex &index);
     void slotFilesTable_pressed(const QModelIndex &index);
     void slotFilePreview();
+    void slotCurrentFileChanged();
     void on_actionTest_triggered();
     void on_actionSelectTrigger_triggered();
     void slotCheckPlannedIds();

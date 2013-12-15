@@ -10,4 +10,11 @@
                 lowercaseOperators="true" />
             <scrid name="Id_i"/>
         </trindex>
+        <preview>
+            <viewer type="image" ext="jpg,jpeg,png,bmp,svg"/>
+            <viewer type="text" ext="txt"/>
+            <viewer type="text" ext="mac" syntax="RSL"/>
+            <viewer type="text" ext="cpp,c,h,hpp" syntax="C"/>
+            <viewer type="text" ext="pas" syntax="Pascal"/>
+        </preview>
 </init>

@@ -758,9 +758,9 @@ ProjectPage *MainWindow::openPlanPage(const QString& fileName)
 void MainWindow::findTrkRecords(const QString &line, bool reuse)
 {
     QFile file("data/init.xml");
-    QXmlInputSource *source = new QXmlInputSource(&file);
+    QXmlInputSource source(&file); // new???
     QDomDocument dom;
-    if(!dom.setContent(source,false))
+    if(!dom.setContent(&source,false))
         return;
     QDomElement doc = dom.documentElement();
     if(doc.isNull()) return;

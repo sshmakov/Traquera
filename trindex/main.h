@@ -21,6 +21,7 @@ protected:
     QTextStream sout;
     QSettings sets;
     QString prjName;
+    QHash<QString, QString> fieldMap;
 public:
     QNetworkAccessManager man;
     QNetworkReply *reply;
@@ -29,6 +30,7 @@ public:
     void send(const QDomDocument &dom);
     QDomDocument recFieldsXml(TrkToolRecord *rec);
     bool isOk() const;
+    QString fieldNameTranslate(const QString &name, int ftype);
 signals:
     void startProcess();
     void next();

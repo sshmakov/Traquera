@@ -49,10 +49,8 @@ inline QString filterName(const QString &src)
     return QString(src).replace(' ',"_");
 }
 
-
-
 MainClass::MainClass(QObject *parent, char *iniFile)
-    : QObject(parent), sout(stdout), sets(iniFile, QSettings::IniFormat)
+    : QObject(parent), sout(stdout), sets(iniFile, QSettings::IniFormat), fieldMap()
 {
     connect(this,SIGNAL(startProcess()),SLOT(process()),Qt::QueuedConnection);
     connect(this,SIGNAL(next()),SLOT(sendNextRecord()),Qt::QueuedConnection);
@@ -75,6 +73,11 @@ MainClass::MainClass(QObject *parent, char *iniFile)
         sout << "Error opening project\n";
     prjName = prj->name;
     filterName(prjName);
+    sets.beginGroup("FieldMap");
+    QStringList keys = sets.childKeys();
+    foreach(const QString &field, keys)
+        fieldMap[field] = sets.value(field).toString();
+    sets.endGroup();
 }
 
 void MainClass::start()
@@ -82,8 +85,11 @@ void MainClass::start()
     emit startProcess();
 }
 
-const char *suffix[10] = {
-            "",   //TRK_FIELD_TYPE_NONE
+#define TRK_FIELD_TYPE_TEXT TRK_FIELD_TYPE_STRING
+#define TRK_FIELD_TYPE_MULTITEXT 10
+
+const char *suffix[11] = {
+            "_s", //TRK_FIELD_TYPE_NONE
             "_t", //TRK_FIELD_TYPE_CHOICE
             "_t", //TRK_FIELD_TYPE_STRING
             "_i", //TRK_FIELD_TYPE_NUMBER
@@ -92,7 +98,8 @@ const char *suffix[10] = {
             "_s", //TRK_FIELD_TYPE_OWNER
             "_s", //TRK_FIELD_TYPE_USER
             "_s", //TRK_FIELD_TYPE_ELAPSED_TIME
-            "_s"  //TRK_FIELD_TYPE_STATE
+            "_s", //TRK_FIELD_TYPE_STATE
+            "_txt" // TRK_FIELD_TYPE_MULTITEXT
             };
 
 
@@ -104,6 +111,14 @@ QDomElement eField(QDomDocument &xml, const QString &name, const QString &value)
     QDomText text = xml.createTextNode(value);
     f.appendChild(text);
     return f;
+}
+
+QString MainClass::fieldNameTranslate(const QString &name, int ftype)
+{
+    QString res = fieldMap[name];
+    if(res.isEmpty())
+        return filterName(name) + QString(suffix[ftype]);
+    return res;
 }
 
 QDomDocument MainClass::recFieldsXml(TrkToolRecord *rec)
@@ -118,18 +133,19 @@ QDomDocument MainClass::recFieldsXml(TrkToolRecord *rec)
                             QString("%1-%2")
                             .arg(prjName)
                             .arg(v.toString())));
-    root.appendChild(eField(xml,"project_s",prj->name));
+    root.appendChild(eField(xml,fieldNameTranslate("project",TRK_FIELD_TYPE_NONE),prj->name));
     foreach(QString fi, rec->fields())
     {
         int ftype = prj->fieldType(fi, rec->recordType());
-        root.appendChild(eField(xml,filterName(fi) + QString(suffix[ftype]),
+        root.appendChild(eField(xml, fieldNameTranslate(fi, ftype), //filterName(fi) + QString(suffix[ftype]),
                                 filter(rec->value(fi).toString())));
     }
-    root.appendChild(eField(xml,"Description_t", rec->description()));
+    root.appendChild(eField(xml,fieldNameTranslate("Description",TRK_FIELD_TYPE_STRING), //"Description_s"
+                            rec->description()));
 
     foreach(const TrkNote &note, rec->getNotes())
     {
-        root.appendChild(eField(xml, "note_txt",
+        root.appendChild(eField(xml, fieldNameTranslate("note", TRK_FIELD_TYPE_MULTITEXT), // "note_txt"
                                 QString("%1 [%2 (%3)] %4")
                                 .arg(filter(note.title))
                                 .arg(note.crdate.toString(TT_DATETIME_FORMAT))

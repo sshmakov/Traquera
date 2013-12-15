@@ -57,7 +57,9 @@ HEADERS += \
     ../common/ttglobal.h \
     ../common/cliputil.h \
     notewidget.h \
-    scrpluginfactory.h
+    scrpluginfactory.h \
+    previewfactory.h \
+    highlighter.h
 SOURCES += database.cpp main.cpp mainwindow.cpp project.cpp querypage.cpp projectpage.cpp \
 	trklogin.cpp filterpage.cpp flowlayout.cpp plans.cpp planproxy.cpp \
 	scrwidg.cpp \
@@ -81,7 +83,9 @@ SOURCES += database.cpp main.cpp mainwindow.cpp project.cpp querypage.cpp projec
     ../tracker/tracker.cpp \
     ../common/cliputil.cpp \
     notewidget.cpp \
-    scrpluginfactory.cpp
+    scrpluginfactory.cpp \
+    previewfactory.cpp \
+    highlighter.cpp
 RESOURCES += resources/tracks.qrc
 
 win32: LIBS += -L$$PWD/../trktool/lib/ -ltrktooln -lshell32 -lshlwapi

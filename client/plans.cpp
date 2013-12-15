@@ -307,6 +307,8 @@ void PlanModel::planChanged()
 
 void PlanModel::planRowsInserted(const QModelIndex &parent, int start, int end)
 {
+    if(parent.isValid())
+        return;
     PrjItemModel *prj = qobject_cast<PrjItemModel*>(sender());
     if(!prj)
         return;

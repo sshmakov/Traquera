@@ -5,6 +5,7 @@
 #include <ole2.h>
 #include <QWidget>
 #include <QAxWidget>
+#include <QPlainTextEdit>
 
 
 //struct RECT
@@ -59,20 +60,82 @@ class IPreviewHandler;
 class Preview : public QWidget
 {
     Q_OBJECT
-private:
-    QAxObject *view;
-    
 public:
     explicit Preview(QWidget *parent = 0);
     ~Preview();
-
-    bool setSourceFile(const QString &file);
-    void clear();
-    bool isActive();
-protected:
-    virtual void resizeEvent(QResizeEvent *event);
+    virtual bool setSourceFile(const QString &fileName) = 0;
+    virtual void clear() = 0;
 private:
     Ui::Preview *ui;
+};
+
+class PreviewActiveX : public Preview
+{
+    Q_OBJECT
+private:
+    QAxObject *view;
+    enum Mode {NoPreview, ActiveX, Internal};
+    Mode mode;
+public:
+    explicit PreviewActiveX(QWidget *parent = 0);
+    ~PreviewActiveX();
+
+    bool setSourceFile(const QString &fileName);
+    void clear();
+    bool isActive();
+    static QString previewClass(const QString &ext);
+protected:
+    virtual void resizeEvent(QResizeEvent *event);
+};
+
+class QTextEdit;
+class Highlighter;
+
+class PreviewTxt : public Preview
+{
+    Q_OBJECT
+private:
+    QPlainTextEdit *editor;
+    Highlighter *highlighter;
+public:
+    explicit PreviewTxt(QWidget *parent = 0);
+    ~PreviewTxt();
+
+    bool setSourceFile(const QString &fileName);
+    void clear();
+    void setSyntax(const QString &syntax);
+};
+
+class PreviewImage : public Preview
+{
+    Q_OBJECT
+private:
+    QImage image;
+public:
+    explicit PreviewImage(QWidget *parent = 0);
+    ~PreviewImage();
+
+    bool setSourceFile(const QString &fileName);
+    void clear();
+    void paintEvent(QPaintEvent *event);
+};
+
+class PreviewFactory;
+
+class MasterPreview: public Preview
+{
+    Q_OBJECT
+private:
+    QLayout *lay;
+    Preview *view;
+    PreviewFactory *factory;
+public:
+    explicit MasterPreview(QWidget *parent = 0);
+    ~MasterPreview();
+
+    bool setSourceFile(const QString &fileName);
+    void clear();
+
 };
 
 #endif // PREVIEW_H
