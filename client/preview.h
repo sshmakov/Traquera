@@ -112,7 +112,7 @@ class PreviewImage : public Preview
 {
     Q_OBJECT
 private:
-    QImage image;
+    QImage image, resized;
 public:
     explicit PreviewImage(QWidget *parent = 0);
     ~PreviewImage();
@@ -120,6 +120,8 @@ public:
     bool setSourceFile(const QString &fileName);
     void clear();
     void paintEvent(QPaintEvent *event);
+protected:
+    virtual void resizeEvent(QResizeEvent *event);
 };
 
 class PreviewFactory;

@@ -310,33 +310,50 @@ bool PreviewImage::setSourceFile(const QString &fileName)
 void PreviewImage::clear()
 {
     image = QImage();
+    resized = QImage();
 }
 
 void PreviewImage::paintEvent(QPaintEvent *event)
 {
     QPainter p(this);
-    int marginH=10, marginV=10;
-    QRectF src(0,0,image.width(),image.height());
-    qreal aspect,w = image.width(),h = image.height();
-    qreal pw = width() - 2 * marginH;
-    qreal ph = height() - 2 * marginV;
-    if(image.height() && image.width())
-        aspect = src.width()/src.height();
-    else
-        aspect = 1;
-    if(w>pw)
-    {
-        w = pw;
-        h = w / aspect;
-    }
-    if(h>ph)
-    {
-        h = ph;
-        w = h * aspect;
-    }
-    QRectF target(0,0,w,h);
+//    int marginH=10, marginV=10;
+//    QRectF src(0,0,image.width(),image.height());
+//    qreal aspect,w = image.width(),h = image.height();
+//    qreal pw = width() - 2 * marginH;
+//    qreal ph = height() - 2 * marginV;
+//    if(image.height() && image.width())
+//        aspect = src.width()/src.height();
+//    else
+//        aspect = 1;
+//    if(w>pw)
+//    {
+//        w = pw;
+//        h = w / aspect;
+//    }
+//    if(h>ph)
+//    {
+//        h = ph;
+//        w = h * aspect;
+//    }
+//    QRectF target(0,0,w,h);
+//    QPointF c(this->rect().center());
+//    target.moveCenter(c);
+//    p.drawImage(target,image,src);
+
+    if(resized.isNull() && !image.isNull())
+        resized = image.scaled(size(),Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+    QRectF target(0,0,resized.width(),resized.height());
     QPointF c(this->rect().center());
     target.moveCenter(c);
-    p.drawImage(target,image,src);
+    p.drawImage(target,resized,resized.rect());
+}
+
+void PreviewImage::resizeEvent(QResizeEvent *event)
+{
+    QWidget::resizeEvent(event);
+    resized = QImage();
+//    if(!image.isNull())
+//        resized = image.scaled(size(),Qt::KeepAspectRatio, Qt::SmoothTransformation);
 }
 
