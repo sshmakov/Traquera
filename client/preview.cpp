@@ -35,6 +35,7 @@ PreviewActiveX::~PreviewActiveX()
 
 #define STR_IInitializeWithFile "b7d14566-0509-4cce-a71f-0a554233bd9b"
 
+
 bool PreviewActiveX::setSourceFile(const QString &fileName)
 {
     clear();
@@ -54,22 +55,33 @@ bool PreviewActiveX::setSourceFile(const QString &fileName)
         return false;
     if(!view->setControl(classId))
         return false;
-    IInitializeWithFile *iwfile=0;
-    IInitializeWithStream *iwstream=0;
+    IInitializeWithFile *iwfile;
+    IInitializeWithStream *iwstream;
     IStream * iis;
     if(!view->queryInterface(QUuid(IID_IInitializeWithFile), (void**)&iwfile))
+    {
         iwfile->Initialize((LPCWSTR)filePath.utf16(), STGM_READ);
+        iwfile->Release();
+    }
     else if (!view->queryInterface(QUuid(IID_IInitializeWithStream),(void**)&iwstream))
     {
+
         if(SHCreateStreamOnFileW((LPCWSTR)filePath.utf16(), STGM_READ, &iis))
+        {
+            iwstream->Release();
             return false;
-        if(iwstream->Initialize(iis, STGM_READ))
+        }
+        HRESULT res = iwstream->Initialize(iis, STGM_READ);
+        iwstream->Release();
+        iis->Release();
+        if(res)
             return false;
     }
     IPreviewHandler *handler=0;
     if(view->queryInterface(IID_IPreviewHandler, (void**)&handler))
         return false;
     RECT r;
+    connect(view,SIGNAL(destroyed()),this,SLOT(viewDestroyed()));
     r.top =0;
     r.left =0;
     r.bottom = this->height();
@@ -77,6 +89,7 @@ bool PreviewActiveX::setSourceFile(const QString &fileName)
     handler->SetWindow(this->winId(),&r);
     handler->DoPreview();
     handler->SetFocus();
+    handler->Release();
     /*
   if FPreviewHandler.QueryInterface(IInitializeWithFile, FileInit) = 0 then
   begin
@@ -135,9 +148,28 @@ void PreviewActiveX::clear()
         if(!view->queryInterface(IID_IPreviewHandler, (void**)&handler))
         {
             if(handler)
+            {
                 handler->Unload();
-            view->clear();
+                handler->AddRef();
+                handler->Release();
+            }
         }
+        view->clear();
+//        if(iis)
+//        {
+//            iis->Release();
+//            iis=0;
+//        }
+//        if(iwfile)
+//        {
+//            iwfile->Release();
+//            iwfile=0;
+//        }
+//        if(iwstream)
+//        {
+//            iwstream->Release();
+//            iwstream=0;
+//        }
     }
 }
 
@@ -164,8 +196,13 @@ void PreviewActiveX::resizeEvent(QResizeEvent *event)
         r.bottom = this->height();
         r.right = this->width();
         handler->SetRect(&r);
+        handler->Release();
     }
 
+}
+
+void PreviewActiveX::viewDestroyed()
+{
 }
 
 

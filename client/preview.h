@@ -86,6 +86,8 @@ public:
     static QString previewClass(const QString &ext);
 protected:
     virtual void resizeEvent(QResizeEvent *event);
+protected slots:
+    void viewDestroyed();
 };
 
 class QTextEdit;
