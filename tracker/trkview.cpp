@@ -906,6 +906,7 @@ bool TrkToolProject::readNoteRec(TRK_NOTE_HANDLE noteHandle, TrkNote *note) cons
             if(res!=TRK_SUCCESS && res !=TRK_E_DATA_TRUNCATED)
                 break;
         }
+        note->text = filterUtf16(note->text);
     }
     TRK_TIME time;
     if(isTrkOK(TrkGetNoteCreateTime(noteHandle, &time)))
@@ -2040,7 +2041,7 @@ bool TrkToolRecord::setNote(int index, const QString &title, const QString &text
         for(int i=0; i<=index; ++i)
             TrkGetNextNote(*noteHandle);
         res = isTrkOK(TrkSetNoteTitle(*noteHandle, title.toLocal8Bit().constData()))
-            && isTrkOK(Do_TrkSetNoteData(*noteHandle, text.toLocal8Bit()));
+            && isTrkOK(Do_TrkSetNoteData(*noteHandle, stringToLocal8Bit(text))); // text.toLocal8Bit()));
     }
     if(wasView)
         if(res)
@@ -2063,7 +2064,7 @@ bool TrkToolRecord::setNoteText(int index, const QString &text)
     {
         for(int i=0; i<=index; ++i)
             TrkGetNextNote(*noteHandle);
-        res = isTrkOK(Do_TrkSetNoteData(*noteHandle, text.toLocal8Bit()));
+        res = isTrkOK(Do_TrkSetNoteData(*noteHandle, stringToLocal8Bit(text))); // text.toLocal8Bit()));
     }
     emit changed(recordId());
     return res;
@@ -2106,7 +2107,7 @@ bool TrkToolRecord::appendNote(const QString &noteTitle, const QString &note)
     if(isTrkOK(TrkAddNewNote(*noteHandle)))
     {
         res = isTrkOK(TrkSetNoteTitle(*noteHandle, noteTitle.toLocal8Bit().constData()))
-            && isTrkOK(Do_TrkSetNoteData(*noteHandle, note.toLocal8Bit()));
+            && isTrkOK(Do_TrkSetNoteData(*noteHandle, stringToLocal8Bit(note))); // note.toLocal8Bit()));
 //        if(res)
 //        {
 //            TrkNote tmpNote;

@@ -11,7 +11,8 @@ QString intListToString(const QList<int> &arr);
 //QString intListToString(const QList<int> &list);
 QList<int> stringToIntList(const QString &s);
 QString onlyInts(const QString &text);
-
+QString filterUtf16(const QString &src);
+QByteArray stringToLocal8Bit(const QString &src);
 
 
 #endif // TTUTILS_H

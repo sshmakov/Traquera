@@ -93,6 +93,7 @@ win32: LIBS += -L$$PWD/../trktool/lib/ -ltrktooln -lshell32 -lshlwapi
 INCLUDEPATH += $$PWD/../trktool
 DEPENDPATH += $$PWD/../trktool
 
+
 OTHER_FILES += \
     data/scr.xq \
     data/print.xq \

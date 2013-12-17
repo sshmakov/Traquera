@@ -16,5 +16,6 @@
             <viewer type="text" ext="mac" syntax="RSL"/>
             <viewer type="text" ext="cpp,c,h,hpp" syntax="C"/>
             <viewer type="text" ext="pas" syntax="Pascal"/>
+            <viewer type="text" ext="sql" syntax="SQL"/>
         </preview>
 </init>
