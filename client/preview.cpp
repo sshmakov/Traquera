@@ -341,9 +341,12 @@ void PreviewImage::paintEvent(QPaintEvent *event)
 //    p.drawImage(target,image,src);
 
     if(resized.isNull() && !image.isNull())
-        resized = image.scaled(size(),Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        if(image.width() > width() || image.height() > height())
+            resized = image.scaled(size(),Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        else
+            resized = image;
 
-    QRectF target(0,0,resized.width(),resized.height());
+    QRectF target = resized.rect();
     QPointF c(this->rect().center());
     target.moveCenter(c);
     p.drawImage(target,resized,resized.rect());
