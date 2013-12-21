@@ -105,9 +105,14 @@ extern "C" TQSERVICESHARED_EXPORT DWORD WINAPI   HttpExtensionProc( __in EXTENSI
       DWORD dwAll;
       if(iParamFlg == 3) //оба параметра
       {
-        pAll = new char[21];
-        __int64 res = ia*ib;
-        sprintf(pAll, "%I64i", res);
+          QString rec = service->requestRecord(ia);
+          pAll = new char[rec.length()+1];
+          strcpy(pAll,rec.toLocal8Bit().constData());
+
+
+//        pAll = new char[21];
+//        __int64 res = ia*ib;
+//        sprintf(pAll, "%I64i", res);
         dwAll = strlen(pAll);
       }
       else
@@ -244,7 +249,7 @@ TQService::TQService()
     QString
             dbType = "LocalSQL", //sets.value("dbmsType").toString(),
             project = "RS-Bank V.6", //sets.value("project").toString(),
-            user = "Сергей", //sets.value("user").toString(),
+            user = QString::fromLocal8Bit("Сергей"), //sets.value("user").toString(),
             password = ""; //sets.value("password").toString();
     prj = db->openProject(dbType,project,user,password);
 }
@@ -252,5 +257,7 @@ TQService::TQService()
 QString TQService::requestRecord(int id)
 {
     QScopedPointer<TrkToolRecord> rec(prj->getRecordId(id));
+    if(rec.isNull())
+        return "empty";
     return rec->toXML().toString();
 }

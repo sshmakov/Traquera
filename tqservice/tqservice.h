@@ -15,6 +15,7 @@ private:
     TrkToolProject *prj;
 public:
     TQService();
+    QString requestRecord(int id);
 };
 
 extern "C" {
