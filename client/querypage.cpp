@@ -1335,7 +1335,7 @@ void QueryPage::openRecordId(int id)
     TrkToolRecord *rec = tmodel->project()->getRecordId(id);
     if(rec)
     {
-        TTRecordWindow *win = new TTRecordWindow(this);
+        TTRecordWindow *win = new TTRecordWindow();
         win->setTypeDef(rec->typeDef());
         win->setRecord(rec);
         win->show();
