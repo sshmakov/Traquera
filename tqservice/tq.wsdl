@@ -1,0 +1,260 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/" 
+	xmlns:tq="http://shmakov.ru/TQService/" 
+	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+        targetNamespace="http://shmakov.ru/TQService/">
+  <types>
+    <xs:schema 
+	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+	xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
+	xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+        targetNamespace="http://shmakov.ru/TQService/">
+      <xs:simpleType name="StringID">
+       <xs:restriction base="xs:string">
+       </xs:restriction>
+      </xs:simpleType>
+
+<!--
+     <xs:simpleType name="fahrenheitWaterTemp">
+      <xs:restriction base="xs:number">
+       <xs:fractionDigits value="2"/>
+       <xs:minExclusive value="0.00"/>
+       <xs:maxExclusive value="100.00"/>
+      </xs:restriction>
+     </xs:simpleType>
+-->
+
+      <xs:element name="NewSession">
+         <xs:complexType>
+           <xs:sequence>
+             <xs:element name="ClientUniqueID" type="tq:StringID"/>
+           </xs:sequence>
+         </xs:complexType>
+      </xs:element>
+
+      <xs:element name="NewSessionResult">
+         <xs:complexType>
+           <xs:sequence>
+             <xs:element name="ClientUniqueID" type="tq:StringID"/>
+             <xs:element name="SessionID" type="tq:StringID"/>
+           </xs:sequence>
+         </xs:complexType>
+      </xs:element>
+
+      <xs:element name="Login">
+         <xs:complexType>
+             <xs:attribute name="user" type="xs:string" use="required"/>
+             <xs:attribute name="password" type="xs:string" use="required"/>
+             <xs:attribute name="project" type="xs:string" use="required"/>
+         </xs:complexType>
+      </xs:element>
+
+      <xs:element name="LoginResult">
+         <xs:complexType>
+            <xs:attribute name="sessionID" type="tq:StringID" use="required"/>
+         </xs:complexType>
+      </xs:element>
+
+      <xs:element name="Result">
+         <xs:complexType>
+           <xs:sequence>
+             <xs:element name="resultCode" type="xs:decimal" use="required"/>
+             <xs:element name="resultDescription" type="xs:string"/>
+           </xs:sequence>
+         </xs:complexType>
+      </xs:element>
+
+      <xs:element name="Session">
+         <xs:complexType>
+            <xs:attribute name="sessionID" type="tq:StringID" use="required"/>
+         </xs:complexType>
+      </xs:element>
+
+
+      <xs:element name="GetRecord">
+        <xs:complexType>
+           <xs:sequence>
+             <xs:element name="sessionID" type="tq:StringID"/>
+             <xs:element name="projectID" type="tq:StringID"/>
+             <xs:element name="recordID" type="xs:decimal"/>
+           </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+
+      <xs:complexType name="FieldType">
+         <xs:attribute name="name" type="xs:string" use="required"/>
+         <xs:attribute name="value" type="xs:string" use="required"/>
+      </xs:complexType>
+
+      <xs:complexType name="NoteType">
+         <xs:attribute name="title" type="xs:string" use="required"/>
+         <xs:attribute name="editable" type="xs:boolean"/> 
+         <xs:attribute name="createdate" type="xs:string"/> 
+         <xs:attribute name="author" type="xs:string" use="required"/>
+         <xs:attribute name="modifydate" type="xs:string"/>
+         <xs:attribute name="index" type="xs:decimal" use="required"/>
+         <xs:attribute name="mdatetime" type="xs:dateTime"/>
+         <xs:attribute name="cdatetime" type="xs:dateTime"/>
+      </xs:complexType>
+
+      <xs:complexType name="ScrType">
+         <xs:sequence>
+           <xs:element name="fields">
+              <xs:complexType>
+                <xs:sequence>
+                   <xs:element name="fields" type="tq:FieldType" minOccurs="0" maxOccurs="unbounded"/>
+                   <xs:element name="notes" type="tq:NoteType" minOccurs="0" maxOccurs="unbounded"/>
+                </xs:sequence>
+              </xs:complexType>
+           </xs:element>
+<!--
+           <xs:element name="Description" >
+              <xs:complexType>
+               <xs:attribute name="name" type="xs:string"/>
+              </xs:complexType>
+           </xs:element>
+-->
+         </xs:sequence>
+      </xs:complexType>
+
+      <xs:element name="Record">
+        <xs:complexType>
+           <xs:sequence>
+             <xs:element name="sessionID" type="tq:StringID"/>
+             <xs:element name="projectID" type="tq:StringID"/>
+             <xs:element name="recordID" type="xs:decimal"/>
+           </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+
+      <xs:complexType name="QueryType">
+         <xs:attribute name="name" type="xs:string"/>
+         <xs:attribute name="visibilty" type="xs:integer"/>
+      </xs:complexType>
+
+      <xs:element  name="QueryList">
+      <xs:complexType>
+         <xs:sequence>
+           <xs:element name="Query" type="tq:QueryType" minOccurs="0" maxOccurs="unbounded"/>
+         </xs:sequence>
+      </xs:complexType>
+      </xs:element>
+
+    </xs:schema>
+  </types>
+
+  <message name="TQServiceMsgRequest">
+    <part element="tq:Login" name="inputmsg"/>
+  </message>
+
+  <message name="TQServiceMsgResponse">
+    <part element="tq:LoginResult" name="outputmsg"/>
+  </message>
+
+  <message name="Msg_GetRecord">
+    <part element="tq:GetRecord" name="inputmsg"/>
+  </message>
+
+  <message name="Msg_Record">
+    <part element="tq:ScrType" name="outputmsg"/>
+  </message>
+
+  <message name="Msg_Header">
+    <part element="tq:Session" name="header"/>
+  </message>
+
+  <message name="Msg_QueryList">
+    <part name="list" type="tq:QueryListType"/>
+  </message>
+
+  <portType name="TQService">
+    <operation name="TQServiceMsg">
+      <input message="tq:TQServiceMsgRequest"/>
+      <output message="tq:TQServiceMsgResponse"/>
+    </operation>
+    <operation name="get_record">
+      <input message="tq:Msg_GetRecord"/>
+      <output message="tq:Msg_Record"/>
+    </operation>
+    <operation name="put_record">
+      <input message="tq:Msg_Record"/>
+      <output message="tq:Result"/>
+    </operation>
+    <operation name="get_queryList">
+<!--      <input message="tq:Msg_Record"/> -->
+      <output message="tq:QueryList"/>
+    </operation>
+  </portType>
+
+  <binding name="TQSoapBinding" type="tq:TQService">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="TQServiceMsg"> <!-- -->
+      <soap:operation soapAction="Login"/>
+      <input>
+<!--        <soap:header message="tq:TQServiceMsgRequest" part="inputmsg" use="literal"/> -->
+        <soap:body use="literal" />
+      </input>
+      <output>
+<!--        <soap:header message="tq:TQServiceMsgResponse" part="outputmsg" use="literal"/> -->
+<!-- <wsoap12:header message="tns:SubscribeToQuotes" part="subscribeheader" use="literal"/> -->
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+    <operation name="get_record"> <!-- -->
+      <soap:operation soapAction="GetRecord"/>
+      <input>
+        <soap:header message="tq:Msg_Header" part="header" use="literal"/>
+        <soap:body use="literal" />
+      </input>
+      <output>
+<!--        <soap:header message="tq:TQServiceMsgResponse" part="outputmsg" use="literal"/> -->
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+    <operation name="put_record">
+      <soap:operation soapAction="SubmitRecord"/>
+      <input>
+        <soap:header message="tq:Msg_Header" part="header" use="literal"/>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+    <operation name="get_queryList"> 
+      <soap:operation soapAction="GetQueryList"/>
+      <input>
+        <soap:header message="tq:Msg_Header" part="header" use="literal"/>
+<!--        <soap:body use="literal" /> -->
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+  </binding>
+
+  <service name="TQService">
+    <port binding="tq:TQSoapBinding" name="TQPort">
+      <soap:address location="http://localhost:8080/tq/"/>
+    </port>
+  </service>
+  
+
+<!--
+
+  <service name="SmevUnifoService">
+    <port binding="WL5G3N1:SmevUnifoServiceSOAP" name="SmevUnifoServiceSOAP">
+      <soap:address location="http://d00smevapp21.00.egov.local:7777/gateway/services/SID0003218"/>
+    </port>
+  </service>
+
+  <service name="TQService">
+    <port name="LocalPort" binding="TQSoapBinding">
+      <soap:address location="http://localhost:8080/tq/"/>
+    </port>
+  </service>
+-->
+
+
+
+</definitions>

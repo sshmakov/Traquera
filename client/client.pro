@@ -123,3 +123,6 @@ qtcAddDeployment()
 DEFINES -= CONSOLE_APP
 
 RC_FILE = traquera-win.rc
+
+#INCLUDEPATH += /Projects/ImageMagick-6.8.7-Q16/include
+#LIBS += -L/Projects/ImageMagick-6.8.7-Q16/lib -lCORE_RL_Magick++_

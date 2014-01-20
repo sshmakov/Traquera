@@ -50,3 +50,6 @@ unix:!symbian {
 }
 
 #QMAKE_LFLAGS += /def:tqservice.def
+
+RESOURCES += \
+    tqservice.qrc
