@@ -21,6 +21,7 @@ protected:
     QTextStream sout;
     QSettings sets;
     QString prjName;
+    QString uniqueField;
     QHash<QString, QString> fieldMap;
 public:
     QNetworkAccessManager man;

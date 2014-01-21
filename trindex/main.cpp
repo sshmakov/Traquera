@@ -62,6 +62,7 @@ MainClass::MainClass(QObject *parent, char *iniFile)
     db->dbmsUser = sets.value("dbmsUser").toString();
     db->dbmsPassword = sets.value("dbmsPassword").toString();
     db->dbmsName = sets.value("dbmsName").toString(); //"SHMAKOVTHINK\\SQLEXPRESS";
+    uniqueField = sets.value("uniqueId","id").toString();
     //QScopedPointer<TrkToolProject> prj(db->openProject(argv[1],argv[2],argv[3],argv[4]));
     QString
             dbType = sets.value("dbmsType").toString(),
@@ -103,12 +104,16 @@ const char *suffix[11] = {
             };
 
 
-QDomElement eField(QDomDocument &xml, const QString &name, const QString &value)
+QDomElement eField(QDomDocument &xml, const QString &name, const QString &value, int ftype = TRK_FIELD_TYPE_STRING)
 {
 
     QDomElement f = xml.createElement("field");
     f.setAttribute("name", name);
-    QDomText text = xml.createTextNode(value);
+    QDomText text;
+    if(ftype == TRK_FIELD_TYPE_NUMBER && value.isEmpty())
+        text = xml.createTextNode(0);
+    else
+        text = xml.createTextNode(value);
     f.appendChild(text);
     return f;
 }
@@ -138,7 +143,8 @@ QDomDocument MainClass::recFieldsXml(TrkToolRecord *rec)
     {
         int ftype = prj->fieldType(fi, rec->recordType());
         root.appendChild(eField(xml, fieldNameTranslate(fi, ftype), //filterName(fi) + QString(suffix[ftype]),
-                                filter(rec->value(fi).toString())));
+                                filter(rec->value(fi).toString()),
+                                ftype));
     }
     root.appendChild(eField(xml,fieldNameTranslate("Description",TRK_FIELD_TYPE_STRING), //"Description_s"
                             rec->description()));
@@ -223,9 +229,8 @@ void MainClass::finished()
 
 void MainClass::onError(QNetworkReply::NetworkError error)
 {
-    QString res= QString("Error %1: %2\n").arg(reply->error()).arg(reply->errorString());
+    QString res = QString("Error %1: %2\n").arg(reply->error()).arg(reply->errorString());
     emit next();
-
 }
 
 void MainClass::finished(QNetworkReply *reply)
