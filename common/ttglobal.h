@@ -24,6 +24,7 @@ public:
     //TrkToolProject *currentProject;
     static TTGlobal *global();
     QSqlDatabase userDatabase();
+    Q_INVOKABLE QString toOemString(const QString &s);
 protected:
     void readInitSettings();
     void upgradeUserDB();
@@ -34,6 +35,7 @@ public slots:
     void showError(const QString &text);
     void statusBarMessage(const QString& text);
     void shell(const QString &command);
+    int shellLocale(const QString &command, const QString &locale = QString());
 };
 
 

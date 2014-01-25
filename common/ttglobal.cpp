@@ -9,6 +9,8 @@
 #include <QFile>
 #include <QTextStream>
 #include <QXmlInputSource>
+#include <Windows.h>
+#include <QMessageBox>
 
 static TTGlobal *ttGlobal=0;
 
@@ -45,6 +47,11 @@ QSqlDatabase TTGlobal::userDatabase()
             SQLError(userDb.lastError());
     }
     return userDb;
+}
+
+QString TTGlobal::toOemString(const QString &s)
+{
+    return s;
 }
 
 void TTGlobal::showError(const QString &text)
@@ -116,3 +123,25 @@ void TTGlobal::shell(const QString &command)
 {
     QProcess::startDetached(command);
 }
+
+int TTGlobal::shellLocale(const QString &command, const QString &locale)
+{
+    QString loc =locale;
+    if(loc.isEmpty())
+        loc ="System";
+    QTextCodec *codec = QTextCodec::codecForName(loc.toLocal8Bit().constData());
+    QByteArray enc = codec->fromUnicode(command);
+    STARTUPINFOA info;
+    PROCESS_INFORMATION pi;
+    qMemSet(&info,0,sizeof(info));
+    info.cb = sizeof(info);
+    //info.wShowWindow = SHOW_OPENWINDOW;
+    char *cmd = enc.data();
+    const WCHAR *wcmd = command.utf16();
+//    BOOL res = CreateProcessW(0, (LPWSTR)wcmd, 0, 0, false, 0, 0, 0, &info, &pi);
+    BOOL res = CreateProcessA(0, cmd, 0, 0, false, 0, 0, 0, &info, &pi);
+    if(res)
+        return 0;
+    return GetLastError();
+}
+
