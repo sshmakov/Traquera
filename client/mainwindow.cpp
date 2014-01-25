@@ -549,7 +549,10 @@ void MainWindow::connectTracker()
 
 
     if(trkproject)
+    {
         delete trkproject;
+        trkproject = NULL;
+    }
     if(!journal)
     {
         journal = new TrkHistory(this);
@@ -563,10 +566,12 @@ void MainWindow::connectTracker()
                 project,
                 user,
                 password);
-    if(trkproject)
+    if(trkproject && trkproject->isOpened())
     {
         saveSettings();
         journal->setProject(trkproject);
+        readQueries();
+        //connectButton->setDisabled(true);
     }
 	/*
 	if(!trkdb)
@@ -574,8 +579,6 @@ void MainWindow::connectTracker()
 	if(trkdb->openProject(getTrkConnectString(),project,user))
 		saveSettings();
 		*/
-	readQueries();
-    connectButton->setDisabled(true);
 }
 
 
