@@ -508,7 +508,7 @@ bool TQSession::isOpened() const
 
 QString TQSession::requestRecord(int id)
 {
-    QScopedPointer<TrkToolRecord> rec(prj->getRecordId(id));
+    QScopedPointer<TrkToolRecord> rec(prj->createRecordById(id));
     if(rec.isNull())
         return "empty";
     return rec->toXML().toString();

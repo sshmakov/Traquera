@@ -52,7 +52,7 @@ void ScrWidget::readRecord()
 {
 	descEdit->setPlainText(record->description());
     notesTable->clearContents();
-    notes = record->getNotes();
+    notes = record->notes();
     int row=0;
     foreach(const TrkNote &note, notes)
     {

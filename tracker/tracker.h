@@ -336,6 +336,9 @@ struct TrkNote
 	QDateTime crdate;
 	QDateTime mddate;
     int perm;
+    bool isAdded;
+    bool isDeleted;
+    bool isChanged;
 //    TrkNote();
 //    TrkNote(const TrkNote &src);
 };

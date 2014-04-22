@@ -18,6 +18,8 @@
 
 bool isTrkOK(int result, bool show = true)
 {
+    if(result ==  TRK_SUCCESS)
+        return true;
     QString error;
     switch(result)
     {
@@ -90,7 +92,7 @@ bool isTrkOK(int result, bool show = true)
     case TRK_E_PARTIAL_SUCCESS		       :    error = QObject::tr("TRK_E_PARTIAL_SUCCESS		"); break;
     }
     if(error.isEmpty())
-        error = QString(QObject::tr("Ошибка Tracker %1")).arg(result);
+        error = QString(QObject::tr("Tracker Error %1")).arg(result);
 #ifndef CONSOLE_APP
 
     if(show)
@@ -99,6 +101,16 @@ bool isTrkOK(int result, bool show = true)
     return false;
 }
 
+
+static TRK_UINT Do_TrkSetNoteData(TRK_NOTE_HANDLE noteHandle, const QByteArray &data)
+{
+    return TrkSetNoteData(noteHandle, data.size(), data.constData(), 0);
+}
+
+static TRK_UINT Do_TrkSetDescription(TRK_RECORD_HANDLE recHandle, const QByteArray &data)
+{
+    return TrkSetDescriptionData(recHandle, data.size(), data.constData(), 0);
+}
 
 #ifndef CONSOLE_APP
 // =================== TrkView ===============
@@ -400,6 +412,7 @@ TrkToolProject::TrkToolProject(TrkToolDB *parent)
     , theQueryModel(this)
     , opened(false)
     , selected()
+    , handlers()
 {
     db=parent;
 	TrkHandleAlloc(TRK_VERSION_ID, &handle);
@@ -604,6 +617,14 @@ bool TrkToolProject::readDefs()
             }
 		}
         recordDef[ri.key()]->fieldDefs = def;
+        if(def.contains(VID_Id))
+            recordDef[ri.key()]->baseFields[VID_Id] = def[VID_Id]->name;
+        if(def.contains(VID_Title))
+            recordDef[ri.key()]->baseFields[VID_Title] = def[VID_Title]->name;
+        if(def.contains(VID_Owner))
+            recordDef[ri.key()]->baseFields[VID_Owner] = def[VID_Owner]->name;
+        if(def.contains(VID_Submitter))
+            recordDef[ri.key()]->baseFields[VID_Submitter] = def[VID_Submitter]->name;
         //recordDef[ri.key()].rectype = ri.key();
 	}
     return true;
@@ -804,20 +825,73 @@ QString TrkToolProject::userFullName(const QString &login)
     return res;
 }
 
-TrkToolRecord *TrkToolProject::getRecordId(TRK_UINT id, TRK_RECORD_TYPE rectype)
+TrkToolRecord *TrkToolProject::newRecord(TRK_RECORD_TYPE rectype)
+{
+    TrkToolRecord *rec = new TrkToolRecord(this,rectype);
+    /*
+    if(!isTrkOK(TrkRecordHandleAlloc(handle,&rec->lockHandle)))
+    {
+        delete rec;
+        return 0;
+    }
+    if(!isTrkOK(TrkNewRecordBegin(rec->lockHandle ,rec->recordType())))
+    {
+        delete rec;
+        return 0;
+    }
+    */
+    /*
+    if(!isTrkOK(TrkSetStringFieldValue(rec->lockHandle,"Title","Test title")))
+    {
+        delete rec;
+        return 0;
+    }
+    const char *desc="Test desc";
+    if(!isTrkOK(TrkSetDescriptionData(rec->lockHandle,qstrlen(desc),desc,0)))
+    {
+        delete rec;
+        return 0;
+    }
+    */
+    QList<int> vids = recordDef[rectype]->fieldIds();
+    foreach(int vid, vids)
+    {
+        rec->values[vid] = recordDef[rectype]->getFieldDef(vid).defaultValue();
+    }
+
+
+    rec->recMode = TrkToolRecord::Insert;
+    //rec->commit();
+    return rec;
+}
+
+TrkToolRecord *TrkToolProject::createRecordById(TRK_UINT id, TRK_RECORD_TYPE rectype)
 {
     TrkToolRecord *rec=0;
+    TrkScopeRecHandle recHandle(this, 0, id, rectype);
+    if(!recHandle.isValid())
+        return 0;
+    rec = new TrkToolRecord(this, rectype);
+    rec->values[VID_Id] = QVariant::fromValue<int>(id);
+    doReadBaseFields(rec, *recHandle);
+    connect(rec,SIGNAL(changed(int)),this,SIGNAL(recordChanged(int)));
+    return rec;
+
+
+    /*
     TRK_RECORD_HANDLE recHandle;
     if(!isTrkOK(TrkRecordHandleAlloc(handle, &recHandle)))
         return 0;
     if(isTrkOK(TrkGetSingleRecord(recHandle, id, rectype)))
     {
         rec = new TrkToolRecord(this, rectype);
-        rec->readHandle(recHandle);
+        rec->values[VID_Id] = QVariant::fromValue<int>(id);
+        doReadBaseFields(rec, recHandle);
         connect(rec,SIGNAL(changed(int)),this,SIGNAL(recordChanged(int)));
     }
     TrkRecordHandleFree(&recHandle);
     return rec;
+    */
 }
 
 QAbstractItemModel *TrkToolProject::queryModel(TRK_RECORD_TYPE /* type */)
@@ -842,6 +916,30 @@ TrkToolModel *TrkToolProject::openQueryModel(const QString &name, TRK_RECORD_TYP
     if(emitEvent)
         emit openedModel(model);
     return model;
+}
+
+QList<int> TrkToolProject::getQueryIds(const QString &name, TRK_RECORD_TYPE type)
+{
+    bool rc;
+    TrkScopeRecHandle recHandle(this);
+    //TRK_RECORD_HANDLE recHandle;
+    //rc = isTrkOK(TrkRecordHandleAlloc(handle, &recHandle));
+    bool res;
+    QList<int> list;
+    if(recHandle.isValid())
+    {
+        TRK_TRANSACTION_ID prevTransId=0, lastTransId=0;
+        //prevTransId = afterTransId;
+        rc = isTrkOK(TrkQueryInitRecordList(*recHandle, name.toLocal8Bit().constData(), prevTransId, &lastTransId));
+        while(rc = (TRK_SUCCESS == (TrkGetNextRecord(*recHandle))))
+        {
+            TRK_UINT value;
+            TrkGetNumericFieldValue(*recHandle, "Id", &value);
+            list.append(value);
+        }
+        //TrkRecordHandleFree(&recHandle);
+    }
+    return list;
 }
 
 TrkToolModel *TrkToolProject::openRecentModel(int afterTransId, const QString &name, TRK_RECORD_TYPE type)
@@ -873,17 +971,16 @@ TrkToolModel *TrkToolProject::openIdsModel(const QList<int> &ids, TRK_RECORD_TYP
     return model;
 }
 
+/*
 NotesCol TrkToolProject::getNotes(int recId, TRK_RECORD_TYPE type) const
 {
     NotesCol col;
-    TRK_RECORD_HANDLE recHandle;
-    if(!isTrkOK(TrkRecordHandleAlloc(handle, &recHandle)))
-        return col;
-    if(isTrkOK(TrkGetSingleRecord(recHandle, recId, type)))
-        col = getNotes(recHandle);
-	TrkRecordHandleFree(&recHandle);
+    TrkScopeRecHandle recHandle(handle);
+    if(isTrkOK(TrkGetSingleRecord(*recHandle, recId, type)))
+        col = doGetNotes(*recHandle);
     return col;
 }
+*/
 
 bool TrkToolProject::readNoteRec(TRK_NOTE_HANDLE noteHandle, TrkNote *note) const
 {
@@ -919,7 +1016,27 @@ bool TrkToolProject::readNoteRec(TRK_NOTE_HANDLE noteHandle, TrkNote *note) cons
     return true;
 }
 
-NotesCol TrkToolProject::getNotes(TRK_RECORD_HANDLE recHandle) const
+QString TrkToolProject::doGetDesc(TRK_RECORD_HANDLE recHandle) const
+{
+    QString result;
+    TRK_UINT remain;
+    if(isTrkOK(TrkGetDescriptionDataLength(recHandle, &remain)))
+    {
+        char buf[1024];
+        TRK_UINT res;
+        while(remain)
+        {
+            res = TrkGetDescriptionData(recHandle,sizeof(buf),buf,&remain);
+            if(res != TRK_SUCCESS && res != TRK_E_DATA_TRUNCATED)
+                break;
+            result += buf;
+        }
+        return filterUtf16(result);
+    }
+    return QString();
+}
+
+NotesCol TrkToolProject::doGetNotes(TRK_RECORD_HANDLE recHandle) const
 {
     NotesCol col;
     TrkScopeNoteHandle noteHandle(recHandle);
@@ -931,6 +1048,9 @@ NotesCol TrkToolProject::getNotes(TRK_RECORD_HANDLE recHandle) const
             {
                 TrkNote note;
                 readNoteRec(*noteHandle, &note);
+                note.isAdded = false;
+                note.isChanged = false;
+                note.isDeleted = false;
                 col.append(note);
             }
         }
@@ -938,7 +1058,544 @@ NotesCol TrkToolProject::getNotes(TRK_RECORD_HANDLE recHandle) const
     return col;
 }
 
-QString TrkToolProject::fieldVID2Name(TRK_RECORD_TYPE rectype, TRK_VID vid)
+QVariant TrkToolProject::doGetValue(TRK_RECORD_HANDLE recHandle, const QString &fname, TRK_FIELD_TYPE fType, bool *ok)
+{
+    bool dummy;
+    bool &p = ok ? *ok : dummy;
+    char buf[1024];
+    switch(fType)
+    {
+    case TRK_FIELD_TYPE_DATE:
+        if(isTrkOK(TrkGetStringFieldValue(recHandle, fname.toLocal8Bit().constData(), sizeof(buf), buf)))
+        {
+            QDateTime dt = QDateTime::fromString(QString::fromLocal8Bit(buf),TT_DATETIME_FORMAT);
+            p = true;
+            return QVariant::fromValue<QDateTime>(dt);
+        }
+        p = false;
+        return QVariant();
+    case TRK_FIELD_TYPE_CHOICE:
+    case TRK_FIELD_TYPE_SUBMITTER:
+    case TRK_FIELD_TYPE_OWNER:
+    case TRK_FIELD_TYPE_USER:
+    case TRK_FIELD_TYPE_ELAPSED_TIME:
+    case TRK_FIELD_TYPE_STATE:
+    case TRK_FIELD_TYPE_STRING:
+        if(isTrkOK(TrkGetStringFieldValue(recHandle, fname.toLocal8Bit().constData(), sizeof(buf), buf)))
+        {
+            p = true;
+            return QVariant::fromValue<QString>(QString::fromLocal8Bit(buf));
+        }
+        p = false;
+        return QVariant::fromValue<QString>(QString(""));
+    case TRK_FIELD_TYPE_NUMBER:
+        TRK_UINT value;
+        if(isTrkOK(TrkGetNumericFieldValue(recHandle, fname.toLocal8Bit().constData(), &value)))
+        {
+            p = true;
+            return QVariant::fromValue<int>(value);
+        }
+        p = false;
+        return QVariant::fromValue<int>(0);
+    case TRK_FIELD_TYPE_NONE:
+        p = false;
+        return QVariant();
+    }
+    p = false;
+    return QVariant();
+}
+
+bool TrkToolProject::doReadBaseFields(TrkToolRecord *record, TRK_RECORD_HANDLE recHandle)
+{
+    QHash<int, QString> baseFields = baseRecordFields(record->rectype);
+    foreach(int vid, baseFields.keys())
+    {
+        QString fname = baseFields[vid];
+        TRK_FIELD_TYPE fType = recordDef[record->rectype]->fieldType(vid);
+        record->values[vid] = doGetValue(recHandle, fname, fType);
+    }
+    emit recordValuesLoaded(record->recordId());
+    return true;
+}
+
+bool TrkToolProject::readRecordWhole(TrkToolRecord *record)
+{
+    TrkScopeRecHandle recHandle(this, record);
+    resetRecHandler(recHandle.recHandler());
+    if(record->mode() == TrkToolRecord::Insert)
+        return true;
+    bool res = readRecordFields(record) && readRecordTexts(record);
+    emit recordValuesLoaded(record->recordId());
+    //record->somethingChanged();
+    return res;
+    /*
+    TrkScopeRecHandle recHandle(handle, record->lockHandle, record->recordId(), record->recordType());
+    if(!recHandle.isValid())
+        return false;
+    QList<int> vids = recordDef[record->rectype]->fieldIds();
+    foreach(int vid, vids)
+    {
+        QString fname = recordDef[record->rectype]->fieldName(vid);
+        TRK_FIELD_TYPE fType = recordDef[record->rectype]->fieldType(vid);
+        record->values[vid] = doGetValue(*recHandle, fname, fType);
+        // getFieldValue(record, fname);
+    }
+    record->desc = doGetDesc(*recHandle);
+    record->descChanged = false;
+    record->descLoaded = true;
+    record->notesList = doGetNotes(*recHandle);
+    record->notesReaded = true;
+    return true;
+    */
+}
+
+
+bool TrkToolProject::readRecordFields(TrkToolRecord *record)
+{
+    if(record->mode() == TrkToolRecord::Insert)
+        return true;
+    TrkScopeRecHandle recHandle(this, record);
+    if(!recHandle.isValid())
+        return false;
+    QList<int> vids = recordDef[record->rectype]->fieldIds();
+    foreach(int vid, vids)
+    {
+        QString fname = recordDef[record->rectype]->fieldName(vid);
+        TRK_FIELD_TYPE fType = recordDef[record->rectype]->fieldType(vid);
+        record->values[vid] = doGetValue(*recHandle, fname, fType);
+        // getFieldValue(record, fname);
+    }
+    emit recordValuesLoaded(record->recordId());
+    return true;
+}
+
+bool TrkToolProject::readRecordTexts(TrkToolRecord *record)
+{
+    if(record->mode() == TrkToolRecord::Insert)
+        return true;
+    TrkScopeRecHandle recHandle(this, record);
+    if(!recHandle.isValid())
+        return false;
+    record->desc = doGetDesc(*recHandle);
+    record->descChanged = false;
+    record->notesList = doGetNotes(*recHandle);
+    record->textsReaded = true;
+    emit recordValuesLoaded(record->recordId());
+    return true;
+}
+
+bool TrkToolProject::readRecordBase(TrkToolRecord *record)
+{
+    if(record->mode() == TrkToolRecord::Insert)
+        return true;
+    TrkScopeRecHandle recHandle(this, record);
+    if(!recHandle.isValid())
+        return false;
+    return doReadBaseFields(record, *recHandle);
+}
+
+TrkToolRecord *TrkToolProject::createRecordByHandle(TRK_RECORD_HANDLE recHandle, TRK_RECORD_TYPE rectype)
+{
+    TrkToolRecord *record = new TrkToolRecord(this, rectype);
+    doReadBaseFields(record, recHandle);
+    return record;
+}
+
+QVariant TrkToolProject::getFieldValue(TrkToolRecord *record, const QString &fname, bool *ok)
+{
+    if(record->mode() == TrkToolRecord::Insert)
+        return true;
+    TrkScopeRecHandle recHandle(this, record);
+    if(!recHandle.isValid())
+        return false;
+    TRK_FIELD_TYPE fType = recordDef[record->rectype]->fieldType(fname);
+    bool dummy;
+    bool *p =ok ? ok: &dummy;
+    return doGetValue(*recHandle, fname, fType, p);
+
+    /*
+
+    TRK_RECORD_HANDLE handle = record->lockHandle;
+    TRK_RECORD_TYPE rectype = record->recordType();
+    char buf[1024];
+    TRK_FIELD_TYPE fType = recordDef[rectype]->fieldType(fname);
+    //QString fname = prj->recordDef[rectype]->fieldName(vid);
+    switch(fType)
+    {
+    case TRK_FIELD_TYPE_DATE:
+        if(isTrkOK(TrkGetStringFieldValue(handle, fname.toLocal8Bit().constData(), sizeof(buf), buf)))
+        {
+            QDateTime dt = QDateTime::fromString(QString::fromLocal8Bit(buf),TT_DATETIME_FORMAT);
+            return QVariant::fromValue<QDateTime>(dt);
+        }
+        return QVariant();
+    case TRK_FIELD_TYPE_CHOICE:
+    case TRK_FIELD_TYPE_SUBMITTER:
+    case TRK_FIELD_TYPE_OWNER:
+    case TRK_FIELD_TYPE_USER:
+    case TRK_FIELD_TYPE_ELAPSED_TIME:
+    case TRK_FIELD_TYPE_STATE:
+    case TRK_FIELD_TYPE_STRING:
+        if(isTrkOK(TrkGetStringFieldValue(handle, fname.toLocal8Bit().constData(), sizeof(buf), buf)))
+            return QVariant::fromValue<QString>(QString::fromLocal8Bit(buf));
+        return QVariant::fromValue<QString>(QString(""));
+    case TRK_FIELD_TYPE_NUMBER:
+        TRK_UINT value;
+        if(isTrkOK(TrkGetNumericFieldValue(handle, fname.toLocal8Bit().constData(), &value)))
+            return QVariant::fromValue<int>(value);
+        return QVariant::fromValue<int>(0);
+    case TRK_FIELD_TYPE_NONE:
+        return QVariant();
+    }
+    return QVariant();
+    */
+}
+
+QVariant TrkToolProject::getFieldValue(TrkToolRecord *record, TRK_VID vid, bool *ok)
+{
+    QString fname = fieldVID2Name(record->recordType(), vid);
+    return getFieldValue(record, fname, ok);
+}
+
+bool TrkToolProject::setFieldValue(TrkToolRecord *record, const QString &fname, const QVariant &value)
+{
+    if(record->recMode != TrkToolRecord::Edit && record->recMode != TrkToolRecord::Insert)
+        return false;
+    TrkScopeRecHandle recHandle(this, record);
+    if(!recHandle.isValid())
+        return false;
+    TRK_RECORD_TYPE rectype = record->recordType();
+    TRK_FIELD_TYPE fType = recordDef[rectype]->fieldType(fname);
+    TRK_VID vid = fieldName2VID(rectype, fname);
+    TrkFieldType def = recordDef[rectype]->getFieldDef(vid);
+    QString s;
+    QDateTime dt;
+    switch(def.fType())
+    {
+    case TRK_FIELD_TYPE_DATE:
+        dt = value.toDateTime();
+        s = dt.toString(TT_DATETIME_FORMAT);
+        return isTrkOK(TrkSetStringFieldValue(*recHandle, fname.toLocal8Bit().constData(), //buf
+                                          s.toLocal8Bit().constData()));
+        //case TRK_FIELD_TYPE_NONE:
+    case TRK_FIELD_TYPE_CHOICE:
+    case TRK_FIELD_TYPE_SUBMITTER:
+    case TRK_FIELD_TYPE_OWNER:
+    case TRK_FIELD_TYPE_USER:
+    case TRK_FIELD_TYPE_ELAPSED_TIME:
+    case TRK_FIELD_TYPE_STATE:
+    case TRK_FIELD_TYPE_STRING:
+        s = value.toString();
+        return isTrkOK(TrkSetStringFieldValue(*recHandle, fname.toLocal8Bit().constData(), //buf
+                                                 s.toLocal8Bit().constData()));
+    case TRK_FIELD_TYPE_NUMBER:
+        TRK_UINT uint = value.toUInt();
+        return isTrkOK(TrkSetNumericFieldValue(*recHandle, fname.toLocal8Bit().constData(), uint));
+    }
+    return false;
+}
+
+/*
+bool TrkToolProject::insertRecordBegin(TrkToolRecord *record)
+{
+    TrkRecHandler h;
+    if(!record->lockHandle)
+        if(!isTrkOK(TrkRecordHandleAlloc(handle,&record->lockHandle)))
+            return false;
+    if(!isTrkOK(TrkNewRecordBegin(record->lockHandle,record->rectype)))
+        return false;
+    record->recMode = TrkToolRecord::Insert;
+    return true;
+}
+*/
+
+bool TrkToolProject::updateRecordBegin(TrkToolRecord *record)
+{
+    TrkScopeRecHandle recHandle(this, record);
+    TrkRecHandler *ph = recHandle.recHandler(); //allocRecHandler(record->recordId(), record->recordType());
+    if(!ph)
+        return false;
+    if(!ph->isModify)
+    {
+        //resetRecHandler(ph);
+        if(!isTrkOK(TrkUpdateRecordBegin(recHandle.nativeHandle())))
+            return false;
+        ph->isModify = true;
+    }
+    record->recMode = TrkToolRecord::Edit;
+    emit recordStateChanged(record->recordId());
+    return true;
+}
+
+bool TrkToolProject::commitRecord(TrkToolRecord *record)
+{
+    bool res = false;
+    if(record->mode() == TrkToolRecord::Insert)
+        res = doCommitInsert(record);
+    else if(record->mode() == TrkToolRecord::Edit)
+        res = doCommitUpdate(record);
+    if(res)
+        emit recordStateChanged(record->recordId());
+    return res;
+}
+
+bool TrkToolProject::cancelRecord(TrkToolRecord *record)
+{
+    bool res = false;
+    if(record->mode() == TrkToolRecord::Insert)
+        res = doCancelInsert(record);
+    else if(record->mode() == TrkToolRecord::Edit)
+        res = doCancelUpdate(record);
+    if(res)
+        emit recordStateChanged(record->recordId());
+    return res;
+
+//    if(!locks.contains(record))
+//    {
+//        record->recMode = TrkToolRecord::View;
+//        return true;
+//    }
+//    TrkRecHandler &h = locks[record];
+//    isTrkOK(TrkRecordCancelTransaction(h.handle));
+//    isTrkOK(TrkRecordHandleFree(&h.handle));
+//    record->recMode = TrkToolRecord::View;
+//    locks.remove(record);
+//    return true;
+}
+
+QList<TrkToolFile> TrkToolProject::attachedFiles(TrkToolRecord *record)
+{
+    QList<TrkToolFile> res;
+    TrkScopeRecHandle recHandle(this, record);
+    if(!recHandle.isValid())
+        return res;
+    TRK_ATTFILE_HANDLE attHandle;
+    if(isTrkOK(TrkAttachedFileHandleAlloc(*recHandle,&attHandle))
+            && isTrkOK(TrkInitAttachedFileList(attHandle)))
+    {
+        while(TRK_SUCCESS == TrkGetNextAttachedFile(attHandle))
+        {
+            TrkToolFile file;
+            char buf[1024];
+            if(TRK_SUCCESS == TrkGetAttachedFileName(attHandle,sizeof(buf),buf))
+                file.fileName = QString::fromLocal8Bit(buf);
+            TRK_TIME time;
+            if(TRK_SUCCESS == TrkGetAttachedFileTime(attHandle, &time))
+                file.createDateTime = QDateTime::fromTime_t(time);
+            /*
+                TRK_FILE_STORAGE_MODE mode;
+                TRK_UINT sz;
+                char buf1[1024],buf2[1024],buf3[1024],buf4[1024],buf5[1024];
+                isTrkOK(TrkGetAttachedFileInfo(attHandle,buf1,buf2,buf3,buf4,buf5));
+                */
+            res.append(file);
+        }
+    }
+    TrkAttachedFileHandleFree(&attHandle);
+    return res;
+}
+
+QHash<int, QString> TrkToolProject::baseRecordFields(TRK_RECORD_TYPE rectype)
+{
+    RecordTypeDef *def = recordDef[rectype];
+    return def->baseFields;
+}
+
+bool TrkToolProject::doCommitInsert(TrkToolRecord *record)
+{
+    TrkScopeRecHandle recHandle(this);
+    if(!isTrkOK(TrkNewRecordBegin(*recHandle,record->recordType())))
+        return false;
+    bool res;
+    if(!doSaveFields(record, *recHandle))
+        return false;
+    if(!doSaveNotes(record, *recHandle))
+        return false;
+    if(isTrkOK(TrkNewRecordCommit(*recHandle, &record->lastTransaction)))
+    {
+        record->setRecordId(doGetRecordId(*recHandle, record->recordType()));
+        record->recMode = TrkToolRecord::View;
+        record->readFullRecord();
+        record->somethingChanged();
+        return true;
+    }
+    return false;
+}
+
+bool TrkToolProject::doCommitUpdate(TrkToolRecord *record)
+{
+    TrkScopeRecHandle recHandle(this,record);
+    if(!recHandle.isValid())
+        return false;
+//    if(!ph->isModify)
+//        return false;
+    if(!doSaveFields(record, *recHandle))
+        return false;
+    if(doSaveNotes(record, *recHandle) && isTrkOK(TrkUpdateRecordCommit(*recHandle, &record->lastTransaction)))
+    {
+        recHandle.recHandler()->isModify = false;
+        record->recMode = TrkToolRecord::View;
+        record->somethingChanged();
+        return true;
+    }
+    return false;
+}
+
+bool TrkToolProject::doCancelInsert(TrkToolRecord *record)
+{
+    record->recMode = TrkToolRecord::View;
+    return true;
+}
+
+bool TrkToolProject::doCancelUpdate(TrkToolRecord *record)
+{
+    TrkScopeRecHandle recHandle(this,record);
+    if(!recHandle.isValid())
+        return false;
+    isTrkOK(TrkRecordCancelTransaction(*recHandle));
+    recHandle.recHandler()->isModify = false;
+    record->recMode = TrkToolRecord::View;
+    record->somethingChanged();
+    return true;
+}
+
+bool TrkToolProject::doSaveFields(TrkToolRecord *record, TRK_RECORD_HANDLE recHandle)
+{
+    if(!record->isEditing())
+        return false;
+    bool res = true;
+    if(record->descChanged)
+        res = isTrkOK(Do_TrkSetDescription(recHandle, stringToLocal8Bit(record->desc)));
+    foreach(int vid, record->values.keys())
+    {
+        if(record->changedValue.contains(vid) && record->changedValue[vid])
+            res = res && doSetValue(record, recHandle, vid, record->values[vid]);
+        if(res)
+            record->changedValue[vid] = false;
+    }
+    return res;
+}
+
+bool TrkToolProject::doSetValue(TrkToolRecord *record, TRK_RECORD_HANDLE recHandle, TRK_VID vid, const QVariant& value)
+{
+    if(!record->isEditing())
+        return false;
+    QString fieldName = fieldVID2Name(record->rectype, vid);
+    //TRK_VID vid = fieldName2VID(record->rectype, fieldName);
+    TrkFieldType def = recordDef[record->rectype]->getFieldDef(vid);
+    QString s;
+    QDateTime dt;
+    switch(def.fType())
+    {
+    case TRK_FIELD_TYPE_DATE:
+        dt = value.toDateTime();
+        s = dt.toString(TT_DATETIME_FORMAT);
+        return isTrkOK(TrkSetStringFieldValue(recHandle, fieldName.toLocal8Bit().constData(), //buf
+                                          s.toLocal8Bit().constData()));
+    case TRK_FIELD_TYPE_CHOICE:
+    case TRK_FIELD_TYPE_SUBMITTER:
+    case TRK_FIELD_TYPE_OWNER:
+    case TRK_FIELD_TYPE_USER:
+    case TRK_FIELD_TYPE_ELAPSED_TIME:
+    case TRK_FIELD_TYPE_STATE:
+    case TRK_FIELD_TYPE_STRING:
+        s = value.toString();
+        return isTrkOK(TrkSetStringFieldValue(recHandle, fieldName.toLocal8Bit().constData(), //buf
+                                          s.toLocal8Bit().constData()));
+    case TRK_FIELD_TYPE_NUMBER:
+        TRK_UINT uint = value.toUInt();
+        return isTrkOK(TrkSetNumericFieldValue(recHandle, fieldName.toLocal8Bit().constData(), uint));
+    }
+    return false;
+}
+
+bool TrkToolProject::doSaveNotes(TrkToolRecord *record, TRK_RECORD_HANDLE recHandle)
+{
+    if(!record->isEditing())
+        return false;
+    TrkScopeNoteHandle noteHandle(recHandle);
+    if(!noteHandle.isValid())
+        return false;
+    if(record->mode() == TrkToolRecord::Edit && !isTrkOK(TrkInitNoteList(*noteHandle)))
+        return false;
+    for(int i=0; i<record->notesList.count(); ++i)
+    {
+        TrkNote note = record->notesList[i];
+        if(note.isAdded)
+        {
+            if(!isTrkOK(TrkAddNewNote(*noteHandle)))
+                return false;
+            if(!isTrkOK(TrkSetNoteTitle(*noteHandle, note.title.toLocal8Bit().constData())))
+                return false;
+            if(!isTrkOK(Do_TrkSetNoteData(*noteHandle, stringToLocal8Bit(note.text))))
+                return false;
+        }
+        else if(record->mode() == TrkToolRecord::Edit)
+        {
+            if(!isTrkOK(TrkGetNextNote(*noteHandle)))
+                return false;
+            if(note.isChanged)
+            {
+                if(!isTrkOK(TrkSetNoteTitle(*noteHandle, note.title.toLocal8Bit().constData())))
+                    return false;
+                if(!isTrkOK(Do_TrkSetNoteData(*noteHandle, stringToLocal8Bit(note.text))))
+                    return false;
+            }
+            else if(note.isDeleted)
+                if(!isTrkOK(TrkDeleteNote(*noteHandle)))
+                    return false;
+        }
+    }
+    return true;
+}
+
+bool TrkToolProject::doAppendNote(TRK_RECORD_HANDLE recHandle, const QString &noteTitle, const QString &noteText)
+{
+    TrkScopeNoteHandle noteHandle(recHandle);
+    if(!noteHandle.isValid())
+        return false;
+    return isTrkOK(TrkAddNewNote(*noteHandle))
+            && isTrkOK(TrkSetNoteTitle(*noteHandle, noteTitle.toLocal8Bit().constData()))
+            && isTrkOK(Do_TrkSetNoteData(*noteHandle, stringToLocal8Bit(noteText))); // note.toLocal8Bit()));
+}
+
+bool TrkToolProject::doDeleteNote(TRK_RECORD_HANDLE recHandle, int noteId)
+{
+    TrkScopeNoteHandle noteHandle(recHandle);
+    if(isTrkOK(TrkInitNoteList(*noteHandle)))
+    {
+        for(int i=0; i<=noteId; ++i)
+            if(!isTrkOK(TrkGetNextNote(*noteHandle)))
+                return false;
+        return isTrkOK(TrkDeleteNote(*noteHandle));
+    }
+    return false;
+}
+
+bool TrkToolProject::doChangeNote(TRK_RECORD_HANDLE recHandle, int noteId, const QString &noteTitle, const QString &noteText)
+{
+    TrkScopeNoteHandle noteHandle(recHandle);
+    if(isTrkOK(TrkInitNoteList(*noteHandle)))
+    {
+        for(int i=0; i<=noteId; ++i)
+            if(!isTrkOK(TrkGetNextNote(*noteHandle)))
+                return false;
+        return isTrkOK(TrkSetNoteTitle(*noteHandle, noteTitle.toLocal8Bit().constData()))
+            && isTrkOK(Do_TrkSetNoteData(*noteHandle, stringToLocal8Bit(noteText))); // text.toLocal8Bit()));
+    }
+    return false;
+}
+
+int TrkToolProject::doGetRecordId(TRK_RECORD_HANDLE recHandle, TRK_RECORD_TYPE rectype)
+{
+    QString fieldName = doFieldVID2Name(rectype, VID_Id);
+    TRK_UINT val=0;
+    if(isTrkOK(TrkGetNumericFieldValue(recHandle, fieldName.toLocal8Bit().constData(), &val)))
+        return val;
+    return 0;
+}
+
+QString TrkToolProject::doFieldVID2Name(TRK_RECORD_TYPE rectype, TRK_VID vid)
 {
 	char buf[1024];
 	buf[0]=0;
@@ -972,6 +1629,11 @@ QString TrkToolProject::fieldVID2Name(TRK_RECORD_TYPE rectype, TRK_VID vid)
 	VID_TypeId = 10013
 	*/
 	//return fields[rectype][vid].name;
+}
+
+QString TrkToolProject::fieldVID2Name(TRK_RECORD_TYPE rectype, TRK_VID vid)
+{
+    return recordDef[rectype]->fieldDefs[vid]->name;
 }
 
 TRK_VID TrkToolProject::fieldName2VID(TRK_RECORD_TYPE rectype, const QString &fname)
@@ -1051,16 +1713,17 @@ bool TrkToolModel::openQuery(const QString &queryName, TRK_TRANSACTION_ID afterT
 	}
 	*/
 	bool rc;
-	TRK_RECORD_HANDLE recHandle;
-    rc = isTrkOK(TrkRecordHandleAlloc(prj->handle, &recHandle));
-    bool res = rc;
-    if(rc)
+    TrkScopeRecHandle recHandle(prj);
+    //TRK_RECORD_HANDLE recHandle;
+    //rc = isTrkOK(TrkRecordHandleAlloc(prj->handle, &recHandle));
+    bool res = recHandle.isValid();
+    if(recHandle.isValid())
     {
         prevTransId = afterTransId;
-        rc = isTrkOK(TrkQueryInitRecordList(recHandle, queryName.toLocal8Bit().constData(), prevTransId, &lastTransId));
-        while(rc = (TRK_SUCCESS == (TrkGetNextRecord(recHandle))))
-            appendRecord(recHandle);
-        TrkRecordHandleFree(&recHandle);
+        rc = isTrkOK(TrkQueryInitRecordList(*recHandle, queryName.toLocal8Bit().constData(), prevTransId, &lastTransId));
+        while(rc = (TRK_SUCCESS == (TrkGetNextRecord(*recHandle))))
+            appendRecordByHandle(*recHandle);
+        //TrkRecordHandleFree(&recHandle);
     }
     endResetModel();
     return res;
@@ -1071,36 +1734,33 @@ bool TrkToolModel::openIds(const QList<int> &ids)
     beginResetModel();
 	bool rc;
     QList <int> unique = uniqueIntList(ids);
-	TRK_RECORD_HANDLE recHandle;
-    rc = isTrkOK(TrkRecordHandleAlloc(prj->handle, &recHandle));
-    if(rc)
+    prevTransId=0;
+    //TRK_TRANSACTION_ID newTransId;
+    foreach(int id, unique)
     {
-        prevTransId=0;
-        //TRK_TRANSACTION_ID newTransId;
-        foreach(int id, unique)
-        {
-            if(isTrkOK(TrkGetSingleRecord(recHandle, id, rectype)))
-                appendRecord(recHandle);
-        }
-        queryName = intListToString(unique);
-        isQuery = false;
-        TrkRecordHandleFree(&recHandle);
+        TrkScopeRecHandle recHandle(prj, 0, id, rectype);
+        if(recHandle.isValid())
+            appendRecordByHandle(*recHandle);
     }
+    queryName = intListToString(unique);
+    isQuery = false;
+    //TrkRecordHandleFree(&recHandle);
     endResetModel();
 	return true;
 
 }
 
-bool TrkToolModel::appendRecord(TRK_RECORD_HANDLE recHandle)
+bool TrkToolModel::appendRecordByHandle(TRK_RECORD_HANDLE recHandle)
 {
 	TRK_UINT Id;
     if(!isTrkOK(TrkGetNumericFieldValue(recHandle, idFieldName.toLocal8Bit().constData(), &Id)))
         return false;
     if(rowOfRecordId(Id)!=-1)
         return false;
-	TrkToolRecord *rec = new TrkToolRecord(prj, rectype);
-    rec->readHandle(recHandle); // no immediate read
-	append(rec);
+    TrkToolRecord *rec = prj->createRecordByHandle(recHandle, rectype);
+    //TrkToolRecord *rec = new TrkToolRecord(prj, rectype);
+    //rec->readHandle(recHandle); // no immediate read
+    append(rec);
     rec->addLink();
     connect(rec,SIGNAL(changed(int)),this,SLOT(recordChanged(int)));
     return true;
@@ -1108,14 +1768,20 @@ bool TrkToolModel::appendRecord(TRK_RECORD_HANDLE recHandle)
 
 void TrkToolModel::appendRecordId(TRK_UINT id)
 {
-    emit layoutAboutToBeChanged();
-    TRK_RECORD_HANDLE recHandle;
-    if(!isTrkOK(TrkRecordHandleAlloc(prj->handle, &recHandle)))
+    if(rowOfRecordId(id)!=-1)
         return;
-    if(isTrkOK(TrkGetSingleRecord(recHandle, id, rectype)))
-        if(appendRecord(recHandle))
-            addedIds.insert(id);
-    TrkRecordHandleFree(&recHandle);
+    emit layoutAboutToBeChanged();
+    TrkToolRecord *rec = prj->createRecordById(id, rectype);
+    if(rec)
+    {
+        append(rec);
+        addedIds.insert(id);
+        rec->addLink();
+    }
+    //    TrkScopeRecHandle recHandle(prj, 0, id, rectype);
+//    if(recHandle.isValid())
+//        if(appendRecordByHandle(*recHandle))
+//            addedIds.insert(id);
     emit layoutChanged();
 }
 
@@ -1253,6 +1919,9 @@ int	TrkToolModel::rowCount(const QModelIndex & parent) const
 QDomDocument TrkToolModel::recordXml(int row) const
 {
 	TrkToolRecord * rec = at(row);
+    if(!rec)
+        return QDomDocument();
+    rec->refresh();
 	return rec->toXML();
 	/*
 	QDomDocument xml("scr");
@@ -1387,29 +2056,33 @@ int TrkToolRecordSet::recCount() const
 
 TrkToolRecord::TrkToolRecord(TrkToolProject *parent, TRK_RECORD_TYPE rtype)
     : QObject(0), prj(parent), rectype(rtype), recMode(View),
-      lockHandle(0), fieldList(), links(0)
-      //addedNotes()
+      //lockHandle(0),
+      fieldList(), links(0), textsReaded(false)
 {
     fieldList = prj->recordDef[rectype]->fieldNames();
+    init();
 }
 
 TrkToolRecord::TrkToolRecord(const TrkToolRecord &src)
     : prj(src.prj), rectype(src.rectype), recMode(View),
-      lockHandle(0), fieldList(), links(0)
-      //addedNotes()
+      //lockHandle(0),
+      fieldList(), links(0), textsReaded(false)
 {
     fieldList = prj->recordDef[rectype]->fieldNames();
+    init();
 }
 
 
 TrkToolRecord &TrkToolRecord::operator =(const TrkToolRecord &src)
 {
+    init();
     prj = src.prj;
     rectype = src.rectype;
     recMode = View;
-    lockHandle = 0;
+    //lockHandle = 0;
     fieldList.clear();
     links = 0;
+    //nextNoteId = -1;
 
     fieldList = prj->recordDef[rectype]->fieldNames();
     return *this;
@@ -1418,13 +2091,16 @@ TrkToolRecord &TrkToolRecord::operator =(const TrkToolRecord &src)
 
 TrkToolRecord::~TrkToolRecord()
 {
+    disconnect();
     links=0;
-	if(lockHandle)
-	{
-		TrkRecordHandleFree(&lockHandle);
-		lockHandle=0;
-	}
-    //QObject::~QObject();
+    cancel();
+
+    //!!!!!!!!!!!!!!
+//	if(lockHandle)
+//	{
+//		TrkRecordHandleFree(&lockHandle);
+//		lockHandle=0;
+//	}
 }
 
 QVariant TrkToolRecord::value(const QString& fieldName, int role)
@@ -1435,8 +2111,17 @@ QVariant TrkToolRecord::value(const QString& fieldName, int role)
 
 QVariant TrkToolRecord::value(TRK_VID vid, int role)
 {
+    if(vid == 10001 && recMode == Insert)
+        return 0;
     if(!values.contains(vid))
-        readFullRecord();
+    {
+        bool ok;
+        QVariant v = prj->getFieldValue(this, vid, &ok);
+        if(!ok)
+            return QVariant();
+        values[vid] = v;
+        //readFullRecord();
+    }
     QVariant v = values[vid];
     if(role == Qt::DisplayRole)
     {
@@ -1448,6 +2133,12 @@ QVariant TrkToolRecord::value(TRK_VID vid, int role)
     return v;
 }
 
+QString TrkToolRecord::title()
+{
+    return value(VID_Title).toString();
+}
+
+/* !!!!!!!!!!!!!!!
 bool TrkToolRecord::insertBegin()
 {
 	if(recMode == Insert)
@@ -1459,13 +2150,26 @@ bool TrkToolRecord::insertBegin()
 			return false;
     if(!isTrkOK(TrkNewRecordBegin(lockHandle,rectype)))
 		return false;
+
+    QList<int> vids = prj->recordDef[rectype]->fieldIds();
+    foreach(int vid, vids)
+    {
+        values[vid] = fieldDef(vid).defaultValue();
+    }
+
 	recMode = Insert;
     emit changedState(recMode);
 	return true;
 }
+*/
 
 bool TrkToolRecord::updateBegin()
 {
+    bool res = prj->updateRecordBegin(this);
+    if(res)
+        emit changedState(recMode);
+    return res;
+    /* !!!!!!!!!!!!!!!!!!
 	if(recMode == Edit)
 		return true;
 	if(recMode == Insert)
@@ -1481,10 +2185,16 @@ bool TrkToolRecord::updateBegin()
 	recMode = Edit;
     emit changedState(recMode);
 	return true;
+    */
 }
 
 bool TrkToolRecord::commit()
 {
+    bool res = prj->commitRecord(this);
+    if(res)
+        emit changedState(recMode);
+    return res;
+    /*
 	TRK_UINT res;
 	switch(recMode)
 	{
@@ -1497,7 +2207,7 @@ bool TrkToolRecord::commit()
 				lockHandle=0;
 				recMode = View;
                 //addedNotes.clear();
-                deletedNotes.clear();
+                //deletedNotes.clear();
                 emit changedState(recMode);
                 emit changed(recordId());
 				return true;
@@ -1512,7 +2222,7 @@ bool TrkToolRecord::commit()
                 lockHandle=0;
 				recMode = View;
                 //addedNotes.clear();
-                deletedNotes.clear();
+                //deletedNotes.clear();
                 emit changedState(recMode);
                 emit changed(recordId());
                 return true;
@@ -1521,10 +2231,16 @@ bool TrkToolRecord::commit()
 		default:
 			return false;
 	}
+    */
 }
 
 bool TrkToolRecord::cancel()
 {
+    bool res = prj->cancelRecord(this);
+    if(res)
+        emit changedState(recMode);
+    return res;
+    /* !!!!!!!!!
 	if(!lockHandle)
 	{
 		recMode = View;
@@ -1538,15 +2254,27 @@ bool TrkToolRecord::cancel()
 		TrkRecordHandleFree(&lockHandle);
 		lockHandle=0;
         //addedNotes.clear();
-        deletedNotes.clear();
+        //deletedNotes.clear();
 		recMode = View;
         emit changedState(recMode);
         emit changed(recordId());
         return true;
 	}
 	return false;
+    */
 }
 
+bool TrkToolRecord::isInsertMode() const
+{
+    return mode() == TrkToolRecord::Insert;
+}
+
+bool TrkToolRecord::isEditMode() const
+{
+    return mode() == TrkToolRecord::Edit;
+}
+
+/* !!!!!!!!!!
 void TrkToolRecord::readHandle(TRK_RECORD_HANDLE handle, bool force)
 {
     readed = false;
@@ -1558,15 +2286,10 @@ void TrkToolRecord::readHandle(TRK_RECORD_HANDLE handle, bool force)
     QList<int> vids = prj->recordDef[rectype]->fieldIds();
     foreach(int vid, vids)
         readFieldValue(handle, vid);
-
-//    QHash<TRK_VID, TrkFieldDef>::const_iterator fi;
-//    for(fi = prj->recordDef[rectype]->fieldDefs.constBegin(); fi!= prj->recordDef[rectype]->fieldDefs.constEnd(); ++fi)
-//	{
-//        TRK_VID vid = fi.key();
-//        readFieldValue(handle, vid);
-//    }
 }
+*/
 
+/* !!!!!!!!!
 void TrkToolRecord::readFieldValue(TRK_RECORD_HANDLE handle, TRK_VID vid)
 {
     char buf[1024];
@@ -1599,9 +2322,14 @@ void TrkToolRecord::readFieldValue(TRK_RECORD_HANDLE handle, TRK_VID vid)
         break;
     }
 }
+*/
 
 void TrkToolRecord::readFullRecord()
 {
+    prj->readRecordWhole(this);
+    somethingChanged();
+
+    /* !!!!!!!!!!!!!!!
     bool ch=!lockHandle;
     TRK_RECORD_HANDLE handle;
     if(ch)
@@ -1617,6 +2345,18 @@ void TrkToolRecord::readFullRecord()
     }
     if(ch)
         TrkRecordHandleFree(&handle);
+        */
+}
+
+void TrkToolRecord::init()
+{
+    recMode = View;
+    //lockHandle = 0;
+    links = 0;
+    //nextNoteId = -1;
+    descChanged = false;
+    textsReaded = false;
+    historyReaded = false;
 }
 
 //void TrkToolRecord::needRecHandle()
@@ -1636,6 +2376,8 @@ void TrkToolRecord::readFullRecord()
 
 QList<TrkToolFile> TrkToolRecord::fileList()
 {
+    return prj->attachedFiles(this);
+    /* !!!!!!!!!
     QList<TrkToolFile> res;
     bool ch=!lockHandle;
     TRK_RECORD_HANDLE handle;
@@ -1661,12 +2403,12 @@ QList<TrkToolFile> TrkToolRecord::fileList()
             TRK_TIME time;
             if(TRK_SUCCESS == TrkGetAttachedFileTime(attHandle, &time))
                 file.createDateTime = QDateTime::fromTime_t(time);
-            /*
-            TRK_FILE_STORAGE_MODE mode;
-            TRK_UINT sz;
-            char buf1[1024],buf2[1024],buf3[1024],buf4[1024],buf5[1024];
-            isTrkOK(TrkGetAttachedFileInfo(attHandle,buf1,buf2,buf3,buf4,buf5));
-            */
+
+//            TRK_FILE_STORAGE_MODE mode;
+//            TRK_UINT sz;
+//            char buf1[1024],buf2[1024],buf3[1024],buf4[1024],buf5[1024];
+//            isTrkOK(TrkGetAttachedFileInfo(attHandle,buf1,buf2,buf3,buf4,buf5));
+
             res.append(file);
         }
     }
@@ -1674,23 +2416,25 @@ QList<TrkToolFile> TrkToolRecord::fileList()
     if(ch)
         TrkRecordHandleFree(&handle);
     return res;
+    */
 }
 
 bool TrkToolRecord::saveFile(int fileIndex, const QString &dest)
 {
+    TrkScopeRecHandle recHandle(prj, this);
     bool res=false;
-    bool ch=!lockHandle;
-    TRK_RECORD_HANDLE handle;
-    if(ch)
-    {
-        if(!isTrkOK(TrkRecordHandleAlloc(prj->handle, &handle)))
-            return true;
-    }
-    else
-        handle=lockHandle;
+//    bool ch=!lockHandle;
+//    TRK_RECORD_HANDLE handle;
+//    if(ch)
+//    {
+//        if(!isTrkOK(TrkRecordHandleAlloc(prj->handle, &handle)))
+//            return true;
+//    }
+//    else
+//        handle=lockHandle;
     TRK_ATTFILE_HANDLE attHandle;
-    if(isTrkOK(TrkGetSingleRecord(handle, recordId(), rectype))
-            && isTrkOK(TrkAttachedFileHandleAlloc(handle,&attHandle))
+    if(/*isTrkOK(TrkGetSingleRecord(*recHandle, recordId(), rectype))
+            &&*/ isTrkOK(TrkAttachedFileHandleAlloc(*recHandle,&attHandle))
             && isTrkOK(TrkInitAttachedFileList(attHandle)))
     {
         while(TRK_SUCCESS == TrkGetNextAttachedFile(attHandle))
@@ -1703,14 +2447,20 @@ bool TrkToolRecord::saveFile(int fileIndex, const QString &dest)
         }
     }
     TrkAttachedFileHandleFree(&attHandle);
-    if(ch)
-        TrkRecordHandleFree(&handle);
+//    if(ch)
+//        TrkRecordHandleFree(&handle);
     return res;
 
 }
 
 void TrkToolRecord::refresh()
 {
+    if(recMode == Insert)
+        return;
+    prj->readRecordWhole(this);
+    valuesReloaded();
+
+    /* !!!!!!!!!!
     if(lockHandle)
         readHandle(lockHandle);
     else
@@ -1721,6 +2471,7 @@ void TrkToolRecord::refresh()
             readHandle(*recHandle);
         }
     }
+    */
 }
 
 void TrkToolRecord::releaseBuffer()
@@ -1732,9 +2483,25 @@ void TrkToolRecord::releaseBuffer()
     }
 }
 
+void TrkToolRecord::somethingChanged()
+{
+    emit changed(recordId());
+}
+
+void TrkToolRecord::valuesReloaded()
+{
+    //emit loaded(recordId());
+}
+
 void TrkToolRecord::setValue(const QString& fieldName, const QVariant& value, int role)
 {
     Q_UNUSED(role)
+    if(!isEditing())
+        return;
+    TRK_VID vid = prj->fieldName2VID(rectype, fieldName);
+    values[vid] = value;
+    changedValue[vid] = true;
+    /*
 	if(recMode != Edit && recMode !=Insert)
 		return;
 	TRK_VID vid = prj->fieldName2VID(rectype, fieldName);
@@ -1749,7 +2516,8 @@ void TrkToolRecord::setValue(const QString& fieldName, const QVariant& value, in
         if(isTrkOK(TrkSetStringFieldValue(lockHandle, fieldName.toLocal8Bit().constData(), //buf
                                           s.toLocal8Bit().constData())))
         {
-            readFieldValue(lockHandle, vid);
+            if(recMode != Insert)
+                readFieldValue(lockHandle, vid);
             //values[vid] = value;
             emit changed(recordId());
         }
@@ -1768,7 +2536,8 @@ void TrkToolRecord::setValue(const QString& fieldName, const QVariant& value, in
         if(isTrkOK(TrkSetStringFieldValue(lockHandle, fieldName.toLocal8Bit().constData(), //buf
                                                  s.toLocal8Bit().constData())))
         {
-            readFieldValue(lockHandle, vid);
+            if(recMode != Insert)
+                readFieldValue(lockHandle, vid);
             //values[vid] = value;
             emit changed(recordId());
         }
@@ -1777,16 +2546,20 @@ void TrkToolRecord::setValue(const QString& fieldName, const QVariant& value, in
 		TRK_UINT uint = value.toUInt();
         if(isTrkOK(TrkSetNumericFieldValue(lockHandle, fieldName.toLocal8Bit().constData(), uint)))
         {
-            readFieldValue(lockHandle, vid);
+            if(recMode != Insert)
+                readFieldValue(lockHandle, vid);
             //values[vid] = QVariant::fromValue<int>(uint);
             emit changed(recordId());
         }
 		break;
 	}
+    */
 }
 
 QDomDocument TrkToolRecord::toXML()
 {
+    if(!textsReaded)
+        readFullRecord();
 	QDomDocument xml("scr");
 	QDomElement root=xml.createElement("scr");
 	xml.appendChild(root);
@@ -1812,7 +2585,7 @@ QDomDocument TrkToolRecord::toXML()
 	}
 	root.appendChild(flds);
 	QDomElement desc = xml.createElement("Description");
-	desc.setAttribute("name", prj->fieldVID2Name(rectype, VID_Description));
+    desc.setAttribute("name", prj->doFieldVID2Name(rectype, VID_Description));
 	QDomText v = xml.createTextNode(description());
 	desc.appendChild(v);
 	root.appendChild(desc);
@@ -1820,7 +2593,7 @@ QDomDocument TrkToolRecord::toXML()
     // fill <notes>
 	QDomElement notes = xml.createElement("notes");
 
-    NotesCol notesCol = getNotes();
+    NotesCol notesCol = this->notes();
 //    if(lockHandle)
 //        notesCol = prj->getNotes(lockHandle);
 //    else
@@ -1838,6 +2611,12 @@ QDomDocument TrkToolRecord::toXML()
         note.setAttribute("mdatetime", tn.mddate.toString(Qt::ISODate));
         note.setAttribute("modifydate", tn.mddate.toString(TT_DATETIME_FORMAT));
         note.setAttribute("editable", QString(tn.perm?"true":"false"));
+        if(tn.isAdded)
+            note.setAttribute("isAdded","true");
+        if(tn.isChanged)
+            note.setAttribute("isChanged","true");
+        if(tn.isDeleted)
+            note.setAttribute("isDeleted","true");
         note.setAttribute("index",index++);
         QDomText v = xml.createTextNode(tn.text);
         note.appendChild(v);
@@ -1920,31 +2699,44 @@ QString TrkToolRecord::toHTML(const QString &xqCodeFile)
 
 QStringList TrkToolRecord::historyList() const
 {
-    TRK_RECORD_HANDLE handle;
-    if(!isTrkOK(TrkRecordHandleAlloc(prj->handle, &handle)))
+    if(recMode == Insert)
+        return QStringList();
+    if(historyReaded)
+        return historyListMem;
+    return QStringList();
+    /*
+    TrkScopeRecHandle recHandle(prj->handle, lockHandle);
+    if(!recHandle.isValid())
         return QStringList();
     QStringList result;
-    if(isTrkOK(TrkGetSingleRecord(handle, recordId(), rectype)))
+    if(isTrkOK(TrkGetSingleRecord(*recHandle, recordId(), rectype)))
     {
         char buf[1024];
-        if(isTrkOK(TrkInitChangeList(handle)))
+        if(isTrkOK(TrkInitChangeList(*recHandle)))
         {
             while(1)
             {
-                TRK_UINT res = TrkGetNextChange(handle, sizeof(buf), buf);
+                TRK_UINT res = TrkGetNextChange(*recHandle, sizeof(buf), buf);
                 if(res != TRK_SUCCESS && res != TRK_E_DATA_TRUNCATED)
                     break;
                 result.append(QString::fromLocal8Bit(buf));
             }
         }
     }
-    TrkRecordHandleFree(&handle);
     return result;
+    */
 }
 
 
-QString TrkToolRecord::description() const
+QString TrkToolRecord::description()
 {
+    if(!textsReaded && !descChanged)
+    {
+        prj->readRecordTexts(this);
+        somethingChanged();
+    }
+    return desc;
+    /*
 	TRK_RECORD_HANDLE handle;
     if(!isTrkOK(TrkRecordHandleAlloc(prj->handle, &handle)))
 		return QString();
@@ -1967,16 +2759,24 @@ QString TrkToolRecord::description() const
 	}
 	TrkRecordHandleFree(&handle);
 	return result;
+    */
 }
 
-bool TrkToolRecord::setDescription(const QString &desc)
+bool TrkToolRecord::setDescription(const QString &newDesc)
 {
+    if(!isEditing())
+        return false;
+    desc = newDesc;
+    descChanged = true;
+    return true;
+    /*
 	if(recMode != Edit && recMode != Insert)
         return false;
 	QByteArray loc = desc.toLocal8Bit();
     bool res = isTrkOK(TrkSetDescriptionData(lockHandle, loc.count(), loc.constData(), 0));
         emit changed(recordId());
     return res;
+    */
 }
 
 const QStringList & TrkToolRecord::fields() const
@@ -1995,39 +2795,35 @@ void TrkToolRecord::setSelected(bool value)
     emit changed(recordId());
 }
 
-bool TrkToolRecord::isFieldReadOnly(const QString &field) const
+bool TrkToolRecord::isFieldReadOnly(const QString &field)
 {
     if(mode() == View)
         return true;
 
-    bool ro=true, ch=!lockHandle;
-    TRK_RECORD_HANDLE handle;
-    if(ch)
-    {
-        if(!isTrkOK(TrkRecordHandleAlloc(prj->handle, &handle)))
-            return true;
-    }
-    else
-        handle=lockHandle;
-
+    bool ro=true;
+    //bool ch=!lockHandle;
+    TrkScopeRecHandle recHandle(prj, this);
+    if(!recHandle.isValid())
+        return true;
     TRK_ACCESS_MODE accMode;
-    if(isTrkOK(TrkGetFieldAccessRights(handle,field.toLocal8Bit().constData(),&accMode)))
+    if(isTrkOK(TrkGetFieldAccessRights(*recHandle,field.toLocal8Bit().constData(),&accMode)))
         ro = !accMode;
-    if(ch)
-        TrkRecordHandleFree(&handle);
     return ro;
 }
-
-static TRK_UINT Do_TrkSetNoteData(TRK_NOTE_HANDLE noteHandle, const QByteArray &data)
-{
-    return TrkSetNoteData(noteHandle, data.size(), data.constData(), 0);
-}
-
 
 bool TrkToolRecord::setNote(int index, const QString &title, const QString &text)
 {
     if(!isEditing())
         return false;
+    if(index < 0 || index >= notesList.count())
+        return false;
+    TrkNote note = notesList[index];
+    note.title = title;
+    note.text = text;
+    note.isChanged = true;
+    notesList[index] = note;
+    return true;
+    /*
     bool res=false;
     bool wasView = (mode()==View);
     if(wasView)
@@ -2050,12 +2846,21 @@ bool TrkToolRecord::setNote(int index, const QString &title, const QString &text
             cancel();
     emit changed(recordId());
     return res;
+    */
 }
 
 bool TrkToolRecord::setNoteText(int index, const QString &text)
 {
     if(!isEditing())
         return false;
+    if(index < 0 || index >= notesList.count())
+        return false;
+    TrkNote note = notesList[index];
+    note.text = text;
+    note.isChanged = true;
+    notesList[index] = note;
+    return true;
+    /*
     bool res=false;
     TrkScopeNoteHandle noteHandle(lockHandle);
     if(!noteHandle.isValid())
@@ -2068,12 +2873,20 @@ bool TrkToolRecord::setNoteText(int index, const QString &text)
     }
     emit changed(recordId());
     return res;
+    */
 }
 
 bool TrkToolRecord::deleteNote(int index)
 {
     if(!isEditing())
         return false;
+    if(index < 0 || index >= notesList.count())
+        return false;
+    TrkNote note = notesList[index];
+    note.isDeleted = true;
+    notesList[index] = note;
+    return true;
+    /*
     bool res=false;
     TrkScopeNoteHandle noteHandle(lockHandle);
     if(!noteHandle.isValid())
@@ -2085,15 +2898,32 @@ bool TrkToolRecord::deleteNote(int index)
             if(!isTrkOK(TrkGetNextNote(*noteHandle)))
                 return false;
         res = isTrkOK(TrkDeleteNote(*noteHandle));
-        if(res)
-            deletedNotes.append(i);
+        //if(res)
+        //    deletedNotes.append(i);
     }
     emit changed(recordId());
-    return res;
+    return res;*/
+}
+
+int TrkToolRecord::addNote(const QString &noteTitle, const QString &noteText)
+{
+    if(!isEditing())
+        return 0;
+    TrkNote note;
+    note.title = noteTitle;
+    note.text = noteText;
+    note.isAdded = true;
+    note.crdate = QDateTime::currentDateTime();
+    note.mddate = QDateTime::currentDateTime();
+    notesList.append(note);
+    //addedNotes[id] = note;
+    return notesList.count();
 }
 
 bool TrkToolRecord::appendNote(const QString &noteTitle, const QString &note)
 {
+    return addNote(noteTitle, note);
+    /*
     if(!isEditing())
         return false;
     bool res=false;
@@ -2122,10 +2952,13 @@ bool TrkToolRecord::appendNote(const QString &noteTitle, const QString &note)
             cancel();
     emit changed(recordId());
     return res;
+    */
 }
 
 QString TrkToolRecord::noteTitle(int index)
 {
+    return notesList.length() > index ? notesList[index].title : QString();
+    /*
     TRK_RECORD_HANDLE handle=0;
     if(isEditing())
         handle = lockHandle;
@@ -2143,10 +2976,13 @@ QString TrkToolRecord::noteTitle(int index)
         return QString::fromLocal8Bit(buf);
     }
     return QString();
+    */
 }
 
 QString TrkToolRecord::noteText(int index)
 {
+    return notesList.length() > index ? notesList[index].text : QString();
+    /*
     TRK_RECORD_HANDLE handle=0;
     if(isEditing())
         handle = lockHandle;
@@ -2179,6 +3015,7 @@ QString TrkToolRecord::noteText(int index)
         return text;
     }
     return QString();
+    */
 }
 
 void TrkToolRecord::addLink()
@@ -2196,15 +3033,23 @@ void TrkToolRecord::removeLink(const QObject *receiver)
         deleteLater();
 }
 
-NotesCol TrkToolRecord::getNotes() const
+NotesCol TrkToolRecord::notes()
 {
+    if(!textsReaded)
+    {
+        prj->readRecordTexts(this);
+        somethingChanged();
+    }
+    return notesList;
+    /*
     NotesCol res;
     if(lockHandle)
-        res = prj->getNotes(lockHandle);
+        res = prj->doGetNotes(lockHandle);
     else
         res = prj->getNotes(recordId(),rectype);
     //res.append(addedNotes);
     return res;
+    */
 }
 
 
@@ -2214,11 +3059,11 @@ TrkHistory::TrkHistory(QObject *parent)
     : BaseRecModel(parent),
       prj(0)
 {
-    headers << tr("пїЅпїЅпїЅпїЅпїЅпїЅпїЅ");
-    headers << tr("пїЅпїЅпїЅ");
-    headers << tr("пїЅпїЅпїЅпїЅпїЅпїЅ");
-    headers << tr("пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ");
-    headers << tr("пїЅпїЅпїЅпїЅпїЅ");
+    headers << tr("Выборка");
+    headers << tr("Тип");
+    headers << tr("Записи");
+    headers << tr("Тип записей");
+    headers << tr("Время");
 }
 
 TrkHistory::~TrkHistory()
@@ -2230,8 +3075,8 @@ void TrkHistory::setProject(TrkToolProject *project)
     if(prj!=project)
     {
         clearRecords();
-        if(prj)
-            prj->disconnect(this);
+//        if(prj)
+//            prj->disconnect(this);
         prj = project;
         if(prj)
             connect(prj,SIGNAL(openedModel(const TrkToolModel*)),this,SLOT(openedModel(const TrkToolModel*)));
@@ -2306,9 +3151,9 @@ TrkToolQryModel::TrkToolQryModel(QObject *parent)
     : BaseRecModel(parent)
 {
     headers
-            << tr("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ")
-            << tr("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ")
-            << tr("пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ");
+            << tr("Название выборки")
+            << tr("Публичная")
+            << tr("Тип записи");
 }
 
 void TrkToolQryModel::appendQry(const QString &queryName, bool isPublic, TRK_UINT rectype)
@@ -2484,13 +3329,83 @@ QVariant TrkFieldDef::displayToValue(const QString &text) const
     return text;
 }
 
-/*
-const ChoiceList *TrkFieldDef::userList()
+// ================ RecordTypeDef =================
+RecordTypeDef::RecordTypeDef(TrkToolProject *project)
+    : prj(project), fieldDefs(), nameVids(), recType(-1), isReadOnly(true), choices()
+{}
+//RecordTypeDef(const RecordTypeDef & src): prj(src.prj), fieldDefs(src.fieldDefs), nameVids(src.nameVids) {}
+
+RecordTypeDef::~RecordTypeDef()
 {
-    if(!isUser())
-        return NULL
+    clearFieldDefs();
+    nameVids.clear();
+    QHash<TRK_VID, ChoiceList *>::iterator i = choices.begin();
+    while (i != choices.end()) {
+        ChoiceList *list = i.value();
+        i++;
+        delete list;
+    }
+    choices.clear();
+}
+
+void RecordTypeDef::clearFieldDefs()
+{
+    TrkIntDef::iterator i;
+    while((i = fieldDefs.begin()) != fieldDefs.end())
+    {
+        TrkFieldDef *def = i.value();
+        fieldDefs.erase(i);
+        delete def;
+    }
+    fieldDefs.clear();
+}
+
+
+QStringList RecordTypeDef::fieldNames() const
+{
+    return nameVids.keys();
+    /*
+    QStringList res;
+    NameVid::const_iterator nv = nameVids.begin();
+    while(nv != nameVids.end())
+    {
+        res << nv.key();
+        nv++;
+    }
+    return res;
+    */
+}
+TrkFieldType RecordTypeDef::getFieldDef(TRK_VID vid, bool *ok) const
+{
+    if(ok)
+        *ok = fieldDefs.contains(vid);
+    return TrkFieldType(fieldDefs[vid]);
+}
+TrkFieldType RecordTypeDef::getFieldDef(const QString &name, bool *ok) const
+{
+    TRK_VID vid = nameVids[name];
+    return getFieldDef(vid,ok);
+}
+
+/*
+const TrkFieldDef * findFieldDef(const QString &name) const
+{
+    if(!nameVids.contains(name))
+        return 0;
+    TRK_VID vid = nameVids[name];
+    return fieldDefs.  [vid];
 }
 */
+TRK_FIELD_TYPE RecordTypeDef::fieldType(const QString &name) const // not work????
+{
+    return getFieldDef(name).fType();
+}
+TRK_FIELD_TYPE RecordTypeDef::fieldType(TRK_VID vid) const
+{
+    if(fieldDefs.contains(vid))
+        return getFieldDef(vid).fType();
+    return TRK_FIELD_TYPE_NONE;
+}
 
 
 bool RecordTypeDef::canFieldSubmit(const QString &name) const
@@ -2513,8 +3428,35 @@ const ChoiceList *RecordTypeDef::choiceList(const QString &fieldName)
     return choices[vid];
 }
 
-TrkScopeRecHandle::TrkScopeRecHandle(TRK_HANDLE prjHandle, TRK_RECORD_HANDLE recHandle)
-    :handle(0)
+QList<TRK_VID> RecordTypeDef::fieldVids() const
+{
+    return nameVids.values();
+}
+TRK_VID RecordTypeDef::fieldVid(const QString &name)
+{
+    return nameVids.value(name);
+}
+
+QList<int> RecordTypeDef::fieldIds() const
+{
+    QList<int> vids;
+    foreach(int vid, nameVids.values())
+        vids << vid;
+    return vids;
+}
+TRK_RECORD_TYPE RecordTypeDef::recordType() const { return recType; }
+QString RecordTypeDef::fieldName(TRK_VID vid) const
+{
+    if(fieldDefs.contains(vid))
+        return fieldDefs.value(vid)->name;
+    return QString();
+}
+TrkToolProject *RecordTypeDef::project() const { return prj; }
+
+// ============ TrkScopeRecHandle =================
+/*
+TrkScopeRecHandle::TrkScopeRecHandle(TRK_HANDLE prjHandle, TRK_RECORD_HANDLE recHandle, TRK_UINT recId, TRK_RECORD_TYPE rectype)
+    :handle(0), isOk(true), fromPrj(false), pRecHandler(0)
 {
     if(recHandle)
     {
@@ -2523,21 +3465,62 @@ TrkScopeRecHandle::TrkScopeRecHandle(TRK_HANDLE prjHandle, TRK_RECORD_HANDLE rec
     }
     else
     {
-        TrkRecordHandleAlloc(prjHandle, &handle);
+        isOk = isTrkOK(TrkRecordHandleAlloc(prjHandle, &handle));
         isTemp = true;
     }
+    if(isTemp && recId > 0)
+        isOk = isOk && isTrkOK(TrkGetSingleRecord(handle, recId, rectype));
+}
+*/
+
+TrkScopeRecHandle::TrkScopeRecHandle(TrkToolProject *prj, TRK_RECORD_HANDLE recHandle, TRK_UINT recId, TRK_RECORD_TYPE rectype)
+    :handle(0), isOk(true), fromPrj(true), isTemp(true), project(prj)
+{
+    if(recHandle)
+    {
+        handle = recHandle;
+        isTemp = false;
+    }
+    else
+    {
+        pRecHandler = prj->allocRecHandler(recId, rectype);
+        handle = pRecHandler->handle;
+        isOk = handle != 0;
+    }
+}
+
+TrkScopeRecHandle::TrkScopeRecHandle(TrkToolProject *prj, TrkToolRecord *record)
+    :handle(0), isOk(true), fromPrj(true), isTemp(true), project(prj)
+{
+    pRecHandler = prj->allocRecHandler(record->recordId(), record->recordType());
+    handle = pRecHandler->handle;
+    isOk = handle != 0;
 }
 
 TrkScopeRecHandle::~TrkScopeRecHandle()
 {
-    if(isTemp)
-        TrkRecordHandleFree(&handle);
+    if(handle && isTemp)
+        if(fromPrj)
+        {
+            project->freeRecHandler(pRecHandler);
+            handle = 0;
+        }
+        else
+            TrkRecordHandleFree(&handle);
 }
 
-int TrkScopeRecHandle::getRecord(TRK_UINT id, TRK_RECORD_TYPE rectype)
+TRK_RECORD_HANDLE &TrkScopeRecHandle::nativeHandle()
 {
-    return TrkGetSingleRecord(handle, id, rectype);
+    if(fromPrj)
+        return pRecHandler->handle;
+    else
+        return handle;
 }
+
+//int TrkScopeRecHandle::getRecord(TRK_UINT id, TRK_RECORD_TYPE rectype)
+//{
+//    return TrkGetSingleRecord(handle, id, rectype);
+//}
 
 
 TrkScopeNoteHandle::TrkScopeNoteHandle(TRK_RECORD_HANDLE recHandle)
@@ -2550,3 +3533,121 @@ TrkScopeNoteHandle::~TrkScopeNoteHandle()
 {
     TrkNoteHandleFree(&handle);
 }
+
+static const int MAX_HANDLERS_COUNT = 100;
+
+TrkRecHandler *TrkToolProject::allocRecHandler(int recID, TRK_RECORD_TYPE recType)
+{
+    QMutexLocker locker(&handlerMutex);
+    /*
+    TrkRecHandler *ph = pointTrkRecHandler(recID, recType);
+    if(ph)
+    {
+        ph->links++;
+        return ph->handle;
+    }
+    */
+
+    for(int i=0; i<handlers.count(); i++)
+    {
+        TrkRecHandler &ph = handlers[i];
+        if(ph.recType == recType && ph.id == recID)
+        {
+            ph.links++;
+            return &ph;
+        }
+    }
+
+    if(handlers.count() >= MAX_HANDLERS_COUNT)
+    {
+        for(int i=0; i<handlers.count(); i++)
+        {
+            TrkRecHandler &ph = handlers[i];
+            if(ph.recType == recType && ph.links <= 0 && !ph.isModify && !ph.isInsert)
+            {
+                if(recID && !isTrkOK(TrkGetSingleRecord(ph.handle, recID, recType)))
+                    return 0;
+                ph.links = 1;
+                ph.id = recID;
+                return &ph;
+            }
+        }
+
+        for(int i=0; i<handlers.count(); i++)
+        {
+            TrkRecHandler &h = handlers[i];
+            if(h.links <= 0 && !h.isModify && !h.isInsert)
+            {
+                TrkRecordHandleFree(&h.handle);
+                handlers.removeAt(i);
+                break;
+            }
+        }
+    }
+    TrkRecHandler h;
+    if(!isTrkOK(TrkRecordHandleAlloc(handle,&h.handle)))
+        return 0;
+    if(recID > 0 && !isTrkOK(TrkGetSingleRecord(h.handle, recID, recType)))
+    {
+        TrkRecordHandleFree(&h.handle);
+        return 0;
+    }
+    h.id = recID;
+    h.isInsert = false;
+    h.isModify = false;
+    h.links = 1;
+    h.recType = recType;
+    handlers.append(h);
+    return &handlers.last();
+}
+
+void TrkToolProject::freeRecHandler(TrkRecHandler *recHandler)
+{
+    QMutexLocker locker(&handlerMutex);
+    if(!recHandler)
+        return;
+    for(int i=0; i<handlers.count(); i++)
+    {
+        TrkRecHandler &h = handlers[i];
+        if(&h == recHandler)
+        {
+            --h.links;
+//            if(h.links == 0 && !h.isInsert && !h.isModify)
+//            {
+//                TrkRecordHandleFree(&h.handle);
+//                handlers.removeAt(i);
+//            }
+            return;
+        }
+    }
+}
+
+void TrkToolProject::clearAllHandlers()
+{
+    QMutexLocker locker(&handlerMutex);
+    for(int i=0; i<handlers.count(); i++)
+    {
+        TrkRecHandler &h = handlers[i];
+        if(h.handle)
+            TrkRecordHandleFree(&h.handle);
+    }
+    handlers.clear();
+}
+
+bool TrkToolProject::resetRecHandler(TrkRecHandler *rec)
+{
+    QMutexLocker locker(&handlerMutex);
+    if(rec->id > 0)
+        return isTrkOK(TrkGetSingleRecord(rec->handle,rec->id,rec->recType));
+    return true;
+}
+
+//TrkRecHandler *TrkToolProject::pointTrkRecHandler(int recID, TRK_RECORD_TYPE recType)
+//{
+//    for(int i=0; i<handlers.count(); i++)
+//    {
+//        TrkRecHandler &h = handlers[i];
+//        if(h.recType == recType && h.id == recID)
+//            return &h;
+//    }
+//}

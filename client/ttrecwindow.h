@@ -8,6 +8,12 @@ namespace Ui {
 class TTRecordWindow;
 }
 
+#define TQ_DESC_INDEX (-1)
+#define TQ_FIRST_NOTE 0
+#define TQ_NEW_NOTE (-2)
+#define TQ_NO_INDEX (-3)
+
+
 class ModifyPanel;
 class TrkToolRecord;
 class ScrPluginFactory;
@@ -24,18 +30,29 @@ public:
     void setTypeDef(const RecordTypeDef *recDef);
     Q_INVOKABLE TrkToolRecord *getRecord();
     void setRecord(TrkToolRecord *rec);
-    Q_INVOKABLE bool setNote(int index, const QString &title, const QString &text);
     Q_INVOKABLE QString noteTitle(int index);
     Q_INVOKABLE QString noteText(int index);
     Q_INVOKABLE bool setValue(const QString &field, const QVariant &value);
     Q_INVOKABLE QVariant value(const QString &field);
     Q_INVOKABLE QString description();
-    Q_INVOKABLE bool setDescription(const QString &desc);
     Q_INVOKABLE bool enableModify();
     Q_INVOKABLE bool writeChanges();
+    bool writeDraftChanges();
     bool isChanged();
     void setChanged(bool value);
 
+public slots:
+    bool setDescription(const QString &desc);
+    bool setNote(int index, const QString &title, const QString &text);
+    bool addNote(const QString &title, const QString &text);
+    bool startEditDescription();
+    bool startEditNote(int index);
+    bool endEditNote(bool commitChanges = true);
+    void resetNoteEditor();
+
+signals:
+    void noteChanged(int index, const QString &title, const QString &text);
+    void noteStateChanged(int index, const QString &newState);
 
 protected:
     ModifyPanel *props;
@@ -49,14 +66,22 @@ protected:
     };
 
     QHash<int,NoteValue> newText;
+    int noteInEdit;
+    QTabBar *tabBar;
+
+    void initWidgets();
     virtual void closeEvent(QCloseEvent *event);
     bool isNoteEntered();
-    bool doSetNote(int index, const QString &title, const QString &text);
-    void applyNewNote();
+    //bool doSetNote(int index, const QString &title, const QString &text);
+//    void applyNewNote();
+    void showNoteEditor(bool show);
 
 protected slots:
     void refreshState();
     void valueChanged();
+    void recordStateChanged();
+    void noteEditing(int index);
+    void canceledEditing(int index);
     void refreshValues();
     bool addNewNote(const QString &title, const QString &text);
     void postCurValue();
@@ -65,12 +90,11 @@ private slots:
     void on_actionEditRecord_triggered();
     void on_actionSaveChanges_triggered();
     void on_actionCancelChanges_triggered();
-
     void on_actionClose_triggered();
-
     void on_addNoteButton_clicked();
-
     void on_actionSaveExit_triggered();
+
+    void on_newNoteButton_clicked();
 
 public slots:
     void populateJavaScriptWindowObject();

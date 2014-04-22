@@ -10,8 +10,8 @@ NoteWidget::NoteWidget(TrkToolRecord *rec, QWidget *parent) :
     ui->setupUi(this);
     record = rec;
     ui->titleEdit->addItems(record->typeDef()->project()->noteTitles);
-    connect(ui->titleEdit,SIGNAL(editTextChanged(QString)),SIGNAL(changedNoteTitle(QString)));
-    connect(ui->noteEdit,SIGNAL(textChanged()),SIGNAL(changedNoteText()));
+    connect(ui->titleEdit,SIGNAL(editTextChanged(QString)),SLOT(onTitleChanged(QString)));
+    connect(ui->noteEdit,SIGNAL(textChanged()),SLOT(onTextChanged()));
     connect(ui->submitButton,SIGNAL(clicked()),SLOT(onSubmitClicked()));
     connect(ui->cancelButton,SIGNAL(clicked()),SLOT(onCancelClicked()));
 }
@@ -34,6 +34,16 @@ QString NoteWidget::noteText() const
 int NoteWidget::noteIndex() const
 {
     return index;
+}
+
+void NoteWidget::submit()
+{
+    onSubmitClicked();
+}
+
+void NoteWidget::cancel()
+{
+    onCancelClicked();
 }
 
 void NoteWidget::setNoteIndex(int newIndex)
@@ -62,4 +72,15 @@ void NoteWidget::onSubmitClicked()
 void NoteWidget::onCancelClicked()
 {
     emit cancelTriggered(noteIndex());
+}
+
+
+void NoteWidget::onTitleChanged(const QString &title)
+{
+    emit changedNoteTitle(noteIndex(), title);
+}
+
+void NoteWidget::onTextChanged()
+{
+    emit changedNoteText(noteIndex());
 }

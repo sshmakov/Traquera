@@ -63,7 +63,7 @@ QVariant UnionModel::data(const QModelIndex &proxyIndex, int role) const
 
 QVariant UnionModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
-    if(orientation != Qt::Horizontal || role != Qt::DisplayRole)
+    if(orientation != Qt::Horizontal || role != Qt::DisplayRole || section)
         return QVariant();
     return "header";
 }
@@ -173,6 +173,7 @@ int UnionModel::rowCount(const QModelIndex &parent) const
 
 int UnionModel::columnCount(const QModelIndex &parent) const
 {
+    Q_UNUSED(parent);
     return maxColCount;
 }
 

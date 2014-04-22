@@ -22,26 +22,32 @@ public:
     Q_INVOKABLE QString noteTitle() const;
     Q_INVOKABLE QString noteText() const;
     Q_INVOKABLE int noteIndex() const;
+    void submit();
+    void cancel();
+
 public slots:
     void setNoteIndex(int newIndex);
     void setNoteTitle(const QString &title);
     void setNoteText(const QString &text);
     
 signals:
-    void changedNoteTitle(const QString &title);
-    void changedNoteText();
+    void changedNoteTitle(int index, const QString &title);
+    void changedNoteText(int index);
     void submitTriggered(int index, const QString &title, const QString &text);
     void cancelTriggered(int index);
 
 protected slots:
+    void onTitleChanged(const QString &title);
+    void onTextChanged();
     void onSubmitClicked();
     void onCancelClicked();
 
+public:
+    TrkToolRecord *record;
+    int index;
 
 private:
     Ui::NoteWidget *ui;
-    TrkToolRecord *record;
-    int index;
 };
 
 #endif // NOTEWIDGET_H

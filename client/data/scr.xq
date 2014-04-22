@@ -38,19 +38,19 @@ return (
 </div>
 <a name="top">Запрос {$scr/*/fields/field[@name = "Id"]/node()}. <b>{$scr/*/fields/field[@name = "Title"]/node()}</b></a>
 <p id="debug"/>
+<a href="#" onclick="javascript:global.shell('C:\\Windows\\system32\\cmd.exe /c c:\\1\\1.bat лорлрлрлор'); return false;">Run</a> 
+<a href="#" onclick="javascript:global.shellLocale('C:\\Windows\\system32\\cmd.exe /c c:\\1\\1.bat лорлрлрлор'); return false;">RunLocale</a> 
+<a href="#" onclick="javascript:global.shellLocale('C:\\Windows\\system32\\cmd.exe /c c:\\1\\1.bat лорлрлрлор','IBM 866'); return false;">Run866</a> 
+<a href="#" onclick="javascript:global.shellLocale('C:\\Windows\\system32\\cmd.exe /c c:\\1\\1.bat лорлрлрлор','Windows-1251'); return false;">Run1251</a> 
+<a href="#" onclick="javascript:global.shellLocale('C:\\Windows\\system32\\cmd.exe /c c:\\1\\1.bat лорлрлрлор','UTF-8'); return false;">RunUTF-8</a> 
 <p id="debug2"/>
-{                                           
-for $d in $scr/*/Description
-return (
 	<div>
-		<div><span class="noteTitle">{$d/string(@name)}</span> ({$scr/*/fields/field[@name = "Submitter"]/node()})</div>
+		<div><span class="noteTitle">{$scr/*/Description/string(@name)}</span> ({$scr/*/fields/field[@name = "Submitter"]/node()})</div>
 
 		<blockquote><pre style="white-space: pre-wrap; font-family: serif" class="noteText">
-			{string($d)}
+			{string($scr/*/Description)}
 		</pre></blockquote>
 	</div>
-)
-}
 {
 for $i in $scr/*/notes/note
 order by xs:dateTime($i/string(@cdatetime)), xs:integer($i/@index)

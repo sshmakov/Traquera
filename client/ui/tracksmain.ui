@@ -350,8 +350,10 @@
    <addaction name="separator"/>
    <addaction name="actionCopy"/>
    <addaction name="actionQueryByIdClip"/>
+   <addaction name="separator"/>
    <addaction name="actionSendEmail"/>
    <addaction name="actionPrint_Preview"/>
+   <addaction name="actionNewRequest"/>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -377,6 +379,8 @@
     <property name="title">
      <string>Tracker</string>
     </property>
+    <addaction name="actionNewRequest"/>
+    <addaction name="separator"/>
     <addaction name="actionOpenSelected"/>
     <addaction name="actionPrint_Preview"/>
     <addaction name="separator"/>
@@ -762,6 +766,18 @@
   <action name="actionSettings">
    <property name="text">
     <string>Настройки</string>
+   </property>
+  </action>
+  <action name="actionNewRequest">
+   <property name="icon">
+    <iconset resource="../resources/tracks.qrc">
+     <normaloff>:/images/add.png</normaloff>:/images/add.png</iconset>
+   </property>
+   <property name="text">
+    <string>Новый запрос</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
    </property>
   </action>
  </widget>

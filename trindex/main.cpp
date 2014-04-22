@@ -63,13 +63,26 @@ MainClass::MainClass(QObject *parent, char *iniFile)
     db->dbmsPassword = sets.value("dbmsPassword").toString();
     db->dbmsName = sets.value("dbmsName").toString(); //"SHMAKOVTHINK\\SQLEXPRESS";
     uniqueField = sets.value("uniqueId","id").toString();
+    url.setUrl(sets.value("solrUpdate","http://localhost:8983/solr/update").toString());
+    inFile = url.isLocalFile();
+    if(url.isEmpty())
+    {
+        inFile = true;
+        localFile.open(stdout, QIODevice::WriteOnly | QIODevice::Append);
+    }
+    else if(inFile)
+    {
+        QString fileName = url.toLocalFile();
+        localFile.setFileName(fileName);
+        localFile.open(QIODevice::WriteOnly | QIODevice::Append);
+    }
     //QScopedPointer<TrkToolProject> prj(db->openProject(argv[1],argv[2],argv[3],argv[4]));
     QString
             dbType = sets.value("dbmsType").toString(),
             project = sets.value("project").toString(),
             user = sets.value("user").toString(),
             password = sets.value("password").toString();
-     prj = db->openProject(dbType,project,user,password);
+    prj = db->openProject(dbType,project,user,password);
     if(!prj->isOpened())
         sout << "Error opening project\n";
     prjName = prj->name;
@@ -134,9 +147,9 @@ QDomDocument MainClass::recFieldsXml(TrkToolRecord *rec)
     QVariant v = rec->value("Id");
     int id = v.toInt();
     sout << tr("Posting SCR #%1\n").arg(id);
-    root.appendChild(eField(xml,"id",
+    root.appendChild(eField(xml,uniqueField,
                             QString("%1-%2")
-                            .arg(prjName)
+                            .arg(prjName.replace(' ',"_"))
                             .arg(v.toString())));
     root.appendChild(eField(xml,fieldNameTranslate("project",TRK_FIELD_TYPE_NONE),prj->name));
     foreach(QString fi, rec->fields())
@@ -149,7 +162,7 @@ QDomDocument MainClass::recFieldsXml(TrkToolRecord *rec)
     root.appendChild(eField(xml,fieldNameTranslate("Description",TRK_FIELD_TYPE_STRING), //"Description_s"
                             rec->description()));
 
-    foreach(const TrkNote &note, rec->getNotes())
+    foreach(const TrkNote &note, rec->notes())
     {
         root.appendChild(eField(xml, fieldNameTranslate("note", TRK_FIELD_TYPE_MULTITEXT), // "note_txt"
                                 QString("%1 [%2 (%3)] %4")
@@ -169,21 +182,29 @@ bool MainClass::isOk() const
 
 void MainClass::send(const QDomDocument &dom)
 {
-    QUrl url(sets.value("solrUpdate","http://localhost:8983/solr/update").toString());
+    //QUrl url(sets.value("solrUpdate","http://localhost:8983/solr/update").toString());
     QNetworkRequest req;
     req.setUrl(url);
     req.setHeader(QNetworkRequest::ContentTypeHeader,"application/xml");
     reply = man.post(req,dom.toString().toUtf8());
 //    connect(reply,SIGNAL(finished()),this,SLOT(finished()));
 //    connect(reply,SIGNAL(readyRead()),this,SLOT(finished()));
-//    connect(reply,SIGNAL(error(QNetworkReply::NetworkError)),this,SLOT(onError(QNetworkReply::NetworkError)));
+    //    connect(reply,SIGNAL(error(QNetworkReply::NetworkError)),this,SLOT(onError(QNetworkReply::NetworkError)));
+}
+
+void MainClass::write(const QDomDocument &dom)
+{
+    localFile.write(dom.toString().toUtf8());
+    emit next();
 }
 
 
 void MainClass::process()
 {
-    model = prj->openRecentModel(0,sets.value("query","All_SCRs").toString());
-    sout << QString("Found %1 records\n").arg(model->rowCount());
+    //model = prj->openRecentModel(0,sets.value("query","All_SCRs").toString());
+    list = prj->getQueryIds(sets.value("query","All SCRs").toString());
+    rowCount = list.count();
+    sout << QString("Found %1 records\n").arg(rowCount);
     row = 0;
     emit next();
 }
@@ -192,12 +213,13 @@ void MainClass::process()
 
 void MainClass::sendNextRecord()
 {
-    if(row >= model->rowCount())
+    if(row >= rowCount)
     {
         qApp->exit(0);
         return;
     }
-    PTrkToolRecord rec = model->at(row);
+    //PTrkToolRecord rec = model->at(row);
+    PTrkToolRecord rec = prj->createRecordById(list[row]); //model->at(row);
     QDomDocument xml = recFieldsXml(rec);
     rec->releaseBuffer();
     QDomDocument add("add");
@@ -206,12 +228,16 @@ void MainClass::sendNextRecord()
     add.appendChild(root);
     root.appendChild(xml.documentElement());
     //root.save(sout,4);
-    send(add);
-#ifdef DELETE_RECORDS
-    model->removeRecordId(rec->recordId());
-#else
+    if(inFile)
+        write(add);
+    else
+        send(add);
+    delete rec;
+//#ifdef DELETE_RECORDS
+    //model->removeRecordId(rec->recordId());
+//#else
+//#endif
     row++;
-#endif
 }
 
 

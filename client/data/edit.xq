@@ -1,3 +1,4 @@
+xquery version "1.0" encoding "utf-8";
 <html>
 <head>
 <style>
@@ -145,6 +146,7 @@ function showEditor(index, visible)
 	sIndex = "Desc";
   else
 	sIndex = index;
+
   var blockNode = document.getElementById('block'+sIndex);
   var widgetNode = document.getElementById('widget'+sIndex);
   if(visible)
@@ -213,12 +215,24 @@ function cancelNoteWidget(index)
   widgetNode.style.display = "none";
 }
 
-function editNote(index)
+function onNoteChanged(index,title,text)
 {
   var titleNode = document.getElementById('title'+index);
   var textNode = document.getElementById('note'+index);
-  titleNode.disabled = "";
-  textNode.contentEditable = true;
+  titleNode.innerText = title;
+  textNode.innerText = text;
+}
+
+function editNote(index)
+{
+  editor.noteChanged.connect(onNoteChanged);
+  editor.startEditNote(index);
+  var state = document.getElementById('noteState'+index);
+  state.innerText = 'editing';
+  //var titleNode = document.getElementById('title'+index);
+  //var textNode = document.getElementById('note'+index);
+  //titleNode.disabled = "";
+  //textNode.contentEditable = true;
   //debug.innerText = 'Debug';
 }
 
@@ -226,7 +240,7 @@ function saveNote(index)
 {
   var titleNode = document.getElementById('title'+index);
   var textNode = document.getElementById('note'+index);
-	editor.setNote(index,titleNode.value,textNode.innerText);
+  editor.setNote(index,titleNode.value,textNode.innerText);
   titleNode.disabled = true;
   textNode.contentEditable = false;
   titleNode.value = editor.noteTitle(index);
@@ -245,37 +259,41 @@ function resetNote(index)
   return false;
 }
 
+function init()
+{
+  if(record.isInsertMode())
+    initNoteWidget(-1);
+}
+
+function descEdit()
+{
+    editor.startEditDescription();
+}
 -->
 </script>
 </head>
+{let $scr := doc(fn:iri-to-uri(string($scrdoc)))
+return
 <body>
-Запрос {doc($scrdoc)/*/fields/field[@name = "Id"]/node()} .  <b>{doc($scrdoc)/*/fields/field[@name = "Title"]/node()}</b>
+Запрос {$scr/*/fields/field[@name = "Id"]/node()} .  <b>{$scr/*/fields/field[@name = "Title"]/node()}</b>
 <p id="debug" style="display: none"/>
-{                                           
-for $d in doc($scrdoc)/*/Description
-return (
-	<div id="desc">
-		<div id="blockDesc">
-        		<div><img src="qrc:/images/edit.png" onclick="javascript:initNoteWidget(-1); return false;" class="btn" width="12" height="12"/><h4>{$d/string(@name)}</h4></div>
-        		<blockquote><pre style="white-space: pre-wrap; font-family: serif" id="descText">
-        			{$d/node()}
-        		</pre></blockquote>
-		</div>
+	<div>
+                <div><img src="qrc:/images/edit.png" onclick="javascript:descEdit(); return false;" class="btn" width="12" height="12"/><h4>{$scr/*/Description/string(@name)}</h4></div>
+       		<blockquote><pre style="white-space: pre-wrap; font-family: serif" id="descText">
+			{string($scr/*/Description)}
+		</pre></blockquote>
                 <object type="application/scrnote" width="100%" height="400" id="widgetDesc" data="dddd" style="display:none">
                      <param name="noteIndex" value="-1" />
                 </object>
 	</div>
-)
-}
-{
-for $i in doc($scrdoc)/*/notes/note
+{for $i in $scr/*/notes/note
 order by xs:dateTime($i/@cdatetime)
 return (
 <div class="note" index="{$i/@index}">
 <div id="block{$i/@index}">
-<img src="qrc:/images/edit.png" onclick="javascript:initNoteWidget({$i/@index}); return false;" class="btn" width="12" height="12"/>
+<img src="qrc:/images/edit.png" onclick="javascript:editNote({$i/@index}); return false;" class="btn" width="12" height="12"/>
 <p><span id="title{$i/@index}" class="noteTitle" index="{$i/@index}">{$i/string(@title)}</span>
-[ {$i/string(@author)} ({$i/string(@createdate)})] 
+[ {$i/string(@author)} ({$i/string(@createdate)})] <span id="noteState{$i/@index}"></span>
 </p>
 
 <blockquote><pre style="white-space: pre-wrap; font-family: serif" id="note{$i/@index}" index="{$i/@index}">
@@ -289,13 +307,12 @@ return (
 <object type="application/scrnote" width="100%" height="400" id="widget{$i/@index}" data="dddd" style="display:none">
      <param name="noteIndex" value="{$i/@index}" />
 </object>
-</div>
-)
-}
-</body>
+</div>)}
+</body>}
 <script  type="text/javascript">
 <!--
 //r();
+init();
 -->
 </script>
 </html> 

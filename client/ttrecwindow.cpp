@@ -19,26 +19,7 @@ TTRecordWindow::TTRecordWindow(QWidget *parent) :
     ui(new Ui::TTRecordWindow)
 {
     ui->setupUi(this);
-    props = new ModifyPanel(this);
-    props->setButtonsVisible(false);
-    connect(props,SIGNAL(dataChanged()),SLOT(valueChanged()));
-    ui->dockWidget->setWidget(props);
-    ui->dockWidget->setWindowTitle(tr("Свойства"));
-    setAttribute(Qt::WA_DeleteOnClose,true);
-    if(settings->contains(TTRecordGeometry))
-        restoreGeometry(settings->value(TTRecordGeometry).toByteArray());
-    if(settings->contains(TTRecordState))
-        restoreState(settings->value(TTRecordState).toByteArray());
-    ui->webView->setUrl(QUrl("about:blank"));
-    connect(ui->webView->page()->mainFrame(), SIGNAL(javaScriptWindowObjectCleared()),
-            this, SLOT(populateJavaScriptWindowObject()));
-    connect(ui->webView,SIGNAL(statusBarMessage(QString)),
-            ttglobal(),SLOT(statusBarMessage(QString)));
-    QWebSettings::globalSettings()->setAttribute(QWebSettings::PluginsEnabled, true);
-    QWebSettings::globalSettings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
-    factory = new ScrPluginFactory(ui->webView,this);
-    ui->webView->page()->setPluginFactory(factory);
-    connect(ui->noteTextEdit,SIGNAL(textChanged()),this,SLOT(valueChanged()));
+    initWidgets();
 
     //ui->noteTextEdit->addAction(ui->actionSaveExit);
     changed = false;
@@ -46,6 +27,12 @@ TTRecordWindow::TTRecordWindow(QWidget *parent) :
 
 TTRecordWindow::~TTRecordWindow()
 {
+    if(a_record)
+    {
+        QObject *rec = a_record;
+        a_record = 0;
+        delete rec;
+    }
     delete ui;
 }
 
@@ -93,6 +80,23 @@ bool TTRecordWindow::isNoteEntered()
     return !ui->noteTextEdit->toPlainText().trimmed().isEmpty();
 }
 
+void TTRecordWindow::showNoteEditor(bool show)
+{
+    if(show)
+    {
+        ui->actionsBar->hide();
+        ui->editorFrame->show();
+        //ui->addNoteButton->hide();
+    }
+    else
+    {
+        ui->actionsBar->show();
+        ui->editorFrame->hide();
+        //ui->addNoteButton->show();
+    }
+
+}
+
 void TTRecordWindow::setTypeDef(const RecordTypeDef *recDef)
 {
     props->loadDefinitions(recDef);
@@ -119,24 +123,21 @@ void TTRecordWindow::setRecord(TrkToolRecord *rec)
     changed = false;
     */
     refreshState();
-    setWindowTitle(QString(tr("Запрос %1")).arg(rec->recordId()));
+    setWindowTitle(QString(tr("Запрос %1 %2")).arg(rec->recordId()).arg(rec->title()));
+    connect(a_record, SIGNAL(changedState(TrkToolRecord::RecMode)), SLOT(refreshState()));
 }
 
 bool TTRecordWindow::setNote(int index, const QString &title, const QString &text)
 {
-    return doSetNote(index, title, text);
-    /*
-    if(enableModify())
-    {
-        NoteValue nv;
-        nv.title = title;
-        nv.text = text;
-        newText[index] = nv;
-        changed = true;
-        return true;
-    }
-    return false;
-    */
+    bool res = a_record->setNote(index,title,text);
+    if(res)
+        emit noteChanged(index, title, text);
+    return res;
+}
+
+bool TTRecordWindow::addNote(const QString &title, const QString &text)
+{
+    return a_record->addNote(title, text);
 }
 
 QString TTRecordWindow::noteTitle(int index)
@@ -171,6 +172,9 @@ QString TTRecordWindow::description()
 bool TTRecordWindow::setDescription(const QString &desc)
 {
     if(enableModify())
+        return a_record->setDescription(ui->noteTextEdit->toPlainText());
+    return false;
+    /*
     {
         NoteValue nv;
         nv.text = desc;
@@ -179,6 +183,7 @@ bool TTRecordWindow::setDescription(const QString &desc)
         return true;
     }
     return false;
+    */
 }
 
 void TTRecordWindow::refreshState()
@@ -198,9 +203,25 @@ void TTRecordWindow::valueChanged()
         props->resetAll();
 }
 
+void TTRecordWindow::recordStateChanged()
+{
+    if(a_record)
+        refreshState();
+}
+
+void TTRecordWindow::noteEditing(int index)
+{
+    //noteInEdit[index] = true;
+}
+
+void TTRecordWindow::canceledEditing(int index)
+{
+    //noteInEdit.remove(index);
+}
+
 void TTRecordWindow::refreshValues()
 {
-    a_record->refresh();
+    //a_record->refresh();
     props->fillValues(a_record);
     QString html = a_record->toHTML("data/edit.xq");
     ui->webView->setHtml(html);
@@ -222,23 +243,23 @@ bool TTRecordWindow::addNewNote(const QString &title, const QString &text)
     return false;
 }
 
-bool TTRecordWindow::doSetNote(int index, const QString &title, const QString &text)
-{
-    if(enableModify())
-        if(a_record->setNote(index,title,text))
-        {
-            setChanged(true);
-            return true;
-        }
-    return false;
-}
+//bool TTRecordWindow::doSetNote(int index, const QString &title, const QString &text)
+//{
+//    if(enableModify())
+//        if(a_record->setNote(index,title,text))
+//        {
+//            setChanged(true);
+//            return true;
+//        }
+//    return false;
+//}
 
-void TTRecordWindow::applyNewNote()
-{
-    if(isNoteEntered())
-        if(addNewNote(ui->titleBox->currentText(),ui->noteTextEdit->toPlainText()))
-            ui->noteTextEdit->setPlainText("");
-}
+//void TTRecordWindow::applyNewNote()
+//{
+//    if(isNoteEntered())
+//        if(addNewNote(ui->titleBox->currentText(),ui->noteTextEdit->toPlainText()))
+//            ui->noteTextEdit->setPlainText("");
+//}
 
 void TTRecordWindow::postCurValue()
 {
@@ -307,7 +328,8 @@ bool TTRecordWindow::writeChanges()
 {
     if(a_record->mode() == TrkToolRecord::View)
         return false;
-    applyNewNote();
+    //applyNewNote();
+    factory->closeEdits(true);
     a_record->setValues(props->changes());
     foreach(int key, newText.keys())
     {
@@ -330,6 +352,12 @@ bool TTRecordWindow::writeChanges()
     return true;
 }
 
+bool TTRecordWindow::writeDraftChanges()
+{
+    //foreach(int index, noteInEdit.keys())
+    return false;
+}
+
 bool TTRecordWindow::isChanged()
 {
     return changed;
@@ -340,6 +368,87 @@ void TTRecordWindow::setChanged(bool value)
     changed = value;
 }
 
+bool TTRecordWindow::startEditDescription()
+{
+    return startEditNote(TQ_DESC_INDEX);
+}
+
+bool TTRecordWindow::startEditNote(int index)
+{
+    if(index == TQ_NO_INDEX)
+        return false;
+    if(!enableModify())
+        return false;
+    if(index == TQ_DESC_INDEX)
+    {
+        ui->labelTitle->setText("Description");
+        ui->titleBox->setVisible(false);
+        ui->noteTextEdit->setPlainText(a_record->description());
+        noteInEdit = index;
+        showNoteEditor(true);
+        return true;
+    }
+    ui->titleBox->clear();
+    ui->titleBox->addItems(a_record->project()->noteTitles);
+    if(index == TQ_NEW_NOTE)
+    {
+        if(settings->contains("LastNote"))
+            ui->titleBox->setEditText(settings->value("LastNote").toString());
+        ui->noteTextEdit->setPlainText("");
+        noteInEdit = index;
+        showNoteEditor(true);
+        return true;
+    }
+    if(index >= TQ_FIRST_NOTE)
+    {
+        ui->titleBox->setEditText(a_record->noteTitle(index - TQ_FIRST_NOTE));
+        ui->noteTextEdit->setPlainText(a_record->noteText(index - TQ_FIRST_NOTE));
+        noteInEdit = index;
+        showNoteEditor(true);
+        return true;
+    }
+    return false;
+}
+
+bool TTRecordWindow::endEditNote(bool commitChanges)
+{
+    if(commitChanges)
+    {
+        if(noteInEdit == TQ_DESC_INDEX)
+        {
+            if(!setDescription(ui->noteTextEdit->toPlainText()))
+                return false;
+        }
+        else if (noteInEdit == TQ_NEW_NOTE)
+        {
+            if(!addNote(ui->titleBox->currentText(),
+                        ui->noteTextEdit->toPlainText()))
+                return false;
+            settings->setValue("LastNote",ui->titleBox->currentText());
+        }
+        else if (noteInEdit >= TQ_FIRST_NOTE)
+        {
+            if(!setNote(noteInEdit - TQ_FIRST_NOTE,
+                        ui->titleBox->currentText(),
+                        ui->noteTextEdit->toPlainText()))
+                return false;
+            settings->setValue("LastNote",ui->titleBox->currentText());
+        }
+    }
+    resetNoteEditor();
+    showNoteEditor(false);
+    return true;
+}
+
+void TTRecordWindow::resetNoteEditor()
+{
+    ui->labelTitle->setText(tr("New note"));
+    ui->titleBox->clear();
+    ui->titleBox->setVisible(true);
+    ui->noteTextEdit->clear();
+    noteInEdit = TQ_NO_INDEX;
+}
+
 void TTRecordWindow::on_actionClose_triggered()
 {
     close();
@@ -347,7 +456,8 @@ void TTRecordWindow::on_actionClose_triggered()
 
 void TTRecordWindow::on_addNoteButton_clicked()
 {
-    applyNewNote();
+    //applyNewNote();
+    endEditNote(true);
     refreshValues();
 }
 
@@ -357,4 +467,45 @@ void TTRecordWindow::on_actionSaveExit_triggered()
         commit();
     refreshValues();
     close();
+}
+
+void TTRecordWindow::on_newNoteButton_clicked()
+{
+    startEditNote(TQ_NEW_NOTE);
+}
+
+
+void TTRecordWindow::initWidgets()
+{
+    props = new ModifyPanel(this);
+    props->setButtonsVisible(false);
+    connect(props,SIGNAL(dataChanged()),SLOT(valueChanged()));
+    ui->dockWidget->setWidget(props);
+    ui->dockWidget->setWindowTitle(tr("Свойства"));
+    setAttribute(Qt::WA_DeleteOnClose,true);
+    if(settings->contains(TTRecordGeometry))
+        restoreGeometry(settings->value(TTRecordGeometry).toByteArray());
+    if(settings->contains(TTRecordState))
+        restoreState(settings->value(TTRecordState).toByteArray());
+    ui->webView->setUrl(QUrl("about:blank"));
+    connect(ui->webView->page()->mainFrame(), SIGNAL(javaScriptWindowObjectCleared()),
+            this, SLOT(populateJavaScriptWindowObject()));
+    connect(ui->webView,SIGNAL(statusBarMessage(QString)),
+            ttglobal(),SLOT(statusBarMessage(QString)));
+    QWebSettings::globalSettings()->setAttribute(QWebSettings::PluginsEnabled, true);
+    QWebSettings::globalSettings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
+    factory = new ScrPluginFactory(ui->webView,this);
+    ui->webView->page()->setPluginFactory(factory);
+    connect(factory,SIGNAL(changedNoteEditor(int)),SLOT(noteEditing(int)));
+    //connect(factory,SIGNAL(canceledChanges(int)),SLOT());
+    connect(ui->noteTextEdit,SIGNAL(textChanged()),this,SLOT(valueChanged()));
+    showNoteEditor(false);
+
+//    tabBar = new QTabBar(ui->tabPlaceWidget);
+//    tabBar->addTab(QIcon(":/images/file.png"),tr("Текст"));
+//    tabBar->addTab(QIcon(":/images/plan.png"),tr("Планы"));
+//    tabBar->addTab(tr("Файлы"));
+
+//    QBoxLayout *lay = qobject_cast<QBoxLayout *>(ui->tabPlaceWidget->layout());
+//    lay->insertWidget(0,tabBar);
 }

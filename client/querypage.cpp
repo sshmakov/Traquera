@@ -612,6 +612,7 @@ QString QueryPage::makeRecordsPage(const QList<TrkToolRecord *> &records, const 
     xml.appendChild(root);
     foreach( TrkToolRecord *rec, records)
     {
+        rec->refresh();
         QDomDocument recxml = rec->toXML();
         root.appendChild(recxml);
     }
@@ -1332,7 +1333,7 @@ void QueryPage::refreshQuery()
 
 void QueryPage::openRecordId(int id)
 {
-    TrkToolRecord *rec = tmodel->project()->getRecordId(id);
+    TrkToolRecord *rec = tmodel->project()->createRecordById(id);
     if(rec)
     {
         TTRecordWindow *win = new TTRecordWindow();

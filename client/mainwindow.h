@@ -162,6 +162,7 @@ private slots:
     void on_actionRefresh_Query_triggered();
     void on_actionEditContents_triggered();
     void on_actionPlansDialog_triggered();
+    void on_actionNewRequest_triggered();
 };
 
 #endif

@@ -84,6 +84,7 @@ QVariant TTFolderModel::data(const QModelIndex &index, int role) const
 
 bool TTFolderModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
+    Q_UNUSED(role)
     if(!index.isValid())
         return false;
     int fid = index.internalId();
@@ -184,12 +185,13 @@ int TTFolderModel::rowCount(const QModelIndex &parent) const
 
 int TTFolderModel::columnCount(const QModelIndex &parent) const
 {
+    Q_UNUSED(parent)
     return 4;
 }
 
 QVariant TTFolderModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
-    if(orientation != Qt::Horizontal || role != Qt::DisplayRole)
+    if(orientation != Qt::Horizontal || role != Qt::DisplayRole || section)
         return QVariant();
     return QVariant(tr("Папка"));
 }
@@ -244,7 +246,7 @@ bool TTFolderModel::removeRows(int row, int count, const QModelIndex &parent)
     for(int i=0; i<count; i++)
     {
         int fid = parentFolder.childrens[row];
-        TTFolder &f =  folders[fid];
+        //TTFolder &f =  folders[fid];
         removeChildrens(fid);
         QSqlQuery q(db);
         if(!q.exec(QString("delete from folders where id = %1").arg(fid)))

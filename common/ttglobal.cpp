@@ -137,7 +137,7 @@ int TTGlobal::shellLocale(const QString &command, const QString &locale)
     info.cb = sizeof(info);
     //info.wShowWindow = SHOW_OPENWINDOW;
     char *cmd = enc.data();
-    const WCHAR *wcmd = command.utf16();
+//    const WCHAR *wcmd = command.utf16();
 //    BOOL res = CreateProcessW(0, (LPWSTR)wcmd, 0, 0, false, 0, 0, 0, &info, &pi);
     BOOL res = CreateProcessA(0, cmd, 0, 0, false, 0, 0, 0, &info, &pi);
     if(res)

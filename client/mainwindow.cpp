@@ -28,6 +28,7 @@
 #include "planfilesform.h"
 #include <QNetworkRequest>
 #include <QtWebKit>
+#include "ttrecwindow.h"
 
 extern int uniqueAlbumId;
 extern int uniqueArtistId;
@@ -1441,4 +1442,13 @@ void MainWindow::on_actionEditContents_triggered()
 void MainWindow::on_actionPlansDialog_triggered()
 {
     PlanFilesForm::execute(this, projects);
+}
+
+void MainWindow::on_actionNewRequest_triggered()
+{
+    TrkToolRecord *rec = currentProject()->newRecord();
+    TTRecordWindow *win = new TTRecordWindow();
+    win->setTypeDef(rec->typeDef());
+    win->setRecord(rec);
+    win->show();
 }

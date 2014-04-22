@@ -2,6 +2,7 @@
 #include "notewidget.h"
 #include <QtNetwork>
 #include <QtWebKit>
+#include <QObjectList>
 
 #include "ttrecwindow.h"
 
@@ -11,6 +12,12 @@ ScrPluginFactory::ScrPluginFactory(QWebView *webView, TTRecordWindow *parent) :
     editor = parent;
     web = webView;
     manager = new QNetworkAccessManager(this);
+    views = new QObjectList();
+}
+
+ScrPluginFactory::~ScrPluginFactory()
+{
+    delete views;
 }
 
 void ScrPluginFactory::setRecord(TrkToolRecord *rec)
@@ -40,9 +47,13 @@ QObject *ScrPluginFactory::create(const QString &mimeType, const QUrl &url, cons
         view->setNoteText(record->noteText(noteIndex));
     }
     view->setNoteIndex(noteIndex);
+    views->append(view);
     //connect(view,SIGNAL(changedNoteTitle(QString))
     connect(view,SIGNAL(submitTriggered(int,QString,QString)),SLOT(saveNote(int,QString,QString)));
     connect(view,SIGNAL(cancelTriggered(int)),SLOT(resetNote(int)));
+    connect(view,SIGNAL(destroyed()),this,SLOT(destroyedEdit()));
+    connect(view,SIGNAL(changedNoteTitle(int,QString)),SLOT(changedNote(int)));
+    connect(view,SIGNAL(changedNoteText(int)),SLOT(changedNote(int)));
     QWebFrame *frame = web->page()->mainFrame();
     QString obj = "wid" + QString::number(noteIndex);
     view->setProperty("JSObject", obj);
@@ -65,6 +76,20 @@ QList<QWebPluginFactory::Plugin> ScrPluginFactory::plugins() const
     return QList<QWebPluginFactory::Plugin>() << plugin;
 }
 
+bool ScrPluginFactory::closeEdits(bool withSave)
+{
+    foreach(QObject *v, *views)
+    {
+        NoteWidget *view = qobject_cast<NoteWidget *>(v);
+        if(view)
+            if(withSave)
+                view->submit();
+            else
+                view->cancel();
+    }
+    return true;
+}
+
 void ScrPluginFactory::saveNote(int index, const QString &title, const QString &text)
 {
 //    QObject *s = sender();
@@ -77,6 +102,7 @@ void ScrPluginFactory::saveNote(int index, const QString &title, const QString &
     QWebFrame *frame = web->page()->mainFrame();
     frame->evaluateJavaScript("submitNoteWidget("+QString::number(index)+ ");\n");
     //editor->setNote(index, title, text);
+    emit savedChanges(index);
 }
 
 void ScrPluginFactory::resetNote(int index)
@@ -84,6 +110,7 @@ void ScrPluginFactory::resetNote(int index)
     QObject *s = sender();
     QWebFrame *frame = web->page()->mainFrame();
     frame->evaluateJavaScript("closeNoteWidget("+QString::number(index)+ ");\n");
+    emit canceledChanges(index);
     //s->deleteLater();
 //    QObject *s = sender();
 //    QVariant obj = s->property("JSObject");
@@ -91,5 +118,16 @@ void ScrPluginFactory::resetNote(int index)
 //    {
 //        QWebFrame *frame = web->page()->mainFrame();
 //        frame->evaluateJavaScript("closeNoteWidget("+obj.toString()+ ");\n");
-//    }
+    //    }
+}
+
+void ScrPluginFactory::changedNote(int index)
+{
+    emit changedNoteEditor(index);
+}
+
+void ScrPluginFactory::destroyedEdit()
+{
+    QObject *s = sender();
+    views->removeAll(s);
 }
