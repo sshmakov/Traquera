@@ -14,7 +14,7 @@
 #define ROW_START    "<tr>"
 #define CELL_START   "<td valign='top'>"
 
-QString copyRecordsToHTMLTable(const QList<TrkToolRecord *> &records, const QStringList &fields, bool withHeaders)
+QString copyRecordsToHTMLTable(const QObjectList &records, const QStringList &fields, bool withHeaders)
 {
     QString html;
     html = TABLE_HEADER;
@@ -25,8 +25,9 @@ QString copyRecordsToHTMLTable(const QList<TrkToolRecord *> &records, const QStr
             html.append(QString(CELL_START "%1</td>").arg(f));
         html.append("</tr>");
     }
-    foreach(TrkToolRecord *rec, records)
+    foreach(QObject *obj, records)
     {
+        TrkToolRecord *rec = (TrkToolRecord *)obj;
         html.append(ROW_START);
         foreach(const QString &f, fields)
             html.append(QString(CELL_START "%1</td>").arg(rec->value(f).toString()));

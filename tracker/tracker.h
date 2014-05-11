@@ -3,7 +3,7 @@
 
 class QSqlDatabase;
 
-#ifndef CONSOLE_APP
+#ifdef CLIENT_APP
     #include <QMessageBox>
 #include <QSortFilterProxyModel>
 #endif
@@ -345,7 +345,7 @@ struct TrkNote
 
 typedef QList<TrkNote> NotesCol;
 
-#ifndef CONSOLE_APP
+#ifdef CLIENT_APP
 
 class TrkModel : public QObject 
 {

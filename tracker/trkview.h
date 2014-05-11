@@ -880,7 +880,7 @@ public:
     Q_INVOKABLE QVariant value(const QString& fieldName, int role = Qt::DisplayRole);
     Q_INVOKABLE QVariant value(TRK_VID vid, int role = Qt::DisplayRole) ;
 	TrkToolRecord::RecMode mode() const { return recMode; }
-    Q_INVOKABLE TRK_UINT recordId() const { return values[VID_Id].toUInt(); }
+    Q_INVOKABLE  unsigned long recordId() const { return values[VID_Id].toUInt(); } // TRK_UINT
     Q_INVOKABLE QString title();
     Q_INVOKABLE void setValue(const QString& fieldName, const QVariant& value, int role = Qt::EditRole);
     //Q_INVOKABLE bool insertBegin();

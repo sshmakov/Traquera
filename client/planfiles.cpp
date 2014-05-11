@@ -5,16 +5,24 @@
 
 
 // ======== PlanFilesModel
+/*
 PlanFilesModel::PlanFilesModel(MainWindow *parent)
 : QAbstractItemModel(parent)
 {
     mainWindow = parent;
 }
+*/
+
+PlanFilesModel::PlanFilesModel(PlansPlugin *main)
+    : QAbstractItemModel(main)
+{
+    plugin = main;
+}
 
 
 int	PlanFilesModel::columnCount(const QModelIndex & /* parent */) const
 {
-        return 3;
+    return 3;
 }
 
 QVariant PlanFilesModel::data(const QModelIndex & index, int role) const
@@ -154,7 +162,8 @@ void PlanFilesModel::loadPlan(int row)
     QString fileName = plans[row].file;
     if(!models.contains(fileName))
     {
-        model = mainWindow->planModel.addPrjFile(fileName, plans[row].readOnly);
+        //model = mainWindow->planModel.addPrjFile(fileName, plans[row].readOnly);
+        model = plugin->loadPrjFile(fileName, plans[row].readOnly);
         if(model)
         {
             models[fileName]=model;
@@ -164,7 +173,8 @@ void PlanFilesModel::loadPlan(int row)
     else
     {
         model = models.value(fileName);
-        mainWindow->planModel.closePrjModel(model);
+        //mainWindow->planModel.closePrjModel(model);
+        plugin->loadedPlans->closePrjModel(model);
         plans[row].loaded=false;
         models.remove(fileName);
     }

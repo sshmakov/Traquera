@@ -59,7 +59,9 @@ HEADERS += \
     notewidget.h \
     scrpluginfactory.h \
     previewfactory.h \
-    highlighter.h
+    highlighter.h \
+    tqpluginwidget.h \
+    tqplanswidget.h
 SOURCES += database.cpp main.cpp mainwindow.cpp project.cpp querypage.cpp projectpage.cpp \
 	trklogin.cpp filterpage.cpp flowlayout.cpp plans.cpp planproxy.cpp \
 	scrwidg.cpp \
@@ -85,7 +87,9 @@ SOURCES += database.cpp main.cpp mainwindow.cpp project.cpp querypage.cpp projec
     notewidget.cpp \
     scrpluginfactory.cpp \
     previewfactory.cpp \
-    highlighter.cpp
+    highlighter.cpp \
+    tqpluginwidget.cpp \
+    tqplanswidget.cpp
 RESOURCES += resources/tracks.qrc
 
 win32: LIBS += -L$$PWD/../trktool/lib/ -ltrktooln -lshell32 -lshlwapi
@@ -121,6 +125,7 @@ include(deploy.pri)
 qtcAddDeployment()
 
 DEFINES -= CONSOLE_APP
+DEFINES += CLIENT_APP
 
 RC_FILE = traquera-win.rc
 

@@ -30,6 +30,7 @@ QT_END_NAMESPACE
 class PlanFilesModel;
 class QueryPage;
 class ProjectPage;
+class TTGlobal;
 
 class MainWindow : public QMainWindow, private Ui::MainWindow
 {
@@ -49,7 +50,8 @@ private:
 	TrkToolDB *trkdb;
 	TrkToolProject *trkproject;
     TrkHistory *journal;
-    PlanFilesModel *projects;
+    PlansPlugin *planPlugin;
+    //PlanFilesModel *projects;
 	QAbstractItemModel *excels;
 	PlanModel planModel;
     friend class PlanFilesModel;
@@ -86,6 +88,7 @@ public slots:
     void hideProgressBar();
 public:
 	void initProjectModel();
+    void loadPlugins();
     //QMenu MainWindow::planMenu(bool forLink=false);
     void readModifications();
     TrkToolProject *currentProject()
@@ -116,12 +119,18 @@ protected slots:
     void refreshSelection();
     void finishedSearch(QNetworkReply *reply);
 public slots:
+    /*
+     * for plan plugin
+     *
     void addPlanFile();
     void delCurrentPlan();
     void loadCurrentPlan();
 	void loadAllProjects();
 	void checkAutoProjects();
     void addMSProjectFile();
+    */
+    void addPropWidget(QWidget *widget);
+
 	void trustChanged(int State);
     void idEntered();
     void idEnteredNewPage();
@@ -161,7 +170,7 @@ private slots:
     void on_actionViewModify_triggered(bool checked);
     void on_actionRefresh_Query_triggered();
     void on_actionEditContents_triggered();
-    void on_actionPlansDialog_triggered();
+    //void on_actionPlansDialog_triggered();
     void on_actionNewRequest_triggered();
 };
 

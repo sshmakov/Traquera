@@ -3,6 +3,7 @@
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QSettings>
+#include <ttglobal.h>
 
 TrkConnect::TrkConnect(QWidget *parent)
 	: QDialog(parent)
@@ -15,8 +16,9 @@ TrkConnect::TrkConnect(QWidget *parent)
 TrkDb * TrkConnect::connectTracker()
 {
 	TrkConnect *d = new TrkConnect();
-	QString server = settings->value("TrackerSQLServer","").toString(); // "SHMAKOVTHINK\\SQLEXPRESS"
-	QString user = settings->value("TrackerUser","").toString();
+    QSettings *settings = ttglobal()->settings();
+    QString server = settings->value("TrackerSQLServer","").toString(); // "SHMAKOVTHINK\\SQLEXPRESS"
+    QString user = settings->value("TrackerUser","").toString();
 	d->serverEdit->setText(server);
 	d->userEdit->setText(user);
 	if(!d->exec())

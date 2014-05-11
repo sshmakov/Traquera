@@ -45,7 +45,7 @@ public:
     void setModel(TrkToolModel *newModel);
     void loadDefinitions(const RecordTypeDef *typeDef);
     void fillValues(TrkToolRecord *record);
-    void fillValues(const QList<TrkToolRecord *> records);
+    void fillValues(const QObjectList &records);
     QTableWidget *tableWidget();
     const ModifyRow &fieldRow(int row)
     {
@@ -66,7 +66,7 @@ signals:
 protected:
     void fillTable();
 public slots:
-    void selectedRecordsChanged(const QList<TrkToolRecord*> newSelection);
+    void selectedRecordsChanged(const QObjectList &newSelection);
     void modelChanged(TrkToolModel *newmodel);
     void setFieldValue(const QString &fieldName, const QVariant &value);
     void resetField(const QString& fieldName);

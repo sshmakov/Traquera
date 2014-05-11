@@ -1,6 +1,6 @@
 #include "tracker.h"
 #include "trkview.h"
-#ifndef CONSOLE_APP
+#ifdef CLIENT_APP
 #include "settings.h"
 #include "ttglobal.h"
 #include "trkdecorator.h"
@@ -93,7 +93,7 @@ bool isTrkOK(int result, bool show = true)
     }
     if(error.isEmpty())
         error = QString(QObject::tr("Tracker Error %1")).arg(result);
-#ifndef CONSOLE_APP
+#ifdef CLIENT_APP
 
     if(show)
         TTGlobal::global()->showError(error);
@@ -112,7 +112,7 @@ static TRK_UINT Do_TrkSetDescription(TRK_RECORD_HANDLE recHandle, const QByteArr
     return TrkSetDescriptionData(recHandle, data.size(), data.constData(), 0);
 }
 
-#ifndef CONSOLE_APP
+#ifdef CLIENT_APP
 // =================== TrkView ===============
 TrkView::TrkView(QWidget *parent) : 
 	QTableView(parent),
@@ -125,7 +125,7 @@ TrkView::TrkView(QWidget *parent) :
 void TrkView::headerChanged()
 {
 	if(isInteractive)
-		settings->setValue("TrackerGrid", horizontalHeader()->saveState());
+        TTGlobal::global()->settings()->setValue("TrackerGrid", horizontalHeader()->saveState());
 }
 
 void TrkView::headerToggled(bool checked)
@@ -899,7 +899,7 @@ QAbstractItemModel *TrkToolProject::queryModel(TRK_RECORD_TYPE /* type */)
     return &theQueryModel;
 }
 
-#ifndef CONSOLE_APP
+#ifdef CLIENT_APP
 QAbstractItemModel *TrkToolProject::createProxyQueryModel(TrkQryFilter::Filter filter, QObject *parent, TRK_RECORD_TYPE /* type */)
 {
     TrkQryFilter *proxy = new TrkQryFilter(parent);
@@ -1824,7 +1824,7 @@ QVariant TrkToolModel::data(const QModelIndex & index, int role) const
 		Qt::CheckState state = isSel ? Qt::Checked : Qt::Unchecked;
 		return QVariant::fromValue<int>(state);
 	}
-#ifndef CONSOLE_APP
+#ifdef CLIENT_APP
     if(role == Qt::FontRole)
     {
         QFont font;
@@ -2106,11 +2106,16 @@ TrkToolRecord::~TrkToolRecord()
 QVariant TrkToolRecord::value(const QString& fieldName, int role)
 {
 	TRK_VID vid = prj->fieldName2VID(rectype, fieldName);
-    return value(vid, role);
+    if(vid)
+        return value(vid, role);
+    else
+        return QVariant();
 }
 
 QVariant TrkToolRecord::value(TRK_VID vid, int role)
 {
+    if(!vid)
+        return QVariant();
     if(vid == 10001 && recMode == Insert)
         return 0;
     if(!values.contains(vid))
@@ -2667,7 +2672,7 @@ QString TrkToolRecord::toHTML(const QString &xqCodeFile)
     QFile trackerXML("data/tracker.xml");
     trackerXML.open(QIODevice::ReadOnly);
     QXmlQuery query;
-#ifndef CONSOLE_APP
+#ifdef CLIENT_APP
     query.setMessageHandler(sysMessager);
 #endif
 
@@ -3179,7 +3184,7 @@ QVariant TrkToolQryModel::displayColData(const TrkQuery &rec, int col) const
     return QVariant();
 }
 
-#ifndef CONSOLE_APP
+#ifdef CLIENT_APP
 //TrkQryFilter
 
 TrkQryFilter::TrkQryFilter(QObject *parent)

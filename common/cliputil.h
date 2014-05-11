@@ -5,7 +5,7 @@
 
 class TrkToolRecord;
 
-QString copyRecordsToHTMLTable(const QList<TrkToolRecord *> &records, const QStringList &fields, bool withHeaders = true);
+QString copyRecordsToHTMLTable(const QObjectList &records, const QStringList &fields, bool withHeaders = true);
 
 
 #endif

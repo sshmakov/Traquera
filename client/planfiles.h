@@ -13,17 +13,20 @@ struct Plan
 
 class PrjItemModel;
 class MainWindow;
+class PlansPlugin;
 
 class PlanFilesModel: public QAbstractItemModel
 {
     Q_OBJECT
 protected:
-    MainWindow *mainWindow;
+    //MainWindow *mainWindow;
+    PlansPlugin *plugin;
 public:
     QList<Plan> plans;
     QHash<QString, PrjItemModel *> models;
 
-    PlanFilesModel(MainWindow *parent);
+    //PlanFilesModel(MainWindow *parent);
+    PlanFilesModel(PlansPlugin *main);
     virtual int	columnCount(const QModelIndex & parent = QModelIndex() ) const;
     virtual QVariant data(const QModelIndex & index, int role = Qt::DisplayRole ) const;
     virtual QVariant headerData ( int section, Qt::Orientation orientation, int role = Qt::DisplayRole ) const;

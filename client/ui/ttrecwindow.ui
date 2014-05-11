@@ -217,7 +217,7 @@
         <string>Файлы</string>
        </attribute>
       </widget>
-      <widget class="QWidget" name="tab_2">
+      <widget class="QWidget" name="tabPlans">
        <attribute name="title">
         <string>Планы</string>
        </attribute>

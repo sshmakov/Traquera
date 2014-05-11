@@ -11,6 +11,7 @@
 #include "trkview.h"
 #include "trkdecorator.h"
 #include "settings.h"
+#include "ttglobal.h"
 
 TrkDecorator *decorator;
 
@@ -236,7 +237,7 @@ void TrkDecorator::loadViewDef(QTableView *view)
     QDomElement doc = dom.documentElement();
     if(doc.isNull()) return;
     QHeaderView *hv = view->horizontalHeader();
-    QVariant gridSet = settings->value(KEY);
+    QVariant gridSet = ttglobal()->settings()->value(KEY);
     bool isGridRestored=false;
     QByteArray tempBuf = hv->saveState();
     if(gridSet.isValid())
@@ -273,7 +274,7 @@ void TrkDecorator::loadViewDef(QTableView *view)
     }
     hv->setMovable(true);
     hv->setDefaultAlignment(Qt::AlignLeft);
-    settings->setValue(KEY, hv->saveState());
+    ttglobal()->settings()->setValue(KEY, hv->saveState());
 //    isDefLoaded = true;
     delete source;
     delete file;

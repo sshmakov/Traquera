@@ -69,15 +69,15 @@ public:
 	int getColNum(const QString &colname);
 	QString makeRecordPage(const QModelIndex &qryIndex, const QString& xqCodeFile);
     //QString makeRecordsPage(const QModelIndexList &records, const QString& xqCodeFile);
-    QString makeRecordsPage(const QList<TrkToolRecord *> &records, const QString& xqCodeFile);
-    void sendEmail(const QList<TrkToolRecord *> &records);
+    QString makeRecordsPage(const QObjectList &records, const QString& xqCodeFile);
+    void sendEmail(const QObjectList &records);
     void printPreview();
-    QModelIndexList selectedRows();
-    QList<TrkToolRecord *> selectedRecords();
-    QList<TrkToolRecord *> allRecords();
-    QList<TrkToolRecord *> markedRecords();
-    TrkToolRecord *currentRecord();
-    TrkToolRecord *recordOnIndex(const QModelIndex &index);
+    Q_INVOKABLE QModelIndexList selectedRows();
+    Q_INVOKABLE QObjectList selectedRecords(); //Q_INVOKABLE QList<TrkToolRecord *> selectedRecords();
+    Q_INVOKABLE QObjectList allRecords();
+    Q_INVOKABLE QObjectList markedRecords();
+    Q_INVOKABLE TrkToolRecord *currentRecord();
+    Q_INVOKABLE TrkToolRecord *recordOnIndex(const QModelIndex &index);
     void initWidgets();
     bool hasMarked();
 protected:
@@ -125,7 +125,7 @@ signals:
     void changedQuery(const QString & projectName, const QString & queryName);
     void openingModel(const TrkToolModel *model);
     void modelChanged(TrkToolModel *model);
-    void selectionRecordsChanged(const QList<TrkToolRecord *> &selected);
+    void selectionRecordsChanged();
     void openRecordsClicked(ScrSet set);
     void showTaskInPlanClicked(const QString &prjName, int taskNum);
 private slots:
@@ -154,6 +154,8 @@ private slots:
     void on_actionDeleteMarked_triggered();
     void on_actionSelectMarked_triggered();
     void on_actionCopyMarkedRecords_triggered();
+public slots:
+    void addDetailTab(QWidget *tab, const QString &title, const QIcon &icon = QIcon());
 };
 
 #endif //_QUERYPAGE_H_

@@ -10,6 +10,6 @@
 #endif
 
 class QSettings;
-extern QSettings *settings;
+//extern QSettings *settings;
 
 #endif // _SETTINGS_H_

@@ -37,6 +37,7 @@ public:
     Q_INVOKABLE QString description();
     Q_INVOKABLE bool enableModify();
     Q_INVOKABLE bool writeChanges();
+    Q_INVOKABLE QObjectList getSelectedRecords();
     bool writeDraftChanges();
     bool isChanged();
     void setChanged(bool value);
@@ -100,6 +101,7 @@ public slots:
     void populateJavaScriptWindowObject();
     void cancel();
     void commit();
+    void addDetailTab(QWidget *tab, const QString &title, const QIcon &icon);
 
 
 private:

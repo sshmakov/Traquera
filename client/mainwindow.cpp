@@ -54,7 +54,7 @@ MainWindow::MainWindow(QWidget *parent)
     //QSizePolicy policy = tabWidget->sizePolicy();
     //policy.setHorizontalStretch(1);
     //tabWidget->setSizePolicy(policy);
-    TTGlobal::global()->mainWindow = this;
+    ttglobal()->mainWindow = this;
     sysMessager = new Messager(this);
     //toolBox->setCurrentIndex(0);
     journal = 0;
@@ -68,6 +68,7 @@ MainWindow::MainWindow(QWidget *parent)
     selectionTimer->setSingleShot(true);
     selectionTimer->setInterval(0);
     connect(selectionTimer,SIGNAL(timeout()),this,SLOT(refreshSelection()));
+    ttglobal()->loadPlugins();
 	initProjectModel();
     makeMenus();
     treeModel = new UnionModel(this);
@@ -135,13 +136,14 @@ MainWindow::~MainWindow()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    settings->setValue(MainWindowState, saveState());
-    settings->setValue(MainWindowGeometry, saveGeometry());
+    ttglobal()->settings()->setValue(MainWindowState, saveState());
+    ttglobal()->settings()->setValue(MainWindowGeometry, saveGeometry());
     QWidget::closeEvent(event);
 }
 
 void MainWindow::loadSettings()
 {
+    QSettings *settings = ttglobal()->settings();
     dbmsEdit->setText(settings->value("TrackerDBMSType",dbmsEdit->text()).toString());
     serverEdit->setText(settings->value("TrackerSQLServer",serverEdit->text()).toString());
 	sqlUserEdit->setText(settings->value("TrackerSQLUser",sqlUserEdit->text()).toString());
@@ -150,6 +152,7 @@ void MainWindow::loadSettings()
 	trustChanged(trustedUserBox->checkState());
 	projectEdit->setText(settings->value("TrackerProject",projectEdit->text()).toString());
 	userEdit->setText(settings->value("TrackerUser",userEdit->text()).toString());
+    /*
 	settings->beginGroup("Plans");
 	{
 		QStringList keys=settings->childKeys();
@@ -165,6 +168,7 @@ void MainWindow::loadSettings()
 		}
 	}
 	settings->endGroup();
+    */
     if(settings->contains(MainWindowGeometry))
         restoreGeometry(settings->value(MainWindowGeometry).toByteArray());
     if(settings->contains(MainWindowState))
@@ -174,6 +178,7 @@ void MainWindow::loadSettings()
 
 void MainWindow::saveSettings()
 {
+    QSettings *settings = ttglobal()->settings();
     settings->setValue("TrackerDBMSType",dbmsEdit->text());
     settings->setValue("TrackerSQLServer",serverEdit->text());
 	settings->setValue("TrackerSQLUser",sqlUserEdit->text());
@@ -182,6 +187,7 @@ void MainWindow::saveSettings()
 	settings->setValue("TrackerProject",projectEdit->text());
 	settings->setValue("TrackerUser",userEdit->text());
 //    settings->setValue("TrackerIndex", solrUrl);
+    /*
 	settings->beginGroup("Plans");
 	{
 		QStringList keys=settings->childKeys();
@@ -194,6 +200,7 @@ void MainWindow::saveSettings()
         }
 	}
     settings->endGroup();
+    */
 }
 
 void MainWindow::showProgressBar()
@@ -392,8 +399,11 @@ void MainWindow::applyChanges()
     lastChanges = modifyPanel->changes();
     if(lastChanges.isEmpty())
         return;
-    foreach(TrkToolRecord *rec,qpage->selectedRecords())
+    foreach(QObject *obj,qpage->selectedRecords())
     {
+        TrkToolRecord *rec = qobject_cast<TrkToolRecord *>(obj);
+        if(!rec)
+            continue;
         if(rec->updateBegin())
         {
             foreach(const QString &fieldName, lastChanges.keys())
@@ -516,6 +526,11 @@ void MainWindow::finishedSearch(QNetworkReply *reply)
     hideProgressBar();
 }
 
+void MainWindow::addPropWidget(QWidget *widget)
+{
+    verticalLayout->addWidget(widget);
+}
+
 void MainWindow::calcCountRecords()
 {
     QString s;
@@ -523,7 +538,7 @@ void MainWindow::calcCountRecords()
     if(page)
     {
         s = QString(tr("Запросов: %1")).arg(page->queryView->model()->rowCount());
-        QList<TrkToolRecord*> list = page->selectedRecords();
+        QObjectList list = page->selectedRecords();
         if(list.count())
             s = QString(tr("Выделено: %1 ")).arg(list.count()) + s;
     }
@@ -599,7 +614,7 @@ void MainWindow::readQueries()
     treeModel->clear();
 
     TTFolderModel *folders = new TTFolderModel(this);
-    QSqlDatabase db = TTGlobal::global()->userDatabase();
+    QSqlDatabase db = ttglobal()->userDatabase();
     folders->setDatabaseTable(db,"folders","user");
     treeModel->appendSourceModel(folders,tr("Личные папки"));
 
@@ -719,7 +734,7 @@ QueryPage *MainWindow::createNewPage(const QString &title)
     tabWidget->setCurrentIndex(tabWidget->insertTab(tabWidget->count()-1, page, QIcon(":/images/trackerTable.png"), title));
 	page->setPlanModel(&planModel);
 	connect(page,SIGNAL(changedQuery(QString,QString)),this,SLOT(on_changedQuery(QString,QString)));
-    connect(page,SIGNAL(selectionRecordsChanged(QList<TrkToolRecord*>)),this,SLOT(curSelectionChanged()));
+    connect(page,SIGNAL(selectionRecordsChanged()),this,SLOT(curSelectionChanged()));
     connect(page,SIGNAL(openRecordsClicked(ScrSet)),this,SLOT(slotOpenRecordsClicked(ScrSet)));
     connect(page,SIGNAL(showTaskInPlanClicked(QString,int)),this,SLOT(showPlanTask(QString,int)));
     //connect(page,SIGNAL(selectionRecordsChanged(QList<TrkToolRecord*>)),this,SLOT(refreshSelection()));
@@ -728,6 +743,8 @@ QueryPage *MainWindow::createNewPage(const QString &title)
 
 ProjectPage *MainWindow::openPlanPage(const QString& fileName)
 {
+    return 0;
+    /*
     for(int i=0; i<tabWidget->count(); i++)
     {
         ProjectPage *p = qobject_cast<ProjectPage*>(tabWidget->widget(i));
@@ -740,13 +757,6 @@ ProjectPage *MainWindow::openPlanPage(const QString& fileName)
     PrjItemModel *model;
     if(!projects->models.contains(fileName))
         return 0;
-    /*
-    {
-        model = planModel.addPrjFile(fileName);
-        projects->models[fileName]=model;
-    }
-    else
-    */
     model = projects->models[fileName];
     ProjectPage *page;
     page=new ProjectPage(model,this);
@@ -757,6 +767,7 @@ ProjectPage *MainWindow::openPlanPage(const QString& fileName)
     if(!prjName.isEmpty())
         tabWidget->setTabText(newtab,prjName);
     return page;
+    */
 }
 
 void MainWindow::findTrkRecords(const QString &line, bool reuse)
@@ -816,57 +827,20 @@ QueryPage *MainWindow::curQueryPage()
 
 void MainWindow::showPlan(const QModelIndex &index)
 {
+    return;
+    /* for plan plugin
+     *
 	QString fileName;
 	Plan & plan = projects->plans[index.row()];
 	fileName = plan.file;
     openPlanPage(fileName);
-    /*
-	PrjItemModel *model;
-	if(!projects->models.contains(fileName))
-	{
-		model = planModel.addPrjFile(fileName);
-		projects->models[fileName]=model;
-	}
-	else
-		model = projects->models[fileName];
-	if(!linked)
-	{
-
-		ProjectPage *page;
-		page=new ProjectPage(model,this);
-		int newtab=tabWidget->insertTab(tabWidget->count()-1, page, "Project");
-		tabWidget->setCurrentIndex(newtab);
-		tabWidget->show();
-		QString prjName = page->projectName();
-		if(!prjName.isEmpty())
-			tabWidget->setTabText(newtab,prjName);
-	}
-	else
-	{
-		//QueryPage *qp=qobject_cast<QueryPage *>
-	}
-*/
-
+    */
 }
 
 void MainWindow::showPlanTask(const QString &fileName, int taskNum)
 {
     ProjectPage *page = openPlanPage(fileName);
-    /*
-    PrjItemModel *model;
-    if(!projects->models.contains(fileName))
-        return;
-    model = projects->models[fileName];
-    ProjectPage *page;
-    page=new ProjectPage(model,this);
-    int newtab=tabWidget->insertTab(tabWidget->count()-1, page, "Project");
-    tabWidget->setCurrentIndex(newtab);
-    tabWidget->show();
-    QString prjName = page->projectName();
-    if(!prjName.isEmpty())
-        tabWidget->setTabText(newtab,prjName);
-        */
-    if(taskNum)
+    if(page && taskNum)
         page->goToTask(taskNum);
 }
 
@@ -920,44 +894,44 @@ void MainWindow::about()
 
 void MainWindow::initProjectModel()
 {
-	projects = new PlanFilesModel(this);
-	/*
-	settings->beginGroup("Plans");
-	QStringList keys=settings->childKeys();
-	for(int i=0; i<keys.count(); i++)
-	{
-		QString prj = settings->value(keys[i]).toString();
-		projects->addPlan(prj);
-	}
-	settings->endGroup();
-	*/
+    /*
+     *  for plan plugin
+     *
+    projects = new PlanFilesModel(this);
     connect(projects,SIGNAL(dataChanged(QModelIndex,QModelIndex)),this,SLOT(saveSettings()));
-
 	projectTableView->setModel(projects);
     QHeaderView *hv=projectTableView->horizontalHeader();
     hv->setResizeMode(QHeaderView::ResizeToContents);
-    //hv->resizeSection(0, 200);
-    //hv->resizeSection(2, 400);
     connect(projectAddBtn,SIGNAL(clicked()),this,SLOT(addPlanFile()));
     connect(projectOpenBtn,SIGNAL(clicked()),this,SLOT(addMSProjectFile()));
     connect(projectDelBtn,SIGNAL(clicked()),this,SLOT(delCurrentPlan()));
     connect(projectLoadBtn,SIGNAL(clicked()),this,SLOT(loadCurrentPlan()));
     connect(projectShowBtn,SIGNAL(clicked()),this,SLOT(showCurrentPlan()));
-
-	/*
-	planListView->setModel(projects);
-	//planListView->setModelColumn(1);
-	QAction *a;
-	a = new QAction(QString::fromLocal8Bit("Открыть план"),this);
-	connect(a,SIGNAL(triggered(bool)),this,SLOT(openProject()));
-	planListView->addAction(a);
-	a = new QAction(QString::fromLocal8Bit("Открыть cвязанный план"),this);
-	connect(a,SIGNAL(triggered()),this,SLOT(openLinkedProject()));
-	planListView->addAction(a);
-	planListView->setContextMenuPolicy(Qt::ActionsContextMenu);
-	*/
+    */
 }
 
+void MainWindow::loadPlugins()
+{
+    /* to TTGlobal
+    planPlugin = new PlansPlugin(this);
+    if(!QMetaObject::invokeMethod(planPlugin, "setGlobalObject",
+                                  Q_ARG(QObject *,ttglobal())
+                                  ))
+        return;
+    if(!QMetaObject::invokeMethod(planPlugin, "initPlugin"))
+        return;
+    QWidget *prop=0;
+    if(!QMetaObject::invokeMethod(planPlugin, "getPropWidget",
+                                  Q_RETURN_ARG(QWidget *,prop),
+                                  Q_ARG(QWidget *, this)))
+        return;
+    verticalLayout->addWidget(prop);
+    */
+}
+
+/*
+ * for plan plugin
+ *
 void MainWindow::addPlanFile()
 {
 	QString selectedFilter;
@@ -1022,7 +996,7 @@ void MainWindow::addMSProjectFile()
 	else
 		delete model;
 }
-
+*/
 
 /*
 QMenu MainWindow::planMenu(bool forLink)
@@ -1287,9 +1261,10 @@ void MainWindow::on_actionAddToFolder_triggered()
     TTFolderModel *folderModel = qobject_cast<TTFolderModel*>(model);
     if(!folderModel)
         return;
-    QList<TrkToolRecord*> records = qpage->selectedRecords();
-    foreach(const TrkToolRecord *rec, records)
+    QObjectList records = qpage->selectedRecords();
+    foreach(const QObject *obj, records)
     {
+        const TrkToolRecord *rec = (TrkToolRecord *)obj;
         folderModel->addRecordId(treeModel->mapToSource(index),rec->recordId());
     }
 }
@@ -1439,10 +1414,14 @@ void MainWindow::on_actionEditContents_triggered()
     delete dlg;
 }
 
+/*
+ * for plan plugin
+ *
 void MainWindow::on_actionPlansDialog_triggered()
 {
     PlanFilesForm::execute(this, projects);
 }
+*/
 
 void MainWindow::on_actionNewRequest_triggered()
 {

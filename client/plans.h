@@ -2,8 +2,10 @@
 #define _PLANS_H_
 
 #include <QAbstractItemModel>
+#include <QtGui>
 #include "project.h"
 #include "trdefs.h"
+#include "planfiles.h"
 
 #define Settings_ScrPlanView "ScrPlanView"
 
@@ -50,6 +52,45 @@ protected:
 protected slots:
     void planChanged();
     void planRowsInserted(const QModelIndex & parent, int start, int end );
+};
+
+class PlanFilesForm;
+
+class PlansPlugin: public QObject
+{
+    Q_OBJECT
+public:
+    PlanModel *loadedPlans;
+    PlanFilesModel *planFiles;
+    //QTableView *filesTableView;
+    PlanFilesForm *propWidget;
+    QSettings *settings;
+    QObject *globalObject;
+
+    PlansPlugin(QObject * parent = 0);
+    ~PlansPlugin();
+    Q_INVOKABLE void initPlugin();
+    Q_INVOKABLE void setGlobalObject(QObject *obj);
+    Q_INVOKABLE QWidget * getPropWidget(QWidget *parentWidget = 0);
+    //Q_INVOKABLE void setSettings(QSettings *settings);
+    Q_INVOKABLE bool saveSettings();
+    Q_INVOKABLE bool loadSettings();
+    PrjItemModel *loadPrjFile(const QString &fileName, bool readOnly);
+protected:
+    void initProjectModel();
+public slots:
+    void addPlanFile();
+    void delCurrentPlan();
+    void loadCurrentPlan();
+    void loadAllProjects();
+    void checkAutoProjects();
+    void addMSProjectFile();
+
+public slots:
+    void appendContextMenu(QMenu *menu);
+    void queryViewOpened(QWidget *widget, QTableView *view, const QString &recType = "scr");
+    void recordOpened(QWidget *widget, QObject *record, const QString &recType = "scr");
+    void slotPlanContextMenuRequested(const QPoint &pos);
 };
 
 #endif // _PLANS_H_

@@ -138,7 +138,7 @@ void ModifyPanel::fillTable()
 }
 
 
-void ModifyPanel::selectedRecordsChanged(const QList<TrkToolRecord *> newSelection)
+void ModifyPanel::selectedRecordsChanged(const QObjectList &newSelection)
 {
     fillValues(newSelection);
 }
@@ -164,7 +164,7 @@ void ModifyPanel::fillValues( TrkToolRecord * rec)
     }
 }
 
-void ModifyPanel::fillValues(const QList<TrkToolRecord *> records)
+void ModifyPanel::fillValues(const QObjectList &records)
 {
     for(int r = 0; r<rows.count(); r++)
     {
@@ -176,7 +176,7 @@ void ModifyPanel::fillValues(const QList<TrkToolRecord *> records)
         row.displayValue = "";
         for(int i=0; i<records.count(); i++)
         {
-            TrkToolRecord *rec = records[i];
+            TrkToolRecord *rec = (TrkToolRecord *)records[i];
             if(!i)
             {
                 row.fieldValue = rec->value(row.fieldName, Qt::EditRole);

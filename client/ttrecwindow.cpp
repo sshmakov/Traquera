@@ -7,6 +7,7 @@
 #include "scrpluginfactory.h"
 
 #include <QtWebKit>
+#include "tqplanswidget.h"
 
 const QString TTRecordState = "TTRecWinState";
 const QString TTRecordGeometry = "TTRecWinGeometry";
@@ -70,6 +71,7 @@ void TTRecordWindow::closeEvent(QCloseEvent *event)
         else
             a_record->cancel();
     }
+    QSettings *settings = ttglobal()->settings();
     settings->setValue(TTRecordState, saveState());
     settings->setValue(TTRecordGeometry, saveGeometry());
     QWidget::closeEvent(event);
@@ -172,7 +174,7 @@ QString TTRecordWindow::description()
 bool TTRecordWindow::setDescription(const QString &desc)
 {
     if(enableModify())
-        return a_record->setDescription(ui->noteTextEdit->toPlainText());
+        return a_record->setDescription(desc);
     return false;
     /*
     {
@@ -227,6 +229,7 @@ void TTRecordWindow::refreshValues()
     ui->webView->setHtml(html);
     ui->titleBox->clear();
     ui->titleBox->addItems(a_record->project()->noteTitles);
+    QSettings *settings = ttglobal()->settings();
     if(settings->contains("LastNote"))
         ui->titleBox->setEditText(settings->value("LastNote").toString());
     //changed = false;
@@ -291,6 +294,19 @@ void TTRecordWindow::commit()
     refreshState();
 }
 
+void TTRecordWindow::addDetailTab(QWidget *tab, const QString &title, const QIcon &icon)
+{
+    ui->tabWidget->addTab(tab,icon,title);
+    /*
+    QVBoxLayout *lay = new QVBoxLayout();
+    TQPlansWidget *plans = new TQPlansWidget(this);
+    lay->addWidget(plans);
+    plans->setParentObject(this);
+    plans->setGlobalObject(this);
+    ui->tabPlans->setLayout(lay);
+    */
+}
+
 void TTRecordWindow::on_actionEditRecord_triggered()
 {
     enableModify();
@@ -352,6 +368,14 @@ bool TTRecordWindow::writeChanges()
     return true;
 }
 
+QObjectList TTRecordWindow::getSelectedRecords()
+{
+    QObjectList list;
+    if(a_record)
+        list.append(a_record);
+    return list;
+}
+
 bool TTRecordWindow::writeDraftChanges()
 {
     //foreach(int index, noteInEdit.keys())
@@ -392,6 +416,7 @@ bool TTRecordWindow::startEditNote(int index)
     ui->titleBox->addItems(a_record->project()->noteTitles);
     if(index == TQ_NEW_NOTE)
     {
+        QSettings *settings = ttglobal()->settings();
         if(settings->contains("LastNote"))
             ui->titleBox->setEditText(settings->value("LastNote").toString());
         ui->noteTextEdit->setPlainText("");
@@ -412,6 +437,7 @@ bool TTRecordWindow::startEditNote(int index)
 
 bool TTRecordWindow::endEditNote(bool commitChanges)
 {
+    QSettings *settings = ttglobal()->settings();
     if(commitChanges)
     {
         if(noteInEdit == TQ_DESC_INDEX)
@@ -477,6 +503,7 @@ void TTRecordWindow::on_newNoteButton_clicked()
 
 void TTRecordWindow::initWidgets()
 {
+    QSettings *settings = ttglobal()->settings();
     props = new ModifyPanel(this);
     props->setButtonsVisible(false);
     connect(props,SIGNAL(dataChanged()),SLOT(valueChanged()));
@@ -501,6 +528,17 @@ void TTRecordWindow::initWidgets()
     connect(ui->noteTextEdit,SIGNAL(textChanged()),this,SLOT(valueChanged()));
     showNoteEditor(false);
 
+    ttglobal()->recordOpened(this);
+
+    /* moved to plugins
+    QVBoxLayout *lay = new QVBoxLayout();
+    TQPlansWidget *plans = new TQPlansWidget(this);
+    lay->addWidget(plans);
+    plans->setParentObject(this);
+    plans->setGlobalObject(this);
+    ui->tabPlans->setLayout(lay);
+    */
+
 //    tabBar = new QTabBar(ui->tabPlaceWidget);
 //    tabBar->addTab(QIcon(":/images/file.png"),tr("Текст"));
 //    tabBar->addTab(QIcon(":/images/plan.png"),tr("Планы"));
@@ -508,4 +546,5 @@ void TTRecordWindow::initWidgets()
 
 //    QBoxLayout *lay = qobject_cast<QBoxLayout *>(ui->tabPlaceWidget->layout());
 //    lay->insertWidget(0,tabBar);
+    ui->tabWidget->setCurrentIndex(0);
 }

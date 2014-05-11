@@ -5,7 +5,7 @@
 #include "plans.h"
 #include <QFileDialog>
 
-PlanFilesForm::PlanFilesForm(QWidget *parent) :
+PlanFilesForm::PlanFilesForm(/*PlanPlugin *plugObject, */QWidget *parent) :
     QWidget(parent),
     ui(new Ui::PlanFilesForm)
 {
@@ -36,8 +36,15 @@ void PlanFilesForm::setModel(PlanFilesModel *model)
     ui->projectTableView->setModel(projects);
 }
 
+QItemSelectionModel * PlanFilesForm::getSelectionModel()
+{
+    return ui->projectTableView->selectionModel();
+}
+
 void PlanFilesForm::on_projectAddBtn_clicked()
 {
+    emit addBtn_clicked();
+    /*
     QString selectedFilter;
     QStringList fileNames= QFileDialog::getOpenFileNames(this,
         tr("Добавить план"),
@@ -50,6 +57,7 @@ void PlanFilesForm::on_projectAddBtn_clicked()
         );
     for(int f=0; f<fileNames.count(); f++)
         projects->addPlan(fileNames[f],false);
+    */
 }
 
 void PlanFilesForm::on_projectOpenBtn_clicked()
@@ -70,6 +78,8 @@ void PlanFilesForm::on_projectOpenBtn_clicked()
 
 void PlanFilesForm::on_projectDelBtn_clicked()
 {
+    emit delBtn_clicked();
+    /*
     QItemSelectionModel *is=ui->projectTableView->selectionModel();
     QModelIndexList ii = is->selectedRows();
     for(int i=ii.count()-1; i>=0; i--)
@@ -79,20 +89,27 @@ void PlanFilesForm::on_projectDelBtn_clicked()
     }
     ui->projectTableView->clearSelection();
     //saveSettings();
+    */
 }
 
 void PlanFilesForm::on_projectLoadBtn_clicked()
 {
+    emit loadBtn_clicked();
+    /*
     QItemSelectionModel *is=ui->projectTableView->selectionModel();
     QModelIndexList ii = is->selectedRows();
     for(int i=0; i<ii.count(); i++)
         projects->loadPlan(ii[i].row());
+    */
 }
 
 void PlanFilesForm::on_projectShowBtn_clicked()
 {
+    emit showBtn_clicked();
+    /*
     QItemSelectionModel *is=ui->projectTableView->selectionModel();
     QModelIndexList ii = is->selectedRows();
     for(int i=0; i<ii.count(); i++)
         emit showPlan_clicked(projects->plans[ii[i].row()].file);
+    */
 }

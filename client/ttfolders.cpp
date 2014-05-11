@@ -367,7 +367,7 @@ QList<int> TTFolder::folderContent() const
 
 QString TTFolder::folderRecords() const
 {
-    QSqlQuery q(TTGlobal::global()->userDatabase());
+    QSqlQuery q(ttglobal()->userDatabase());
     q.prepare("select records from folders where id = ?");
     q.bindValue(0,id);
     if(q.exec() && q.next())
@@ -387,7 +387,7 @@ bool TTFolder::addRecordId(int recordId)
 
 bool TTFolder::setRecords(int folderId, const QString &records)
 {
-    QSqlQuery q(TTGlobal::global()->userDatabase());
+    QSqlQuery q(ttglobal()->userDatabase());
     q.prepare("update folders set records = ? where id = ?");
     q.bindValue(0,records);
     q.bindValue(1, folderId);

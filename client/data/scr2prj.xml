@@ -2,7 +2,7 @@
 <scr2project>
     <fields>
       <field title="Название" src="Title"/>
-      <field title="SCR"      src="ID"/>
+      <field title="SCR"      src="Id"/>
       <field title="Версия"   src="MustFixedInBuild"/>
       <field title="Клиент"   src="Client Name"/>
       <field title="Severity"   src="Severity"/>

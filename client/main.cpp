@@ -3,14 +3,12 @@
 #include "database.h"
 #include "mainwindow.h"
 #include "settings.h"
-
-QSettings *settings;
-
+#include "ttglobal.h"
 
 int main(int argc, char *argv[])
 {
     //Q_INIT_RESOURCE(masterdetail);
-	settings = new QSettings(COMPANY_NAME, PRODUCT_NAME);
+
     QApplication app(argc, argv);
 	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("windows-1251"));
 	QTextCodec::setCodecForTr(QTextCodec::codecForName("windows-1251"));

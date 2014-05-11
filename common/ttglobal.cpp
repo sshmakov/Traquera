@@ -1,7 +1,9 @@
 #include "ttglobal.h"
 #include "settings.h"
-#ifndef CONSOLE_APP
+#ifdef CLIENT_APP
 #include "mainwindow.h"
+#include "querypage.h"
+#include "ttrecwindow.h"
 #endif
 #include <QDomDocument>
 #include <QtSql>
@@ -16,8 +18,11 @@ static TTGlobal *ttGlobal=0;
 
 TTGlobal::TTGlobal(QObject *parent) :
     QObject(parent),
-    userDb()
+    userDb(),
+    handlers(),
+    plugins()
 {
+    settingsObj = new QSettings(COMPANY_NAME, PRODUCT_NAME);
     //ttGlobal = this;
     readInitSettings();
 }
@@ -54,6 +59,11 @@ QString TTGlobal::toOemString(const QString &s)
     return s;
 }
 
+QSettings *TTGlobal::settings()
+{
+    return settingsObj;
+}
+
 void TTGlobal::showError(const QString &text)
 {
     if(mainWindow)
@@ -80,10 +90,10 @@ void TTGlobal::readInitSettings()
         userDbPassword = dbNode.attribute("password");
     }
     */
-    userDbType = settings->value("UserDBType").toString();
-    userDbPath = settings->value("UserDBPath").toString();
-    userDbUser = settings->value("UserDBUser").toString();
-    userDbPassword = settings->value("UserDBPass").toString();
+    userDbType = settingsObj->value("UserDBType").toString();
+    userDbPath = settingsObj->value("UserDBPath").toString();
+    userDbUser = settingsObj->value("UserDBUser").toString();
+    userDbPassword = settingsObj->value("UserDBPass").toString();
 }
 
 void TTGlobal::upgradeUserDB()
@@ -143,5 +153,90 @@ int TTGlobal::shellLocale(const QString &command, const QString &locale)
     if(res)
         return 0;
     return GetLastError();
+}
+
+bool TTGlobal::registerEventHandler(const QString &event, QObject *obj, const QString &method)
+{
+    handlers.insert(event, qMakePair(obj, method));
+    return true;
+}
+
+bool TTGlobal::unregisterEventHandler(const QString &event, QObject *obj, const QString &method)
+{
+    handlers.remove(event, qMakePair(obj, method));
+    return true;
+}
+
+void TTGlobal::handleEvent(const QString &event, QGenericReturnArgument ret, QGenericArgument val0, QGenericArgument val1,
+                           QGenericArgument val2, QGenericArgument val3, QGenericArgument val4, QGenericArgument val5,
+                           QGenericArgument val6, QGenericArgument val7, QGenericArgument val8, QGenericArgument val9)
+{
+    QPair<QObject *,QString> pair;
+    foreach(pair, handlers.values(event))
+    {
+        QMetaObject::invokeMethod(pair.first,pair.second.toLocal8Bit().constData(),Qt::DirectConnection,
+                                  ret, val0, val1, val2, val3, val4, val5, val6, val7, val8, val9);
+    }
+}
+
+void TTGlobal::loadPlugins()
+{
+    QObject *p;
+    for(int i=0; i<1; i++)
+    {
+        p = new PlansPlugin(this);
+        plugins.append(p);
+        if(!QMetaObject::invokeMethod(p, "setGlobalObject", Q_ARG(QObject *,this)))
+            continue;
+        if(!QMetaObject::invokeMethod(p, "initPlugin"))
+            continue;
+#ifdef CLIENT_APP
+        QWidget *prop=0;
+        if(!QMetaObject::invokeMethod(p, "getPropWidget",
+                                      Q_RETURN_ARG(QWidget *,prop),
+                                      Q_ARG(QWidget *, mainWindow)))
+            continue;
+        if(prop)
+            mainWindow->addPropWidget(prop);
+#endif
+    }
+}
+
+void TTGlobal::appendContextMenu(QMenu *menu)
+{
+    foreach(QObject *plugin, plugins)
+        QMetaObject::invokeMethod(plugin, "appendContextMenu", Q_ARG(QMenu *,menu));
+}
+
+void TTGlobal::queryViewOpened(QWidget *widget, QTableView *view, const QString &recType)
+{
+    foreach(QObject *plugin, plugins)
+        QMetaObject::invokeMethod(plugin, "queryViewOpened",
+                                  Q_ARG(QWidget *, widget),
+                                  Q_ARG(QTableView *, view),
+                                  Q_ARG(const QString &, recType));
+}
+
+void TTGlobal::recordOpened(QWidget *widget, const QString &recType)
+{
+    foreach(QObject *plugin, plugins)
+        QMetaObject::invokeMethod(plugin, "recordOpened",
+                                  Q_ARG(QWidget *, widget),
+                                  Q_ARG(const QString &, recType));
+}
+
+bool TTGlobal::insertViewTab(QWidget *view, QWidget *tab, const QString &title)
+{
+    QueryPage *page = qobject_cast<QueryPage *>(view);
+    if(page)
+    {
+        page->addDetailTab(tab, title, QIcon());
+        return true;
+    }
+    TTRecordWindow *editor = qobject_cast<TTRecordWindow *>(view);
+    if(editor)
+    {
+        editor->addDetailTab(tab, title, QIcon());
+    }
 }
 

@@ -92,7 +92,8 @@ void ProjectPage::setParentColumn(QHeaderView *hv, const QString& srcFieldTitle,
 
 void ProjectPage::loadDefinition()
 {
-	QXmlSimpleReader xmlReader;
+    QSettings *settings = ttglobal()->settings();
+    QXmlSimpleReader xmlReader;
 	QFile *file = new QFile("data/project.xml");
 	QXmlInputSource *source = new QXmlInputSource(file);
 	QDomDocument dom;
@@ -259,7 +260,10 @@ void ProjectPage::headerToggled(bool checked)
 void ProjectPage::headerChanged()
 {
 	if(isInteractive)
-		settings->setValue("ProjectGrid", projectView->horizontalHeader()->saveState());
+    {
+        QSettings *settings = ttglobal()->settings();
+        settings->setValue("ProjectGrid", projectView->horizontalHeader()->saveState());
+    }
 }
 
 QString ProjectPage::projectName()
@@ -301,7 +305,7 @@ void ProjectPage::updateDetails()
         delete trkmodel;
         trkmodel = 0;
     }
-    TrkToolProject *prj = TTGlobal::global()->mainWindow->currentProject();
+    TrkToolProject *prj = ttglobal()->mainWindow->currentProject();
     if(prj)
     {
         trkmodel = prj->openIdsModel(toIntList(scrs.join(", ")),TRK_SCR_TYPE,false);
