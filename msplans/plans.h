@@ -3,11 +3,33 @@
 
 #include <QAbstractItemModel>
 #include <QtGui>
+#include <QtPlugin>
 #include "project.h"
-#include "trdefs.h"
+//#include "trdefs.h"
 #include "planfiles.h"
 
 #define Settings_ScrPlanView "ScrPlanView"
+
+typedef QSet<int> ScrSet;
+typedef QMap<int, ScrSet> ScrSetList;
+
+inline ScrSet scrStringToSet(const QString & scrString)
+{
+	QString s = scrString;
+	s.replace(QRegExp("[^0-9 ,]")," ");
+	s.replace(' ',',');
+	QStringList list = s.split(',',QString::SkipEmptyParts);
+	ScrSet scrSet;
+	for(int i=0; i<list.count(); i++)
+	{
+		bool ok;
+		int n=list[i].toInt(&ok);
+		if(ok)
+			scrSet << n;
+	}
+	return scrSet;
+}
+
 
 struct ScrPrj 
 {
@@ -76,6 +98,9 @@ public:
     Q_INVOKABLE bool saveSettings();
     Q_INVOKABLE bool loadSettings();
     PrjItemModel *loadPrjFile(const QString &fileName, bool readOnly);
+    void emitError(const QString &msg);
+signals:
+    void error(const QString &pluginName, const QString &msg);
 protected:
     void initProjectModel();
 public slots:
@@ -92,5 +117,7 @@ public slots:
     void recordOpened(QWidget *widget, QObject *record, const QString &recType = "scr");
     void slotPlanContextMenuRequested(const QPoint &pos);
 };
+
+extern PlansPlugin *pluginObject;
 
 #endif // _PLANS_H_

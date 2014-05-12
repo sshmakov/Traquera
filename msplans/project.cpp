@@ -1,7 +1,8 @@
 #include "project.h"
-#include "ttglobal.h"
+#include "plans.h"
+//#include "ttglobal.h"
 #include <QtGui>
-#include <QSqlError>
+//#include <QSqlError>
 #include <QXmlSimpleReader>
 #include <QXmlInputSource>
 #include <QDomDocument>
@@ -492,5 +493,5 @@ int PrjItemModel::colTaskNum()
 
 void PrjItemModel::slotException(int code, const QString &source, const QString &desc, const QString &help)
 {
-    Error(QString(tr("ERROR: (%1) %2")).arg(code).arg(desc));
+    pluginObject->emitError(QString(tr("ERROR: (%1) %2")).arg(code).arg(desc));
 }

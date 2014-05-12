@@ -6,6 +6,7 @@ TEMPLATE = subdirs
 
 # Directories
 SUBDIRS += client trindex \
-    tqservice
+    tqservice \
+    msplans
 
 TARGET = traquera

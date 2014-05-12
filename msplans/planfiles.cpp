@@ -1,5 +1,6 @@
 #include "planfiles.h"
-#include "mainwindow.h"
+#include "plans.h"
+//#include "mainwindow.h"
 #include <QFileInfo>
 
 

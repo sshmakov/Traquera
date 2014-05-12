@@ -39,7 +39,7 @@
 QueryPage::QueryPage(QWidget *parent)
 	:QWidget(parent)
     , tmodel(0)
-    , planViewModel(this)
+//    , planViewModel(this)
 	, history()
     , itIsFolder(false)
     , isInteractive(true)
@@ -69,28 +69,27 @@ QueryPage::QueryPage(QWidget *parent)
 
     stackedWidget->setCurrentIndex(0);
 
-	planModel=NULL;
+//	planModel=NULL;
 	curHistoryPos=0;
 	isDefLoaded=false;
 	//isInteractive=false;
 	linkField="Id";
-	projectTabWidget->hide();
-    // !! tabPanels->resize(tabPanels->width(), 550);
     queryView->setModel(qryFilterModel);
-	//queryView->setModel(&trkmodel.queryModel);
-	//queryView->setModel(trkmodel.model);
-    planTreeView->setModel(&planViewModel);
-	//connect(queryView,SIGNAL(itemSelectionChanged()),
 
+    projectTabWidget->hide();
+    /* to plugin
+    projectTabWidget->hide();
+    planTreeView->setModel(&planViewModel);
 	connect(projectTabWidget,SIGNAL(tabCloseRequested(int)),this,SLOT(closeTab(int)));
 
 	QAction *a;
     a = new QAction(QString::fromLocal8Bit("Добавить в план"),this);
 	connect(a,SIGNAL(triggered(bool)),this,SLOT(addScrTasks()));
 	planTreeView->addAction(a);
-    //planTreeView->setContextMenuPolicy(Qt::ActionsContextMenu);
+
     planTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(planTreeView,SIGNAL(customContextMenuRequested(QPoint)),this,SLOT(slotPlanContextMenuRequested(QPoint)));
+    */
 
     //connect(queryView,SIGNAL(activated(const QModelIndex &)),this,SLOT(recordOpen(const QModelIndex &)));
     connect(queryView,SIGNAL(activated(const QModelIndex &)),actionTest,SLOT(trigger()));
@@ -117,15 +116,15 @@ QueryPage::QueryPage(QWidget *parent)
 
 QueryPage::~QueryPage()
 {
-    QSettings *settings = ttglobal()->settings();
-    settings->setValue(Settings_ScrPlanView,planTreeView->header()->saveState());
+//    QSettings *settings = ttglobal()->settings();
+//    settings->setValue(Settings_ScrPlanView,planTreeView->header()->saveState());
 }
 
 void QueryPage::initWidgets()
 {
     tabBar = new QTabBar(tabPlaceWidget);
     tabBar->addTab(QIcon(":/images/file.png"),tr("Текст"));
-    tabBar->addTab(QIcon(":/images/plan.png"),tr("Планы"));
+    //tabBar->addTab(QIcon(":/images/plan.png"),tr("Планы"));
     tabBar->addTab(tr("Файлы"));
 
     QBoxLayout *lay = qobject_cast<QBoxLayout *>(tabPlaceWidget->layout());
@@ -133,13 +132,12 @@ void QueryPage::initWidgets()
     horizontalSpacer->changeSize(10,20,QSizePolicy::Expanding);
     subLay = new QStackedLayout(subViewWidget);
 
-    planTreeView = new QTreeView(subViewWidget);
-    planTreeView->setObjectName(QString::fromUtf8("planTreeView"));
-    planTreeView->setSelectionMode(QAbstractItemView::ContiguousSelection);
-    planTreeView->setSelectionBehavior(QAbstractItemView::SelectRows);
-    //planTreeView->setAlternatingRowColors(true);
-    planTreeView->setIndentation(5);
-    subLay->addWidget(planTreeView);
+//    planTreeView = new QTreeView(subViewWidget);
+//    planTreeView->setObjectName(QString::fromUtf8("planTreeView"));
+//    planTreeView->setSelectionMode(QAbstractItemView::ContiguousSelection);
+//    planTreeView->setSelectionBehavior(QAbstractItemView::SelectRows);
+//    planTreeView->setIndentation(5);
+//    subLay->addWidget(planTreeView);
 
     filesTable = new QTableWidget(subViewWidget);
     filesTable->setObjectName("filesTable");
@@ -299,15 +297,12 @@ void QueryPage::setQueryModel(TrkToolModel *model)
     queryView->selectRow(0);
 }
 
+/*
 void QueryPage::setPlanModel(PlanModel *newmodel)
 {
 	if(newmodel == planModel)
 		return;
     planViewModel.setSourceModel(newmodel);
-	/*
-	if(newmodel)
-		proxyModel.setFilterKeyColumn(newmodel->SCRfield);
-		*/
 	planModel=newmodel;
     if(planModel)
     {
@@ -318,6 +313,7 @@ void QueryPage::setPlanModel(PlanModel *newmodel)
             planTreeView->header()->restoreState(value.toByteArray());
     }
 }
+*/
 
 QModelIndex QueryPage::mapIndexToModel(const QModelIndex &index) const
 {
@@ -400,13 +396,13 @@ void QueryPage::slotTabChanged(int index)
     }
 }
 
+/* to plugin
 void QueryPage::slotPlanContextMenuRequested(const QPoint &pos)
 {
     QItemSelectionModel *sm = planTreeView->selectionModel();
     QModelIndexList list = sm->selectedRows();
     bool isTasksSelected=false;
     bool isGroupSelected=false;
-    //QSet<PrjItemModel *>selectedPlans;
     foreach(const QModelIndex &i, list)
     {
         if(i.parent().isValid())
@@ -442,6 +438,7 @@ void QueryPage::slotPlanContextMenuRequested(const QPoint &pos)
     QPoint gPos = planTreeView->mapToGlobal(pos);
     menu.exec(gPos);
 }
+*/
 
 void QueryPage::populateJavaScriptWindowObject()
 {
@@ -753,6 +750,7 @@ void QueryPage::sendEmail(const QObjectList &records)
 	*/
 }
 
+/* to plugin
 void QueryPage::addScrTask(PrjItemModel *prj)
 {
 	QXmlSimpleReader xmlReader;
@@ -809,17 +807,6 @@ void QueryPage::addScrTasks()
         addScrTask(prj);
     }
 
-/*
-    QItemSelectionModel *is=planTreeView->selectionModel();
-	QModelIndexList ii = is->selectedRows();
-	for(int i=0; i<ii.count(); i++)
-	{
-		QModelIndex si = proxyModel.mapToSource(ii[i]);
-		PrjItemModel *prj=planModel->prjModel(si);
-		if(prj)
-			addScrTask(prj);
-	}
-    */
 }
 
 void QueryPage::copyScrFromTasks()
@@ -846,6 +833,7 @@ void QueryPage::showScrFromTasks()
     }
     emit openRecordsClicked(res);
 }
+*/
 
 void QueryPage::loadDefinition()
 {
@@ -1363,6 +1351,7 @@ void QueryPage::openRecordId(int id)
     }
 }
 
+/* to plugin
 void QueryPage::showCurrentTaskInPlan()
 {
     QModelIndex cur = planTreeView->currentIndex();
@@ -1374,6 +1363,7 @@ void QueryPage::showCurrentTaskInPlan()
     PrjItemModel *model = planModel->prjModel(planIndex);
     emit showTaskInPlanClicked(model->fileName,task);
 }
+*/
 
 void QueryPage::previewFile(const QString &filePath)
 {
@@ -1417,11 +1407,12 @@ void QueryPage::updateDetails()
         if(!key.isEmpty())
             keys.append(key);
     }
+    /* to plugin
     planViewModel.setFilterSCR(keys.join(","));
     planTreeView->expandAll();
     for(int r=0; r<planViewModel.rowCount(); r++)
         planTreeView->setFirstColumnSpanned(r,QModelIndex(),true);
-
+    */
     QModelIndex qryIndex = mapIndexToModel(queryView->currentIndex());
     if(!qryIndex.isValid())
         return;
@@ -1728,6 +1719,7 @@ void QueryPage::on_actionSelectTrigger_triggered()
     queryView->selectRow(queryView->currentIndex().row()+1);
 }
 
+/* to plugin
 void QueryPage::slotCheckPlannedIds()
 {
     ScrSet res;
@@ -1757,5 +1749,5 @@ void QueryPage::slotCheckNoPlannedIds()
             setIdChecked(id,true);
     }
 }
-
+*/
 

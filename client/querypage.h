@@ -9,8 +9,8 @@
 #include "trdefs.h"
 #include "tracker.h"
 #include "trkview.h"
-#include "plans.h"
-#include "planproxy.h"
+//#include "plans.h"
+//#include "planproxy.h"
 //#include "trkdecorator.h"
 #include "ttfolders.h"
 #include "preview.h"
@@ -34,8 +34,8 @@ class QueryPage : public QWidget, public Ui::queryForm
 protected:
 	bool isInteractive;
 	bool isDefLoaded;
-	PlanModel *planModel;
-    PlanProxyModel planViewModel;
+//	PlanModel *planModel;
+//    PlanProxyModel planViewModel;
     QSortFilterProxyModel *qryFilterModel;
 	QString linkField;
     TrkHistory history;
@@ -65,7 +65,7 @@ public:
     void openIds(TrkToolProject *prj, const QList<int> &idlist, const QString &title=QString(), int recType = TRK_SCR_TYPE);
     void openModel(TrkToolModel *newModel);
     void openFolder(TrkToolProject *prj, const TTFolder &afolder, int recType = TRK_SCR_TYPE);
-	void setPlanModel(PlanModel *newmodel);
+    //void setPlanModel(PlanModel *newmodel);
 	int getColNum(const QString &colname);
 	QString makeRecordPage(const QModelIndex &qryIndex, const QString& xqCodeFile);
     //QString makeRecordsPage(const QModelIndexList &records, const QString& xqCodeFile);
@@ -96,10 +96,10 @@ public slots:
 	void drawNotes(const QModelIndex &qryIndex);
 	void closeTab(int index);
 	void resetPlanFilter();
-	void addScrTask(PrjItemModel *prj);
-	void addScrTasks();
-    void copyScrFromTasks();
-    void showScrFromTasks();
+//	void addScrTask(PrjItemModel *prj);
+//	void addScrTasks();
+//    void copyScrFromTasks();
+//    void showScrFromTasks();
 	void recordOpen( const QModelIndex & index);
 	void goBack();
 	void goForward();
@@ -110,14 +110,14 @@ public slots:
     void setIdChecked(int id, bool checked);
     void refreshQuery();
     void openRecordId(int id);
-    void showCurrentTaskInPlan();
+    //void showCurrentTaskInPlan();
     void previewFile(const QString &filePath);
     void popupScrMenu(int id);
 protected slots:
 	void selectionChanged(const QItemSelection & selected, const QItemSelection & deselected);
     void currentChanged ( const QModelIndex & topLeft, const QModelIndex &  bottomRight);
     void slotTabChanged(int index);
-    void slotPlanContextMenuRequested ( const QPoint & pos );
+    //void slotPlanContextMenuRequested ( const QPoint & pos );
     void populateJavaScriptWindowObject();
     void slotUnsupportedContent(QNetworkReply *reply);
     //void recordChanged(int recordId);
@@ -147,8 +147,8 @@ private slots:
     void slotCurrentFileChanged();
     void on_actionTest_triggered();
     void on_actionSelectTrigger_triggered();
-    void slotCheckPlannedIds();
-    void slotCheckNoPlannedIds();
+    //void slotCheckPlannedIds();
+    //void slotCheckNoPlannedIds();
     void on_actionCopyMarkedId_triggered();
     void on_actionCopyMarkedTable_triggered();
     void on_actionDeleteMarked_triggered();

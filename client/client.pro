@@ -21,20 +21,20 @@ TRANSLATIONS    = \
 CODECFORTR = windows-1251
 
 # Input
-FORMS += ui/tracksmain.ui ui/querypage.ui ui/projectpage.ui ui/trklogin.ui ui/filters.ui ui/scrwidg.ui \
+FORMS += ui/tracksmain.ui ui/querypage.ui ui/trklogin.ui ui/filters.ui ui/scrwidg.ui \
     ui/idinput.ui \
     ui/notedialog.ui \
     ui/modifypanel.ui \
     ui/ttrecwindow.ui \
     ui/preview.ui \
-    ui/planfilesform.ui \
     notewidget.ui
+#    ui/planfilesform.ui \
+#    ui/projectpage.ui
 
 HEADERS += \
-	mainwindow.h project.h querypage.h projectpage.h trklogin.h \
-        filterpage.h flowlayout.h plans.h planproxy.h \
+        mainwindow.h querypage.h trklogin.h \
+        filterpage.h flowlayout.h \
 	scrwidg.h \
-    planfiles.h \
     idinput.h \
     trkdecorator.h \
     notedialog.h \
@@ -47,7 +47,6 @@ HEADERS += \
     ttrecwindow.h \
     preview.h \
     ttfileiconprovider.h \
-    planfilesform.h \
     ../tracker/trkview.h \
     ../tracker/trktool2.h \
     ../tracker/trdefs.h \
@@ -59,13 +58,19 @@ HEADERS += \
     notewidget.h \
     scrpluginfactory.h \
     previewfactory.h \
-    highlighter.h \
-    tqpluginwidget.h \
-    tqplanswidget.h
-SOURCES += database.cpp main.cpp mainwindow.cpp project.cpp querypage.cpp projectpage.cpp \
-	trklogin.cpp filterpage.cpp flowlayout.cpp plans.cpp planproxy.cpp \
+    highlighter.h
+
+#    plans.h planproxy.h \
+#    planfiles.h \
+#    project.h \
+#    projectpage.h \
+#    planfilesform.h \
+#    tqpluginwidget.h \
+#    tqplanswidget.h
+
+SOURCES += database.cpp main.cpp mainwindow.cpp querypage.cpp \
+        trklogin.cpp filterpage.cpp flowlayout.cpp \
 	scrwidg.cpp \
-    planfiles.cpp \
     idinput.cpp \
     trkdecorator.cpp \
     notedialog.cpp \
@@ -78,7 +83,6 @@ SOURCES += database.cpp main.cpp mainwindow.cpp project.cpp querypage.cpp projec
     ttrecwindow.cpp \
     preview.cpp \
     ttfileiconprovider.cpp \
-    planfilesform.cpp \
     ../common/ttutils.cpp \
     ../common/ttglobal.cpp \
     ../tracker/trkview.cpp \
@@ -87,9 +91,13 @@ SOURCES += database.cpp main.cpp mainwindow.cpp project.cpp querypage.cpp projec
     notewidget.cpp \
     scrpluginfactory.cpp \
     previewfactory.cpp \
-    highlighter.cpp \
-    tqpluginwidget.cpp \
-    tqplanswidget.cpp
+    highlighter.cpp
+
+#    planfilesform.cpp \
+#    project.cpp projectpage.cpp plans.cpp planproxy.cpp planfiles.cpp \
+#    tqpluginwidget.cpp \
+#    tqplanswidget.cpp
+
 RESOURCES += resources/tracks.qrc
 
 win32: LIBS += -L$$PWD/../trktool/lib/ -ltrktooln -lshell32 -lshlwapi

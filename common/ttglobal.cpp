@@ -72,7 +72,6 @@ void TTGlobal::showError(const QString &text)
 
 void TTGlobal::readInitSettings()
 {
-    /*
     QFile file("data/init.xml");
     QXmlInputSource source(&file);
     QDomDocument dom;
@@ -84,16 +83,28 @@ void TTGlobal::readInitSettings()
     QDomElement dbNode = doc.firstChildElement("userdb");
     if(!dbNode.isNull())
     {
-        userDbType = dbNode.attribute("type");
-        userDbPath = dbNode.attribute("path");
-        userDbUser = dbNode.attribute("user");
-        userDbPassword = dbNode.attribute("password");
+        userDbType = dbNode.attribute("type",userDbType);
+        userDbPath = dbNode.attribute("path",userDbPath);
+        userDbUser = dbNode.attribute("user",userDbUser);
+        userDbPassword = dbNode.attribute("password",userDbPassword);
     }
-    */
-    userDbType = settingsObj->value("UserDBType").toString();
-    userDbPath = settingsObj->value("UserDBPath").toString();
-    userDbUser = settingsObj->value("UserDBUser").toString();
-    userDbPassword = settingsObj->value("UserDBPass").toString();
+    userDbType = settingsObj->value("UserDBType",userDbType).toString();
+    userDbPath = settingsObj->value("UserDBPath",userDbPath).toString();
+    userDbUser = settingsObj->value("UserDBUser",userDbUser).toString();
+    userDbPassword = settingsObj->value("UserDBPass",userDbPassword).toString();
+    QDomElement plugNode = doc.firstChildElement("plugins");
+    if(!plugNode.isNull())
+    {
+        pluginDirectory = plugNode.attribute("directory","plugins");
+        QDomElement p = plugNode.firstChildElement("plugin");
+        while(!p.isNull())
+        {
+            QString path = p.attribute("path");
+            if(!path.isEmpty())
+                anotherPlugins.append(path);
+            p = p.nextSiblingElement("plugin");
+        }
+    }
 }
 
 void TTGlobal::upgradeUserDB()
@@ -181,25 +192,48 @@ void TTGlobal::handleEvent(const QString &event, QGenericReturnArgument ret, QGe
 
 void TTGlobal::loadPlugins()
 {
-    QObject *p;
-    for(int i=0; i<1; i++)
+    QDir dir(pluginDirectory);
+    foreach(QString sub, dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot))
     {
-        p = new PlansPlugin(this);
-        plugins.append(p);
-        if(!QMetaObject::invokeMethod(p, "setGlobalObject", Q_ARG(QObject *,this)))
-            continue;
-        if(!QMetaObject::invokeMethod(p, "initPlugin"))
-            continue;
-#ifdef CLIENT_APP
-        QWidget *prop=0;
-        if(!QMetaObject::invokeMethod(p, "getPropWidget",
-                                      Q_RETURN_ARG(QWidget *,prop),
-                                      Q_ARG(QWidget *, mainWindow)))
-            continue;
-        if(prop)
-            mainWindow->addPropWidget(prop);
-#endif
+        QDir subDir(dir.filePath(sub));
+        foreach(QString dll, subDir.entryList(QDir::Files))
+        {
+            dll = subDir.absoluteFilePath(dll);
+            if(!QLibrary::isLibrary(dll))
+                continue;
+            loadSinglePlugin(dll);
+        }
     }
+    foreach(QString path, anotherPlugins)
+    {
+        loadSinglePlugin(path);
+    }
+}
+
+bool TTGlobal::loadSinglePlugin(const QString &path)
+{
+    QObject *p=0;
+    if(!QLibrary::isLibrary(path))
+        return false;
+    QPluginLoader loader(path);
+    if(!loader.load())
+        return false;
+    p = loader.instance();
+    if(!p)
+        return false;
+    plugins.append(p);
+    connect(p,SIGNAL(error(QString,QString)),SLOT(pluginError(QString,QString)));
+    QMetaObject::invokeMethod(p, "setGlobalObject", Q_ARG(QObject *,this));
+    QMetaObject::invokeMethod(p, "initPlugin");
+#ifdef CLIENT_APP
+    QWidget *prop=0;
+    if(QMetaObject::invokeMethod(p, "getPropWidget",
+                                  Q_RETURN_ARG(QWidget *,prop),
+                                  Q_ARG(QWidget *, mainWindow))
+            && prop)
+        mainWindow->addPropWidget(prop);
+#endif
+    return true;
 }
 
 void TTGlobal::appendContextMenu(QMenu *menu)
@@ -238,5 +272,10 @@ bool TTGlobal::insertViewTab(QWidget *view, QWidget *tab, const QString &title)
     {
         editor->addDetailTab(tab, title, QIcon());
     }
+}
+
+void TTGlobal::pluginError(const QString &pluginName, const QString &msg)
+{
+    Error(tr("(%1) %2").arg(pluginName,msg));
 }
 

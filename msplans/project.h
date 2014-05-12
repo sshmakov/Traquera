@@ -3,8 +3,8 @@
 
 #include <QWidget>
 #include <QAxObject>
-#include <QSqlQuery>
-#include <QSqlQueryModel>
+//#include <QSqlQuery>
+//#include <QSqlQueryModel>
 #include <QSortFilterProxyModel>
 #include <QList>
 #include <QHash>
@@ -33,7 +33,7 @@ protected:
 	QHash<QString, int> colByField;
 	QStandardItemModel *cash;
 	int rows, cols;
-	QSqlDatabase prjdb;
+    //QSqlDatabase prjdb;
 	QString cashTbl;
 	bool isCashed;
 	QAxObject app;

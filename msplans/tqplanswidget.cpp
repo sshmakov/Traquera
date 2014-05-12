@@ -2,9 +2,9 @@
 #include <QtCore>
 #include <QtGui>
 #include <QtXml>
-#include "ttutils.h"
-#include "settings.h"
-#include "ttglobal.h"
+//#include "ttutils.h"
+//#include "settings.h"
+//#include "ttglobal.h"
 
 TQPlansWidget::TQPlansWidget(QWidget *parent) :
     TQPluginWidget(parent),
@@ -63,8 +63,8 @@ void TQPlansWidget::contextMenuRequested(const QPoint &pos)
     {
         menu.addAction(tr("Отметить запланированные запросы"),this,SLOT(slotCheckPlannedIds()));
         menu.addAction(tr("Отметить незапланированные запросы"),this,SLOT(slotCheckNoPlannedIds()));
-        menu.addSeparator();
-        menu.addAction(tr("Перейти на задачу в плане"),this,SLOT(showCurrentTaskInPlan()));
+        //menu.addSeparator();
+        //menu.addAction(tr("Перейти на задачу в плане"),this,SLOT(showCurrentTaskInPlan()));
 
     }
     if(isTasksSelected && isGroupSelected)
@@ -188,6 +188,15 @@ void TQPlansWidget::addScrTasks()
     */
 }
 
+static QString my_intListToString(const QList<int> &arr)
+{
+    QStringList numbers;
+    foreach(int i, arr)
+        numbers.append(QString::number(i));
+    return numbers.join(", ");
+}
+
+
 void TQPlansWidget::copyScrFromTasks()
 {
     ScrSet res;
@@ -197,7 +206,7 @@ void TQPlansWidget::copyScrFromTasks()
     {
         res += planViewModel.taskScrSet(i);
     }
-    QString slist = intListToString(res.toList());
+    QString slist = my_intListToString(res.toList());
     QApplication::clipboard()->setText(slist);
 }
 
@@ -251,19 +260,10 @@ void TQPlansWidget::setPlanModel(PlanModel *newmodel)
     if(loadedPlanModel)
     {
         loadedPlanModel->setFieldHeaders(planTreeView->header());
-        QVariant value = ttglobal()->settings()->value(Settings_ScrPlanView);
+        QVariant value = pluginObject->settings->value(Settings_ScrPlanView);
         if(value.isValid() && value.type() == QVariant::ByteArray)
             planTreeView->header()->restoreState(value.toByteArray());
     }
-}
-
-void TQPlansWidget::setGlobalObject(QObject *obj)
-{
-    globalObject = obj;
-    QObjectList records;
-    if(!QMetaObject::invokeMethod(globalObject,"getSelectedRecords",Qt::DirectConnection,
-                                  Q_RETURN_ARG(QObjectList, records)))
-        return;
 }
 
 void TQPlansWidget::setParentObject(QObject *obj)

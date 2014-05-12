@@ -9,7 +9,7 @@
 #include <QTimer>
 #include "ui_tracksmain.h"
 #include "tracker.h"
-#include "plans.h"
+//#include "plans.h"
 #include "trkview.h"
 #include "modifypanel.h"
 #include "unionmodel.h"
@@ -29,7 +29,7 @@ QT_END_NAMESPACE
 
 class PlanFilesModel;
 class QueryPage;
-class ProjectPage;
+//class ProjectPage;
 class TTGlobal;
 
 class MainWindow : public QMainWindow, private Ui::MainWindow
@@ -50,10 +50,10 @@ private:
 	TrkToolDB *trkdb;
 	TrkToolProject *trkproject;
     TrkHistory *journal;
-    PlansPlugin *planPlugin;
+    //PlansPlugin *planPlugin;
     //PlanFilesModel *projects;
 	QAbstractItemModel *excels;
-	PlanModel planModel;
+    //PlanModel planModel;
     friend class PlanFilesModel;
     QComboBox *openIdEdit;
     UnionModel *treeModel;
@@ -68,7 +68,7 @@ public slots:
     void showCurrentPlan();
 //    void showPlan(bool linked = false);
     void showPlan(const QModelIndex &index);
-    void showPlanTask(const QString &fileName, int taskNum);
+//    void showPlanTask(const QString &fileName, int taskNum);
 //    void openLinkedPlan();
 	void readFilters();
     void readDbms();
@@ -98,7 +98,7 @@ public:
 
     void openCurItem(bool reuse);
     void calcCountRecords();
-    ProjectPage *openPlanPage(const QString &fileName);
+    //ProjectPage *openPlanPage(const QString &fileName);
     void findTrkRecords(const QString &line, bool reuse=true);
 protected:
     QMenu *menuQueryList;

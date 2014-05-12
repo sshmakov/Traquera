@@ -5,13 +5,15 @@
 #include <QAbstractProxyModel>
 #include <QModelIndex>
 #include <QSortFilterProxyModel>
-#include "trdefs.h"
+#include <QSet>
+//#include "trdefs.h"
+#include "plans.h"
 
 class PlanProxyModel: public QSortFilterProxyModel
 {
 	Q_OBJECT
 protected:
-	ScrSet scrSet;
+    ScrSet scrSet;
 public:
 	PlanProxyModel(QObject * parent = 0);
 	void setFilterSCR(const QString &scrString);

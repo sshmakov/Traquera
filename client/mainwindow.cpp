@@ -1,9 +1,9 @@
 #include "mainwindow.h"
-#include "planfiles.h"
+//#include "planfiles.h"
 #include "database.h"
 #include "tracker.h"
 #include "querypage.h"
-#include "projectpage.h"
+//#include "projectpage.h"
 //#include "dialog.h"
 #include "trklogin.h"
 #include "filterpage.h"
@@ -25,7 +25,7 @@
 #include <QPrintPreviewDialog>
 #include <QShortcut>
 #include "preview.h"
-#include "planfilesform.h"
+//#include "planfilesform.h"
 #include <QNetworkRequest>
 #include <QtWebKit>
 #include "ttrecwindow.h"
@@ -732,19 +732,18 @@ QueryPage *MainWindow::createNewPage(const QString &title)
 {
 	QueryPage *page=new QueryPage();
     tabWidget->setCurrentIndex(tabWidget->insertTab(tabWidget->count()-1, page, QIcon(":/images/trackerTable.png"), title));
-	page->setPlanModel(&planModel);
+    //page->setPlanModel(&planModel);
 	connect(page,SIGNAL(changedQuery(QString,QString)),this,SLOT(on_changedQuery(QString,QString)));
     connect(page,SIGNAL(selectionRecordsChanged()),this,SLOT(curSelectionChanged()));
     connect(page,SIGNAL(openRecordsClicked(ScrSet)),this,SLOT(slotOpenRecordsClicked(ScrSet)));
-    connect(page,SIGNAL(showTaskInPlanClicked(QString,int)),this,SLOT(showPlanTask(QString,int)));
+    //connect(page,SIGNAL(showTaskInPlanClicked(QString,int)),this,SLOT(showPlanTask(QString,int)));
     //connect(page,SIGNAL(selectionRecordsChanged(QList<TrkToolRecord*>)),this,SLOT(refreshSelection()));
     return page;
 }
 
+/* to plugin
 ProjectPage *MainWindow::openPlanPage(const QString& fileName)
 {
-    return 0;
-    /*
     for(int i=0; i<tabWidget->count(); i++)
     {
         ProjectPage *p = qobject_cast<ProjectPage*>(tabWidget->widget(i));
@@ -767,8 +766,9 @@ ProjectPage *MainWindow::openPlanPage(const QString& fileName)
     if(!prjName.isEmpty())
         tabWidget->setTabText(newtab,prjName);
     return page;
-    */
+
 }
+*/
 
 void MainWindow::findTrkRecords(const QString &line, bool reuse)
 {
@@ -837,12 +837,14 @@ void MainWindow::showPlan(const QModelIndex &index)
     */
 }
 
+/* to plugin
 void MainWindow::showPlanTask(const QString &fileName, int taskNum)
 {
     ProjectPage *page = openPlanPage(fileName);
     if(page && taskNum)
         page->goToTask(taskNum);
 }
+*/
 
 //void MainWindow::openLinkedPlan()
 //{
@@ -873,8 +875,9 @@ void MainWindow::closeTab(int index)
     QObject *w;
     w = tabWidget->widget(index);
 	QueryPage *qpage = qobject_cast<QueryPage *>(w);
-	ProjectPage *ppage = qobject_cast<ProjectPage *>(w);
-	if(!qpage && !ppage)
+    //ProjectPage *ppage = qobject_cast<ProjectPage *>(w);
+    if(!qpage //&& !ppage
+            )
 		return;
 	delete w;
     //tabWidget->removeTab(index);

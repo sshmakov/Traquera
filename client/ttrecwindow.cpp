@@ -7,7 +7,7 @@
 #include "scrpluginfactory.h"
 
 #include <QtWebKit>
-#include "tqplanswidget.h"
+//#include "tqplanswidget.h"
 
 const QString TTRecordState = "TTRecWinState";
 const QString TTRecordGeometry = "TTRecWinGeometry";

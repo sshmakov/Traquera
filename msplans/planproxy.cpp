@@ -22,8 +22,19 @@ bool PlanProxyModel::filterAcceptsRow ( int source_row, const QModelIndex & sour
 
 void PlanProxyModel::setFilterSCR(const QString &scrString)
 {
-	scrSet = scrStringToSet(scrString);
-	reset();
+    QString s = scrString;
+    s.replace(QRegExp("[^0-9 ,]")," ");
+    s.replace(' ',',');
+    QStringList list = s.split(',',QString::SkipEmptyParts);
+    scrSet.clear();
+    for(int i=0; i<list.count(); i++)
+    {
+        bool ok;
+        int n=list[i].toInt(&ok);
+        if(ok)
+            scrSet << n;
+    }
+    reset();
 }
 
 void PlanProxyModel::clearFilter()
@@ -31,6 +42,7 @@ void PlanProxyModel::clearFilter()
 	scrSet.clear();
     reset();
 }
+
 
 ScrSet PlanProxyModel::taskScrSet(const QModelIndex &index)
 {
@@ -44,6 +56,7 @@ ScrSet PlanProxyModel::taskScrSet(const QModelIndex &index)
         return ScrSet();
     return plan->listScr(s.row(), s.parent());
 }
+
 
 QVariant PlanProxyModel::headerData(int section, Qt::Orientation orientation, int role) const
 {

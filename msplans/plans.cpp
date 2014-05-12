@@ -1,6 +1,6 @@
 #include "plans.h"
 #include "project.h"
-#include "settings.h"
+//#include "settings.h"
 #include <QXmlSimpleReader>
 #include <QXmlInputSource>
 #include <QDomDocument>
@@ -12,6 +12,8 @@
 #include "tqplanswidget.h"
 
 Q_EXPORT_PLUGIN2("msprojectplans", PlansPlugin)
+
+PlansPlugin *pluginObject = 0;
 
 PlanModel::PlanModel()
 {
@@ -389,12 +391,14 @@ PlansPlugin::PlansPlugin(QObject *parent)
     planFiles = new PlanFilesModel(this);
     propWidget = 0;
     settings = 0;
+    pluginObject = this;
 }
 
 PlansPlugin::~PlansPlugin()
 {
     delete loadedPlans;
     delete planFiles;
+    pluginObject = 0;
 }
 
 void PlansPlugin::initPlugin()
@@ -537,14 +541,17 @@ void PlansPlugin::appendContextMenu(QMenu *menu)
 
 void PlansPlugin::queryViewOpened(QWidget *widget, QTableView *view, const QString &recType)
 {
-    TQPlansWidget *tab = new TQPlansWidget(widget);
-    tab->setParentObject(widget);
-    tab->setPlanModel(loadedPlans);
-    connect(widget,SIGNAL(selectionRecordsChanged()),tab,SLOT(selectingRecordsChanged()));
-    QString title = "Plans";
-    QMetaObject::invokeMethod(widget,"addDetailTab",
-                              Q_ARG(QWidget *,tab),
-                              Q_ARG(QString,title));
+    if(recType == "scr")
+    {
+        TQPlansWidget *tab = new TQPlansWidget(widget);
+        tab->setParentObject(widget);
+        tab->setPlanModel(loadedPlans);
+        connect(widget,SIGNAL(selectionRecordsChanged()),tab,SLOT(selectingRecordsChanged()));
+        QString title = "Plans";
+        QMetaObject::invokeMethod(widget,"addDetailTab",
+                                  Q_ARG(QWidget *,tab),
+                                  Q_ARG(QString,title));
+    }
 }
 
 void PlansPlugin::recordOpened(QWidget *widget, QObject *record, const QString &recType)
@@ -696,6 +703,11 @@ bool PlansPlugin::loadSettings()
 PrjItemModel *PlansPlugin::loadPrjFile(const QString &fileName, bool readOnly)
 {
     return loadedPlans->addPrjFile(fileName, readOnly);
+}
+
+void PlansPlugin::emitError(const QString &msg)
+{
+    emit error("MSPlans",msg);
 }
 
 void PlansPlugin::slotPlanContextMenuRequested(const QPoint &pos)

@@ -13,7 +13,6 @@ protected:
     PlanModel *loadedPlanModel;
     PlanProxyModel planViewModel;
     QTreeView *planTreeView;
-    QObject *globalObject;
     QObject *parentObject;
     QTimer *detailsTimer;
 
@@ -22,7 +21,6 @@ public:
     void initWidgets();
     void setPlanModel(PlanModel *newmodel);
 
-    Q_INVOKABLE void setGlobalObject(QObject *obj);
     Q_INVOKABLE void setParentObject(QObject *obj);
 signals:
     void openRecordsClicked(ScrSet set);

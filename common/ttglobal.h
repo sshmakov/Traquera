@@ -61,12 +61,16 @@ public slots:
     /* Plugins */
 protected:
     QObjectList plugins;
+    QString pluginDirectory;
+    QStringList anotherPlugins;
 public slots:
     void loadPlugins();
+    bool loadSinglePlugin(const QString &path);
     void appendContextMenu(QMenu *menu);
     void queryViewOpened(QWidget *widget, QTableView *view, const QString &recType = "scr");
     void recordOpened(QWidget *widget, const QString &recType = "scr");
     bool insertViewTab(QWidget *view, QWidget *tab, const QString &title = "");
+    void pluginError(const QString &pluginName, const QString &msg);
 };
 
 
