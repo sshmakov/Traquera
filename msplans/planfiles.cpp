@@ -157,27 +157,55 @@ bool PlanFilesModel::removeRows ( int row, int count, const QModelIndex & /* par
     return true;
 }
 
-void PlanFilesModel::loadPlan(int row)
+PrjItemModel *PlanFilesModel::loadPlan(int row)
+{
+    QString fileName = plans[row].file;
+    if(models.contains(fileName))
+        return models[fileName];
+    PrjItemModel *model;
+    model = plugin->loadPrjFile(fileName, plans[row].readOnly);
+    if(model)
+    {
+        models[fileName]=model;
+        plans[row].loaded=true;
+        emit dataChanged(index(row,0),index(0,columnCount()-1));
+        return model;
+    }
+    return 0;
+}
+
+bool PlanFilesModel::unloadPlan(int row)
 {
     PrjItemModel *model;
     QString fileName = plans[row].file;
     if(!models.contains(fileName))
-    {
-        //model = mainWindow->planModel.addPrjFile(fileName, plans[row].readOnly);
-        model = plugin->loadPrjFile(fileName, plans[row].readOnly);
-        if(model)
-        {
-            models[fileName]=model;
-            plans[row].loaded=true;
-        }
-    }
-    else
-    {
-        model = models.value(fileName);
-        //mainWindow->planModel.closePrjModel(model);
-        plugin->loadedPlans->closePrjModel(model);
-        plans[row].loaded=false;
-        models.remove(fileName);
-    }
+        return false;
+    model = models.value(fileName);
+    plugin->loadedPlans->closePrjModel(model);
+    plans[row].loaded=false;
+    models.remove(fileName);
     emit dataChanged(index(row,0),index(0,columnCount()-1));
+    return true;
+}
+
+bool PlanFilesModel::isPlanLoaded(int row)
+{
+    QString fileName = plans[row].file;
+    return models.contains(fileName);
+}
+
+void PlanFilesModel::triggerLoadPlan(int row)
+{
+    QString fileName = plans[row].file;
+    if(!models.contains(fileName))
+        loadPlan(row);
+    else
+        unloadPlan(row);
+}
+
+QString PlanFilesModel::planFileName(int row) const
+{
+    if(row<0 || row>=plans.count())
+        return QString();
+    return plans[row].file;
 }

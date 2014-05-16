@@ -35,7 +35,11 @@ public:
     virtual QModelIndex parent(const QModelIndex &child) const;
     int addPlan(const QString & plan, bool readOnly);
     virtual bool removeRows ( int row, int count, const QModelIndex & parent = QModelIndex() );
-    virtual void loadPlan( int row);
+    PrjItemModel *loadPlan(int row);
+    bool unloadPlan(int row);
+    bool isPlanLoaded(int row);
+    void triggerLoadPlan( int row);
+    QString planFileName(int row) const;
     virtual bool setData(const QModelIndex &index, const QVariant &value, int role);
     virtual Qt::ItemFlags flags ( const QModelIndex & index ) const;
 };

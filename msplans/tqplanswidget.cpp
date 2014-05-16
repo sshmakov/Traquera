@@ -63,8 +63,8 @@ void TQPlansWidget::contextMenuRequested(const QPoint &pos)
     {
         menu.addAction(tr("Отметить запланированные запросы"),this,SLOT(slotCheckPlannedIds()));
         menu.addAction(tr("Отметить незапланированные запросы"),this,SLOT(slotCheckNoPlannedIds()));
-        //menu.addSeparator();
-        //menu.addAction(tr("Перейти на задачу в плане"),this,SLOT(showCurrentTaskInPlan()));
+        menu.addSeparator();
+        menu.addAction(tr("Перейти на задачу в плане"),this,SLOT(showCurrentTaskInPlan()));
 
     }
     if(isTasksSelected && isGroupSelected)
@@ -74,6 +74,7 @@ void TQPlansWidget::contextMenuRequested(const QPoint &pos)
     if(isGroupSelected)
     {
         menu.addAction(tr("Добавить выделенные запросы в план"),this,SLOT(addScrTasks()));
+        menu.addAction(tr("Открыть план"),this,SLOT(showCurrentPlan()));
     }
     QPoint gPos = planTreeView->mapToGlobal(pos);
     menu.exec(gPos);
@@ -101,7 +102,7 @@ void TQPlansWidget::addScrTask(PrjItemModel *prj)
                                   Q_RETURN_ARG(QObjectList, records)))
         return;
     //QXmlSimpleReader xmlReader;
-    QFile file("data/scr2prj.xml");
+    QFile file(pluginObject->dataDir.filePath("scr2prj.xml"));
     QXmlInputSource *source = new QXmlInputSource(&file);
     QDomDocument dom;
     if(!dom.setContent(source,false))
@@ -245,6 +246,30 @@ void TQPlansWidget::filterForRecords()
     planTreeView->expandAll();
     for(int r=0; r<planViewModel.rowCount(); r++)
         planTreeView->setFirstColumnSpanned(r,QModelIndex(),true);
+}
+
+void TQPlansWidget::showCurrentTaskInPlan()
+{
+    QModelIndex index = planTreeView->currentIndex();
+    QModelIndex si = planViewModel.mapToSource(index);
+    PrjItemModel *prj=loadedPlanModel->prjModel(si);
+    if(prj)
+    {
+        bool ok = false;
+        int taskId = loadedPlanModel->fieldData(si.row(),"ID").toInt(&ok);
+        if(!ok || taskId<0)
+            taskId=0;
+        pluginObject->openPlanPage(prj,taskId);
+    }
+}
+
+void TQPlansWidget::showCurrentPlan()
+{
+    QModelIndex index = planTreeView->currentIndex();
+    QModelIndex si = planViewModel.mapToSource(index);
+    PrjItemModel *prj=loadedPlanModel->prjModel(si);
+    if(prj)
+        pluginObject->openPlanPage(prj);
 }
 
 void TQPlansWidget::setPlanModel(PlanModel *newmodel)

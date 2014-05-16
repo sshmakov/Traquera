@@ -64,10 +64,15 @@ QSettings *TTGlobal::settings()
     return settingsObj;
 }
 
+QMainWindow *TTGlobal::mainWindow()
+{
+    return mainWin;
+}
+
 void TTGlobal::showError(const QString &text)
 {
-    if(mainWindow)
-        mainWindow->statusBar()->showMessage(text,10000);
+    if(mainWin)
+        mainWin->statusBar()->showMessage(text,10000);
 }
 
 void TTGlobal::readInitSettings()
@@ -223,15 +228,14 @@ bool TTGlobal::loadSinglePlugin(const QString &path)
         return false;
     plugins.append(p);
     connect(p,SIGNAL(error(QString,QString)),SLOT(pluginError(QString,QString)));
-    QMetaObject::invokeMethod(p, "setGlobalObject", Q_ARG(QObject *,this));
-    QMetaObject::invokeMethod(p, "initPlugin");
+    QMetaObject::invokeMethod(p, "initPlugin", Q_ARG(QObject *,this), Q_ARG(QString, path));
 #ifdef CLIENT_APP
     QWidget *prop=0;
     if(QMetaObject::invokeMethod(p, "getPropWidget",
                                   Q_RETURN_ARG(QWidget *,prop),
-                                  Q_ARG(QWidget *, mainWindow))
+                                  Q_ARG(QWidget *, mainWin))
             && prop)
-        mainWindow->addPropWidget(prop);
+        mainWin->addPropWidget(prop);
 #endif
     return true;
 }
@@ -271,7 +275,9 @@ bool TTGlobal::insertViewTab(QWidget *view, QWidget *tab, const QString &title)
     if(editor)
     {
         editor->addDetailTab(tab, title, QIcon());
+        return true;
     }
+    return false;
 }
 
 void TTGlobal::pluginError(const QString &pluginName, const QString &msg)

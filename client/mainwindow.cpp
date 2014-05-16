@@ -54,7 +54,7 @@ MainWindow::MainWindow(QWidget *parent)
     //QSizePolicy policy = tabWidget->sizePolicy();
     //policy.setHorizontalStretch(1);
     //tabWidget->setSizePolicy(policy);
-    ttglobal()->mainWindow = this;
+    ttglobal()->mainWin = this;
     sysMessager = new Messager(this);
     //toolBox->setCurrentIndex(0);
     journal = 0;
@@ -531,6 +531,32 @@ void MainWindow::addPropWidget(QWidget *widget)
     verticalLayout->addWidget(widget);
 }
 
+int MainWindow::addTab(const QString &title, QWidget *widget, const QIcon &icon)
+{
+    int index = tabWidget->insertTab(tabWidget->count()-1, widget, icon, title);
+    tabWidget->setCurrentIndex(index);
+    return index;
+}
+
+void MainWindow::focusTab(QWidget *widget)
+{
+    tabWidget->setCurrentWidget(widget);
+}
+
+QToolBar *MainWindow::addToolBar(const QString &title)
+{
+    return QMainWindow::addToolBar(title);
+}
+
+void MainWindow::addWidgetToDock(const QString &title, QWidget *widget, Qt::DockWidgetArea area)
+{
+    QDockWidget *dw = new QDockWidget(title, this);
+    dw->setAllowedAreas(Qt::AllDockWidgetAreas);
+    dw->setWidget(widget);
+    addDockWidget(area,dw);
+    connect(widget,SIGNAL(destroyed()),dw,SLOT(deleteLater()));
+}
+
 void MainWindow::calcCountRecords()
 {
     QString s;
@@ -872,13 +898,15 @@ void MainWindow::readModifications()
 
 void MainWindow::closeTab(int index)
 {
+    if(index >= tabWidget->count()-1)
+        return;
     QObject *w;
     w = tabWidget->widget(index);
+    /*
 	QueryPage *qpage = qobject_cast<QueryPage *>(w);
-    //ProjectPage *ppage = qobject_cast<ProjectPage *>(w);
-    if(!qpage //&& !ppage
-            )
+    if(!qpage)
 		return;
+    */
 	delete w;
     //tabWidget->removeTab(index);
 }

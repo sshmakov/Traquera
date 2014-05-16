@@ -6,6 +6,7 @@
 #include <QSqlError>
 #include <QString>
 
+class QMainWindow;
 class MainWindow;
 class TrkToolProject;
 class QSettings;
@@ -16,6 +17,7 @@ class TTGlobal : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QSettings* settings READ settings)
+    Q_PROPERTY(QMainWindow *mainWindow READ mainWindow)
 private:
     explicit TTGlobal(QObject *parent = 0);
     QSqlDatabase userDb;
@@ -25,12 +27,13 @@ private:
     QString userDbPassword;
     QSettings *settingsObj;
 public:
-    MainWindow *mainWindow;
+    MainWindow *mainWin;
     //TrkToolProject *currentProject;
     static TTGlobal *global();
     QSqlDatabase userDatabase();
     Q_INVOKABLE QString toOemString(const QString &s);
     Q_INVOKABLE QSettings *settings();
+    Q_INVOKABLE QMainWindow *mainWindow();
 protected:
     void readInitSettings();
     void upgradeUserDB();

@@ -39,7 +39,8 @@ protected slots:
     void copyScrFromTasks();
     void showScrFromTasks();
     void filterForRecords();
-
+    void showCurrentTaskInPlan();
+    void showCurrentPlan();
 };
 
 #endif // TQPLANSWIDGET_H

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="WINDOWS-1251"?>
+<scr2project>
+    <fields>
+      <field title="Название" src="Title"/>
+      <field title="SCR"      src="Id"/>
+      <field title="Версия"   src="MustFixedInBuild"/>
+      <field title="Клиент"   src="Client Name"/>
+      <field title="Severity"   src="Severity"/>
+      <field title="Request Type"   src="Request Type"/>
+    </fields>
+</scr2project>

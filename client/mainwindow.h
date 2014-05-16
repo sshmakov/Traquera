@@ -129,9 +129,19 @@ public slots:
 	void checkAutoProjects();
     void addMSProjectFile();
     */
-    void addPropWidget(QWidget *widget);
 
-	void trustChanged(int State);
+    /*
+     * Public invokable function for using from plugins
+     */
+    void addPropWidget(QWidget *widget);
+    int addTab(const QString &title, QWidget *widget, const QIcon &icon = QIcon());
+    void focusTab(QWidget *widget);
+    QToolBar *addToolBar(const QString &title);
+    void addWidgetToDock(const QString &title, QWidget *widget, Qt::DockWidgetArea area = Qt::RightDockWidgetArea);
+
+
+public slots:
+    void trustChanged(int State);
     void idEntered();
     void idEnteredNewPage();
     void slotAppendRecordsId();

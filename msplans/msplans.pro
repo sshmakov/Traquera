@@ -18,7 +18,8 @@ SOURCES += plans.cpp \
  planproxy.cpp       \
  tqpluginwidget.cpp    \
  tqplanswidget.cpp   \
- project.cpp
+ project.cpp \
+    projectpage.cpp
 
 HEADERS += plans.h\
  msplans_global.h    \
@@ -27,12 +28,14 @@ HEADERS += plans.h\
  planproxy.h         \
  tqpluginwidget.h    \
  tqplanswidget.h     \
- project.h
+ project.h \
+    projectpage.h
 
 
 FORMS = \
   planfilesform.ui \
-  prjfiledlg.ui
+  prjfiledlg.ui \
+    projectpage.ui
 
 unix:!symbian {
     maemo5 {
@@ -42,3 +45,14 @@ unix:!symbian {
     }
     INSTALLS += target
 }
+
+datafolder.source = data
+datafolder.target = .
+DEPLOYMENTFOLDERS = datafolder
+
+include(deploy.pri)
+qtcAddDeployment()
+
+OTHER_FILES += \
+    data/project.xml \
+    data/scr2prj.xml

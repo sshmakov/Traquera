@@ -10,14 +10,17 @@
 #include <QtGui>
 #include "planfilesform.h"
 #include "tqplanswidget.h"
+#include "projectpage.h"
 
 Q_EXPORT_PLUGIN2("msprojectplans", PlansPlugin)
 
 PlansPlugin *pluginObject = 0;
 
-PlanModel::PlanModel()
+PlanModel::PlanModel(QObject *parent)
+    :QAbstractItemModel(parent)
 {
-    loadDefinition("data/project.xml");
+    QString xml = pluginObject->dataDir.filePath("project.xml");
+    loadDefinition(xml);
 }
 
 PlanModel::~PlanModel()
@@ -95,14 +98,16 @@ QVariant PlanModel::headerData ( int section, Qt::Orientation orientation, int r
     {
         if(section<0 || section >= fields.count())
             return QVariant();
-        if(role == Qt::SizeHintRole)
-            return  QSize(fields[section].colSize, 19);
+//        if(role == Qt::SizeHintRole)
+//            return  QSize(fields[section].colSize, 19);
         if(role != Qt::DisplayRole)
             return QVariant();
         return fields[section].title;
     }
     else
     {
+        if(role == Qt::SizeHintRole)
+            return 19;
         /*
         QModelIndex *index = this->index(section,0);
         if(!index->isValid())
@@ -249,7 +254,7 @@ void PlanModel::setFieldHeaders(QHeaderView *header)
 
 void PlanModel::loadDefinition(const QString &fileName)
 {
-	QXmlSimpleReader xmlReader;
+    //QXmlSimpleReader xmlReader;
 	QFile *file = new QFile(fileName);
 	QXmlInputSource *source = new QXmlInputSource(file);
 	QDomDocument dom;
@@ -328,12 +333,20 @@ void PlanModel::planRowsInserted(const QModelIndex &parent, int start, int end)
     emit endInsertRows();
 }
 
-int PlanModel::columnOfField(const QString& fieldName)
+int PlanModel::columnOfField(const QString& fieldName) const
 {
 	for(int i=0; i<fields.count(); i++)
 		if(!fields[i].title.compare(fieldName,Qt::CaseInsensitive))
 			return i;
-	return -1;
+    return -1;
+}
+
+QVariant PlanModel::fieldData(int row, const QString &fieldName, int role) const
+{
+    int col = columnOfField(fieldName);
+    if(col<0)
+        return QVariant();
+    return index(row,col).data(role);
 }
 
 PrjItemModel *PlanModel::addPrjFile(const QString &fileName, bool readOnly)
@@ -387,8 +400,8 @@ PrjItemModel *PlanModel::prjModel(const QModelIndex &index)
 PlansPlugin::PlansPlugin(QObject *parent)
     : QObject(parent)
 {
-    loadedPlans = new PlanModel();
-    planFiles = new PlanFilesModel(this);
+    loadedPlans = 0;
+    planFiles = 0;
     propWidget = 0;
     settings = 0;
     pluginObject = this;
@@ -401,15 +414,34 @@ PlansPlugin::~PlansPlugin()
     pluginObject = 0;
 }
 
-void PlansPlugin::initPlugin()
+void PlansPlugin::initPlugin(QObject *obj, const QString &modulePath)
 {
+    globalObject = obj;
+    QFileInfo fi(modulePath);
+    pluginModule = fi.absoluteFilePath();
+    QDir pDir;
+    pDir = fi.absoluteDir();
+    if(pDir.dirName().compare("debug",Qt::CaseInsensitive) == 0)
+    {
+        pDir = QDir(pDir.filePath(".."));
+        pDir.makeAbsolute();
+    }
+    pluginDir = pDir;
+    dataDir = QDir(pDir.filePath("data"));
     initProjectModel();
+    if(obj)
+    {
+        QSettings *s;
+        if(QMetaObject::invokeMethod(globalObject,"settings",
+                                     Q_RETURN_ARG(QSettings *, s)))
+            settings = s;
+    }
     loadSettings();
-
 }
 
 void PlansPlugin::initProjectModel()
 {
+    loadedPlans = new PlanModel(this);
     planFiles = new PlanFilesModel(this);
     /*
     settings->beginGroup("Plans");
@@ -448,26 +480,6 @@ void PlansPlugin::initProjectModel()
     planListView->addAction(a);
     planListView->setContextMenuPolicy(Qt::ActionsContextMenu);
     */
-}
-
-void PlansPlugin::setGlobalObject(QObject *obj)
-{
-    globalObject = obj;
-    if(obj)
-    {
-        QSettings *s;
-        if(QMetaObject::invokeMethod(globalObject,"settings",
-                                      Q_RETURN_ARG(QSettings *, s)))
-            settings = s;
-        /*
-        QVariant var = obj->property("settings");
-        if(var.isValid())
-        {
-            QObject *obj = qvariant_cast<QObject *>(var);
-            settings = qobject_cast<QSettings *>(obj);
-        }
-        */
-    }
 }
 
 void PlansPlugin::addPlanFile()
@@ -509,7 +521,19 @@ void PlansPlugin::loadCurrentPlan()
     QModelIndexList ii = is->selectedRows();
     for(int i=0; i<ii.count(); i++)
     {
-        planFiles->loadPlan(ii[i].row());
+        planFiles->triggerLoadPlan(ii[i].row());
+    }
+}
+
+void PlansPlugin::showCurrentPlan()
+{
+    QItemSelectionModel *is = propWidget->getSelectionModel(); // filesTableView->selectionModel();
+    QModelIndexList ii = is->selectedRows();
+    for(int i=0; i<ii.count(); i++)
+    {
+        int row = ii[i].row();
+        PrjItemModel * model = planFiles->loadPlan(row);
+        openPlanPage(model);
     }
 }
 
@@ -533,6 +557,20 @@ void PlansPlugin::addMSProjectFile()
     }
     else
         delete model;
+}
+
+void PlansPlugin::openPlanPage(PrjItemModel *model, int selectedTask)
+{
+    QMainWindow *mainWindow = 0;
+    if(!QMetaObject::invokeMethod(globalObject, "mainWindow", Qt::DirectConnection,
+                                  Q_RETURN_ARG(QMainWindow *, mainWindow)))
+        return;
+    if(!mainWindow)
+        return;
+    ProjectPage *page = new ProjectPage(model);
+    QMetaObject::invokeMethod(mainWindow,"addTab",
+                              Q_ARG(QString, model->prjName),
+                              Q_ARG(QWidget *, page));
 }
 
 void PlansPlugin::appendContextMenu(QMenu *menu)
@@ -568,7 +606,7 @@ QWidget *PlansPlugin::getPropWidget(QWidget *parentWidget)
         connect(prop,SIGNAL(delBtn_clicked()),SLOT(delCurrentPlan()));
         connect(prop,SIGNAL(loadBtn_clicked()),SLOT(loadCurrentPlan()));
         connect(prop,SIGNAL(openMSP_clicked()),SLOT(addMSProjectFile()));
-        //connect(prop,SIGNAL(showBtn_clicked()),SLOT()
+        connect(prop,SIGNAL(showBtn_clicked()),SLOT(showCurrentPlan()));
         propWidget = prop;
     }
     return propWidget;

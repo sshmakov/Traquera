@@ -49,7 +49,7 @@ protected:
 public:
     int SCRfield, parentField;
 public:
-	PlanModel();
+    PlanModel(QObject *parent);
 	~PlanModel();
 	virtual int	columnCount(const QModelIndex & parent = QModelIndex() ) const;
 	virtual QVariant data(const QModelIndex & index, int role = Qt::DisplayRole ) const;
@@ -64,7 +64,8 @@ public:
     PrjItemModel *addPrjFile(const QString &fileName, bool readOnly = false);
 	bool closePrjModel(PrjItemModel *model);
 	void readScrSet(PrjItemModel *plan);
-	int columnOfField(const QString& fieldName);
+    int columnOfField(const QString& fieldName) const;
+    QVariant fieldData(int row, const QString &fieldName, int role = Qt::DisplayRole) const;
 	ScrSet listScr(int row, const QModelIndex & parent);
     PrjItemModel *prjModel(const QModelIndex & index);
     void readScrSetNewRec(PrjItemModel *plan, int row);
@@ -88,11 +89,13 @@ public:
     PlanFilesForm *propWidget;
     QSettings *settings;
     QObject *globalObject;
+    QString pluginModule;
+    QDir pluginDir;
+    QDir dataDir;
 
     PlansPlugin(QObject * parent = 0);
     ~PlansPlugin();
-    Q_INVOKABLE void initPlugin();
-    Q_INVOKABLE void setGlobalObject(QObject *obj);
+    Q_INVOKABLE void initPlugin(QObject *obj, const QString &path);
     Q_INVOKABLE QWidget * getPropWidget(QWidget *parentWidget = 0);
     //Q_INVOKABLE void setSettings(QSettings *settings);
     Q_INVOKABLE bool saveSettings();
@@ -103,13 +106,16 @@ signals:
     void error(const QString &pluginName, const QString &msg);
 protected:
     void initProjectModel();
-public slots:
+protected slots:
     void addPlanFile();
     void delCurrentPlan();
     void loadCurrentPlan();
+    void showCurrentPlan();
     void loadAllProjects();
     void checkAutoProjects();
+public slots:
     void addMSProjectFile();
+    void openPlanPage(PrjItemModel *model, int selectedTask = 0);
 
 public slots:
     void appendContextMenu(QMenu *menu);
