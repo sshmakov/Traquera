@@ -528,7 +528,8 @@ void MainWindow::finishedSearch(QNetworkReply *reply)
 
 void MainWindow::addPropWidget(QWidget *widget)
 {
-    verticalLayout->addWidget(widget);
+
+    verticalLayout_3->addWidget(widget);
 }
 
 int MainWindow::addTab(const QString &title, QWidget *widget, const QIcon &icon)
@@ -708,6 +709,7 @@ void MainWindow::openQuery(const QModelIndex &index, bool reusePage)
     */
 }
 
+/*
 void MainWindow::showCurrentPlan()
 {
     QItemSelectionModel *is=projectTableView->selectionModel();
@@ -717,6 +719,7 @@ void MainWindow::showCurrentPlan()
         showPlan(ii[i]);
     }
 }
+*/
 
 void MainWindow::openQueryByIdClip()
 {

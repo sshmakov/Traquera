@@ -65,7 +65,7 @@ private:
 public slots:
 	void readQueries();
     void openQuery(const QModelIndex &index, bool reusePage=true);
-    void showCurrentPlan();
+//    void showCurrentPlan();
 //    void showPlan(bool linked = false);
     void showPlan(const QModelIndex &index);
 //    void showPlanTask(const QString &fileName, int taskNum);
