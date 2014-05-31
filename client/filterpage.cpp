@@ -16,7 +16,7 @@ FilterPage::FilterPage(QWidget *parent) : QWidget(parent)
 
 void FilterPage::loadDefinitions()
 {
-	QXmlSimpleReader xmlReader;
+//	QXmlSimpleReader xmlReader;
 	QFile *file = new QFile("data/tracker.xml");
 	QXmlInputSource *source = new QXmlInputSource(file);
 	QDomDocument dom;

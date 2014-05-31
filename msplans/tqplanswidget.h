@@ -41,6 +41,7 @@ protected slots:
     void filterForRecords();
     void showCurrentTaskInPlan();
     void showCurrentPlan();
+    void updateDetailWindows();
 };
 
 #endif // TQPLANSWIDGET_H

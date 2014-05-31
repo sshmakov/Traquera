@@ -52,6 +52,7 @@ ProjectPage::ProjectPage(PrjItemModel *projectModel, QWidget *parent)
 		SIGNAL(selectionChanged ( const QItemSelection & , const QItemSelection &  )),
 		this,
 		SLOT(selectionChanged ( const QItemSelection & , const QItemSelection &  )));
+    connect(pluginObject->mainWindow,SIGNAL(updatingDetails()),SLOT(updateDetails()));
 }
 
 void ProjectPage::openProject(const QString& file)

@@ -29,8 +29,9 @@ void TrkDecorator::fillEditPanels(QTabWidget *tabs, const RecordTypeDef * recDef
         return;
     def.onlyView = onlyView;
     clearEdits(tabs, def);
-    QXmlSimpleReader xmlReader;
-    QFile *file = new QFile("data/tracker.xml");
+//    QXmlSimpleReader xmlReader;
+    //QFile *file = new QFile("data/tracker.xml");
+    QIODevice *file = recDef->defineSource();
     QXmlInputSource *source = new QXmlInputSource(file);
     QDomDocument dom;
     if(!dom.setContent(source,false))
@@ -60,7 +61,7 @@ void TrkDecorator::fillEditPanels(QTabWidget *tabs, const RecordTypeDef * recDef
                     QString fname = field.attribute("name");
                     if(!fieldList.contains(fname,Qt::CaseInsensitive))
                         continue;
-                    TrkFieldType fdef = recDef->getFieldDef(fname);
+                    AbstractFieldType fdef = recDef->getFieldDef(fname);
                     EditDef f;
                     QWidget *w;
                     //QLineEdit *ie = 0;
@@ -72,7 +73,7 @@ void TrkDecorator::fillEditPanels(QTabWidget *tabs, const RecordTypeDef * recDef
                         //c->setLineEdit(ie);
                         //c->setEditable(false);
                         TrkToolChoice choice;
-                        foreach(choice,*fdef.choiceList())
+                        foreach(choice,fdef.choiceList())
                         {
                             c->addItem(choice.displayText, choice.fieldValue /*  QVariant((int)(choice.order)) */);
                         }
@@ -280,11 +281,11 @@ void TrkDecorator::loadViewDef(QTableView *view)
     delete file;
 }
 
-FieldGroupsDef TrkDecorator::loadGroups(const RecordTypeDef *recDef)
+FieldGroupsDef TrkDecorator::loadGroups(const AbstractRecordTypeDef *recDef)
 {
     FieldGroupsDef res;
-    QXmlSimpleReader xmlReader;
-    QFile *file = new QFile("data/tracker.xml");
+//    QXmlSimpleReader xmlReader;
+    QIODevice *file = recDef->defineSource(); /*new QFile("data/tracker.xml");*/
     QXmlInputSource *source = new QXmlInputSource(file);
     QDomDocument dom;
     if(!dom.setContent(source,false))

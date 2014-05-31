@@ -1180,6 +1180,13 @@ TrkToolRecord *QueryPage::recordOnIndex(const QModelIndex &index)
     return trkmodel->at(f.row());
 }
 
+const AbstractRecordTypeDef *QueryPage::recordTypeDef()
+{
+    if(!tmodel)
+        return 0;
+    return tmodel->typeDef();
+}
+
 QModelIndexList QueryPage::selectedRows()
 {
     QItemSelectionModel *is=queryView->selectionModel();
@@ -1245,7 +1252,7 @@ TrkToolRecord *QueryPage::currentRecord()
 void QueryPage::on_actionAdd_Note_triggered()
 {
     NoteDialog *nd=new NoteDialog();
-    nd->titleEdit->addItems(tmodel->typeDef()->project()->noteTitles);
+    nd->titleEdit->addItems(((const RecordTypeDef*)tmodel->typeDef())->project()->noteTitles);
     QSettings *settings = ttglobal()->settings();
     if(settings->contains("LastNote"))
         nd->titleEdit->setEditText(settings->value("LastNote").toString());

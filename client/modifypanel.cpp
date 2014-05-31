@@ -17,7 +17,7 @@ ModifyPanel::ModifyPanel(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::ModifyPanel),
     queryPage(0),
-    a_model(0),
+    //a_model(0),
     rdef(0),
     a_readOnly(false)
 {
@@ -37,6 +37,7 @@ ModifyPanel::~ModifyPanel()
     delete ui;
 }
 
+/*
 void ModifyPanel::setQueryPage(QueryPage *page)
 {
     if(page == queryPage)
@@ -46,7 +47,7 @@ void ModifyPanel::setQueryPage(QueryPage *page)
     queryPage = page;
     if(queryPage)
     {
-        setModel(queryPage->tmodel);
+        //setModel(queryPage->tmodel);
         if(queryPage->tmodel)
             fillValues(queryPage->selectedRecords());
         connect(queryPage,SIGNAL(destroyed(QObject*)),this,SLOT(queryPageDestroyed(QObject*)),Qt::DirectConnection);
@@ -54,7 +55,9 @@ void ModifyPanel::setQueryPage(QueryPage *page)
         //connect(queryPage,SIGNAL(selectionRecordsChanged(QList<TrkToolRecord*>)),this,SLOT(selectedRecordsChanged(QList<TrkToolRecord*>)));
     }
 }
+*/
 
+/*
 void ModifyPanel::setModel(TrkToolModel *newModel)
 {
     if(a_model!=newModel)
@@ -69,39 +72,45 @@ void ModifyPanel::setModel(TrkToolModel *newModel)
         }
     }
 }
+*/
 
-void ModifyPanel::loadDefinitions(const RecordTypeDef *typeDef)
+void ModifyPanel::setRecordDef(const AbstractRecordTypeDef *typeDef)
 {
+    if(rdef == typeDef)
+        return;
     rdef = typeDef;
-    FieldGroupsDef def;
-    def = decorator->loadGroups(typeDef);
     rows.clear();
-    for(int p=0; p<def.groups.count(); p++)
+    if(rdef)
     {
-        QString pname = def.groups[p];
-        ModifyRow mrow;
-        mrow.isGroup = true;
-        mrow.fieldName = pname;
-        //mrow.editor = 0;
-        mrow.displayValue = "";
-        mrow.isChanged = false;
-        mrow.isEditable = false;
-        //mrow.resetBtn = 0;
-        rows.append(mrow);
-        const QStringList &flist = def.fieldsByGroup[p];
-        for(int f=0; f<flist.count(); f++)
+        FieldGroupsDef def;
+        def = decorator->loadGroups(typeDef);
+        for(int p=0; p<def.groups.count(); p++)
         {
-            QString fname = flist[f];
-            ModifyRow frow;
-            frow.isGroup = false;
-            frow.fieldName = fname;
-            frow.fieldType = typeDef->fieldType(fname);
-            //frow.editor = 0;
-            frow.displayValue = "";
-            frow.isChanged = false;
-            frow.isEditable = typeDef->canFieldUpdate(fname);
-            //frow.resetBtn = 0;
-            rows.append(frow);
+            QString pname = def.groups[p];
+            ModifyRow mrow;
+            mrow.isGroup = true;
+            mrow.fieldName = pname;
+            //mrow.editor = 0;
+            mrow.displayValue = "";
+            mrow.isChanged = false;
+            mrow.isEditable = false;
+            //mrow.resetBtn = 0;
+            rows.append(mrow);
+            const QStringList &flist = def.fieldsByGroup[p];
+            for(int f=0; f<flist.count(); f++)
+            {
+                QString fname = flist[f];
+                ModifyRow frow;
+                frow.isGroup = false;
+                frow.fieldName = fname;
+                frow.fieldType = typeDef->fieldType(fname);
+                //frow.editor = 0;
+                frow.displayValue = "";
+                frow.isChanged = false;
+                frow.isEditable = typeDef->canFieldUpdate(fname);
+                //frow.resetBtn = 0;
+                rows.append(frow);
+            }
         }
     }
     fillTable();
@@ -111,6 +120,8 @@ void ModifyPanel::fillTable()
 {
     int line=-1;
     ui->fieldsTableWidget->clearContents();
+    if(!rows.count())
+       ui->fieldsTableWidget->setRowCount(0);
     int wRows = ui->fieldsTableWidget->rowCount();
     foreach(const ModifyRow &row, rows)
     {
@@ -137,12 +148,14 @@ void ModifyPanel::fillTable()
     }
 }
 
-
+/*
 void ModifyPanel::selectedRecordsChanged(const QObjectList &newSelection)
 {
     fillValues(newSelection);
 }
+*/
 
+/*
 void ModifyPanel::fillValues( TrkToolRecord * rec)
 {
     for(int r = 0; r<rows.count(); r++)
@@ -163,6 +176,7 @@ void ModifyPanel::fillValues( TrkToolRecord * rec)
         //item->setData(Qt::EditRole, row.fieldValue);
     }
 }
+*/
 
 void ModifyPanel::fillValues(const QObjectList &records)
 {
@@ -176,7 +190,9 @@ void ModifyPanel::fillValues(const QObjectList &records)
         row.displayValue = "";
         for(int i=0; i<records.count(); i++)
         {
-            TrkToolRecord *rec = (TrkToolRecord *)records[i];
+            const TrkToolRecord *rec = qobject_cast<const TrkToolRecord *>(records[i]);
+            if(!rec)
+                continue;
             if(!i)
             {
                 row.fieldValue = rec->value(row.fieldName, Qt::EditRole);
@@ -210,7 +226,7 @@ QTableWidget *ModifyPanel::tableWidget()
     return ui->fieldsTableWidget;
 }
 
-const TrkFieldType ModifyPanel::fieldDef(int row) const
+const AbstractFieldType ModifyPanel::fieldDef(int row) const
 {
     return fieldDef(rows[row].fieldName);
     /*
@@ -223,13 +239,13 @@ const TrkFieldType ModifyPanel::fieldDef(int row) const
     */
 }
 
-const TrkFieldType ModifyPanel::fieldDef(const QString &fieldName) const
+const AbstractFieldType ModifyPanel::fieldDef(const QString &fieldName) const
 {
     //if(!a_model)
     //    return TrkFieldDef();
     //const RecordTypeDef *rdef = a_model->typeDef();
     if(!rdef)
-        return TrkFieldType();
+        return AbstractFieldType();
     return rdef->getFieldDef(fieldName);
 }
 
@@ -366,10 +382,12 @@ void ModifyPanel::clearField(const QString &fieldName)
         setFieldValue(fieldName, fieldDef(fieldName).defaultValue());
 }
 
+/*
 void ModifyPanel::modelChanged(TrkToolModel *newmodel)
 {
     setModel(newmodel);
 }
+*/
 
 void ModifyPanel::queryPageDestroyed(QObject *page)
 {
@@ -380,10 +398,12 @@ void ModifyPanel::queryPageDestroyed(QObject *page)
     }
 }
 
+/*
 void ModifyPanel::modelDestroyed()
 {
     a_model = 0;
 }
+*/
 
 void ModifyPanel::on_saveChangesButton_clicked()
 {

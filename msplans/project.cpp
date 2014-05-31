@@ -328,7 +328,7 @@ void PrjItemModel::saveToMemory(QAxObject *tasks)
 
 void PrjItemModel::loadDefinition(QAxObject &app, const QString &fileName)
 {
-	QXmlSimpleReader xmlReader;
+//	QXmlSimpleReader xmlReader;
 	QFile *file = new QFile(fileName);
 	QXmlInputSource *source = new QXmlInputSource(file);
 	QDomDocument dom;
@@ -366,6 +366,14 @@ void PrjItemModel::loadDefinition(QAxObject &app, const QString &fileName)
 		if(f.title.isEmpty())
 			f.title = f.field;
 		f.type = field.attribute("type");
+        if(!f.type.compare("SCR",Qt::CaseInsensitive))
+            f.stdType = TQ::TQ_FIELD_TYPE_NUMBER;
+        else if (!f.type.compare("%",Qt::CaseInsensitive))
+            f.stdType = TQ::TQ_FIELD_TYPE_PERCENT;
+        else if (!f.type.compare("min",Qt::CaseInsensitive))
+            f.stdType = TQ::TQ_FIELD_TYPE_NUMBER;
+        else
+            f.stdType = TQ::TQ_FIELD_TYPE_STRING;
         f.display = field.attribute("display");
         f.format = field.attribute("format");
 		f.internalField = "f"+QString::number(i);
@@ -494,4 +502,62 @@ int PrjItemModel::colTaskNum()
 void PrjItemModel::slotException(int code, const QString &source, const QString &desc, const QString &help)
 {
     pluginObject->emitError(QString(tr("ERROR: (%1) %2")).arg(code).arg(desc));
+}
+
+
+TaskTypeDef::TaskTypeDef(PrjItemModel *srcModel)
+{
+    model = srcModel;
+}
+
+QStringList TaskTypeDef::fieldNames() const
+{
+    QStringList res;
+    foreach(const PrjField &f, model->fields)
+        res.append(f.field);
+    return res;
+}
+
+int TaskTypeDef::fieldType(const QString &name) const
+{
+    foreach(const PrjField &f, model->fields)
+    {
+        if(!f.field.compare(name,Qt::CaseInsensitive))
+            return f.stdType;
+    }
+    return 0;
+}
+
+bool TaskTypeDef::canFieldSubmit(const QString &name) const
+{
+    Q_UNUSED(name)
+    return false;
+}
+
+bool TaskTypeDef::canFieldUpdate(const QString &name) const
+{
+    Q_UNUSED(name)
+    return false;
+}
+
+ChoiceList TaskTypeDef::choiceList(const QString &fieldName)
+{
+    Q_UNUSED(fieldName)
+    return ChoiceList();
+}
+
+QList<int> TaskTypeDef::fieldVids() const
+{
+    QList<int> res;
+    int i=0;
+    foreach(const PrjField &f, model->fields)
+    {
+        res.append(i++);
+    }
+    return res;
+}
+
+QString TaskTypeDef::fieldName(int vid) const
+{
+    return model->fields[vid].field;
 }

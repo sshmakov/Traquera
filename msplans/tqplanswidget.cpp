@@ -267,9 +267,14 @@ void TQPlansWidget::showCurrentPlan()
 {
     QModelIndex index = planTreeView->currentIndex();
     QModelIndex si = planViewModel.mapToSource(index);
-    PrjItemModel *prj=loadedPlanModel->prjModel(si);
+    PrjItemModel *prj = loadedPlanModel->prjModel(si);
     if(prj)
         pluginObject->openPlanPage(prj);
+}
+
+void TQPlansWidget::updateDetailWindows()
+{
+    QMainWindow *m = pluginObject->mainWindow;
 }
 
 void TQPlansWidget::setPlanModel(PlanModel *newmodel)

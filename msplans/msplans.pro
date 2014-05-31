@@ -29,7 +29,8 @@ HEADERS += plans.h\
  tqpluginwidget.h    \
  tqplanswidget.h     \
  project.h \
-    projectpage.h
+    projectpage.h \
+    ../common/tqplug.h
 
 
 FORMS = \
@@ -49,6 +50,8 @@ unix:!symbian {
 datafolder.source = data
 datafolder.target = .
 DEPLOYMENTFOLDERS = datafolder
+
+INCLUDEPATH += ../common
 
 include(deploy.pri)
 qtcAddDeployment()

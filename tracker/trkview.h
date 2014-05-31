@@ -13,6 +13,7 @@
 #include "trktool.h"
 #include "trktool2.h"
 #include "tracker.h"
+#include "tqplug.h"
 
 #define TT_DATETIME_FORMAT "dd.MM.yyyy H:mm:ss"
 
@@ -53,19 +54,6 @@ public slots:
 class TrkToolProject;
 class TrkToolModel;
 
-class TrkToolChoice {
-public:
-    QString displayText;
-    QVariant fieldValue;
-    TrkToolChoice() {}
-    TrkToolChoice(const TrkToolChoice &src)
-        :displayText(src.displayText), fieldValue(src.fieldValue)
-    {}
-    ~TrkToolChoice() {}
-    //TRK_UINT weight;
-    //TRK_UINT order;
-    //TRK_UINT res;
-};
 
 struct TrkToolUser {
     QString userName;
@@ -73,19 +61,18 @@ struct TrkToolUser {
     QString email;
 };
 
-typedef QHash<QString, QVariant> FieldValues;
-
-typedef QList<TrkToolChoice> ChoiceList;
 typedef QList<TrkToolUser> UserList;
 
 class RecordTypeDef;
 
-class TrkFieldDef {
+class TrkFieldDef: public AbstractFieldDef
+{
 protected:
-    mutable ChoiceList *p_choiceList;
-    RecordTypeDef *recDef;
-    static ChoiceList emptyChoices;
+//    mutable ChoiceList *p_choiceList;
+    //RecordTypeDef *recDef;
+    //static ChoiceList emptyChoices;
 public:
+    /*
 	QString name;
     TRK_FIELD_TYPE fType;
     bool nullable;
@@ -93,28 +80,26 @@ public:
     int maxValue;
     QVariant defaultValue;
     //const ChoiceList *userList();
+    */
 
-    TrkFieldDef(RecordTypeDef *recordDef=0)
-        : recDef(recordDef), name(), fType(TRK_FIELD_TYPE_NONE), p_choiceList(new ChoiceList()),
-          nullable(false), minValue(0), maxValue(INT_MAX)
-    {
-
-    }
+    TrkFieldDef(RecordTypeDef *recordDef=0);
     TrkFieldDef(const TrkFieldDef& src)
-        : recDef(src.recDef), name(src.name), fType(src.fType), p_choiceList(new ChoiceList(*src.p_choiceList)),
-          nullable(src.nullable), minValue(src.minValue), maxValue(src.maxValue), defaultValue(src.defaultValue)
+        : AbstractFieldDef(src)
+        /*recDef(src.recDef), name(src.name), fType(src.fType), p_choiceList(new ChoiceList(*src.p_choiceList)),
+          nullable(src.nullable), minValue(src.minValue), maxValue(src.maxValue), defaultValue(src.defaultValue)*/
     {
 
     }
     ~TrkFieldDef()
     {
-		if(p_choiceList)
-		{
-            delete p_choiceList;
-			p_choiceList = 0;
-		}
+//		if(p_choiceList)
+//		{
+//            delete p_choiceList;
+//			p_choiceList = 0;
+//		}
     }
 
+    /*
     TrkFieldDef& operator =(const TrkFieldDef& src)
     {
         recDef = src.recDef;
@@ -127,8 +112,9 @@ public:
         defaultValue = src.defaultValue;
         return *this;
     }
+    */
 
-    const ChoiceList *choiceList() const;
+    ChoiceList choiceList() const;
     QStringList choiceStringList(bool isDisplayText = true) const;
     bool isChoice() const
     {
@@ -159,12 +145,15 @@ public:
     bool canUpdate();
     QString valueToDisplay(const QVariant &value) const;
     QVariant displayToValue(const QString &text) const;
+    RecordTypeDef *recordDef() const;
 
     friend class TrkToolProject;
     friend class TrkFieldType;
 };
 
-class TrkFieldType {
+/*
+class TrkFieldType: public AbstractFieldType
+{
 protected:
     TrkFieldDef *def;
     TrkFieldType(TrkFieldDef *srcDef):def(srcDef) {}
@@ -181,11 +170,11 @@ public:
             return def->fType;
         return TRK_FIELD_TYPE_NONE;
     }
-    const ChoiceList *choiceList() const
+    ChoiceList choiceList() const
     {
         if(isValid())
             return def->choiceList();
-        return &TrkFieldDef::emptyChoices;
+        return QList<TrkToolChoice>();//&TrkFieldDef::emptyChoices;
     }
     QStringList choiceStringList(bool isDisplayText = true) const
     {
@@ -257,18 +246,23 @@ public:
 
     friend class RecordTypeDef;
 };
+*/
 
 typedef QHash<TRK_VID, TrkFieldDef *> TrkIntDef;
-typedef QHash<QString, TRK_VID> NameVid;
+typedef QHash<QString, int> NameVid;
 
-class RecordTypeDef {
+
+class RecordTypeDef: public QObject, public AbstractRecordTypeDef
+{
+    Q_OBJECT
+    Q_INTERFACES(AbstractRecordTypeDef)
 protected:
     TrkToolProject *prj;
     TRK_RECORD_TYPE recType;
     bool isReadOnly;
     TrkIntDef fieldDefs;
     QHash<int, QString> baseFields;
-    NameVid nameVids;
+    QHash<QString, int> nameVids;
     QHash<TRK_VID, ChoiceList *> choices;
     void clearFieldDefs();
 private:
@@ -277,18 +271,20 @@ public:
     RecordTypeDef(TrkToolProject *project = 0);
     ~RecordTypeDef();
     QStringList fieldNames() const;
-    TrkFieldType getFieldDef(TRK_VID vid, bool *ok = 0) const;
-    TrkFieldType getFieldDef(const QString &name, bool *ok = 0) const;
-    TRK_FIELD_TYPE fieldType(const QString &name) const;
-    TRK_FIELD_TYPE fieldType(TRK_VID vid) const;
+    AbstractFieldType getFieldDef(int vid, bool *ok = 0) const;
+    AbstractFieldType getFieldDef(const QString &name, bool *ok = 0) const;
+    int fieldType(const QString &name) const;
+    int fieldType(TRK_VID vid) const;
     bool canFieldSubmit(const QString &name) const;
     bool canFieldUpdate(const QString &name) const;
-    const ChoiceList *choiceList(const QString &fieldName);
-    QList<TRK_VID> fieldVids() const;
-    TRK_VID fieldVid(const QString &name);
-    QList<int> fieldIds() const;
+    ChoiceList choiceList(const QString &fieldName);
+//    QList<TRK_VID> fieldVids() const;
+    int fieldVid(const QString &name);
+    QList<int> fieldVids() const;
     TRK_RECORD_TYPE recordType() const;
-    QString fieldName(TRK_VID vid) const;
+    QString fieldName(int vid) const;
+    QIODevice *defineSource() const;
+
     TrkToolProject *project() const;
 
 
@@ -620,6 +616,7 @@ public:
     QString userFullName(const QString &login);
     TrkToolRecord *createRecordById(TRK_UINT id, TRK_RECORD_TYPE rectype = TRK_SCR_TYPE);
     TrkToolRecord *newRecord(TRK_RECORD_TYPE rectype = TRK_SCR_TYPE);
+    AbstractRecordTypeDef *recordTypeDef(TRK_RECORD_TYPE rectype = TRK_SCR_TYPE);
 protected:
     /* Record manipulations */
     virtual bool readRecordWhole(TrkToolRecord *record);
@@ -627,8 +624,8 @@ protected:
     virtual bool readRecordTexts(TrkToolRecord *record);
     virtual bool readRecordBase(TrkToolRecord *record);
     virtual TrkToolRecord *createRecordByHandle(TRK_RECORD_HANDLE recHandle, TRK_RECORD_TYPE rectype = TRK_SCR_TYPE);
-    virtual QVariant getFieldValue(TrkToolRecord *record, const QString &fname, bool *ok = 0);
-    virtual QVariant getFieldValue(TrkToolRecord *record, TRK_VID vid, bool *ok = 0);
+    virtual QVariant getFieldValue(const TrkToolRecord *record, const QString &fname, bool *ok = 0);
+    virtual QVariant getFieldValue(const TrkToolRecord *record, TRK_VID vid, bool *ok = 0);
     virtual bool setFieldValue(TrkToolRecord *record, const QString &fname, const QVariant &value);
     //virtual bool insertRecordBegin(TrkToolRecord *record);
     virtual bool updateRecordBegin(TrkToolRecord *record);
@@ -770,7 +767,7 @@ public:
 	virtual Qt::ItemFlags flags ( const QModelIndex & index ) const;
 	virtual QVariant data(const QModelIndex & index, int role = Qt::DisplayRole ) const;
 	virtual bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole);
-    const RecordTypeDef *typeDef();
+    const AbstractRecordTypeDef *typeDef();
     virtual void clearRecords();
     QString getQueryName() const;
     QList<int> getIdList() const;
@@ -811,7 +808,7 @@ protected:
 public:
     //TrkScopeRecHandle(TRK_HANDLE prjHandle, TRK_RECORD_HANDLE recHandle = 0, TRK_UINT recId = 0, TRK_RECORD_TYPE rectype = TRK_SCR_TYPE);
     TrkScopeRecHandle(TrkToolProject *prj, TRK_RECORD_HANDLE recHandle = 0, TRK_UINT recId = 0, TRK_RECORD_TYPE rectype = TRK_SCR_TYPE);
-    TrkScopeRecHandle(TrkToolProject *prj, TrkToolRecord *record);
+    TrkScopeRecHandle(TrkToolProject *prj, const TrkToolRecord *record);
     ~TrkScopeRecHandle();
     inline bool isValid() { return (handle != 0) && isOk; }
     TRK_RECORD_HANDLE &nativeHandle();
@@ -841,7 +838,7 @@ protected:
 	//QHash<QString, QVariant> values;
 	TrkToolProject *prj;
 	TRK_RECORD_TYPE rectype;
-	QHash<int, QVariant> values; // by VID
+    mutable QHash<int, QVariant> values; // by VID
     QHash<int, bool> changedValue; // by VID
 	RecMode recMode;
 	TRK_TRANSACTION_ID lastTransaction;
@@ -877,8 +874,8 @@ public:
         return prj!=0;
     }
 
-    Q_INVOKABLE QVariant value(const QString& fieldName, int role = Qt::DisplayRole);
-    Q_INVOKABLE QVariant value(TRK_VID vid, int role = Qt::DisplayRole) ;
+    Q_INVOKABLE QVariant value(const QString& fieldName, int role = Qt::DisplayRole) const;
+    Q_INVOKABLE QVariant value(TRK_VID vid, int role = Qt::DisplayRole) const ;
 	TrkToolRecord::RecMode mode() const { return recMode; }
     Q_INVOKABLE  unsigned long recordId() const { return values[VID_Id].toUInt(); } // TRK_UINT
     Q_INVOKABLE QString title();
@@ -902,11 +899,11 @@ public:
     {
         return prj->recordDef[rectype];
     }
-    TrkFieldType fieldDef(TRK_VID vid) const
+    AbstractFieldType fieldDef(TRK_VID vid) const
     {
         return typeDef()->getFieldDef(vid);
     }
-    TrkFieldType fieldDef(const QString &name) const
+    AbstractFieldType fieldDef(const QString &name) const
     {
         return typeDef()->getFieldDef(name);
     }

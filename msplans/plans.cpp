@@ -283,6 +283,7 @@ void PlanModel::loadDefinition(const QString &fileName)
 	}
 	*/
     parentField = -1;
+
 	QDomElement field = flds.firstChildElement("field");
 	for(int i=0; !field.isNull(); field = field.nextSiblingElement("field"), i++)
 	{
@@ -417,6 +418,9 @@ PlansPlugin::~PlansPlugin()
 void PlansPlugin::initPlugin(QObject *obj, const QString &modulePath)
 {
     globalObject = obj;
+    mainWindow = 0;
+    QMetaObject::invokeMethod(globalObject, "mainWindow", Qt::DirectConnection,
+                                  Q_RETURN_ARG(QMainWindow *, mainWindow));
     QFileInfo fi(modulePath);
     pluginModule = fi.absoluteFilePath();
     QDir pDir;
@@ -561,10 +565,6 @@ void PlansPlugin::addMSProjectFile()
 
 void PlansPlugin::openPlanPage(PrjItemModel *model, int selectedTask)
 {
-    QMainWindow *mainWindow = 0;
-    if(!QMetaObject::invokeMethod(globalObject, "mainWindow", Qt::DirectConnection,
-                                  Q_RETURN_ARG(QMainWindow *, mainWindow)))
-        return;
     if(!mainWindow)
         return;
     ProjectPage *page = new ProjectPage(model);

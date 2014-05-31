@@ -69,7 +69,7 @@ public:
     void readValues(TrkToolRecord *record, EditDefList &def);
     void updateState(TrkToolRecord *record, EditDefList &def);
     void loadViewDef(QTableView *view);
-    FieldGroupsDef loadGroups(const RecordTypeDef *recDef);
+    FieldGroupsDef loadGroups(const AbstractRecordTypeDef *recDef);
 protected:
     void clearEdits(QTabWidget *tabs, EditDefList &def);
     

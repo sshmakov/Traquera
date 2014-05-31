@@ -16,8 +16,8 @@ class ModifyPanel : public QWidget
     Q_OBJECT
 
 protected:
-    TrkToolModel *a_model;
-    const RecordTypeDef *rdef;
+//    TrkToolModel *a_model;
+    const AbstractRecordTypeDef *rdef;
     QueryPage *queryPage;
 
     QStringList fieldGroups;
@@ -41,18 +41,18 @@ public:
     explicit ModifyPanel(QWidget *parent = 0);
     ~ModifyPanel();
     
-    void setQueryPage(QueryPage *page);
-    void setModel(TrkToolModel *newModel);
-    void loadDefinitions(const RecordTypeDef *typeDef);
-    void fillValues(TrkToolRecord *record);
+//    void setQueryPage(QueryPage *page);
+//    void setModel(TrkToolModel *newModel);
+    void setRecordDef(const AbstractRecordTypeDef *typeDef);
+    //void fillValues(TrkToolRecord *record);
     void fillValues(const QObjectList &records);
     QTableWidget *tableWidget();
     const ModifyRow &fieldRow(int row)
     {
         return rows[row];
     }
-    const TrkFieldType fieldDef(int row) const;
-    const TrkFieldType fieldDef(const QString &fieldName) const;
+    const AbstractFieldType fieldDef(int row) const;
+    const AbstractFieldType fieldDef(const QString &fieldName) const;
     void setRowValue(int row, const QVariant &value, int role = Qt::EditRole);
     QString fieldName(const QModelIndex &index);
     QVariant fieldValue(const QString &fieldName);
@@ -66,15 +66,15 @@ signals:
 protected:
     void fillTable();
 public slots:
-    void selectedRecordsChanged(const QObjectList &newSelection);
-    void modelChanged(TrkToolModel *newmodel);
+//    void selectedRecordsChanged(const QObjectList &newSelection);
+//    void modelChanged(TrkToolModel *newmodel);
     void setFieldValue(const QString &fieldName, const QVariant &value);
     void resetField(const QString& fieldName);
     void resetAll();
     void clearField(const QString& fieldName);
 protected slots:
     void queryPageDestroyed(QObject * page = 0);
-    void modelDestroyed();
+//    void modelDestroyed();
 private slots:
     void on_saveChangesButton_clicked();
 

@@ -7,6 +7,7 @@
 #include "project.h"
 //#include "trdefs.h"
 #include "planfiles.h"
+#include "tqplug.h"
 
 #define Settings_ScrPlanView "ScrPlanView"
 
@@ -89,6 +90,7 @@ public:
     PlanFilesForm *propWidget;
     QSettings *settings;
     QObject *globalObject;
+    QMainWindow *mainWindow;
     QString pluginModule;
     QDir pluginDir;
     QDir dataDir;

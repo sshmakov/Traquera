@@ -31,6 +31,7 @@ struct TrkHistoryItem
 class QueryPage : public QWidget, public Ui::queryForm
 {
     Q_OBJECT
+    Q_PROPERTY(const AbstractRecordTypeDef *recordTypeDef READ recordTypeDef)
 protected:
 	bool isInteractive;
 	bool isDefLoaded;
@@ -78,6 +79,7 @@ public:
     Q_INVOKABLE QObjectList markedRecords();
     Q_INVOKABLE TrkToolRecord *currentRecord();
     Q_INVOKABLE TrkToolRecord *recordOnIndex(const QModelIndex &index);
+    Q_INVOKABLE const AbstractRecordTypeDef *recordTypeDef();
     void initWidgets();
     bool hasMarked();
 protected:

@@ -138,7 +138,10 @@ public slots:
     void focusTab(QWidget *widget);
     QToolBar *addToolBar(const QString &title);
     void addWidgetToDock(const QString &title, QWidget *widget, Qt::DockWidgetArea area = Qt::RightDockWidgetArea);
+    void updateModifyPanel(const AbstractRecordTypeDef *typeDef, const QObjectList &records);
 
+signals:
+    void updatingDetails();
 
 public slots:
     void trustChanged(int State);

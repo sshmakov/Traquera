@@ -58,7 +58,8 @@ HEADERS += \
     notewidget.h \
     scrpluginfactory.h \
     previewfactory.h \
-    highlighter.h
+    highlighter.h \
+    ../common/tqplug.h
 
 #    plans.h planproxy.h \
 #    planfiles.h \

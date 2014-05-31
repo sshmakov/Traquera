@@ -413,7 +413,7 @@ void MainWindow::applyChanges()
         }
     }
     modifyPanel->resetAll();
-    modifyPanel->selectedRecordsChanged(qpage->selectedRecords());
+    modifyPanel->fillValues(qpage->selectedRecords());
 }
 
 void MainWindow::repeatLastChanges()
@@ -477,10 +477,11 @@ void MainWindow::curSelectionChanged()
 void MainWindow::refreshSelection()
 {
     QueryPage *page = curQueryPage();
-    if(!page)
-        return;
-    modifyPanel->setModel(page->tmodel);
-    modifyPanel->selectedRecordsChanged(page->selectedRecords());
+    if(page)
+        updateModifyPanel(page->recordTypeDef(), page->selectedRecords());
+    else
+        updateModifyPanel(0, QObjectList());
+    emit updatingDetails();
     calcCountRecords();
 }
 
@@ -558,6 +559,12 @@ void MainWindow::addWidgetToDock(const QString &title, QWidget *widget, Qt::Dock
     connect(widget,SIGNAL(destroyed()),dw,SLOT(deleteLater()));
 }
 
+void MainWindow::updateModifyPanel(const AbstractRecordTypeDef *typeDef, const QObjectList &records)
+{
+    modifyPanel->setRecordDef(typeDef);
+    modifyPanel->fillValues(records);
+}
+
 void MainWindow::calcCountRecords()
 {
     QString s;
@@ -589,8 +596,6 @@ void MainWindow::connectTracker()
     trkdb->dbmsName = server;
     //const QStringList *dbmsTypes = trkdb->dbmsTypes();
 	//return;
-
-
     if(trkproject)
     {
         delete trkproject;
@@ -1194,10 +1199,13 @@ void MainWindow::on_journalView_doubleClicked(const QModelIndex &index)
 
 void MainWindow::on_tabWidget_currentChanged(QWidget *arg1)
 {
+    refreshSelection();
+    /*
     QueryPage *qpage = qobject_cast<QueryPage *>(arg1);
     if(!qpage)
         return;
     modifyPanel->setQueryPage(qpage);
+    */
 }
 
 void MainWindow::on_actionPasteNumbers_triggered()

@@ -126,7 +126,7 @@ void TTDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewIte
 
 void TTDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
-    if(panel->fieldRow(index.row()).isChanged)
+    if(index.row()<panel->rows.count() && panel->fieldRow(index.row()).isChanged)
     {
         QStyleOptionViewItem fieldOption(option);
         initStyleOption(&fieldOption,index);
@@ -193,8 +193,8 @@ void TTItemEditor::setEditorData(const QModelIndex &index)
     QSpinBox *sb;
     QComboBox *cb;
     QDateTimeEdit *dt;
-    TrkFieldType fdef = panel->fieldDef(index.row());
-    int type = fdef.fType();
+//    TrkFieldType fdef = panel->fieldDef(index.row());
+//    int type = fdef.fType();
     if(0!=(ed = qobject_cast<QLineEdit*>(subeditor)))
         ed->setText(index.data().toString());
     else if(0!=(pe = qobject_cast<QPlainTextEdit*>(subeditor)))
@@ -225,7 +225,7 @@ void TTItemEditor::setModelData(const QModelIndex &index)
     QString fieldName = panel->fieldName(index);
     if(fieldName.isEmpty())
         return;
-    TrkFieldType fdef = panel->fieldDef(index.row());
+    AbstractFieldType fdef = panel->fieldDef(index.row());
     if(0!=(ed = qobject_cast<QLineEdit*>(subeditor)))
         panel->setFieldValue(fieldName,ed->text());
         //model->setData(index,ed->text());
@@ -235,10 +235,10 @@ void TTItemEditor::setModelData(const QModelIndex &index)
         panel->setFieldValue(fieldName,sb->value());
     else if(0!=(cb = qobject_cast<QComboBox*>(subeditor)))
     {
-        const ChoiceList *ch = fdef.choiceList();
+        ChoiceList ch = fdef.choiceList();
         int i = cb->currentIndex();
-        if(i>=0 && i<ch->count())
-            panel->setFieldValue(fieldName,ch->value(i).fieldValue);
+        if(i>=0 && i<ch.count())
+            panel->setFieldValue(fieldName,ch.value(i).fieldValue);
         else
             panel->setFieldValue(fieldName,QVariant());
     }
@@ -262,7 +262,7 @@ QWidget * TTItemEditor::createSubEditor(const QStyleOptionViewItem &option, cons
     QDateTimeEdit *dt;
     QWidget *res;
     QStringList sl;
-    TrkFieldType fdef = panel->fieldDef(index.row());
+    AbstractFieldType fdef = panel->fieldDef(index.row());
     int type = fdef.fType(); // panel->fieldRow(index.row()).fieldType;
     switch((TRK_FIELD_TYPE)type)
     {

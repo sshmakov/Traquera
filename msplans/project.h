@@ -10,13 +10,14 @@
 #include <QHash>
 #include <QStandardItemModel>
 #include <QStandardItem>
-
+#include "tqplug.h"
 
 struct PrjField {
 	QString internalField;
 	QString field;
 	QString title;
 	QString type;
+    int stdType;
     QString display;
     QString format;
     int colSize;
@@ -65,6 +66,7 @@ public:
     int colTaskNum();
 protected slots:
     void slotException( int code, const QString & source, const QString & desc, const QString & help );
+    friend class TaskTypeDef;
 };
 
 class PrjModel//: public QObject
@@ -88,6 +90,25 @@ public:
     int rowOfTask(int taskNum);
 	//void readCash();
 };
+
+class TaskTypeDef: /*public QObject,*/ public AbstractRecordTypeDef
+{
+//    Q_OBJECT
+//    Q_INTERFACES(AbstractRecordTypeDef)
+protected:
+    PrjItemModel *model;
+
+public:
+    TaskTypeDef(PrjItemModel *srcModel);
+    virtual QStringList fieldNames() const;
+    virtual int fieldType(const QString &name) const;
+    virtual bool canFieldSubmit(const QString &name) const;
+    virtual bool canFieldUpdate(const QString &name) const;
+    virtual ChoiceList choiceList(const QString &fieldName);
+    virtual QList<int> fieldVids() const;
+    virtual QString fieldName(int vid) const;
+};
+
 
 
 #endif // _PROJECT_H_

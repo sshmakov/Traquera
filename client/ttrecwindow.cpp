@@ -101,7 +101,7 @@ void TTRecordWindow::showNoteEditor(bool show)
 
 void TTRecordWindow::setTypeDef(const RecordTypeDef *recDef)
 {
-    props->loadDefinitions(recDef);
+    props->setRecordDef(recDef);
 }
 
 TrkToolRecord *TTRecordWindow::getRecord()
@@ -224,7 +224,7 @@ void TTRecordWindow::canceledEditing(int index)
 void TTRecordWindow::refreshValues()
 {
     //a_record->refresh();
-    props->fillValues(a_record);
+    props->fillValues(QObjectList() << a_record);
     QString html = a_record->toHTML("data/edit.xq");
     ui->webView->setHtml(html);
     ui->titleBox->clear();
@@ -287,7 +287,7 @@ void TTRecordWindow::commit()
     if(writeChanges() && a_record->commit())
     {
         props->resetAll();
-        props->fillValues(a_record);
+        props->fillValues(QObjectList() << a_record);
         setRecord(a_record);
 
     }
