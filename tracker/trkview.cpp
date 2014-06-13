@@ -1399,6 +1399,14 @@ QList<TrkToolFile> TrkToolProject::attachedFiles(TrkToolRecord *record)
     return res;
 }
 
+QStringList TrkToolProject::historyList(TrkToolRecord *record)
+{
+    TrkScopeRecHandle recHandle(this, record);
+    if(!recHandle.isValid())
+        return QStringList();
+    return doGetHistoryList(*recHandle);
+}
+
 QHash<int, QString> TrkToolProject::baseRecordFields(TRK_RECORD_TYPE rectype)
 {
     RecordTypeDef *def = recordDef[rectype];
@@ -1591,13 +1599,31 @@ bool TrkToolProject::doChangeNote(TRK_RECORD_HANDLE recHandle, int noteId, const
 
 int TrkToolProject::doGetRecordId(TRK_RECORD_HANDLE recHandle, TRK_RECORD_TYPE rectype)
 {
-    QString fieldName = doFieldVID2Name(rectype, VID_Id);
+    QString fieldName = recordTypeDef(rectype)->fieldName(VID_Id);
     TRK_UINT val=0;
     if(isTrkOK(TrkGetNumericFieldValue(recHandle, fieldName.toLocal8Bit().constData(), &val)))
         return val;
     return 0;
 }
 
+QStringList TrkToolProject::doGetHistoryList(TRK_RECORD_HANDLE recHandle)
+{
+    QStringList result;
+    char buf[1024];
+    if(isTrkOK(TrkInitChangeList(recHandle)))
+    {
+        while(1)
+        {
+            TRK_UINT res = TrkGetNextChange(recHandle, sizeof(buf), buf);
+            if(res != TRK_SUCCESS && res != TRK_E_DATA_TRUNCATED)
+                break;
+            result.append(QString::fromLocal8Bit(buf));
+        }
+    }
+    return result;
+}
+
+/*
 QString TrkToolProject::doFieldVID2Name(TRK_RECORD_TYPE rectype, TRK_VID vid)
 {
 	char buf[1024];
@@ -1623,16 +1649,8 @@ QString TrkToolProject::doFieldVID2Name(TRK_RECORD_TYPE rectype, TRK_VID vid)
 		return "Owner";
 	}
 	return "";
-	/*
-	VID_State = 10007,
-	VID_CloseDate = 10008,
-	VID_FirstTransactionId = 10010,
-	VID_LastTransactionId = 10011,
-	VID_LockUserId = 10012,
-	VID_TypeId = 10013
-	*/
-	//return fields[rectype][vid].name;
 }
+*/
 
 QString TrkToolProject::fieldVID2Name(TRK_RECORD_TYPE rectype, TRK_VID vid)
 {
@@ -2059,7 +2077,7 @@ TrkToolRecord::TrkToolRecord(TrkToolProject *parent, TRK_RECORD_TYPE rtype)
       //lockHandle(0),
       fieldList(), links(0), textsReaded(false)
 {
-    fieldList = prj->recordDef[rectype]->fieldNames();
+    fieldList = prj->recordTypeDef(rectype)->fieldNames();
     init();
 }
 
@@ -2068,7 +2086,7 @@ TrkToolRecord::TrkToolRecord(const TrkToolRecord &src)
       //lockHandle(0),
       fieldList(), links(0), textsReaded(false)
 {
-    fieldList = prj->recordDef[rectype]->fieldNames();
+    fieldList = prj->recordTypeDef(rectype)->fieldNames();
     init();
 }
 
@@ -2084,7 +2102,7 @@ TrkToolRecord &TrkToolRecord::operator =(const TrkToolRecord &src)
     links = 0;
     //nextNoteId = -1;
 
-    fieldList = prj->recordDef[rectype]->fieldNames();
+    fieldList = prj->recordTypeDef(rectype)->fieldNames();
     return *this;
 }
 
@@ -2570,12 +2588,12 @@ QDomDocument TrkToolRecord::toXML()
 	xml.appendChild(root);
 	QDomElement flds =xml.createElement("fields");
 //    QHash<TRK_VID, TrkFieldDef>::const_iterator fi;
-    QList<int> vids = prj->recordDef[rectype]->fieldVids();
+    QList<int> vids = prj->recordTypeDef(rectype)->fieldVids();
     foreach(int vid, vids) //fi = prj->recordDef[rectype]->fieldDefs.constBegin(); fi!= prj->recordDef[rectype]->fieldDefs.constEnd(); ++fi)
 	{
         //QString fname = fi.value().name;
         //TRK_VID vid = fi.key();
-        QString fname = prj->recordDef[rectype]->fieldName(vid);
+        QString fname = prj->recordTypeDef(rectype)->fieldName(vid);
         QVariant ftext = value(vid,Qt::DisplayRole);
         QVariant fvalue = value(vid,Qt::EditRole);
 
@@ -2590,7 +2608,7 @@ QDomDocument TrkToolRecord::toXML()
 	}
 	root.appendChild(flds);
 	QDomElement desc = xml.createElement("Description");
-    desc.setAttribute("name", prj->doFieldVID2Name(rectype, VID_Description));
+    desc.setAttribute("name", prj->recordTypeDef(rectype)->fieldName(VID_Description));
 	QDomText v = xml.createTextNode(description());
 	desc.appendChild(v);
 	root.appendChild(desc);
@@ -2702,13 +2720,14 @@ QString TrkToolRecord::toHTML(const QString &xqCodeFile)
     return page;
 }
 
-QStringList TrkToolRecord::historyList() const
+QStringList TrkToolRecord::historyList()
 {
     if(recMode == Insert)
         return QStringList();
     if(historyReaded)
         return historyListMem;
-    return QStringList();
+    return prj->historyList(this);
+    //return QStringList();
     /*
     TrkScopeRecHandle recHandle(prj->handle, lockHandle);
     if(!recHandle.isValid())
@@ -3465,7 +3484,12 @@ QList<int> RecordTypeDef::fieldVids() const
         vids << vid;
     return vids;
 }
-TRK_RECORD_TYPE RecordTypeDef::recordType() const { return recType; }
+
+int RecordTypeDef::recordType() const
+{
+    return recType;
+}
+
 QString RecordTypeDef::fieldName(int vid) const
 {
     if(fieldDefs.contains(vid))

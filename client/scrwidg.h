@@ -16,12 +16,12 @@ protected:
     EditDefList fieldEdits;
     NotesCol notes;
 public:
-    ScrWidget(const RecordTypeDef *typeDef, QWidget *parent = 0);
+    ScrWidget(const AbstractRecordTypeDef *typeDef, QWidget *parent = 0);
     virtual ~ScrWidget();
 	TrkToolRecord *record;
 	void setRecord(TrkToolRecord *newrec);
 	void readRecord();
-    void initEdits(const RecordTypeDef *typeDef);
+    void initEdits(const AbstractRecordTypeDef *typeDef);
 protected:
     virtual void hideEvent(QHideEvent *event);
 protected slots:

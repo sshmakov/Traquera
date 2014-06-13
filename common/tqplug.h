@@ -239,6 +239,7 @@ public:
     //TRK_RECORD_TYPE recordType() const;
     virtual QString fieldName(int vid) const = 0;
     virtual QIODevice *defineSource() const = 0;
+    virtual int recordType() const = 0;
 };
 
 Q_DECLARE_INTERFACE(AbstractFieldType, "com.allrecall.traquera.AbstractFieldType")

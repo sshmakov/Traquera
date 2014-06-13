@@ -44,13 +44,22 @@ public:
     virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const;
     virtual bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex());
     virtual bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
+    Qt::DropActions supportedDropActions () const;
+    Qt::ItemFlags flags(const QModelIndex &index) const;
+    QMimeData *mimeData(const QModelIndexList &indexes) const;
+    QStringList mimeTypes() const;
+    bool dropMimeData(const QMimeData *data,
+         Qt::DropAction action, int row, int column, const QModelIndex &parent);
     QList<int> folderContent(const QModelIndex &index);
     void setFolderContent(const QModelIndex &index, const QList<int> &newContent);
     void addRecordId(const QModelIndex &index, int recordId);
     void deleteRecordId(const QModelIndex &index, int recordId);
     TTFolder folder(const QModelIndex &index);
+    int findRow(const TTFolder &f, const TTFolder &p, bool *found=0);
 private:
     void removeChildrens(int parentId);
+    bool moveIndexToNewParent(const QModelIndex &index, const QModelIndex &newParent);
+    QModelIndex findIndexById(int id);
 signals:
     
 public slots:

@@ -20,7 +20,7 @@ TrkDecorator::TrkDecorator(QObject *parent) :
 {
 }
 
-void TrkDecorator::fillEditPanels(QTabWidget *tabs, const RecordTypeDef * recDef, EditDefList &def, bool onlyView)
+void TrkDecorator::fillEditPanels(QTabWidget *tabs, const AbstractRecordTypeDef * recDef, EditDefList &def, bool onlyView)
 {
     //QList<EditDef> edits;
     //const QStringList & fieldList = record->fields();

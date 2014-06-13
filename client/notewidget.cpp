@@ -9,7 +9,7 @@ NoteWidget::NoteWidget(TrkToolRecord *rec, QWidget *parent) :
 {
     ui->setupUi(this);
     record = rec;
-    ui->titleEdit->addItems(record->typeDef()->project()->noteTitles);
+    ui->titleEdit->addItems(((RecordTypeDef*)record->typeDef())->project()->noteTitles);
     connect(ui->titleEdit,SIGNAL(editTextChanged(QString)),SLOT(onTitleChanged(QString)));
     connect(ui->noteEdit,SIGNAL(textChanged()),SLOT(onTextChanged()));
     connect(ui->submitButton,SIGNAL(clicked()),SLOT(onSubmitClicked()));

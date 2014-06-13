@@ -44,10 +44,15 @@ public:
     virtual bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex());
     virtual bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
     virtual bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
+    virtual QMimeData *mimeData(const QModelIndexList &indexes) const;
+    virtual QStringList mimeTypes() const;
+    virtual bool dropMimeData(const QMimeData *data,
+         Qt::DropAction action, int row, int column, const QModelIndex &parent);
     void appendSourceModel(QAbstractItemModel *model, const QString &title);
     QAbstractItemModel *sourceModel(const QModelIndex &proxyIndex) const;
     void setMaxColCount(int value);
     void clear();
+    //Qt::DropActions supportedDragActions () const;
 private:
     MapInfo findInfo(int row, const QModelIndex &parent) const;
 signals:

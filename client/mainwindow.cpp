@@ -73,6 +73,10 @@ MainWindow::MainWindow(QWidget *parent)
     makeMenus();
     treeModel = new UnionModel(this);
     treeView->setModel(treeModel);
+    treeView->setDragEnabled(true);
+    treeView->setAcceptDrops(true);
+    treeView->setDropIndicatorShown(true);
+    //connect(treeView,SIGNAL())
     //btnQryId->setMenu(menuId);
 
     //file = albumDetails;
@@ -529,8 +533,12 @@ void MainWindow::finishedSearch(QNetworkReply *reply)
 
 void MainWindow::addPropWidget(QWidget *widget)
 {
-
-    verticalLayout_3->addWidget(widget);
+    QGroupBox *box = new QGroupBox(this);
+    QLayout *lay = new QVBoxLayout(box);
+    lay->setContentsMargins(3,3,3,3);
+    lay->addWidget(widget);
+    box->setTitle(widget->windowTitle());
+    verticalLayout_3->addWidget(box);
 }
 
 int MainWindow::addTab(const QString &title, QWidget *widget, const QIcon &icon)

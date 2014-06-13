@@ -8,7 +8,7 @@
 #include <QXmlSimpleReader>
 #include <QScrollArea>
 
-ScrWidget::ScrWidget(const RecordTypeDef *typeDef, QWidget *parent)
+ScrWidget::ScrWidget(const AbstractRecordTypeDef *typeDef, QWidget *parent)
 :QMainWindow(parent), record(NULL)
 {
 	setupUi(this);
@@ -103,7 +103,7 @@ void ScrWidget::updateEditState()
 }
 
 
-void ScrWidget::initEdits(const RecordTypeDef *typeDef)
+void ScrWidget::initEdits(const AbstractRecordTypeDef *typeDef)
 {
     decorator->fillEditPanels(fieldTabs, typeDef, fieldEdits, false);
 }

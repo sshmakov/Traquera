@@ -214,6 +214,59 @@ bool UnionModel::setData(const QModelIndex &index, const QVariant &value, int ro
     return model->setData(sIndex,value,role);
 }
 
+QMimeData *UnionModel::mimeData(const QModelIndexList &indexes) const
+{
+    QAbstractItemModel  *sModel = 0;
+    foreach(QModelIndex index, indexes)
+    {
+        QAbstractItemModel *model = sourceModel(index);
+        if(!model)
+            continue;
+        if(!sModel)
+        {
+            sModel = model;
+            continue;
+        }
+        if(model != sModel)
+            return 0;
+    }
+    QModelIndexList sourceIndexes;
+    foreach(QModelIndex index, indexes)
+    {
+        QModelIndex sIndex = mapToSource(index);
+        sourceIndexes.append(sIndex);
+    }
+    return sModel->mimeData(sourceIndexes);
+}
+
+QStringList UnionModel::mimeTypes() const
+{
+    QStringList res;
+    foreach(const QAbstractItemModel *model,models)
+    {
+        res.append(model->mimeTypes());
+    }
+    res.removeDuplicates();
+    return res;
+}
+
+bool UnionModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent)
+{
+    QModelIndex proxyIndex;
+    if(row < 0 && column <0)
+        proxyIndex = parent;
+    else
+        proxyIndex = index(row,column,parent);
+    QAbstractItemModel *model = sourceModel(proxyIndex);
+    if(!model)
+        return false;
+    QModelIndex sourceIndex = mapToSource(proxyIndex);
+    if(row < 0 && column <0)
+        return model->dropMimeData(data,action,row,column,sourceIndex);
+    else
+        return model->dropMimeData(data,action,sourceIndex.row(),sourceIndex.column(),sourceIndex.parent());
+}
+
 void UnionModel::appendSourceModel(QAbstractItemModel *model, const QString &title)
 {
     QMutexLocker lock(&mutex);

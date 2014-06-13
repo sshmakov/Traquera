@@ -99,7 +99,7 @@ void TTRecordWindow::showNoteEditor(bool show)
 
 }
 
-void TTRecordWindow::setTypeDef(const RecordTypeDef *recDef)
+void TTRecordWindow::setTypeDef(const AbstractRecordTypeDef *recDef)
 {
     props->setRecordDef(recDef);
 }

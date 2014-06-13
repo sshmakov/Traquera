@@ -274,9 +274,85 @@ bool TTFolderModel::removeRows(int row, int count, const QModelIndex &parent)
     }
     */
       endRemoveRows();
-    return true;
+      return true;
 }
 
+Qt::DropActions TTFolderModel::supportedDropActions() const
+{
+    return // Qt::CopyAction |
+            Qt::MoveAction;
+}
+
+Qt::ItemFlags TTFolderModel::flags(const QModelIndex &index) const
+{
+    Qt::ItemFlags defaultFlags = QAbstractItemModel::flags(index);
+
+    if (index.isValid() && index.internalId())
+        return Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | defaultFlags;
+    else
+        return Qt::ItemIsDropEnabled | defaultFlags;
+}
+
+#define TQ_FOLDER_MIME_TYPE "application/traquera.folders.list"
+QMimeData *TTFolderModel::mimeData(const QModelIndexList &indexes) const
+{
+    QMimeData *mimeData = new QMimeData();
+    QByteArray encodedData;
+
+    QDataStream stream(&encodedData, QIODevice::WriteOnly);
+
+    foreach (const QModelIndex &i, indexes) {
+        if (i.isValid() && i.internalId()) {
+            stream << QString::number(i.internalId());
+        }
+    }
+
+    mimeData->setData(TQ_FOLDER_MIME_TYPE, encodedData);
+    return mimeData;
+}
+
+QStringList TTFolderModel::mimeTypes() const
+{
+    return QStringList() << TQ_FOLDER_MIME_TYPE;
+}
+
+bool TTFolderModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent)
+{
+    if(action == Qt::IgnoreAction)
+        return true;
+    QByteArray encData = data->data(TQ_FOLDER_MIME_TYPE);
+    if(encData.isEmpty())
+        return false;
+
+    QDataStream stream(&encData, QIODevice::ReadOnly);
+    QStringList newItems;
+    int rows = 0;
+
+    while (!stream.atEnd()) {
+        QString text;
+        stream >> text;
+        newItems << text;
+        ++rows;
+    }
+
+    QModelIndex pIndex;
+    if(row == -1 && column == -1)
+        pIndex = parent;
+    else
+        pIndex = index(row,column,parent);
+
+    foreach(const QString s, newItems)
+    {
+        bool ok = false;
+        int id = s.toInt(&ok);
+        if(!ok || !id)
+            continue;
+
+        QModelIndex item = findIndexById(id);
+        moveIndexToNewParent(item, pIndex);
+    }
+    return true;
+}
 
 QList<int> TTFolderModel::folderContent(const QModelIndex &index)
 {
@@ -357,6 +433,71 @@ void TTFolderModel::removeChildrens(int parentId)
         folders.remove(fid);
     }
     f.childrens.clear();
+}
+
+int TTFolderModel::findRow(const TTFolder &f, const TTFolder &p, bool *found)
+{
+    int i=0;
+    foreach(int id, p.childrens)
+    {
+        if(f.id == id)
+        {
+            if(found) *found = true;
+            return i;
+        }
+        const TTFolder &test = folders[id];
+        if(f.title < test.title)
+        {
+            if(found) *found = true;
+            return i;
+        }
+        i++;
+    }
+    if(found) *found = false;
+    return i;
+}
+
+
+bool TTFolderModel::moveIndexToNewParent(const QModelIndex &index, const QModelIndex &newParent)
+{
+    int fid = index.internalId();
+    int newPid = newParent.internalId();
+    TTFolder &f = folders[fid];
+    int testId = newPid;
+    while(testId > 0)
+    {
+        if(testId == fid)
+            return false;
+        testId = folders[testId].parentId;
+    }
+    if(f.parentId == newPid)
+        return false;
+    TTFolder &oldP = folders[f.parentId];
+    TTFolder &newP = folders[newPid];
+    int destRow = findRow(f, newP);
+    QSqlQuery q(db);
+    if(!q.exec(QString("update folders set parentId = %1 where id = %2").arg(newPid).arg(fid)))
+    {
+        SQLError(q.lastError());
+        return false;
+    }
+    beginMoveRows(index.parent(),index.row(),index.row(),newParent,destRow);
+    f.parentId = newPid;
+    oldP.childrens.removeAll(fid);
+    newP.childrens.insert(destRow,fid);
+    endMoveRows();
+    return true;
+}
+
+QModelIndex TTFolderModel::findIndexById(int id)
+{
+    int pid = folders[id].parentId;
+    if(pid<0)
+        return createIndex(0,0,id);
+    int row = folders[pid].childrens.indexOf(id);
+    if(row<0)
+        return QModelIndex();
+    return createIndex(row,0,id);
 }
 
 // ================= TTFolder ================

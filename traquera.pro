@@ -8,6 +8,8 @@ TEMPLATE = subdirs
 SUBDIRS += msplans client trindex \
     tqservice
 
+msplans.depends = client
+
 CONFIG += ordered
 
 

@@ -65,7 +65,7 @@ class TrkDecorator : public QObject
     Q_OBJECT
 public:
     explicit TrkDecorator(QObject *parent = 0);
-    void fillEditPanels(QTabWidget *tabs, const RecordTypeDef *recDef, EditDefList &def, bool onlyView = true);
+    void fillEditPanels(QTabWidget *tabs, const AbstractRecordTypeDef *recDef, EditDefList &def, bool onlyView = true);
     void readValues(TrkToolRecord *record, EditDefList &def);
     void updateState(TrkToolRecord *record, EditDefList &def);
     void loadViewDef(QTableView *view);

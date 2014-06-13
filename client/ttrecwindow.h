@@ -27,7 +27,7 @@ class TTRecordWindow : public QMainWindow
 public:
     explicit TTRecordWindow(QWidget *parent = 0);
     ~TTRecordWindow();
-    void setTypeDef(const RecordTypeDef *recDef);
+    void setTypeDef(const AbstractRecordTypeDef *recDef);
     Q_INVOKABLE TrkToolRecord *getRecord();
     void setRecord(TrkToolRecord *rec);
     Q_INVOKABLE QString noteTitle(int index);

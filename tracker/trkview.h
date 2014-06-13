@@ -281,7 +281,7 @@ public:
 //    QList<TRK_VID> fieldVids() const;
     int fieldVid(const QString &name);
     QList<int> fieldVids() const;
-    TRK_RECORD_TYPE recordType() const;
+    int recordType() const;
     QString fieldName(int vid) const;
     QIODevice *defineSource() const;
 
@@ -558,8 +558,9 @@ public:
 class TrkToolProject: public QObject
 {
     Q_OBJECT
+private:
+    TRK_HANDLE handle;
 public:
-	TRK_HANDLE handle;
 	QString name;
     TrkToolDB *db;
 protected:
@@ -632,6 +633,7 @@ protected:
     virtual bool commitRecord(TrkToolRecord *record);
     virtual bool cancelRecord(TrkToolRecord *record);
     virtual QList<TrkToolFile> attachedFiles(TrkToolRecord *record);
+    virtual QStringList historyList(TrkToolRecord *record);
     virtual QHash<int,QString> baseRecordFields(TRK_RECORD_TYPE rectype = TRK_SCR_TYPE);
 private:
     bool doCommitInsert(TrkToolRecord *record);
@@ -649,7 +651,8 @@ private:
     bool doDeleteNote(TRK_RECORD_HANDLE recHandle, int noteId);
     bool doChangeNote(TRK_RECORD_HANDLE recHandle, int noteId, const QString &noteTitle, const QString &noteText);
     int doGetRecordId(TRK_RECORD_HANDLE recHandle, TRK_RECORD_TYPE rectype = TRK_SCR_TYPE);
-    QString doFieldVID2Name(TRK_RECORD_TYPE rectype, TRK_VID vid);
+    QStringList doGetHistoryList(TRK_RECORD_HANDLE recHandle);
+    //QString doFieldVID2Name(TRK_RECORD_TYPE rectype, TRK_VID vid);
 protected:
     ChoiceList *fieldChoiceList(const QString &name, TRK_RECORD_TYPE recType  = TRK_SCR_TYPE);
     bool login(
@@ -888,16 +891,16 @@ public:
     Q_INVOKABLE bool isEditMode() const;
     QDomDocument toXML();
     Q_INVOKABLE QString toHTML(const QString &xqCodeFile);
-    Q_INVOKABLE QStringList historyList() const;
+    Q_INVOKABLE QStringList historyList();
     QString description();
     Q_INVOKABLE bool setDescription(const QString &newDesc);
     Q_INVOKABLE const QStringList & fields() const;
     Q_INVOKABLE bool isSelected() const;
     Q_INVOKABLE void setSelected(bool value);
     Q_INVOKABLE bool isFieldReadOnly(const QString &field);
-    const RecordTypeDef *typeDef() const
+    const AbstractRecordTypeDef *typeDef() const
     {
-        return prj->recordDef[rectype];
+        return prj->recordTypeDef(rectype);
     }
     AbstractFieldType fieldDef(TRK_VID vid) const
     {
