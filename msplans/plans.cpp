@@ -579,6 +579,7 @@ void PlansPlugin::appendContextMenu(QMenu *menu)
 
 void PlansPlugin::queryViewOpened(QWidget *widget, QTableView *view, const QString &recType)
 {
+    Q_UNUSED(view)
     if(recType == "scr")
     {
         TQPlansWidget *tab = new TQPlansWidget(widget);

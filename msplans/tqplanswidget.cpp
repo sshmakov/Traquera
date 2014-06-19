@@ -226,7 +226,7 @@ void TQPlansWidget::showScrFromTasks()
 void TQPlansWidget::filterForRecords()
 {
     QObjectList records;
-    QMetaObject::invokeMethod(parentObject, "selectedRecords",
+    QMetaObject::invokeMethod(parentObject, "selectedRecords", Qt::DirectConnection,
                               Q_RETURN_ARG(QObjectList,records));
     QStringList keys;
     //QList<TrkToolRecord *> selected = selectedRecords();
@@ -235,8 +235,9 @@ void TQPlansWidget::filterForRecords()
         //TrkToolRecord *rec = qobject_cast<TrkToolRecord *>(obj);
         //if(!rec)
         //    continue;
-        unsigned long id;
-        if(!QMetaObject::invokeMethod(obj,"recordId", Q_RETURN_ARG(unsigned long, id)))
+        int id;
+        if(!QMetaObject::invokeMethod(obj,"recordId", Qt::DirectConnection,
+                                      Q_RETURN_ARG(int, id)))
             continue;
         QString key = QString::number(id);
         if(!key.isEmpty())
@@ -277,6 +278,32 @@ void TQPlansWidget::updateDetailWindows()
     QMainWindow *m = pluginObject->mainWindow;
 }
 
+void TQPlansWidget::slotCheckPlannedIds()
+{
+    QString ids = selectedSCRs().join(", ");
+    QMetaObject::invokeMethod(parentObject,"setRecordsChecked",Qt::AutoConnection,
+                              Q_ARG(QString, ids),
+                              Q_ARG(bool, true));
+}
+
+void TQPlansWidget::slotCheckNoPlannedIds()
+{
+    QList<int> viewIds;
+    if(!QMetaObject::invokeMethod(parentObject,"selectedIds",Qt::DirectConnection,
+                              Q_RETURN_ARG(QList<int>, viewIds)))
+        return;
+    QList<int> planIds = selectedSCRIds();
+    QStringList list;
+    foreach(int id, viewIds)
+    {
+        if(!planIds.contains(id))
+            list.append(QString::number(id));
+    }
+    QMetaObject::invokeMethod(parentObject,"setRecordsChecked",Qt::AutoConnection,
+                              Q_ARG(QString, list.join(", ")),
+                              Q_ARG(bool, true));
+}
+
 void TQPlansWidget::setPlanModel(PlanModel *newmodel)
 {
     if(newmodel == loadedPlanModel)
@@ -299,4 +326,33 @@ void TQPlansWidget::setPlanModel(PlanModel *newmodel)
 void TQPlansWidget::setParentObject(QObject *obj)
 {
     parentObject = obj;
+}
+
+QStringList TQPlansWidget::selectedSCRs()
+{
+    ScrSet res;
+    QItemSelectionModel *sm = planTreeView->selectionModel();
+    QModelIndexList list = sm->selectedRows();
+    foreach(const QModelIndex &i, list)
+    {
+        res += planViewModel.taskScrSet(i);
+    }
+    QStringList numbers;
+    foreach(int i, res)
+    {
+        numbers.append(QString::number(i));
+    }
+    return numbers;
+}
+
+QList<int> TQPlansWidget::selectedSCRIds()
+{
+    ScrSet res;
+    QItemSelectionModel *sm = planTreeView->selectionModel();
+    QModelIndexList list = sm->selectedRows();
+    foreach(const QModelIndex &i, list)
+    {
+        res += planViewModel.taskScrSet(i);
+    }
+    return res.toList();
 }

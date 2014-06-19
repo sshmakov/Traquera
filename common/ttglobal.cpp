@@ -24,6 +24,7 @@ TTGlobal::TTGlobal(QObject *parent) :
 {
     settingsObj = new QSettings(COMPANY_NAME, PRODUCT_NAME);
     //ttGlobal = this;
+    initFileName = "data/init.xml";
     readInitSettings();
 }
 
@@ -77,7 +78,7 @@ void TTGlobal::showError(const QString &text)
 
 void TTGlobal::readInitSettings()
 {
-    QFile file("data/init.xml");
+    QFile file(initFileName);
     QXmlInputSource source(&file);
     QDomDocument dom;
     if(!dom.setContent(&source,false))
@@ -169,6 +170,33 @@ int TTGlobal::shellLocale(const QString &command, const QString &locale)
     if(res)
         return 0;
     return GetLastError();
+}
+
+QString TTGlobal::initFileValue(const QString &elementPath, const QString &attr)
+{
+    QStringList tree = elementPath.split('/');
+    QFile file(initFileName);
+    QXmlInputSource source(&file);
+    QDomDocument dom;
+    if(!dom.setContent(&source,false))
+        return;
+    QDomElement doc = dom.documentElement();
+    if(doc.isNull())
+        return;
+    QDomElement node = doc;
+    foreach(QString el, tree)
+    {
+        if(!node.isElement())
+            return QString();
+        node = node.firstChildElement(el);
+    }
+    if(!node.isElement())
+        return QString();
+    if(attr.isEmpty())
+        return node.text();
+    if(attr == ".")
+        return node.toDocument().toString();
+    return node.attribute(attr);
 }
 
 bool TTGlobal::registerEventHandler(const QString &event, QObject *obj, const QString &method)

@@ -75,11 +75,13 @@ public:
     void printPreview();
     Q_INVOKABLE QModelIndexList selectedRows();
     Q_INVOKABLE QObjectList selectedRecords(); //Q_INVOKABLE QList<TrkToolRecord *> selectedRecords();
+    Q_INVOKABLE QList<int> selectedIds();
     Q_INVOKABLE QObjectList allRecords();
     Q_INVOKABLE QObjectList markedRecords();
     Q_INVOKABLE TrkToolRecord *currentRecord();
     Q_INVOKABLE TrkToolRecord *recordOnIndex(const QModelIndex &index);
     Q_INVOKABLE const AbstractRecordTypeDef *recordTypeDef();
+    Q_INVOKABLE void setRecordsChecked(const QString &ids, bool flag);
     void initWidgets();
     bool hasMarked();
 protected:

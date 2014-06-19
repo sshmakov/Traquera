@@ -20,6 +20,7 @@ class TTGlobal : public QObject
     Q_PROPERTY(QMainWindow *mainWindow READ mainWindow)
 private:
     explicit TTGlobal(QObject *parent = 0);
+    QString initFileName;
     QSqlDatabase userDb;
     QString userDbType;
     QString userDbPath;
@@ -50,6 +51,7 @@ public slots:
 protected:
     QMultiHash <QString, QPair<QObject*,QString> > handlers;
 public:
+    Q_INVOKABLE QString initFileValue(const QString &elementPath, const QString &attr = QString());
     Q_INVOKABLE bool registerEventHandler(const QString &event, QObject *obj, const QString &method);
     Q_INVOKABLE bool unregisterEventHandler(const QString &event, QObject *obj, const QString &method);
 public slots:

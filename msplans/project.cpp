@@ -441,11 +441,11 @@ void PrjItemModel::readTask(int row, QAxObject *task)
         const QString &format = fields[c].format;
         if(type == "min")
             if(format == "days")
-                res = QString(tr("%1 ä")).arg(res.toDouble()/60.0/24.0,0,'f',2);
+                res = QString(tr("%1 ä")).arg(res.toDouble()/60.0/24.0,0,'g',6);
             else
-                res = QString(tr("%1 ÷")).arg(res.toDouble()/60.0,0,'f',2);
+                res = QString(tr("%1 ÷")).arg(res.toDouble()/60.0,0,'g',6);
         if(type == "sec")
-            res = QString(tr("%1 ÷")).arg(res.toDouble()/3600.0,0,'f',2);
+            res = QString(tr("%1 ÷")).arg(res.toDouble()/3600.0,0,'g',6);
         if(type == "%")
             res = QString(tr("%1%")).arg(res.toInt());
         item->setData(res, Qt::DisplayRole);

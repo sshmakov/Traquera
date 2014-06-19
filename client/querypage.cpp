@@ -1187,6 +1187,14 @@ const AbstractRecordTypeDef *QueryPage::recordTypeDef()
     return tmodel->typeDef();
 }
 
+void QueryPage::setRecordsChecked(const QString &ids, bool flag)
+{
+    QList<int> nums = stringToIntList(ids);
+
+    foreach(int id, nums)
+        setIdChecked(id, flag);
+}
+
 QModelIndexList QueryPage::selectedRows()
 {
     QItemSelectionModel *is=queryView->selectionModel();
@@ -1203,6 +1211,20 @@ QObjectList QueryPage::selectedRecords()
         if(!rec)
             continue;
         list.append(rec);
+    }
+    return list;
+}
+
+QList<int> QueryPage::selectedIds()
+{
+    QList<int> list;
+    QModelIndexList ii = selectedRows();
+    foreach(QModelIndex f, ii)
+    {
+        TrkToolRecord *rec = recordOnIndex(f);
+        if(!rec)
+            continue;
+        list.append(rec->recordId());
     }
     return list;
 }

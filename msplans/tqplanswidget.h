@@ -22,6 +22,8 @@ public:
     void setPlanModel(PlanModel *newmodel);
 
     Q_INVOKABLE void setParentObject(QObject *obj);
+    QStringList selectedSCRs();
+    QList<int> selectedSCRIds();
 signals:
     void openRecordsClicked(ScrSet set);
     void addScrTasksClicked();
@@ -42,6 +44,8 @@ protected slots:
     void showCurrentTaskInPlan();
     void showCurrentPlan();
     void updateDetailWindows();
+    void slotCheckPlannedIds();
+    void slotCheckNoPlannedIds();
 };
 
 #endif // TQPLANSWIDGET_H
