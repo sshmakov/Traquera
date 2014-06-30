@@ -71,12 +71,12 @@
       </xs:element>
 
 
-      <xs:element name="GetRecord">
+      <xs:element name="GetRecords">
         <xs:complexType>
            <xs:sequence>
              <xs:element name="sessionID" type="tq:StringID"/>
              <xs:element name="projectID" type="tq:StringID"/>
-             <xs:element name="recordID" type="xs:decimal"/>
+             <xs:element name="recordIDs" type="tq:StringID"/>
            </xs:sequence>
         </xs:complexType>
       </xs:element>

@@ -85,7 +85,7 @@ MainClass::MainClass(QObject *parent, char *iniFile)
     prj = db->openProject(dbType,project,user,password);
     if(!prj->isOpened())
         sout << "Error opening project\n";
-    prjName = prj->name;
+    prjName = prj->projectName();
     filterName(prjName);
     sets.beginGroup("FieldMap");
     QStringList keys = sets.childKeys();
@@ -151,7 +151,7 @@ QDomDocument MainClass::recFieldsXml(TrkToolRecord *rec)
                             QString("%1-%2")
                             .arg(prjName.replace(' ',"_"))
                             .arg(v.toString())));
-    root.appendChild(eField(xml,fieldNameTranslate("project",TRK_FIELD_TYPE_NONE),prj->name));
+    root.appendChild(eField(xml,fieldNameTranslate("project",TRK_FIELD_TYPE_NONE),prj->projectName()));
     foreach(QString fi, rec->fields())
     {
         int ftype = prj->fieldType(fi, rec->recordType());

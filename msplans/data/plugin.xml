@@ -1,0 +1,10 @@
+<plugin>
+  <library path=""/>
+  <query>
+    <details>
+      <scripts>
+        <script source="" language="javascript">
+      </scripts>
+    </details>
+  </query>
+</plugin>

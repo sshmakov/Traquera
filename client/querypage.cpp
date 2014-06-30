@@ -1010,7 +1010,7 @@ void QueryPage::openQuery(TrkToolProject *prj, const QString &queryName, int rec
     //	history.removeLast();
     //history.append(item);
     curHistoryPos = history.rowCount()-1;
-    emit changedQuery(prj->name, queryName);
+    emit changedQuery(prj->projectName(), queryName);
 }
 
 void QueryPage::openIds(TrkToolProject *prj, const QString &ids, const QString &title, int recType)
@@ -1042,7 +1042,7 @@ void QueryPage::openIds(TrkToolProject *prj, const QString &ids, const QString &
         newTitle = ids;
     else
         newTitle = title;
-    emit changedQuery(prj->name, newTitle);
+    emit changedQuery(prj->projectName(), newTitle);
 }
 
 void QueryPage::openIds(TrkToolProject *prj, const QList<int> &idlist, const QString &title, int recType)
@@ -1061,7 +1061,7 @@ void QueryPage::openIds(TrkToolProject *prj, const QList<int> &idlist, const QSt
         newTitle = intListToString(idlist);
     else
         newTitle = title;
-    emit changedQuery(prj->name, newTitle);
+    emit changedQuery(prj->projectName(), newTitle);
 }
 
 void QueryPage::openModel(TrkToolModel *newModel)
@@ -1084,7 +1084,7 @@ void QueryPage::openFolder(TrkToolProject *prj, const TTFolder &afolder, int rec
     emit modelChanged(newmodel);
     curHistoryPos = history.rowCount()-1;
     QString ids = intListToString(idlist);
-    emit changedQuery(prj->name, ids);
+    emit changedQuery(prj->projectName(), ids);
 
 }
 

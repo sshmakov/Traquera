@@ -36,7 +36,12 @@ extern int uniqueArtistId;
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
+    //qRegisterMetaType<MainWindow>("QMainWindow");
     setupUi(this);
+    QWebSettings::globalSettings()->setAttribute(QWebSettings::PluginsEnabled, true);
+    QWebSettings::globalSettings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
+    QWebSettings::globalSettings()->setAttribute(QWebSettings::JavascriptCanAccessClipboard, true);
+
     statusLine = new QLabel(this);
     am = new QNetworkAccessManager(this);
     connect(am,SIGNAL(finished(QNetworkReply*)),SLOT(finishedSearch(QNetworkReply*)));
@@ -829,7 +834,7 @@ void MainWindow::findTrkRecords(const QString &line, bool reuse)
         return;
     QDomElement params = trindex.firstChildElement("params");
     QUrl solrUrl(href);
-    QString prj = trkproject->name;
+    QString prj = trkproject->projectName();
     prj.replace(" ","_");
     QDomNamedNodeMap pmap = params.attributes();
     for(int i=0; i<pmap.count(); i++)

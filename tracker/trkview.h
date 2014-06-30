@@ -558,13 +558,13 @@ public:
 class TrkToolProject: public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(QString name READ projectName)
 private:
     TRK_HANDLE handle;
-public:
-	QString name;
-    TrkToolDB *db;
 protected:
-	bool opened;
+    QString name;
+    TrkToolDB *db;
+    bool opened;
 	QHash<TRK_RECORD_TYPE, QString> recordTypes;
 	QHash<TRK_RECORD_TYPE, QStringList*> qList; //QueryList
     QHash<TRK_RECORD_TYPE, RecordTypeDef*> recordDef;
@@ -591,6 +591,7 @@ public:
     bool isOpened() const { return opened; }
     QString currentUser() const { return user; }
     QStringList noteTitles;
+    QString projectName() const;
 
     // Tracker specific
 	const QStringList &queryList(TRK_RECORD_TYPE type = TRK_SCR_TYPE) const;
@@ -834,6 +835,8 @@ struct TrkScopeNoteHandle
 class TrkToolRecord: public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(bool isSelected READ isSelected WRITE setSelected)
+    Q_PROPERTY(QString title READ title WRITE setTitle)
     Q_PROPERTY(QString description READ description WRITE setDescription)
 public:
 	enum RecMode {View, Edit, Insert};
@@ -882,7 +885,9 @@ public:
 	TrkToolRecord::RecMode mode() const { return recMode; }
     Q_INVOKABLE  int recordId() const { return values[VID_Id].toInt(); } // TRK_UINT
     Q_INVOKABLE QString title();
+    Q_INVOKABLE void setTitle(const QString &newTitle);
     Q_INVOKABLE void setValue(const QString& fieldName, const QVariant& value, int role = Qt::EditRole);
+    Q_INVOKABLE void setValue(TRK_VID vid, const QVariant& value, int role = Qt::EditRole);
     //Q_INVOKABLE bool insertBegin();
     Q_INVOKABLE bool updateBegin();
     Q_INVOKABLE bool commit();
@@ -952,7 +957,7 @@ signals:
     void changed(int recId);
 
     friend class TrkToolRecordSet;
-    friend class TrkToolModel;
+    //friend class TrkToolModel;
     friend class TrkToolProject;
 };
 

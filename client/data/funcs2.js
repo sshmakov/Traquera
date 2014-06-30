@@ -45,7 +45,8 @@ function testShell(cmd)
 function showPerforce(file)
 {
   //debug2.innerText = file;
-  global.shell('cmd /c start p4v -t history -s "'+file+'"');
+  var cmd = 'cmd /c start p4v -t history -s "'+file+'"';
+  global.shellLocale(cmd,'UTF-8');
 }
 
 function openUrl(url)

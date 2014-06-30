@@ -17,7 +17,9 @@ class TTGlobal : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QSettings* settings READ settings)
-    Q_PROPERTY(QMainWindow *mainWindow READ mainWindow)
+    Q_PROPERTY(QObject *mainWindowObj READ mainWindowObj)
+    Q_PROPERTY(QString clipboardText READ getClipboardText WRITE setClipboardText)
+    Q_PROPERTY(QString currentProjectName READ currentProjectName)
 private:
     explicit TTGlobal(QObject *parent = 0);
     QString initFileName;
@@ -35,6 +37,11 @@ public:
     Q_INVOKABLE QString toOemString(const QString &s);
     Q_INVOKABLE QSettings *settings();
     Q_INVOKABLE QMainWindow *mainWindow();
+    Q_INVOKABLE QObject *mainWindowObj();
+    Q_INVOKABLE QString getClipboardText() const;
+    Q_INVOKABLE void setClipboardText(const QString &text) const;
+    Q_INVOKABLE QString currentProjectName();
+    Q_INVOKABLE QObject *getRecord(int id, const QString &project = QString());
 protected:
     void readInitSettings();
     void upgradeUserDB();

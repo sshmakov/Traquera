@@ -519,8 +519,6 @@ void TTRecordWindow::initWidgets()
             this, SLOT(populateJavaScriptWindowObject()));
     connect(ui->webView,SIGNAL(statusBarMessage(QString)),
             ttglobal(),SLOT(statusBarMessage(QString)));
-    QWebSettings::globalSettings()->setAttribute(QWebSettings::PluginsEnabled, true);
-    QWebSettings::globalSettings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
     factory = new ScrPluginFactory(ui->webView,this);
     ui->webView->page()->setPluginFactory(factory);
     connect(factory,SIGNAL(changedNoteEditor(int)),SLOT(noteEditing(int)));

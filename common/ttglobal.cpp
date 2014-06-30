@@ -70,6 +70,41 @@ QMainWindow *TTGlobal::mainWindow()
     return mainWin;
 }
 
+QObject *TTGlobal::mainWindowObj()
+{
+    return mainWin;
+}
+
+QString TTGlobal::getClipboardText() const
+{
+    return  QApplication::clipboard()->text();
+}
+
+void TTGlobal::setClipboardText(const QString &text) const
+{
+    QApplication::clipboard()->setText(text);
+}
+
+QString TTGlobal::currentProjectName()
+{
+    if(!mainWin)
+        return QString();
+    TrkToolProject *prj = mainWin->currentProject();
+    if(!prj)
+        return QString();
+    return prj->projectName();
+}
+
+QObject *TTGlobal::getRecord(int id, const QString &project)
+{
+    if(!mainWin)
+        return 0;
+    TrkToolProject *prj = mainWin->currentProject();
+    if(!prj)
+        return 0;
+    return prj->createRecordById(id);
+}
+
 void TTGlobal::showError(const QString &text)
 {
     if(mainWin)
@@ -179,10 +214,10 @@ QString TTGlobal::initFileValue(const QString &elementPath, const QString &attr)
     QXmlInputSource source(&file);
     QDomDocument dom;
     if(!dom.setContent(&source,false))
-        return;
+        return QString();
     QDomElement doc = dom.documentElement();
     if(doc.isNull())
-        return;
+        return QString();
     QDomElement node = doc;
     foreach(QString el, tree)
     {

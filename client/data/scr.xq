@@ -8,6 +8,8 @@
 .noteT {
 font-weight: bold;
 }
+
+
 -->
 </style>
 <script src="funcs.js" LANGUAGE="JScript">
@@ -18,11 +20,16 @@ font-weight: bold;
 <!--
 -->
 </script>
+<script src="funcs3.js">
+<!--
+-->
+</script>
 </head>
 {let $scr := doc(fn:iri-to-uri(string($scrdoc)))
 return
 <body>
 <a href="#top" class="totop hidden contLink" id="ttt">Наверх</a>
+<p id="contextMenuId" class="contMenu"/>
 <div class="contents" id="toc">Содержание:<span class="tocswitch">[<a href="javascript:toctog()" id="tocswitch"  >убрать</a>]</span>
 <div id="contentsBody">
 <ul>
@@ -37,15 +44,17 @@ return (
 </div>
 </div>
 <a name="top">Запрос {$scr/*/fields/field[@name = "Id"]/node()}. <b>{$scr/*/fields/field[@name = "Title"]/node()}</b></a>
-<p id="debug"/>
+<p id="debug"></p>
+<!--
 <a href="#" onclick="javascript:global.shell('C:\\Windows\\system32\\cmd.exe /c c:\\1\\1.bat лорлрлрлор'); return false;">Run</a> 
 <a href="#" onclick="javascript:global.shellLocale('C:\\Windows\\system32\\cmd.exe /c c:\\1\\1.bat лорлрлрлор'); return false;">RunLocale</a> 
 <a href="#" onclick="javascript:global.shellLocale('C:\\Windows\\system32\\cmd.exe /c c:\\1\\1.bat лорлрлрлор','IBM 866'); return false;">Run866</a> 
 <a href="#" onclick="javascript:global.shellLocale('C:\\Windows\\system32\\cmd.exe /c c:\\1\\1.bat лорлрлрлор','Windows-1251'); return false;">Run1251</a> 
 <a href="#" onclick="javascript:global.shellLocale('C:\\Windows\\system32\\cmd.exe /c c:\\1\\1.bat лорлрлрлор','UTF-8'); return false;">RunUTF-8</a> 
+-->
 <p id="debug2"/>
 	<div>
-		<div><span class="noteTitle">{$scr/*/Description/string(@name)}</span> ({$scr/*/fields/field[@name = "Submitter"]/node()})</div>
+                <div><span class="noteTitle"><!-- {$scr/*/Description/string(@name)} -->Description</span> ({$scr/*/fields/field[@name = "Submitter"]/node()})</div>
 
 		<blockquote><pre style="white-space: pre-wrap; font-family: serif" class="noteText">
 			{string($scr/*/Description)}

@@ -423,6 +423,11 @@ TrkToolProject::~TrkToolProject()
     close();
 }
 
+QString TrkToolProject::projectName() const
+{
+    return name;
+}
+
 bool TrkToolProject::login(
 		const QString &user, 
 		const QString &pass,
@@ -1907,7 +1912,7 @@ bool TrkToolModel::setEditColData(const PTrkToolRecord & rec, int col, const QVa
 	int vid = vids[col];
 	if(vid)
 	{
-		rec->values[vid] = value;
+        rec->setValue(vid, value);
 		return true;
 	}
     return false;
@@ -2159,6 +2164,11 @@ QVariant TrkToolRecord::value(TRK_VID vid, int role) const
 QString TrkToolRecord::title()
 {
     return value(VID_Title).toString();
+}
+
+void TrkToolRecord::setTitle(const QString &newTitle)
+{
+    setValue(VID_Title, newTitle);
 }
 
 /* !!!!!!!!!!!!!!!
@@ -2518,12 +2528,10 @@ void TrkToolRecord::valuesReloaded()
 
 void TrkToolRecord::setValue(const QString& fieldName, const QVariant& value, int role)
 {
-    Q_UNUSED(role)
     if(!isEditing())
         return;
     TRK_VID vid = prj->fieldName2VID(rectype, fieldName);
-    values[vid] = value;
-    changedValue[vid] = true;
+    setValue(vid, value, role);
     /*
 	if(recMode != Edit && recMode !=Insert)
 		return;
@@ -2577,6 +2585,15 @@ void TrkToolRecord::setValue(const QString& fieldName, const QVariant& value, in
 		break;
 	}
     */
+}
+
+void TrkToolRecord::setValue(TRK_VID vid, const QVariant &value, int role)
+{
+    if(role == Qt::EditRole && isEditing())
+    {
+        values[vid] = value;
+        changedValue[vid] = true;
+    }
 }
 
 QDomDocument TrkToolRecord::toXML()
@@ -3145,7 +3162,7 @@ void TrkHistory::openedModel(const TrkToolModel *model)
         for(i = 0; i < records.count(); i++)
         {
             const TrkHistoryItem &fi = records[i];
-            if(fi.projectName == model->prj->name
+            if(fi.projectName == model->prj->projectName()
                     && fi.queryName == qName)
             {
                 isNew = false;
@@ -3156,7 +3173,7 @@ void TrkHistory::openedModel(const TrkToolModel *model)
         item = records[i];
     else
     {
-        item.projectName = model->prj->name;
+        item.projectName = model->prj->projectName();
         item.queryName = model->getQueryName();
     }
     item.foundIds = intListToString(model->getIdList());
@@ -3535,7 +3552,7 @@ TrkScopeRecHandle::TrkScopeRecHandle(TrkToolProject *prj, TRK_RECORD_HANDLE recH
     else
     {
         pRecHandler = prj->allocRecHandler(recId, rectype);
-        handle = pRecHandler->handle;
+        handle = pRecHandler ? pRecHandler->handle : 0;
         isOk = handle != 0;
     }
 }
@@ -3544,7 +3561,7 @@ TrkScopeRecHandle::TrkScopeRecHandle(TrkToolProject *prj, const TrkToolRecord *r
     :handle(0), isOk(true), fromPrj(true), isTemp(true), project(prj)
 {
     pRecHandler = prj->allocRecHandler(record->recordId(), record->recordType());
-    handle = pRecHandler->handle;
+    handle = pRecHandler ? pRecHandler->handle : 0;
     isOk = handle != 0;
 }
 
@@ -3553,7 +3570,8 @@ TrkScopeRecHandle::~TrkScopeRecHandle()
     if(handle && isTemp)
         if(fromPrj)
         {
-            project->freeRecHandler(pRecHandler);
+            if(pRecHandler)
+                project->freeRecHandler(pRecHandler);
             handle = 0;
         }
         else
@@ -3563,7 +3581,7 @@ TrkScopeRecHandle::~TrkScopeRecHandle()
 TRK_RECORD_HANDLE &TrkScopeRecHandle::nativeHandle()
 {
     if(fromPrj)
-        return pRecHandler->handle;
+        return pRecHandler ? pRecHandler->handle : handle;
     else
         return handle;
 }
@@ -3577,12 +3595,14 @@ TRK_RECORD_HANDLE &TrkScopeRecHandle::nativeHandle()
 TrkScopeNoteHandle::TrkScopeNoteHandle(TRK_RECORD_HANDLE recHandle)
 {
     handle = 0;
-    TrkNoteHandleAlloc(recHandle, &handle);
+    if(recHandle)
+        TrkNoteHandleAlloc(recHandle, &handle);
 }
 
 TrkScopeNoteHandle::~TrkScopeNoteHandle()
 {
-    TrkNoteHandleFree(&handle);
+    if(handle)
+        TrkNoteHandleFree(&handle);
 }
 
 static const int MAX_HANDLERS_COUNT = 100;

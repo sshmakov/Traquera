@@ -35,7 +35,7 @@ class TTGlobal;
 class MainWindow : public QMainWindow, private Ui::MainWindow
 {
     Q_OBJECT
-
+    Q_PROPERTY(TrkToolProject *currentProject READ currentProject)
 public:
 	MainWindow(QWidget *parent = 0);
     virtual ~MainWindow();
@@ -91,7 +91,7 @@ public:
     void loadPlugins();
     //QMenu MainWindow::planMenu(bool forLink=false);
     void readModifications();
-    TrkToolProject *currentProject()
+    Q_INVOKABLE TrkToolProject *currentProject()
     {
         return trkproject;
     }

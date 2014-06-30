@@ -59,7 +59,7 @@ border: 1px solid gray;
 -webkit-border-radius: 10px;
 aa-background-color: rgb(206, 226, 211);
 background-color: rgb(249, 249, 249);
-font-size: small
+font-size: small;
 }
 
 a.contLink:link {
@@ -88,3 +88,55 @@ font-size: small
 .hidden {
 display: none;
 }
+
+.contMenu {
+position:absolute; 
+top:0; 
+left:0; 
+--background-color:#EEE; 
+display:none; 
+float:left;
+display: block;
+--padding: 5px 5px;
+--font: System;
+--font-size: small;
+--border:3px outset #666; 
+margin: 0px;
+padding: 0px;
+box-shadow: 3px 3px 10px rgba(0,0,0,0.5); 
+}
+
+ul.SimpleContextMenu {
+    -position: absolute;
+    margin: 0px;
+    padding: 0px;
+    -font-family: verdana;
+    font-family: 'Segoe UI', Arial, SansSerif, sans-serif;
+    font-size: 12px;
+    list-style-type: none;
+    border-top: 1px solid #888;
+    border-left: 1px solid #888;
+    border-right: 1px solid #888;
+    border-bottom: 1px solid #888;
+    background: #eeeeee;
+}
+    ul.SimpleContextMenu li {
+        -width: 200px;
+        display: block;
+        padding: 4px 10px 4px 5px;
+        -border-bottom: 1px solid #888;
+    }
+        ul.SimpleContextMenu li a {
+            -width: 140px;
+            padding: 4px 10px 4px 10px;
+            text-decoration: none;
+            color: #0000ff;
+            background: #eeeeee;
+        }
+        ul.SimpleContextMenu li a:hover {
+            text-decoration: none;
+            color: #ffffff;
+            background: #ff0000;
+        }
+
+

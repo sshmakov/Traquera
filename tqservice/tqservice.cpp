@@ -336,7 +336,7 @@ const char *AppNS = "http://shmakov.ru/TQService/";
 const char *XsiNS="http://www.w3.org/2001/XMLSchema-instance";
 const char *XsdNS="http://www.w3.org/2001/XMLSchema";
 
-QDomDocument TQService::process(const QString &action, const QDomDocument &request)
+/*QDomDocument TQService::process(const QString &action, const QDomDocument &request)
 {
     QDomElement header, body;
 
@@ -386,20 +386,16 @@ QDomDocument TQService::process(const QString &action, const QDomDocument &reque
     else
         return errorDoc(-1, "Unknown action");
 }
+*/
 
 QDomDocument TQService::processDev(const QString &action, QIODevice *dev)
 {
-    TQMesHandler handler;
-    QXmlSimpleReader reader;
-    reader.setContentHandler(&handler);
-    reader.setErrorHandler(&handler);
-
-    QXmlInputSource xmlInputSource(dev);
-    reader.parse(xmlInputSource);
-
     if(action == "Login")
     {
-        TQSession *session = new TQSession(this);
+        TQLoginHandler handler;
+        return handle(&handler,dev);
+
+        /*TQSession *session = new TQSession(this);
         if(session->login(handler.user,handler.password,handler.project))
         {
             QString sid = QUuid::createUuid().toString();
@@ -421,9 +417,25 @@ QDomDocument TQService::processDev(const QString &action, QIODevice *dev)
         {
             delete session;
             return errorDoc(-1, "Not connected to project");
-        }
+        }*/
     }
-    return errorDoc(-1, handler.log);
+    else if (action == "GetProjects")
+    {
+        TQProjectListHandler handler;
+        return handle(&handler,dev);
+    }
+    return errorDoc(-1, "");
+}
+
+QDomDocument TQService::handle(TQMesHandler *handler, QIODevice *dev)
+{
+    QXmlInputSource xmlInputSource(dev);
+    QXmlSimpleReader reader;
+    reader.setContentHandler(handler);
+    reader.setErrorHandler(handler);
+
+    reader.parse(xmlInputSource);
+    return handler->executeTQ();
 }
 
 QDomDocument TQService::errorDoc(int errorCode, const QString &errorDesc, const QString &errorDetail)
@@ -467,47 +479,81 @@ QDomDocument TQService::errorDoc(int errorCode, const QString &errorDesc, const 
     return xml;
 }
 
+static QHash<QString, TQSession *> sessionsPool;
+
 TQSession::TQSession(QObject *parent)
 {
     db=new TrkToolDB(this);
     db->dbmsUser = ""; //sets.value("dbmsUser").toString();
     db->dbmsPassword = ""; //sets.value("dbmsPassword").toString();
     db->dbmsName = "SHMAKOVTHINK\\SQLEXPRESS";
+    dbType = "LocalSQL";
+    createTime = QDateTime::currentDateTimeUtc();
+    lastActivity = createTime;
+    sid = QUuid::createUuid().toString();
+    sessionsPool[sid] = this;
     //QScopedPointer<TrkToolProject> prj(db->openProject(argv[1],argv[2],argv[3],argv[4]));
 }
 
 TQSession::~TQSession()
 {
-    if(prj)
-        delete prj;
+    if(!connectedProjects.isEmpty())
+    {
+        foreach(TrkToolProject *prj, connectedProjects)
+            delete prj;
+        connectedProjects.clear();
+    }
     if(db)
         delete db;
+    sessionsPool.remove(sid);
+}
+
+QString TQSession::sessionID() const
+{
+    return sid;
+}
+
+QStringList TQSession::projectList()
+{
+    return db->projects(dbType);
 }
 
 bool TQSession::login(const QString &user, const QString &password, const QString &project)
 {
-    QString dbType = "LocalSQL"; //sets.value("dbmsType").toString(),
+     //sets.value("dbmsType").toString(),
 //            project = "RS-Bank V.6", //sets.value("project").toString(),
 //            user = QString::fromLocal8Bit("Сергей"), //sets.value("user").toString(),
 //            password = ""; //sets.value("password").toString();
-    prj = db->openProject(dbType,project,user,password);
-    if(prj && prj->isOpened())
-    {
-        opened = true;
-        return true;
-    }
-    opened = false;
+    TrkToolProject *prj = db->openProject(dbType,project,user,password);
+    if(prj)
+        if(prj->isOpened())
+        {
+            QString pid = QUuid::createUuid().toString();
+            connectedProjects[pid] = prj;
+            return true;
+        }
+        else
+            delete prj;
     return false;
 }
 
-
-bool TQSession::isOpened() const
+TrkToolProject *TQSession::project(const QString &pid) const
 {
-    return opened;
+    return connectedProjects.value(pid,0);
 }
 
-QString TQSession::requestRecord(int id)
+
+bool TQSession::isOpened(const QString &pid) const
 {
+    TrkToolProject *prj = project(pid);
+    return prj && prj->isOpened();
+}
+
+QString TQSession::requestRecord(const QString &pid, int id)
+{
+    TrkToolProject *prj = project(pid);
+    if(!prj)
+        return QString();
     QScopedPointer<TrkToolRecord> rec(prj->createRecordById(id));
     if(rec.isNull())
         return "empty";
@@ -585,30 +631,143 @@ qint64 TQHttpRequestDevice::bytesAvailable() const
     return ecb->cbTotalBytes - readed + QIODevice::bytesAvailable();
 }
 
-
 TQMesHandler::TQMesHandler()
 {
+    session = 0;
 }
 
 bool TQMesHandler::startElement(const QString &namespaceURI, const QString &localName, const QString &qName, const QXmlAttributes &attributes)
 {
+    log << QString("start element ns: %1, localName: %2, qName: %3").arg(namespaceURI, localName, qName)
+        + "\n";
     if(namespaceURI == AppNS)
     {
-        if(localName == "Login")
+        if(localName == "Session")
         {
-            user = attributes.value("user");
-            password = attributes.value("password");
-            project = attributes.value("project");
+            //requestType = LoginProject;
+            sessionId = attributes.value("sessionID");
+            session = sessionsPool.value(sessionId,0);
+            return true;
+        }
+        else if(localName == "Project")
+        {
+            projectId = attributes.value("projectID");
+            if(session)
+                project = session->project(projectId);
+            else
+                project = 0;
+            return true;
         }
     }
-    log += QString("start element ns: %1, localName: %2, qName: %3").arg(namespaceURI, localName, qName)
-        + "\n";
+    return startTQElement(namespaceURI, localName, qName, attributes);
+    /*
+        else if(localName == "GetRecords")
+        {
+            requestType = GetRecords;
+            project = attributes.value("project");
+            recordIds = attributes.value("recordIDs");
+            recordType = attributes.value("recordType").toInt();
+        }
+        else if(localName == "GetQueryList")
+        {
+            requestType = GetQueryList;
+            project = attributes.value("project");
+        }
+        else if(localName == "OpenQuery")
+        {
+            requestType = OpenQuery;
+            project = attributes.value("project");
+        }
+        else if(localName == "GetNoteTitles")
+        {
+            requestType = GetNoteTitles;
+        }
+        else if(localName == "GetRecordDef")
+        {
+            requestType = GetRecordDef;
+        }
+    }
     return true;
+    */
 }
 
 bool TQMesHandler::endElement(const QString &namespaceURI, const QString &localName, const QString &qName)
 {
-    log += QString("end element ns: %1, localName: %2, qName: %3").arg(namespaceURI, localName, qName)
+    log << QString("end element ns: %1, localName: %2, qName: %3").arg(namespaceURI, localName, qName)
         + "\n";
+    return endTQElement(namespaceURI, localName, qName);
+}
+
+bool TQMesHandler::startTQElement(const QString &namespaceURI, const QString &localName, const QString &qName, const QXmlAttributes &attributes)
+{
     return true;
+}
+
+bool TQMesHandler::endTQElement(const QString &namespaceURI, const QString &localName, const QString &qName)
+{
+    return true;
+}
+
+QDomDocument TQMesHandler::executeTQ()
+{
+    return QDomDocument();
+}
+
+
+TQLoginHandler::TQLoginHandler()
+{
+}
+
+bool TQLoginHandler::startTQElement(const QString &namespaceURI, const QString &localName, const QString &qName, const QXmlAttributes &attributes)
+{
+    if(localName == "Login")
+    {
+        //requestType = LoginProject;
+        user = attributes.value("user");
+        password = attributes.value("password");
+        project = attributes.value("project");
+        return true;
+    }
+    return false;
+}
+
+bool TQLoginHandler::endTQElement(const QString &namespaceURI, const QString &localName, const QString &qName)
+{
+    return true;
+}
+
+QDomDocument TQLoginHandler::executeTQ()
+{
+    bool newSess = !session;
+    if(newSess)
+        session = new TQSession();
+    if(session->login(user,password,project))
+    {
+        QDomDocument xml;
+        QDomElement root= xml.createElementNS(SoapNS, "soapenv:Envelope");
+        root.setAttribute("xmlns:xsi","http://www.w3.org/2001/XMLSchema-instance");
+        root.setAttribute("xmlns:xsd","http://www.w3.org/2001/XMLSchema");
+        xml.appendChild(root);
+
+        QDomElement body= xml.createElement("soapenv:Body");
+        root.appendChild(body);
+        QDomElement res= xml.createElement("Session");
+        res.setAttribute("sessionID",session->sessionID());
+        body.appendChild(res);
+        return xml;
+    }
+    if(newSess)
+    {
+        delete session;
+        session = 0;
+    }
+    return QDomDocument();
+}
+
+
+QDomDocument TQProjectListHandler::executeTQ()
+{
+    if(!session)
+        return QDomDocument();
+
 }
