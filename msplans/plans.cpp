@@ -19,7 +19,7 @@ PlansPlugin *pluginObject = 0;
 PlanModel::PlanModel(QObject *parent)
     :QAbstractItemModel(parent)
 {
-    QString xml = pluginObject->dataDir.filePath("project.xml");
+    QString xml = pluginObject->dataDir.absoluteFilePath("project.xml");
     loadDefinition(xml);
 }
 

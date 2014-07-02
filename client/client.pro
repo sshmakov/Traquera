@@ -59,7 +59,8 @@ HEADERS += \
     scrpluginfactory.h \
     previewfactory.h \
     highlighter.h \
-    ../common/tqplug.h
+    ../common/tqplug.h \
+    ../tracker/tqservicedb.h
 
 #    plans.h planproxy.h \
 #    planfiles.h \
@@ -92,7 +93,8 @@ SOURCES += database.cpp main.cpp mainwindow.cpp querypage.cpp \
     notewidget.cpp \
     scrpluginfactory.cpp \
     previewfactory.cpp \
-    highlighter.cpp
+    highlighter.cpp \
+    ../tracker/tqservicedb.cpp
 
 #    planfilesform.cpp \
 #    project.cpp projectpage.cpp plans.cpp planproxy.cpp planfiles.cpp \
@@ -113,8 +115,6 @@ OTHER_FILES += \
     data/plain.xq \
     data/email.xq \
     data/edit.xq \
-    data/scr2prj.xml \
-    data/project.xml \
     data/init.xml \
     data/tracker.xml \
     data/style.css \

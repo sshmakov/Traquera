@@ -524,9 +524,9 @@ public:
 	QString dbmsName, dbmsUser, dbmsPassword;
 	TrkToolDB(QObject *parent = 0);
 	~TrkToolDB();
-    QStringList dbmsTypes();
-    QStringList projects(const QString &dbmsType);
-	TrkToolProject *openProject(
+    virtual QStringList dbmsTypes();
+    virtual QStringList projects(const QString &dbmsType);
+    virtual TrkToolProject *openProject(
 		const QString &dbmsType,
 		const QString &projectName,
 		const QString &user, 

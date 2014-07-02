@@ -35,6 +35,8 @@ public slots:
     void contextMenuRequested(const QPoint &pos);
     void selectingRecordsChanged();
 
+private:
+    bool isSetsLoaded;
 protected slots:
     void addScrTask(PrjItemModel *prj);
     void addScrTasks();
@@ -46,6 +48,7 @@ protected slots:
     void updateDetailWindows();
     void slotCheckPlannedIds();
     void slotCheckNoPlannedIds();
+    void headerChanged();
 };
 
 #endif // TQPLANSWIDGET_H

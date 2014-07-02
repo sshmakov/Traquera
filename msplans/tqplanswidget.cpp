@@ -8,7 +8,7 @@
 
 TQPlansWidget::TQPlansWidget(QWidget *parent) :
     TQPluginWidget(parent),
-    planViewModel(this)
+    planViewModel(this),isSetsLoaded(false)
 {
     initWidgets();
 }
@@ -29,6 +29,8 @@ void TQPlansWidget::initWidgets()
     lay->setContentsMargins(0,0,0,0);
     setLayout(lay);
     connect(planTreeView,SIGNAL(customContextMenuRequested(QPoint)),this,SLOT(contextMenuRequested(QPoint)));
+    connect(planTreeView->header(),SIGNAL(sectionMoved(int,int,int)),SLOT(headerChanged()));
+    connect(planTreeView->header(),SIGNAL(sectionResized(int,int,int)),SLOT(headerChanged()));
     detailsTimer = new QTimer(this);
     detailsTimer->setInterval(0);
     detailsTimer->setSingleShot(true);
@@ -304,8 +306,15 @@ void TQPlansWidget::slotCheckNoPlannedIds()
                               Q_ARG(bool, true));
 }
 
+void TQPlansWidget::headerChanged()
+{
+    if(isSetsLoaded)
+        pluginObject->settings->setValue(Settings_ScrPlanView,planTreeView->header()->saveState());
+}
+
 void TQPlansWidget::setPlanModel(PlanModel *newmodel)
 {
+    isSetsLoaded = false;
     if(newmodel == loadedPlanModel)
         return;
     planViewModel.setSourceModel(newmodel);
@@ -321,6 +330,7 @@ void TQPlansWidget::setPlanModel(PlanModel *newmodel)
         if(value.isValid() && value.type() == QVariant::ByteArray)
             planTreeView->header()->restoreState(value.toByteArray());
     }
+    isSetsLoaded = true;
 }
 
 void TQPlansWidget::setParentObject(QObject *obj)

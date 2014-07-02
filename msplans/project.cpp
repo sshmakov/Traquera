@@ -286,7 +286,7 @@ bool PrjItemModel::open(const QString &file, bool readOnly)
 	prjName = prj->property("Name").toString();
 	fileName = prj->property("FullName").toString();
     readOnly = prj->dynamicCall("ReadOnly").toBool();
-    loadDefinition(app, "data/project.xml");
+    loadDefinition(app, pluginObject->dataDir.absoluteFilePath("project.xml"));
 	rows = tasks->dynamicCall("Count").toInt();
 	cols = fields.count();
 	saveToMemory(tasks);
