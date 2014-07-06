@@ -1264,7 +1264,7 @@ void MainWindow::on_actionCloseTab_triggered()
 void MainWindow::on_actionOpenSelected_triggered()
 {
     QueryPage *newpage = createNewPage(tr("Отмеченные"));
-    newpage->openModel(trkproject->selectedModel());
+    newpage->openModel(trkproject, trkproject->selectedModel());
 
 }
 

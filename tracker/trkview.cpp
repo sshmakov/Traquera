@@ -875,6 +875,33 @@ AbstractRecordTypeDef *TrkToolProject::recordTypeDef(TRK_RECORD_TYPE rectype)
     return recordDef.value(rectype);
 }
 
+bool TrkToolProject::fillModel(TrkToolModel *model, const QString &queryName,
+                               TRK_RECORD_TYPE type, TRK_TRANSACTION_ID afterTransId)
+{
+    bool rc;
+    TrkScopeRecHandle recHandle(this);
+    //TRK_RECORD_HANDLE recHandle;
+    //rc = isTrkOK(TrkRecordHandleAlloc(prj->handle, &recHandle));
+    if(recHandle.isValid())
+    {
+        TRK_TRANSACTION_ID lastTransId = 0;
+        TRK_TRANSACTION_ID prevTransId = afterTransId;
+        rc = isTrkOK(TrkQueryInitRecordList(*recHandle, queryName.toLocal8Bit().constData(), prevTransId, &lastTransId));
+        if(!rc)
+            return false;
+        while(rc = (TRK_SUCCESS == (TrkGetNextRecord(*recHandle))))
+        {
+            TrkToolRecord *rec = createRecordByHandle(*recHandle, type);
+            model->append(rec);
+            //model->appendRecordId();
+            //appendRecordByHandle(*recHandle);
+        }
+        //TrkRecordHandleFree(&recHandle);
+        return true;
+    }
+    return false;
+}
+
 TrkToolRecord *TrkToolProject::createRecordById(TRK_UINT id, TRK_RECORD_TYPE rectype)
 {
     TrkToolRecord *rec=0;
@@ -922,7 +949,8 @@ QAbstractItemModel *TrkToolProject::createProxyQueryModel(TrkQryFilter::Filter f
 TrkToolModel *TrkToolProject::openQueryModel(const QString &name, TRK_RECORD_TYPE type, bool emitEvent)
 {
 	TrkToolModel *model = new TrkToolModel(this, type, this);
-	model->openQuery(name);
+    fillModel(model, name, type);
+//	model->openQuery(name);
     if(emitEvent)
         emit openedModel(model);
     return model;
@@ -951,12 +979,14 @@ QList<int> TrkToolProject::getQueryIds(const QString &name, TRK_RECORD_TYPE type
     return list;
 }
 
+/*
 TrkToolModel *TrkToolProject::openRecentModel(int afterTransId, const QString &name, TRK_RECORD_TYPE type)
 {
     TrkToolModel *model = new TrkToolModel(this, type, this);
     model->openQuery(name,afterTransId);
     return model;
 }
+*/
 
 TrkToolModel *TrkToolProject::openIdsModel(const QList<int> &ids, TRK_RECORD_TYPE type, bool emitEvent)
 {
@@ -964,19 +994,6 @@ TrkToolModel *TrkToolProject::openIdsModel(const QList<int> &ids, TRK_RECORD_TYP
 	model->openIds(ids);
     if(emitEvent)
         emit openedModel(model);
-    /*
-    QList<int> foundIds;
-    QString sids;
-    for(int i=0; i<model->rowCount(); i++)
-    {
-        TRK_UINT id = model->rowId(i);
-        foundIds.append(id);
-        if(i)
-            sids += ", ";
-        sids += QString::number(id);
-    }
-    */
-
     return model;
 }
 
@@ -1707,10 +1724,7 @@ TrkToolModel::TrkToolModel(TrkToolProject *project, TRK_RECORD_TYPE type, QObjec
 	rectype(type),
     BaseRecModel<PTrkToolRecord>(parent),
     prevTransId(0)
-    //, rset(parent)
 {
-    //char name[1024];
-    //strncpy(name, prj->fields[rectype][VID_Id].name.toLocal8Bit().constData(), sizeof(name));
     idFieldName = prj->recordDef[rectype]->fieldName(VID_Id); //.toLocal8Bit().constData();
 	QHash<TRK_VID, TrkFieldDef>::const_iterator fi;
     headers = prj->recordDef[rectype]->fieldNames();
@@ -1727,30 +1741,10 @@ TrkToolModel::~TrkToolModel()
 bool TrkToolModel::openQuery(const QString &queryName, TRK_TRANSACTION_ID afterTransId)
 {
     beginResetModel();
-    //rset.clear();
     clearRecords();
     this->queryName = queryName;
     isQuery = true;
-	/*
-	QHash<TRK_VID, TrkFieldDef>::const_iterator fi;
-	for(fi = prj->fields[rectype].constBegin(); fi!= prj->fields[rectype].constEnd(); ++fi)
-	{
-		rset.fields.append(fi.value().name);
-	}
-	*/
-	bool rc;
-    TrkScopeRecHandle recHandle(prj);
-    //TRK_RECORD_HANDLE recHandle;
-    //rc = isTrkOK(TrkRecordHandleAlloc(prj->handle, &recHandle));
-    bool res = recHandle.isValid();
-    if(recHandle.isValid())
-    {
-        prevTransId = afterTransId;
-        rc = isTrkOK(TrkQueryInitRecordList(*recHandle, queryName.toLocal8Bit().constData(), prevTransId, &lastTransId));
-        while(rc = (TRK_SUCCESS == (TrkGetNextRecord(*recHandle))))
-            appendRecordByHandle(*recHandle);
-        //TrkRecordHandleFree(&recHandle);
-    }
+    bool res = prj->fillModel(this, queryName);
     endResetModel();
     return res;
 }
@@ -1760,54 +1754,32 @@ bool TrkToolModel::openIds(const QList<int> &ids)
     beginResetModel();
     QList <int> unique = uniqueIntList(ids);
     prevTransId=0;
-    //TRK_TRANSACTION_ID newTransId;
     foreach(int id, unique)
     {
-        TrkScopeRecHandle recHandle(prj, 0, id, rectype);
-        if(recHandle.isValid())
-            appendRecordByHandle(*recHandle);
+        TrkToolRecord *rec = prj->createRecordById(id);
+        if(rec)
+            append(rec);
     }
     queryName = intListToString(unique);
     isQuery = false;
-    //TrkRecordHandleFree(&recHandle);
     endResetModel();
 	return true;
 
-}
-
-bool TrkToolModel::appendRecordByHandle(TRK_RECORD_HANDLE recHandle)
-{
-	TRK_UINT Id;
-    if(!isTrkOK(TrkGetNumericFieldValue(recHandle, idFieldName.toLocal8Bit().constData(), &Id)))
-        return false;
-    if(rowOfRecordId(Id)!=-1)
-        return false;
-    TrkToolRecord *rec = prj->createRecordByHandle(recHandle, rectype);
-    //TrkToolRecord *rec = new TrkToolRecord(prj, rectype);
-    //rec->readHandle(recHandle); // no immediate read
-    append(rec);
-    rec->addLink();
-    connect(rec,SIGNAL(changed(int)),this,SLOT(recordChanged(int)));
-    return true;
 }
 
 void TrkToolModel::appendRecordId(TRK_UINT id)
 {
     if(rowOfRecordId(id)!=-1)
         return;
-    emit layoutAboutToBeChanged();
     TrkToolRecord *rec = prj->createRecordById(id, rectype);
     if(rec)
     {
+        emit layoutAboutToBeChanged();
         append(rec);
         addedIds.insert(id);
         rec->addLink();
+        emit layoutChanged();
     }
-    //    TrkScopeRecHandle recHandle(prj, 0, id, rectype);
-//    if(recHandle.isValid())
-//        if(appendRecordByHandle(*recHandle))
-//            addedIds.insert(id);
-    emit layoutChanged();
 }
 
 void TrkToolModel::removeRecordId(TRK_UINT id)
@@ -1817,24 +1789,8 @@ void TrkToolModel::removeRecordId(TRK_UINT id)
         return;
     beginRemoveRows(QModelIndex(),r,r);
     TrkToolRecord *rec = records.takeAt(r);
-    //rec->disconnect(this);
-    rec->removeLink(this);
-    //delete rec;
-
-    /*
-    emit layoutAboutToBeChanged();
-    int r;
-    for(r=0; r<rowCount(); ++r)
-    {
-        if(rowId(r) == id)
-        {
-            TrkToolRecord *rec = records.takeAt(r);
-            delete rec;
-            break;
-        }
-    }
-    emit layoutChanged();
-    */
+    if(rec)
+        rec->removeLink(this);
     endRemoveRows();
     addedIds.remove(id);
 }
@@ -1921,23 +1877,10 @@ bool TrkToolModel::setEditColData(const PTrkToolRecord & rec, int col, const QVa
 void TrkToolModel::recordChanged(int id)
 {
     int row = rowOfRecordId(id);
-//    TrkToolRecord *rec =  qobject_cast<TrkToolRecord *>(sender());
-//    if(!rec)
-//        return;
-//    int row = records.indexOf(rec);
     if(row<0)
         return;
     emit dataChanged(index(row,0),index(row,columnCount()-1));
 }
-
-/*
-int	TrkToolModel::rowCount(const QModelIndex & parent) const
-{
-	if(parent.isValid())
-		return 0;
-	return rset.recCount();
-}
-*/
 
 QDomDocument TrkToolModel::recordXml(int row) const
 {
@@ -1946,41 +1889,6 @@ QDomDocument TrkToolModel::recordXml(int row) const
         return QDomDocument();
     rec->refresh();
 	return rec->toXML();
-	/*
-	QDomDocument xml("scr");
-	QDomElement root=xml.createElement("scr");
-	xml.appendChild(root);
-	QDomElement flds =xml.createElement("fields");
-	int cc = columnCount();
-	//QSqlRecord rr = trkmodel.record(qryIndex);
-	for(int c=0; c<cc; c++)
-	{
-		QDomElement f = xml.createElement("field");
-		QString fname = headers[c];
-		f.setAttribute("name", fname);
-		QString fvalue = index(row, c).data().toString();
-		QDomText v = xml.createTextNode(fvalue);
-		f.appendChild(v);
-		flds.appendChild(f);
-	}
-	root.appendChild(flds);
-	QDomElement notes = xml.createElement("notes");
-	NotesCol *col=prj->getNotes(rowId(row),rectype);
-	for(int i=0; i<col->count(); i++)
-	{
-		QDomElement note = xml.createElement("note");
-		const TrkNote &tn = col->value(i);
-		note.setAttribute("title", tn.title);
-		note.setAttribute("author", tn.author);
-		note.setAttribute("createdate", tn.crdate.toString());
-		QDomText v = xml.createTextNode(tn.text);
-		note.appendChild(v);
-		notes.appendChild(note);
-	}
-	delete col;
-	root.appendChild(notes);
-	return xml;
-	*/
 }
 
 void TrkToolModel::refreshQuery()

@@ -602,7 +602,7 @@ public:
 #endif
     TrkToolModel *openQueryModel(const QString &name, TRK_RECORD_TYPE type = TRK_SCR_TYPE, bool emitEvent = true);
     QList<int> getQueryIds(const QString &name, TRK_RECORD_TYPE type = TRK_SCR_TYPE);
-    TrkToolModel *openRecentModel(int afterTransId, const QString &name, TRK_RECORD_TYPE type = TRK_SCR_TYPE);
+    //TrkToolModel *openRecentModel(int afterTransId, const QString &name, TRK_RECORD_TYPE type = TRK_SCR_TYPE);
     TrkToolModel *openIdsModel(const QList<int> &ids, TRK_RECORD_TYPE type = TRK_SCR_TYPE, bool emitEvent = true);
     //NotesCol getNotes(int recId, TRK_RECORD_TYPE type) const;
     QString fieldVID2Name(TRK_RECORD_TYPE rectype, TRK_VID vid);
@@ -620,6 +620,9 @@ public:
     TrkToolRecord *newRecord(TRK_RECORD_TYPE rectype = TRK_SCR_TYPE);
     AbstractRecordTypeDef *recordTypeDef(TRK_RECORD_TYPE rectype = TRK_SCR_TYPE);
 protected:
+    /* Model manipulations */
+    bool fillModel(TrkToolModel *model, const QString &queryName, TRK_RECORD_TYPE type = TRK_SCR_TYPE,
+                   TRK_TRANSACTION_ID afterTransId = 0);
     /* Record manipulations */
     virtual bool readRecordWhole(TrkToolRecord *record);
     virtual bool readRecordFields(TrkToolRecord *record);
@@ -788,7 +791,7 @@ public:
     void removeRecordId(TRK_UINT id);
     void refreshQuery();
 protected:
-    bool appendRecordByHandle(TRK_RECORD_HANDLE recHandle);
+//    bool appendRecordByHandle(TRK_RECORD_HANDLE recHandle);
     virtual QVariant displayColData(const PTrkToolRecord & rec, int col) const;
     virtual QVariant editColData(const PTrkToolRecord & rec, int col) const;
     virtual bool setEditColData(const PTrkToolRecord & rec, int col, const QVariant & value);

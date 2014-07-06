@@ -38,6 +38,7 @@
 
 QueryPage::QueryPage(QWidget *parent)
 	:QWidget(parent)
+    , modelProject(0)
     , tmodel(0)
 //    , planViewModel(this)
 	, history()
@@ -218,7 +219,7 @@ void QueryPage::setQueryById(const QString& numbers, TrkDb *trkdb)
 }
 */
 
-void QueryPage::setQueryModel(TrkToolModel *model)
+void QueryPage::setQueryModel(TrkToolProject *prj, TrkToolModel *model)
 {
     if(tmodel)
     {
@@ -228,6 +229,7 @@ void QueryPage::setQueryModel(TrkToolModel *model)
         tmodel = 0;
     }
 	tmodel = model;
+    modelProject = prj;
     if(!tmodel->isSystemModel())
         tmodel->setParent(this);
     qryFilterModel->setSourceModel(tmodel);
@@ -997,7 +999,7 @@ void QueryPage::openQuery(TrkToolProject *prj, const QString &queryName, int rec
     TrkToolModel *newmodel = prj->openQueryModel(queryName, recType);
 	if(!newmodel)
 		return;
-	setQueryModel(newmodel);
+    setQueryModel(prj,newmodel);
     emit openingModel(newmodel);
     emit modelChanged(newmodel);
     //TrkHistoryItem item;
@@ -1020,7 +1022,7 @@ void QueryPage::openIds(TrkToolProject *prj, const QString &ids, const QString &
     TrkToolModel *newmodel = prj->openIdsModel(idlist, recType);
 	if(!newmodel)
 		return;
-	setQueryModel(newmodel);
+    setQueryModel(prj, newmodel);
     emit openingModel(newmodel);
     emit modelChanged(newmodel);
 
@@ -1051,7 +1053,7 @@ void QueryPage::openIds(TrkToolProject *prj, const QList<int> &idlist, const QSt
     TrkToolModel *newmodel = prj->openIdsModel(idlist, recType);
     if(!newmodel)
         return;
-    setQueryModel(newmodel);
+    setQueryModel(prj, newmodel);
     emit openingModel(newmodel);
     emit modelChanged(newmodel);
     curHistoryPos = history.rowCount()-1;
@@ -1064,9 +1066,9 @@ void QueryPage::openIds(TrkToolProject *prj, const QList<int> &idlist, const QSt
     emit changedQuery(prj->projectName(), newTitle);
 }
 
-void QueryPage::openModel(TrkToolModel *newModel)
+void QueryPage::openModel(TrkToolProject *prj, TrkToolModel *newModel)
 {
-    setQueryModel(newModel);
+    setQueryModel(prj, newModel);
     emit openingModel(newModel);
     emit modelChanged(newModel);
 }
@@ -1079,7 +1081,7 @@ void QueryPage::openFolder(TrkToolProject *prj, const TTFolder &afolder, int rec
     TrkToolModel *newmodel = prj->openIdsModel(idlist, recType, false);
     if(!newmodel)
         return;
-    setQueryModel(newmodel);
+    setQueryModel(prj, newmodel);
     emit openingModel(newmodel);
     emit modelChanged(newmodel);
     curHistoryPos = history.rowCount()-1;
@@ -1109,7 +1111,7 @@ void QueryPage::openHistoryItem(int pos)
         TrkToolModel *newmodel = prj->openQueryModel(item.queryName, item.rectype);
 		if(!newmodel)
 			return;
-		setQueryModel(newmodel);
+        setQueryModel(prj, newmodel);
         emit changedQuery(item.projectName, item.queryName);
         curHistoryPos = pos;
 	}
@@ -1121,7 +1123,7 @@ void QueryPage::openHistoryItem(int pos)
         TrkToolModel *newmodel = prj->openIdsModel(stringToIntList(item.queryName), item.rectype);
 		if(!newmodel)
 			return;
-		setQueryModel(newmodel);
+        setQueryModel(prj, newmodel);
         emit changedQuery(item.projectName, item.queryName);
         curHistoryPos = pos;
 	}
@@ -1252,6 +1254,11 @@ QObjectList QueryPage::markedRecords()
             list << rec;
     }
     return list;
+}
+
+TrkToolProject *QueryPage::currentProject()
+{
+    return modelProject;
 }
 
 TrkToolRecord *QueryPage::currentRecord()

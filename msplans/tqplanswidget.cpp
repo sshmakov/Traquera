@@ -104,7 +104,7 @@ void TQPlansWidget::addScrTask(PrjItemModel *prj)
                                   Q_RETURN_ARG(QObjectList, records)))
         return;
     //QXmlSimpleReader xmlReader;
-    QFile file(pluginObject->dataDir.filePath("scr2prj.xml"));
+    QFile file(pluginObject->dataDir.absoluteFilePath("scr2prj.xml"));
     QXmlInputSource *source = new QXmlInputSource(&file);
     QDomDocument dom;
     if(!dom.setContent(source,false))

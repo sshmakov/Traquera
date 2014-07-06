@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+<body>
+<script>
+var adr = "http://localhost:8080/tq";
+
+function getXmlHttp(){
+  var xmlhttp;
+  try {
+    xmlhttp = new ActiveXObject("Msxml2.XMLHTTP");
+  } catch (e) {
+    try {
+      xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+    } catch (E) {
+      xmlhttp = false;
+    }
+  }
+  if (!xmlhttp && typeof XMLHttpRequest!='undefined') {
+    xmlhttp = new XMLHttpRequest();
+  }
+  return xmlhttp;
+}
+
+var loginXml = '<Login user="Сергей" password="" project="RS-Bank V.6"/>';
+
+function sendLogin()
+{
+    var obj = new XMLHttpRequest();
+    obj.open('POST',adr,false);
+    obj.setRequestHeader('Content-Type', 'application/xml');
+    obj.setRequestHeader("SOAPAction", "Login");
+    obj.send(loginXml);
+    resPlace.innerHTML = "Result: "+obj.status+" <br/><xmp>" + obj.responseText+"</xmp>";
+}
+</script>
+<div>
+<input type="button" value="Login" onclick="sendLogin(); return false"/>
+</div>
+<div id="resPlace">
+</div>
+</body>
+</html>

@@ -52,9 +52,10 @@ protected:
     Preview *previewWidget;
 public:
 	//TrkModel trkmodel;
+    TrkToolProject *modelProject;
     TrkToolModel *tmodel;
 	QueryPage(QWidget *parent = 0);
-	~QueryPage();
+    ~QueryPage();
 #ifdef DECORATOR
     EditDefList fieldEdits;
 #endif
@@ -64,7 +65,7 @@ public:
 	void openQuery(const QString &projectName, const QString &queryName, int recType = TRK_SCR_TYPE);
     void openIds(TrkToolProject *prj, const QString &ids, const QString &title=QString(), int recType = TRK_SCR_TYPE);
     void openIds(TrkToolProject *prj, const QList<int> &idlist, const QString &title=QString(), int recType = TRK_SCR_TYPE);
-    void openModel(TrkToolModel *newModel);
+    void openModel(TrkToolProject *prj, TrkToolModel *newModel);
     void openFolder(TrkToolProject *prj, const TTFolder &afolder, int recType = TRK_SCR_TYPE);
     //void setPlanModel(PlanModel *newmodel);
 	int getColNum(const QString &colname);
@@ -78,6 +79,7 @@ public:
     Q_INVOKABLE QList<int> selectedIds();
     Q_INVOKABLE QObjectList allRecords();
     Q_INVOKABLE QObjectList markedRecords();
+    Q_INVOKABLE TrkToolProject *currentProject();
     Q_INVOKABLE TrkToolRecord *currentRecord();
     Q_INVOKABLE TrkToolRecord *recordOnIndex(const QModelIndex &index);
     Q_INVOKABLE const AbstractRecordTypeDef *recordTypeDef();
@@ -89,7 +91,7 @@ protected:
 	void initPopupMenu();
 	void loadDefinition();
 	void openHistoryItem(int pos);
-	void setQueryModel(TrkToolModel *model);
+    void setQueryModel(TrkToolProject *prj, TrkToolModel *model);
     QModelIndex mapIndexToModel(const QModelIndex &index) const;
     QTimer *detailsTimer;
     QTimer *previewTimer;

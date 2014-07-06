@@ -37,7 +37,8 @@ OTHER_FILES += \
     trkqryn.dll \
     trkapin.dll \
     trkadmn.dll \
-    trindex.ini
+    trindex.ini \
+    testservice.html
 
 
 unix:!symbian {
