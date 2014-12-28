@@ -6,19 +6,18 @@
 #include <QAction>
 #endif
 
-#include <QAbstractItemModel>
-#include <QList>
-#include <QHash>
-#include <QSet>
+#include <QtCore>
+#include <QtXml>
 #include "trktool.h"
 #include "trktool2.h"
 #include "tracker.h"
 #include "tqplug.h"
+#include "tqbase.h"
 
 #define TT_DATETIME_FORMAT "dd.MM.yyyy H:mm:ss"
 
 class TrkDb;
-class TrkModel;
+//class TrkModel;
 
 #ifndef CONSOLE_APP
 class TrkView: public QTableView 
@@ -55,41 +54,36 @@ class TrkToolProject;
 class TrkToolModel;
 
 
-struct TrkToolUser {
+struct TQUser {
     QString userName;
     QString fullName;
     QString email;
 };
 
-typedef QList<TrkToolUser> UserList;
+typedef QList<TQUser> UserList;
 
-class RecordTypeDef;
+class TQRecordTypeDef;
 
-class TrkFieldDef: public AbstractFieldDef
+class TrkFieldDef //: public AbstractFieldDef
 {
 protected:
-//    mutable ChoiceList *p_choiceList;
-    //RecordTypeDef *recDef;
+    mutable ChoiceList *cashedChoiceList;
+//    QString choiceName;
+    TQRecordTypeDef *recDef;
+    int vid;
     //static ChoiceList emptyChoices;
-public:
-    /*
+
 	QString name;
-    TRK_FIELD_TYPE fType;
+    TRK_FIELD_TYPE nativeType;
     bool nullable;
     int minValue;
     int maxValue;
     QVariant defaultValue;
     //const ChoiceList *userList();
-    */
 
-    TrkFieldDef(RecordTypeDef *recordDef=0);
-    TrkFieldDef(const TrkFieldDef& src)
-        : AbstractFieldDef(src)
-        /*recDef(src.recDef), name(src.name), fType(src.fType), p_choiceList(new ChoiceList(*src.p_choiceList)),
-          nullable(src.nullable), minValue(src.minValue), maxValue(src.maxValue), defaultValue(src.defaultValue)*/
-    {
-
-    }
+    TrkFieldDef(TQRecordTypeDef *recordDef, int fieldVID);
+    TrkFieldDef(const TrkFieldDef& src);
+public:
     ~TrkFieldDef()
     {
 //		if(p_choiceList)
@@ -115,9 +109,13 @@ public:
     */
 
     ChoiceList choiceList() const;
+//    QString choiceListName() const;
     QStringList choiceStringList(bool isDisplayText = true) const;
+
+
     bool isChoice() const
     {
+        int fType = nativeType;
         return (fType == TRK_FIELD_TYPE_CHOICE)
                 || (fType == TRK_FIELD_TYPE_SUBMITTER)
                 || (fType == TRK_FIELD_TYPE_OWNER)
@@ -128,15 +126,18 @@ public:
     }
     bool isUser() const
     {
+        int fType = nativeType;
         return (fType == TRK_FIELD_TYPE_SUBMITTER)
                 || (fType == TRK_FIELD_TYPE_OWNER)
                 || (fType == TRK_FIELD_TYPE_USER)
                 ;
     }
+    /*
     inline bool isValid() const
     {
         return recDef && !name.isEmpty();
     }
+    */
     bool isNullable() const
     {
         return nullable;
@@ -145,14 +146,14 @@ public:
     bool canUpdate();
     QString valueToDisplay(const QVariant &value) const;
     QVariant displayToValue(const QString &text) const;
-    RecordTypeDef *recordDef() const;
+    TQRecordTypeDef *recordDef() const;
 
     friend class TrkToolProject;
-    friend class TrkFieldType;
+    //friend class TrkFieldType;
+    friend class TQRecordTypeDef;
 };
 
-/*
-class TrkFieldType: public AbstractFieldType
+/*class TrkFieldType: public AbstractFieldType
 {
 protected:
     TrkFieldDef *def;
@@ -248,54 +249,65 @@ public:
 };
 */
 
-typedef QHash<TRK_VID, TrkFieldDef *> TrkIntDef;
+typedef QHash<TRK_VID, TrkFieldDef *> TrkVidDefs;
 typedef QHash<QString, int> NameVid;
 
 
-class RecordTypeDef: public QObject, public AbstractRecordTypeDef
+class TQRecordTypeDef: public QObject, public TQAbstractRecordTypeDef
 {
     Q_OBJECT
-    Q_INTERFACES(AbstractRecordTypeDef)
+    Q_INTERFACES(TQAbstractRecordTypeDef)
 protected:
     TrkToolProject *prj;
     TRK_RECORD_TYPE recType;
     bool isReadOnly;
-    TrkIntDef fieldDefs;
+    TrkVidDefs fieldDefs;
     QHash<int, QString> baseFields;
     QHash<QString, int> nameVids;
-    QHash<TRK_VID, ChoiceList *> choices;
+    mutable QHash<QString, ChoiceList *> choices; // by tableName
     void clearFieldDefs();
+    ChoiceList userChoices;
 private:
     ChoiceList emptyChoices;
 public:
-    RecordTypeDef(TrkToolProject *project = 0);
-    ~RecordTypeDef();
+    TQRecordTypeDef(TrkToolProject *project = 0);
+    ~TQRecordTypeDef();
+    int roleVid(int role) const;
     QStringList fieldNames() const;
-    AbstractFieldType getFieldDef(int vid, bool *ok = 0) const;
-    AbstractFieldType getFieldDef(const QString &name, bool *ok = 0) const;
-    int fieldType(const QString &name) const;
-    int fieldType(TRK_VID vid) const;
-    bool canFieldSubmit(const QString &name) const;
-    bool canFieldUpdate(const QString &name) const;
-    ChoiceList choiceList(const QString &fieldName);
+    TQAbstractFieldType getFieldType(int vid, bool *ok = 0) const;
+    TQAbstractFieldType getFieldType(const QString &name, bool *ok = 0) const;
+    int fieldNativeType(const QString &name) const;
+    int fieldNativeType(int vid) const;
+    int fieldSimpleType(int vid) const;
+    bool canFieldSubmit(int vid) const;
+    bool canFieldUpdate(int vid) const;
+    bool isNullable(int vid) const;
+    bool hasChoiceList(int vid) const;
+    //ChoiceList choiceList(int vid) const;
+//    ChoiceList choiceList(const QString &fieldName) const;
+    ChoiceList choiceTable(const QString &tableName) const;
+
+
+    bool containFieldVid(int vid) const;
 //    QList<TRK_VID> fieldVids() const;
-    int fieldVid(const QString &name);
+    int fieldVid(const QString &name) const;
     QList<int> fieldVids() const;
     int recordType() const;
     QString fieldName(int vid) const;
     QIODevice *defineSource() const;
+    QString valueToDisplay(int vid, const QVariant &value) const;
+    QVariant displayToValue(int vid, const QString &text) const;
+    virtual QVariant fieldDefaultValue(int vid) const;
+    virtual QVariant fieldMinValue(int vid) const;
+    virtual QVariant fieldMaxValue(int vid) const;
+    virtual QString fieldChoiceTable(int vid) const;
+    virtual QString dateTimeFormat() const;
+    QStringList noteTitleList() const;
 
     TrkToolProject *project() const;
 
 
     friend class TrkToolProject;
-};
-
-
-struct TrkToolFile
-{
-    QString fileName;
-    QDateTime createDateTime;
 };
 
 
@@ -502,7 +514,7 @@ protected:
     virtual QVariant displayColData(const TrkQuery &rec, int col) const;
 };
 
-#ifndef CONSOLE_APP
+#ifdef CLIENT_APP
 
 class TrkQryFilter: public QSortFilterProxyModel
 {
@@ -510,13 +522,15 @@ class TrkQryFilter: public QSortFilterProxyModel
 public:
     enum Filter {All, UserOnly, PublicOnly} filter;
     TrkQryFilter(QObject *parent=0);
-    virtual void setSourceModel(QAbstractItemModel *sourceModel);
+    void setSourceQueryModel(QAbstractItemModel *sourceModel, Filter filter);
+private:
+    Filter curFilter;
 };
 #endif
 
 class TrkToolProject;
 
-class TrkToolDB: public QObject
+class TrkToolDB: public TQAbstractDB
 {
     Q_OBJECT
 public:
@@ -526,12 +540,13 @@ public:
 	~TrkToolDB();
     virtual QStringList dbmsTypes();
     virtual QStringList projects(const QString &dbmsType);
-    virtual TrkToolProject *openProject(
+    virtual TQAbstractProject *openProject(
 		const QString &dbmsType,
 		const QString &projectName,
 		const QString &user, 
 		const QString &pass);
-	static TrkToolProject *getProject(const QString &projectName);
+    void setDbmsParams(const QString &dbmsName, const QString &dbmsUser = QString(), const QString &dbmsPass = QString());
+    TQAbstractProject *getProject(const QString &projectName);
 protected:
 	QStringList dbmsTypeList;
 	QHash<QString, QStringList> projectList; // by DBMStype
@@ -543,8 +558,6 @@ protected:
 class TrkToolRecord;
 class TrkToolModel;
 
-typedef QSet<int> SelectedSet;
-
 class TrkRecHandler {
 public:
     TRK_RECORD_HANDLE handle;
@@ -555,7 +568,9 @@ public:
     int links;
 };
 
-class TrkToolProject: public QObject
+
+
+class TrkToolProject: public TQAbstractProject
 {
     Q_OBJECT
     Q_PROPERTY(QString name READ projectName)
@@ -567,14 +582,15 @@ protected:
     bool opened;
 	QHash<TRK_RECORD_TYPE, QString> recordTypes;
 	QHash<TRK_RECORD_TYPE, QStringList*> qList; //QueryList
-    QHash<TRK_RECORD_TYPE, RecordTypeDef*> recordDef;
+    QHash<TRK_RECORD_TYPE, TQRecordTypeDef*> recordDef;
     //QHash<TRK_RECORD_TYPE, TrkIntDef> fields; // field by vid by record_type
     //QHash<TRK_RECORD_TYPE, NameVid> nameVids;
-    TrkToolQryModel theQueryModel;
-    QHash<TRK_RECORD_TYPE, SelectedSet> selected;
+    QHash<int, TrkToolQryModel *> theQueryModel;
+    QHash<TRK_RECORD_TYPE, TQSelectedSet> selected;
     QHash<TRK_RECORD_TYPE, TrkToolModel*> selectedModels;
     QMap<QString, QString> userList;
     QString user;
+    QStringList noteTitles;
 protected: // Work with record handlers
     QMutex handlerMutex;
     QList<TrkRecHandler> handlers;
@@ -588,64 +604,75 @@ protected: // Work with record handlers
 public:
     TrkToolProject(TrkToolDB *db = 0);
     ~TrkToolProject();
-    bool isOpened() const { return opened; }
-    QString currentUser() const { return user; }
-    QStringList noteTitles;
-    QString projectName() const;
+    virtual bool isOpened() const;
+    virtual QString currentUser() const;
+    virtual QString projectName() const;
 
     // Tracker specific
-	const QStringList &queryList(TRK_RECORD_TYPE type = TRK_SCR_TYPE) const;
+    const QStringList &queryList(TRK_RECORD_TYPE type = TRK_SCR_TYPE) const;
 	void close();
-    QAbstractItemModel *queryModel(TRK_RECORD_TYPE type = TRK_SCR_TYPE);
-#ifndef CONSOLE_APP
-    QAbstractItemModel *createProxyQueryModel(TrkQryFilter::Filter filter, QObject *parent=0, TRK_RECORD_TYPE type = TRK_SCR_TYPE);
+    QAbstractItemModel *queryModel(int type);
+#ifdef CLIENT_APP
+    //QAbstractItemModel *createProxyQueryModel(int filter, QObject *parent=0, int type);
 #endif
-    TrkToolModel *openQueryModel(const QString &name, TRK_RECORD_TYPE type = TRK_SCR_TYPE, bool emitEvent = true);
-    QList<int> getQueryIds(const QString &name, TRK_RECORD_TYPE type = TRK_SCR_TYPE);
+    TrkToolModel *openQueryModel(const QString &name, int type, bool emitEvent = true);
+    QList<int> getQueryIds(const QString &name, int type,
+                           qint64 afterTransId = 0);
     //TrkToolModel *openRecentModel(int afterTransId, const QString &name, TRK_RECORD_TYPE type = TRK_SCR_TYPE);
-    TrkToolModel *openIdsModel(const QList<int> &ids, TRK_RECORD_TYPE type = TRK_SCR_TYPE, bool emitEvent = true);
+    QAbstractItemModel *openIdsModel(const QList<int> &ids, int type, bool emitEvent = true);
+    void refreshModel(QAbstractItemModel *model);
     //NotesCol getNotes(int recId, TRK_RECORD_TYPE type) const;
-    QString fieldVID2Name(TRK_RECORD_TYPE rectype, TRK_VID vid);
-    TRK_VID fieldName2VID(TRK_RECORD_TYPE rectype, const QString &fname);
-    bool isSelectedId(TRK_UINT id, TRK_RECORD_TYPE recType = TRK_SCR_TYPE) const;
-    void setSelectedId(TRK_UINT id, bool value, TRK_RECORD_TYPE recType = TRK_SCR_TYPE);
-    void clearSelected(TRK_RECORD_TYPE recType = TRK_SCR_TYPE);
-    void initQueryModel(TRK_RECORD_TYPE type = TRK_SCR_TYPE);
-    TRK_FIELD_TYPE fieldType(const QString &name, TRK_RECORD_TYPE recType  = TRK_SCR_TYPE);
-    TrkToolModel *selectedModel(TRK_RECORD_TYPE recType = TRK_SCR_TYPE);
-    bool canFieldSubmit(const QString &name, TRK_RECORD_TYPE recType = TRK_SCR_TYPE);
-    bool canFieldUpdate(const QString &name, TRK_RECORD_TYPE recType = TRK_SCR_TYPE);
-    QString userFullName(const QString &login);
-    TrkToolRecord *createRecordById(TRK_UINT id, TRK_RECORD_TYPE rectype = TRK_SCR_TYPE);
-    TrkToolRecord *newRecord(TRK_RECORD_TYPE rectype = TRK_SCR_TYPE);
-    AbstractRecordTypeDef *recordTypeDef(TRK_RECORD_TYPE rectype = TRK_SCR_TYPE);
+    QStringList noteTitleList();
+public:
+    // Standard manipulations
+    virtual QString fieldVID2Name(int rectype, int vid);
+    virtual int fieldName2VID(int rectype, const QString &fname);
+    virtual int defaultRecType() const;
+    virtual bool isSelectedId(int id, int recType) const;
+    virtual void setSelectedId(int id, bool value, int recType);
+    virtual void clearSelected(int recType);
+    void initQueryModel(int type = TRK_SCR_TYPE);
+    virtual int fieldNativeType(const QString &name, int recType);
+    virtual TrkToolModel *selectedModel(int recType);
+    virtual bool canFieldSubmit(int vid, int recType);
+    virtual bool canFieldUpdate(int vid, int recType);
+    virtual QString userFullName(const QString &login);
+    virtual TQRecord *createRecordById(int id, int rectype);
+    virtual TQRecord *newRecord(int rectype);
+    virtual TQAbstractRecordTypeDef *recordTypeDef(int rectype);
+    virtual QDomDocument recordTypeDefDoc(int rectype);
+    virtual TQRecord *recordOfIndex(const QModelIndex &index);
+    virtual bool isSystemModel(QAbstractItemModel *model) const;
 protected:
     /* Model manipulations */
-    bool fillModel(TrkToolModel *model, const QString &queryName, TRK_RECORD_TYPE type = TRK_SCR_TYPE,
-                   TRK_TRANSACTION_ID afterTransId = 0);
+    bool fillModel(TrkToolModel *model, const QString &queryName, int type,
+                   qint64 afterTransId = 0);
     /* Record manipulations */
-    virtual bool readRecordWhole(TrkToolRecord *record);
-    virtual bool readRecordFields(TrkToolRecord *record);
-    virtual bool readRecordTexts(TrkToolRecord *record);
-    virtual bool readRecordBase(TrkToolRecord *record);
-    virtual TrkToolRecord *createRecordByHandle(TRK_RECORD_HANDLE recHandle, TRK_RECORD_TYPE rectype = TRK_SCR_TYPE);
-    virtual QVariant getFieldValue(const TrkToolRecord *record, const QString &fname, bool *ok = 0);
-    virtual QVariant getFieldValue(const TrkToolRecord *record, TRK_VID vid, bool *ok = 0);
-    virtual bool setFieldValue(TrkToolRecord *record, const QString &fname, const QVariant &value);
+    bool readRecordWhole(TQRecord *record);
+    bool readRecordFields(TQRecord *record);
+    bool readRecordTexts(TQRecord *record);
+    bool readRecordBase(TQRecord *record);
+//    virtual TrkToolRecord *createRecordByHandle(TRK_RECORD_HANDLE recHandle, TRK_RECORD_TYPE rectype = TRK_SCR_TYPE);
+    QVariant getFieldValue(const TQRecord *record, const QString &fname, bool *ok = 0);
+    QVariant getFieldValue(const TQRecord *record, int vid, bool *ok = 0);
+    bool setFieldValue(TQRecord *record, const QString &fname, const QVariant &value);
     //virtual bool insertRecordBegin(TrkToolRecord *record);
-    virtual bool updateRecordBegin(TrkToolRecord *record);
-    virtual bool commitRecord(TrkToolRecord *record);
-    virtual bool cancelRecord(TrkToolRecord *record);
-    virtual QList<TrkToolFile> attachedFiles(TrkToolRecord *record);
-    virtual QStringList historyList(TrkToolRecord *record);
-    virtual QHash<int,QString> baseRecordFields(TRK_RECORD_TYPE rectype = TRK_SCR_TYPE);
+    bool updateRecordBegin(TQRecord *record);
+    bool commitRecord(TQRecord *record);
+    bool cancelRecord(TQRecord *record);
+    QList<TQToolFile> attachedFiles(TQRecord *record);
+    QStringList historyList(TQRecord *record);
+    QHash<int,QString> baseRecordFields(int rectype);
+    bool saveFileFromRecord(TQRecord *record, int fileIndex, const QString &dest);
+    //    bool saveFileFromRecord(TrkToolRecord *record, int fileIndex, const QString &dest);
 private:
+    // Tracker specific
     bool doCommitInsert(TrkToolRecord *record);
     bool doCommitUpdate(TrkToolRecord *record);
     bool doCancelInsert(TrkToolRecord *record);
     bool doCancelUpdate(TrkToolRecord *record);
     QString doGetDesc(TRK_RECORD_HANDLE recHandle) const;
-    NotesCol doGetNotes(TRK_RECORD_HANDLE recHandle) const;
+    TQNotesCol doGetNotes(TRK_RECORD_HANDLE recHandle) const;
     QVariant doGetValue(TRK_RECORD_HANDLE recHandle, const QString &fname, TRK_FIELD_TYPE fType, bool *ok=0);
     bool doReadBaseFields(TrkToolRecord *record, TRK_RECORD_HANDLE recHandle);
     bool doSaveFields(TrkToolRecord *record, TRK_RECORD_HANDLE recHandle);
@@ -658,7 +685,7 @@ private:
     QStringList doGetHistoryList(TRK_RECORD_HANDLE recHandle);
     //QString doFieldVID2Name(TRK_RECORD_TYPE rectype, TRK_VID vid);
 protected:
-    ChoiceList *fieldChoiceList(const QString &name, TRK_RECORD_TYPE recType  = TRK_SCR_TYPE);
+    ChoiceList *fieldChoiceList(const QString &name, int recType);
     bool login(
         const QString &user,
         const QString &pass,
@@ -671,17 +698,12 @@ protected:
 	bool readDefs();
     void readUserList();
     void readNoteTitles();
-    bool readNoteRec(TRK_NOTE_HANDLE noteHandle, TrkNote *note) const;
-signals:
-    void openedModel(const TrkToolModel *model);
-    void recordChanged(int id);
-    void recordValuesLoaded(int recId);
-    void recordStateChanged(int recId);
+    bool readNoteRec(TRK_NOTE_HANDLE noteHandle, TQNote *note) const;
 
     friend class TrkToolDB;
     friend class TrkToolModel;
     friend class TrkToolRecord;
-    friend class RecordTypeDef;
+    friend class TQRecordTypeDef;
     friend class TrkScopeRecHandle;
 };
 
@@ -700,12 +722,12 @@ class TrkHistory: public BaseRecModel<TrkHistoryItem>
     Q_OBJECT
     //Q_PROPERTY(bool unique READ unique WRITE setUnique)
 protected:
-    TrkToolProject *prj;
+    TQAbstractProject *prj;
     bool unique;
 public:
     TrkHistory(QObject *parent = 0);
     virtual ~TrkHistory();
-    void setProject(TrkToolProject *project);
+    void setProject(TQAbstractProject *project);
     void setUnique(bool value);
     //virtual Qt::ItemFlags flags ( const QModelIndex & index ) const;
     //virtual QVariant data(const QModelIndex & index, int role = Qt::DisplayRole ) const;
@@ -734,6 +756,7 @@ public:
 
     friend class TrkToolModel;
     friend class TrkToolRecord;
+
 };
 
 typedef TrkToolRecord *PTrkToolRecord;
@@ -745,11 +768,12 @@ class TrkToolModel: public BaseRecModel<PTrkToolRecord> //QAbstractItemModel
     Q_PROPERTY(QString queryName READ getQueryName)
 protected:
 	//QList<int> recIds;
-	TrkToolProject *prj;
-	TRK_RECORD_TYPE rectype;
+    //TrkToolProject *prj;
+    TQAbstractProject *prj;
+    int rectype;
 	QString idFieldName;
     int idCol;
-    TRK_TRANSACTION_ID prevTransId, lastTransId;
+    qint64 prevTransId, lastTransId;
 
     //TrkToolRecordSet rset;
 	QList<int> vids;
@@ -757,16 +781,16 @@ protected:
     QString queryName;
     bool isQuery;
 public:
-	TrkToolModel(TrkToolProject *project, TRK_RECORD_TYPE type, QObject *parent = 0);
+    TrkToolModel(TQAbstractProject *project, int type, QObject *parent = 0);
     virtual ~TrkToolModel();
 
-    TrkToolProject *project() const
+    TQAbstractProject *project() const
     {
         return prj;
     }
 	// Tracker specific
-    bool openQuery(const QString &queryName, TRK_TRANSACTION_ID afterTransId=0);
-    bool openIds(const QList<int> &ids);
+//    bool openQuery(const QString &queryName, qint64 afterTransId=0);
+//    bool openIds(const QList<int> &ids);
 	QDomDocument recordXml(int row) const;
 	TRK_UINT rowId(int row) const;
     int rowOfRecordId(int id) const;
@@ -774,7 +798,7 @@ public:
 	virtual Qt::ItemFlags flags ( const QModelIndex & index ) const;
 	virtual QVariant data(const QModelIndex & index, int role = Qt::DisplayRole ) const;
 	virtual bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole);
-    const AbstractRecordTypeDef *typeDef();
+    const TQAbstractRecordTypeDef *typeDef();
     virtual void clearRecords();
     QString getQueryName() const;
     QList<int> getIdList() const;
@@ -799,6 +823,7 @@ protected slots:
     void recordChanged(int id);
 
     friend class TrkHistory;
+    friend class TrkToolProject;
 };
 
 class QDomDocument;
@@ -835,22 +860,22 @@ struct TrkScopeNoteHandle
     inline TRK_NOTE_HANDLE * operator&() { return &handle; }
 };
 
-class TrkToolRecord: public QObject
+class TrkToolRecord: public TQRecord
 {
     Q_OBJECT
     Q_PROPERTY(bool isSelected READ isSelected WRITE setSelected)
     Q_PROPERTY(QString title READ title WRITE setTitle)
     Q_PROPERTY(QString description READ description WRITE setDescription)
 public:
-	enum RecMode {View, Edit, Insert};
+//	enum RecMode {View, Edit, Insert};
 protected:
 	//QHash<QString, QVariant> values;
 	TrkToolProject *prj;
-	TRK_RECORD_TYPE rectype;
+//	TRK_RECORD_TYPE rectype;
     mutable QHash<int, QVariant> values; // by VID
     QHash<int, bool> changedValue; // by VID
-	RecMode recMode;
-	TRK_TRANSACTION_ID lastTransaction;
+//    int trecMode;
+    qint64 lastTransaction;
 	QStringList fieldList;
 
     //void readHandle(TRK_RECORD_HANDLE handle, bool force=false);
@@ -859,7 +884,7 @@ protected:
     //NotesCol addedNotes;
 //    QList<int> deletedNotes;
 //    QHash<int, TrkNote> addedNotes;
-    NotesCol notesList;
+    TQNotesCol notesList;
     bool textsReaded;
     QString desc;
     bool descChanged; //, descLoaded;
@@ -870,13 +895,13 @@ protected:
     QStringList historyListMem;
     void readFullRecord();
     virtual void init();
-protected: // Project specific data
+public: //protected: // Project specific data
     //TRK_RECORD_HANDLE lockHandle;
     void setRecordId(TRK_UINT id) { values[VID_Id] = QVariant::fromValue(id); }
 public:
     TrkToolRecord(TrkToolProject *parent=0, TRK_RECORD_TYPE rtype=TRK_SCR_TYPE);
-    TrkToolRecord(const TrkToolRecord& src);
-    TrkToolRecord & operator =(const TrkToolRecord &src);
+    TrkToolRecord(const TrkToolRecord &src);
+//    TrkToolRecord & operator =(const TrkToolRecord &src);
     virtual ~TrkToolRecord();
     Q_INVOKABLE bool isValid()
     {
@@ -885,20 +910,20 @@ public:
 
     Q_INVOKABLE QVariant value(const QString& fieldName, int role = Qt::DisplayRole) const;
     Q_INVOKABLE QVariant value(TRK_VID vid, int role = Qt::DisplayRole) const ;
-	TrkToolRecord::RecMode mode() const { return recMode; }
     Q_INVOKABLE  int recordId() const { return values[VID_Id].toInt(); } // TRK_UINT
     Q_INVOKABLE QString title();
-    Q_INVOKABLE void setTitle(const QString &newTitle);
-    Q_INVOKABLE void setValue(const QString& fieldName, const QVariant& value, int role = Qt::EditRole);
-    Q_INVOKABLE void setValue(TRK_VID vid, const QVariant& value, int role = Qt::EditRole);
+    Q_INVOKABLE bool setTitle(const QString &newTitle);
+    Q_INVOKABLE bool setValue(const QString& fieldName, const QVariant& value, int role = Qt::EditRole);
+    Q_INVOKABLE bool setValue(int vid, const QVariant& value, int role = Qt::EditRole);
     //Q_INVOKABLE bool insertBegin();
-    Q_INVOKABLE bool updateBegin();
-    Q_INVOKABLE bool commit();
-    Q_INVOKABLE bool cancel();
+//    Q_INVOKABLE bool updateBegin();
+//    Q_INVOKABLE bool commit();
+//    Q_INVOKABLE bool cancel();
+//    Q_INVOKABLE int mode() const { return trecMode; }
     Q_INVOKABLE bool isInsertMode() const;
     Q_INVOKABLE bool isEditMode() const;
     QDomDocument toXML();
-    Q_INVOKABLE QString toHTML(const QString &xqCodeFile);
+//    Q_INVOKABLE QString toHTML(const QString &xqCodeFile);
     Q_INVOKABLE QStringList historyList();
     QString description();
     Q_INVOKABLE bool setDescription(const QString &newDesc);
@@ -906,42 +931,43 @@ public:
     Q_INVOKABLE bool isSelected() const;
     Q_INVOKABLE void setSelected(bool value);
     Q_INVOKABLE bool isFieldReadOnly(const QString &field);
-    const AbstractRecordTypeDef *typeDef() const
+    const TQAbstractRecordTypeDef *typeDef() const
     {
-        return prj->recordTypeDef(rectype);
+        return prj->recordTypeDef(recType);
     }
-    AbstractFieldType fieldDef(TRK_VID vid) const
+    TQAbstractFieldType fieldDef(TRK_VID vid) const
     {
-        return typeDef()->getFieldDef(vid);
+        return typeDef()->getFieldType(vid);
     }
-    AbstractFieldType fieldDef(const QString &name) const
+    TQAbstractFieldType fieldDef(const QString &name) const
     {
-        return typeDef()->getFieldDef(name);
+        return typeDef()->getFieldType(name);
     }
-    Q_INVOKABLE bool isEditing() const
-    {
-        return mode() != View;
-    }
-    void setValues(const FieldValues &values)
+//    Q_INVOKABLE bool isEditing() const
+//    {
+//        return mode() != View;
+//    }
+    bool setValues(const FieldValues &values)
     {
         if(!isEditing())
-            return;
+            return false;
         foreach(const QString &fieldName, values.keys())
-            setValue(fieldName, values.value(fieldName), Qt::EditRole);
-
+            if(!setValue(fieldName, values.value(fieldName), Qt::EditRole))
+                return false;
+        return true;
     }
 
     Q_INVOKABLE bool setNote(int index, const QString &title, const QString &text);
     Q_INVOKABLE bool setNoteText(int index, const QString &text);
     Q_INVOKABLE bool deleteNote(int index);
     Q_INVOKABLE int addNote(const QString &noteTitle, const QString &noteText);
-    Q_INVOKABLE bool appendNote(const QString &noteTitle, const QString &note);
+//    Q_INVOKABLE bool appendNote(const QString &noteTitle, const QString &note);
     Q_INVOKABLE QString noteTitle(int index);
     Q_INVOKABLE QString noteText(int index);
     void addLink();
     void removeLink(const QObject *receiver=0);
-    NotesCol notes();
-    QList<TrkToolFile> fileList();
+    TQNotesCol notes();
+    QList<TQToolFile> fileList();
     bool saveFile(int fileIndex, const QString &dest);
     TrkToolProject *project() const
     {
@@ -950,15 +976,15 @@ public:
 
     Q_INVOKABLE void refresh();
     Q_INVOKABLE void releaseBuffer();
-    TRK_RECORD_TYPE recordType() const { return rectype; }
+//    TRK_RECORD_TYPE recordType() const { return rectype; }
 protected slots:
     void somethingChanged();
     void valuesReloaded();
-
+/*
 signals:
-	void changedState(TrkToolRecord::RecMode newmode);
+    void changedState(TQRecord::TQRecMode newmode);
     void changed(int recId);
-
+*/
     friend class TrkToolRecordSet;
     //friend class TrkToolModel;
     friend class TrkToolProject;
@@ -968,8 +994,7 @@ signals:
 
 Q_DECLARE_METATYPE(TrkToolRecord)
 
-/*
-class TrkToolModel: public QAbstractItemModel
+/*class TrkToolModel: public QAbstractItemModel
 {
 	//Q_OBJECT
 protected:
@@ -978,7 +1003,7 @@ protected:
 	TRK_RECORD_TYPE rectype;
 	QStringList queries;
 	QString idFieldName;
-	TRK_TRANSACTION_ID transId;
+    qint64 transId;
 
 	TrkToolRecordSet rset;
 public:

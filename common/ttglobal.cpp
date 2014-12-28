@@ -89,7 +89,7 @@ QString TTGlobal::currentProjectName()
 {
     if(!mainWin)
         return QString();
-    TrkToolProject *prj = mainWin->currentProject();
+    TQAbstractProject *prj = mainWin->currentProject();
     if(!prj)
         return QString();
     return prj->projectName();
@@ -99,10 +99,10 @@ QObject *TTGlobal::getRecord(int id, const QString &project)
 {
     if(!mainWin)
         return 0;
-    TrkToolProject *prj = mainWin->currentProject();
+    TQAbstractProject *prj = mainWin->currentProject();
     if(!prj)
         return 0;
-    return prj->createRecordById(id);
+    return prj->createRecordById(id,prj->defaultRecType());
 }
 
 void TTGlobal::showError(const QString &text)

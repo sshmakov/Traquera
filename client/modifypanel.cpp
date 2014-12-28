@@ -74,7 +74,7 @@ void ModifyPanel::setModel(TrkToolModel *newModel)
 }
 */
 
-void ModifyPanel::setRecordDef(const AbstractRecordTypeDef *typeDef)
+void ModifyPanel::setRecordDef(const TQAbstractRecordTypeDef *typeDef)
 {
     if(rdef == typeDef)
         return;
@@ -100,14 +100,15 @@ void ModifyPanel::setRecordDef(const AbstractRecordTypeDef *typeDef)
             for(int f=0; f<flist.count(); f++)
             {
                 QString fname = flist[f];
+                TQAbstractFieldType fType = typeDef->getFieldType(fname);
                 ModifyRow frow;
                 frow.isGroup = false;
                 frow.fieldName = fname;
-                frow.fieldType = typeDef->fieldType(fname);
+                frow.fieldType = fType.nativeType();
                 //frow.editor = 0;
                 frow.displayValue = "";
                 frow.isChanged = false;
-                frow.isEditable = typeDef->canFieldUpdate(fname);
+                frow.isEditable = fType.canUpdate();
                 //frow.resetBtn = 0;
                 rows.append(frow);
             }
@@ -226,7 +227,7 @@ QTableWidget *ModifyPanel::tableWidget()
     return ui->fieldsTableWidget;
 }
 
-const AbstractFieldType ModifyPanel::fieldDef(int row) const
+const TQAbstractFieldType ModifyPanel::fieldDef(int row) const
 {
     return fieldDef(rows[row].fieldName);
     /*
@@ -239,14 +240,14 @@ const AbstractFieldType ModifyPanel::fieldDef(int row) const
     */
 }
 
-const AbstractFieldType ModifyPanel::fieldDef(const QString &fieldName) const
+const TQAbstractFieldType ModifyPanel::fieldDef(const QString &fieldName) const
 {
     //if(!a_model)
     //    return TrkFieldDef();
     //const RecordTypeDef *rdef = a_model->typeDef();
     if(!rdef)
-        return AbstractFieldType();
-    return rdef->getFieldDef(fieldName);
+        return TQAbstractFieldType();
+    return rdef->getFieldType(fieldName);
 }
 
 void ModifyPanel::setFieldValue(const QString &fieldName, const QVariant &value)

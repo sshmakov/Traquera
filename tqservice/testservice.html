@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
 <body>
@@ -23,19 +23,97 @@ function getXmlHttp(){
 }
 
 var loginXml = '<Login user="Сергей" password="" project="RS-Bank V.6"/>';
+var lastXml, lastDoc;
+var sessionID,projectID;
+
+function toEnv(s)
+{
+    return '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">'
+        + '<soapenv:Body>'
+        + s
+        + '</soapenv:Body>'
+        + '</soapenv:Envelope> ';
+}
+
+function parseCommon(env)
+{
+    var body = env.firstElementChild;
+    var i;
+    for(i=0; i< body.childElementCount; i++)
+    {
+        var el = body.children[i];
+        if(el.localName == "LoginResult")
+	{
+            sessionID = el.attributes.getNamedItem("sessionID").value;
+            projectID = el.attributes.getNamedItem("projectID").value;
+	}
+    }
+}
 
 function sendLogin()
 {
     var obj = new XMLHttpRequest();
     obj.open('POST',adr,false);
-    obj.setRequestHeader('Content-Type', 'application/xml');
+    obj.setRequestHeader('Content-Type', 'text/xml');
     obj.setRequestHeader("SOAPAction", "Login");
-    obj.send(loginXml);
-    resPlace.innerHTML = "Result: "+obj.status+" <br/><xmp>" + obj.responseText+"</xmp>";
+    var req = toEnv(loginXml);
+    obj.send(req);
+    //lastDoc = obj.responseXML;
+    lastDoc = (new DOMParser()).parseFromString(obj.responseText, 'text/xml');
+    lastXml = obj.responseText;
+    resPlace.innerHTML = "Result: "+obj.status+" <br/><xmp>" + lastXml +"</xmp>";
+    var env = lastDoc.firstElementChild;
+    parseCommon(env);
 }
+
+function sendProjects()
+{
+    var obj = new XMLHttpRequest();
+    obj.open('POST',adr,false);
+    obj.setRequestHeader('Content-Type', 'text/xml');
+    obj.setRequestHeader("SOAPAction", "GetProjects");
+    obj.send(toEnv('<Session sessionID="'+sessionID+'"/>'));
+    lastXml = obj.responseText;
+    resPlace.innerHTML = "Result: "+obj.status+" <br/><xmp>" + lastXml +"</xmp>";
+}
+
+function openQuery()
+{
+    var obj = new XMLHttpRequest();
+    obj.open('POST',adr,false);
+    obj.setRequestHeader('Content-Type', 'text/xml');
+    obj.setRequestHeader("SOAPAction", "Query");
+    var req = toEnv(
+        '<Session sessionID="'+sessionID+'"/>'
+        + '<Project projectID="'+projectID+'"/>'
+        + '<Query queryName="All_SCRs" recordType="1"/>');
+    obj.send(req);
+    lastXml = obj.responseText;
+    resPlace.innerHTML = "Result: "+obj.status+" <br/><xmp>" + lastXml +"</xmp>";
+}
+
+function recDef()
+{
+    var obj = new XMLHttpRequest();
+    obj.open('POST',adr,false);
+    obj.setRequestHeader('Content-Type', 'text/xml');
+    obj.setRequestHeader("SOAPAction", "RecordDef");
+    var req = toEnv(
+        '<Session sessionID="'+sessionID+'"/>'
+        + '<Project projectID="'+projectID+'"/>'
+        + '<RecordDef recordType="1"/>');
+    obj.send(req);
+    lastXml = obj.responseText;
+    resPlace.innerHTML = "Result: "+obj.status+" <br/><xmp>" + lastXml +"</xmp>";
+}
+
+
 </script>
 <div>
 <input type="button" value="Login" onclick="sendLogin(); return false"/>
+<input type="button" value="Projects" onclick="sendProjects(); return false"/>
+<input type="button" value="Query" onclick="openQuery(); return false"/>
+<input type="button" value="RecDef" onclick="recDef(); return false"/>
 </div>
 <div id="resPlace">
 </div>

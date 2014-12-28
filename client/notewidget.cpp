@@ -3,13 +3,13 @@
 #include <trkview.h>
 #include <QPlainTextEdit>
 
-NoteWidget::NoteWidget(TrkToolRecord *rec, QWidget *parent) :
+NoteWidget::NoteWidget(TQRecord *rec, QWidget *parent) :
     QWidget(parent),
     ui(new Ui::NoteWidget)
 {
     ui->setupUi(this);
     record = rec;
-    ui->titleEdit->addItems(((RecordTypeDef*)record->typeDef())->project()->noteTitles);
+    ui->titleEdit->addItems(((TQRecordTypeDef*)record->typeDef())->project()->noteTitleList());
     connect(ui->titleEdit,SIGNAL(editTextChanged(QString)),SLOT(onTitleChanged(QString)));
     connect(ui->noteEdit,SIGNAL(textChanged()),SLOT(onTextChanged()));
     connect(ui->submitButton,SIGNAL(clicked()),SLOT(onSubmitClicked()));

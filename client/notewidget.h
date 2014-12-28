@@ -3,7 +3,7 @@
 
 #include <QWidget>
 
-class TrkToolRecord;
+class TQRecord;
 class TTRecordWindow;
 
 #define NoteWidget_MIME "application/scrnote"
@@ -17,7 +17,7 @@ class NoteWidget : public QWidget
     Q_OBJECT
     
 public:
-    explicit NoteWidget(TrkToolRecord *rec, QWidget *parent = 0);
+    explicit NoteWidget(TQRecord *rec, QWidget *parent = 0);
     ~NoteWidget();
     Q_INVOKABLE QString noteTitle() const;
     Q_INVOKABLE QString noteText() const;
@@ -43,7 +43,7 @@ protected slots:
     void onCancelClicked();
 
 public:
-    TrkToolRecord *record;
+    TQRecord *record;
     int index;
 
 private:

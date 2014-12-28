@@ -21,15 +21,15 @@ class ScrPluginFactory;
 class TTRecordWindow : public QMainWindow
 {
     Q_OBJECT
-    Q_PROPERTY(TrkToolRecord *record READ getRecord)
+    Q_PROPERTY(TQRecord *record READ getRecord)
     Q_PROPERTY(QString description READ description WRITE setDescription)
     Q_PROPERTY(bool changed READ isChanged WRITE setChanged)
 public:
     explicit TTRecordWindow(QWidget *parent = 0);
     ~TTRecordWindow();
-    void setTypeDef(const AbstractRecordTypeDef *recDef);
-    Q_INVOKABLE TrkToolRecord *getRecord();
-    void setRecord(TrkToolRecord *rec);
+    void setTypeDef(const TQAbstractRecordTypeDef *recDef);
+    Q_INVOKABLE TQRecord *getRecord();
+    void setRecord(TQRecord *rec);
     Q_INVOKABLE QString noteTitle(int index);
     Q_INVOKABLE QString noteText(int index);
     Q_INVOKABLE bool setValue(const QString &field, const QVariant &value);
@@ -57,8 +57,8 @@ signals:
 
 protected:
     ModifyPanel *props;
-    RecordTypeDef *recDef;
-    TrkToolRecord *a_record;
+    TQRecordTypeDef *recDef;
+    TQRecord *a_record;
     ScrPluginFactory *factory;
     bool changed;
     struct NoteValue {

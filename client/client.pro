@@ -10,6 +10,7 @@ INCLUDEPATH += \
 	../trktool/lib \
         ../common \
         ../tracker
+
 # LIBS += -l./trktool/trktooln
 CONFIG += qaxcontainer
 QT += sql xml webkit xmlpatterns network
@@ -60,7 +61,9 @@ HEADERS += \
     previewfactory.h \
     highlighter.h \
     ../common/tqplug.h \
-    ../tracker/tqservicedb.h
+    ../tracker/tqservicedb.h \
+    ../common/tqbase.h \
+    replyhdl.h
 
 #    plans.h planproxy.h \
 #    planfiles.h \
@@ -94,7 +97,9 @@ SOURCES += database.cpp main.cpp mainwindow.cpp querypage.cpp \
     scrpluginfactory.cpp \
     previewfactory.cpp \
     highlighter.cpp \
-    ../tracker/tqservicedb.cpp
+    ../tracker/tqservicedb.cpp \
+    ../common/tqbase.cpp \
+    replyhdl.cpp
 
 #    planfilesform.cpp \
 #    project.cpp projectpage.cpp plans.cpp planproxy.cpp planfiles.cpp \

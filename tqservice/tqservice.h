@@ -16,6 +16,8 @@ class TQService: public QObject
     Q_OBJECT
 private:
     QHash<QString, TQSession *> sessions;
+    QFile fout;
+    QTextStream out;
 public:
     TQService(QObject *parent = 0);
 //    QDomDocument process(const QString &action, const QDomDocument &request);
@@ -28,9 +30,9 @@ class TQSession: public QObject
 {
     Q_OBJECT
 private:
-    TrkToolDB *db;
+    TQAbstractDB *db;
     QString dbType;
-    QHash<QString, TrkToolProject *> connectedProjects;
+    QHash<QString, TQAbstractProject *> connectedProjects;
 //    bool opened;
     QDateTime createTime, lastActivity;
     QString sid;
@@ -39,8 +41,9 @@ public:
     ~TQSession();
     QString sessionID() const;
     QStringList projectList();
-    bool login(const QString &user, const QString &password, const QString &project);
-    TrkToolProject *project(const QString &pid) const;
+    QString login(const QString &user, const QString &password, const QString &project);
+    QStringList projects();
+    TQAbstractProject *project(const QString &pid) const;
     bool isOpened(const QString &pid) const;
     QString requestRecord(const QString &pid, int id);
 };
@@ -85,8 +88,11 @@ public:
     QString lastTag;
     QString sessionId, projectId;
     TQSession *session;
-    TrkToolProject *project;
+    TQAbstractProject *project;
     QStringList log;
+    QDomDocument resultDoc;
+    QDomElement resultRoot, resultBody;
+    QString lastErrorString;
 
     TQMesHandler();
 
@@ -102,7 +108,12 @@ public:
                            const QString &qName, const QXmlAttributes &attributes);
     virtual bool endTQElement(const QString &namespaceURI, const QString &localName,
                             const QString &qName);
-    virtual QDomDocument executeTQ();
+    QDomDocument executeAll();
+    virtual int executeTQ();
+    virtual bool	error ( const QXmlParseException & exception );
+    virtual bool	fatalError ( const QXmlParseException & exception );
+    QString errorString () const;
+    void addErrorString(const QString &text);
 
 
 //    QString user;
@@ -124,13 +135,59 @@ public:
                       const QString &qName, const QXmlAttributes &attributes);
     bool endTQElement(const QString &namespaceURI, const QString &localName,
                     const QString &qName);
-    QDomDocument executeTQ();
+    int executeTQ();
 };
 
 class TQProjectListHandler : public TQMesHandler
 {
 public:
-    QDomDocument executeTQ();
+    int executeTQ();
 };
+
+/*
+class TQLoggedHandler : public TQMesHandler
+{
+public:
+    TQLoggedHandler();
+    bool startElement(const QString &namespaceURI, const QString &localName,
+                      const QString &qName, const QXmlAttributes &attributes);
+};
+*/
+
+class TQQueryHandler : public TQMesHandler
+{
+public:
+    QString queryName;
+    int recType;
+
+    TQQueryHandler();
+    bool startTQElement(const QString &namespaceURI, const QString &localName,
+                      const QString &qName, const QXmlAttributes &attributes);
+    int executeTQ();
+};
+
+class TQQueryListHandler : public TQMesHandler
+{
+public:
+    int recType;
+
+    TQQueryListHandler();
+    bool startTQElement(const QString &namespaceURI, const QString &localName,
+                      const QString &qName, const QXmlAttributes &attributes);
+    int executeTQ();
+};
+
+class TQRecordDefReq : public TQMesHandler
+{
+public:
+    int recType;
+
+    TQRecordDefReq();
+    bool startTQElement(const QString &namespaceURI, const QString &localName,
+                      const QString &qName, const QXmlAttributes &attributes);
+    int executeTQ();
+};
+
+
 
 #endif // TQSERVICE_H

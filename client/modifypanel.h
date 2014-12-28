@@ -17,7 +17,7 @@ class ModifyPanel : public QWidget
 
 protected:
 //    TrkToolModel *a_model;
-    const AbstractRecordTypeDef *rdef;
+    const TQAbstractRecordTypeDef *rdef;
     QueryPage *queryPage;
 
     QStringList fieldGroups;
@@ -43,7 +43,7 @@ public:
     
 //    void setQueryPage(QueryPage *page);
 //    void setModel(TrkToolModel *newModel);
-    void setRecordDef(const AbstractRecordTypeDef *typeDef);
+    void setRecordDef(const TQAbstractRecordTypeDef *typeDef);
     //void fillValues(TrkToolRecord *record);
     void fillValues(const QObjectList &records);
     QTableWidget *tableWidget();
@@ -51,8 +51,8 @@ public:
     {
         return rows[row];
     }
-    const AbstractFieldType fieldDef(int row) const;
-    const AbstractFieldType fieldDef(const QString &fieldName) const;
+    const TQAbstractFieldType fieldDef(int row) const;
+    const TQAbstractFieldType fieldDef(const QString &fieldName) const;
     void setRowValue(int row, const QVariant &value, int role = Qt::EditRole);
     QString fieldName(const QModelIndex &index);
     QVariant fieldValue(const QString &fieldName);

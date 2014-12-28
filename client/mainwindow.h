@@ -35,7 +35,7 @@ class TTGlobal;
 class MainWindow : public QMainWindow, private Ui::MainWindow
 {
     Q_OBJECT
-    Q_PROPERTY(TrkToolProject *currentProject READ currentProject)
+    Q_PROPERTY(TQAbstractProject *currentProject READ currentProject)
 public:
 	MainWindow(QWidget *parent = 0);
     virtual ~MainWindow();
@@ -47,8 +47,8 @@ private:
     //QList<QSqlQueryModel *> prjmodels;
 	//QList<QSqlDatabase> prjdbs;
 	//TrkDb *trkdb;
-	TrkToolDB *trkdb;
-	TrkToolProject *trkproject;
+    TQAbstractDB *trkdb;
+    TQAbstractProject *trkproject;
     TrkHistory *journal;
     //PlansPlugin *planPlugin;
     //PlanFilesModel *projects;
@@ -60,7 +60,7 @@ private:
     QLabel *statusLine;
     QProgressBar *progressBar;
     int progressLevel;
-    QNetworkAccessManager *am;
+//    QNetworkAccessManager *am;
 //    QString solrUrl;
 public slots:
 	void readQueries();
@@ -91,7 +91,7 @@ public:
     void loadPlugins();
     //QMenu MainWindow::planMenu(bool forLink=false);
     void readModifications();
-    Q_INVOKABLE TrkToolProject *currentProject()
+    Q_INVOKABLE TQAbstractProject *currentProject()
     {
         return trkproject;
     }
@@ -138,7 +138,7 @@ public slots:
     void focusTab(QWidget *widget);
     QToolBar *addToolBar(const QString &title);
     void addWidgetToDock(const QString &title, QWidget *widget, Qt::DockWidgetArea area = Qt::RightDockWidgetArea);
-    void updateModifyPanel(const AbstractRecordTypeDef *typeDef, const QObjectList &records);
+    void updateModifyPanel(const TQAbstractRecordTypeDef *typeDef, const QObjectList &records);
 
 signals:
     void updatingDetails();
@@ -185,6 +185,7 @@ private slots:
     void on_actionEditContents_triggered();
     //void on_actionPlansDialog_triggered();
     void on_actionNewRequest_triggered();
+    void on_btnService_clicked();
 };
 
 #endif

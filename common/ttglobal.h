@@ -9,6 +9,7 @@
 class QMainWindow;
 class MainWindow;
 class TrkToolProject;
+class TQAbstractProject;
 class QSettings;
 class QTableView;
 class QMenu;

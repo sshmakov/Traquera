@@ -16,6 +16,8 @@ class QSqlDatabase;
 #include <QSettings>
 #include <QSqlQueryModel>
 
+#include <tqbase.h>
+
 
 #ifdef _DEBUG
 #define DEBUGINFO(title, text) \
@@ -328,22 +330,6 @@ public:
 	friend TrkItemModel;
 };
 
-struct TrkNote
-{
-	QString title;
-	QString author;
-	QString text;
-	QDateTime crdate;
-	QDateTime mddate;
-    int perm;
-    bool isAdded;
-    bool isDeleted;
-    bool isChanged;
-//    TrkNote();
-//    TrkNote(const TrkNote &src);
-};
-
-typedef QList<TrkNote> NotesCol;
 
 #ifdef CLIENT_APP
 
@@ -370,7 +356,7 @@ public:
 	int getColNum(const QString &fieldName);
 	QSqlRecord record(const QModelIndex& index);
 	//TrkRecord record(int id);
-	NotesCol *notes(int row);
+    TQNotesCol *notes(int row);
 };
 
 
@@ -423,7 +409,7 @@ public:
 	int getColNum(const QString &fieldName);
 	QSqlRecord record(const QModelIndex& index);
 	//TrkRecord record(int id);
-	NotesCol *notes(int row);
+    TQNotesCol *notes(int row);
 };
 
 #endif

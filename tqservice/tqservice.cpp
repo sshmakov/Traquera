@@ -65,7 +65,12 @@ void ExtensionThreadProc(LPVOID);
 QString serverVariable(const EXTENSION_CONTROL_BLOCK *lpECB, const QString &name)
 {
     DWORD bufLen = 0;
-    lpECB->GetServerVariable(lpECB->ConnID, name.toLatin1().data(), NULL, &bufLen);
+    QByteArray arr = name.toLatin1();
+    char *varName = arr.data();
+    bool res = lpECB->GetServerVariable(lpECB->ConnID, varName, NULL, &bufLen);
+    int error;
+    if(!res && ERROR_INSUFFICIENT_BUFFER != (error = GetLastError()))
+        return QString();
     if(!bufLen)
         return QString();
     QScopedArrayPointer<char> buf(new char[bufLen]);
@@ -100,16 +105,21 @@ extern "C" TQSERVICESHARED_EXPORT DWORD WINAPI   HttpExtensionProc( __in EXTENSI
 //    dom.setContent(&dev);
 //    QDomDocument result = service->process(action,dom);
 
-    QByteArray resXML = result.toByteArray();
+    QString resString = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n"
+            + result.toString();
+    QByteArray resXML = resString.toUtf8();
     qint64 resSize = resXML.size();
 
-    char pszHdr[200];
+    char pszHdr[400];
+
     static char szHeader[] =
             "Content-Length: %lu\r\n"
-            "Content-type: application/xml\r\n"
+            "Content-type: text/xml; charset=UTF-8\r\n"
             "Pragma: no-cache\r\n"
             "Expires: 0\r\n"
             "Cache-Control: no-cache\r\n"
+            "Access-Control-Allow-Origin: *\r\n"
+            "Access-Control-Allow-Headers: SOAPAction, Content-type\r\n"
             "\r\n";
     sprintf(pszHdr, szHeader, resSize); //create header
     HSE_SEND_HEADER_EX_INFO hInfo;
@@ -328,7 +338,8 @@ static QString tagLocalName(const QDomElement &node, const QString & ns = QStrin
 TQService::TQService(QObject *parent)
     : QObject(parent)
 {
-
+    fout.open(stdout,QIODevice::WriteOnly);
+    out.setDevice(&fout);
 }
 
 const char *SoapNS = "http://schemas.xmlsoap.org/soap/envelope/";
@@ -390,6 +401,7 @@ const char *XsdNS="http://www.w3.org/2001/XMLSchema";
 
 QDomDocument TQService::processDev(const QString &action, QIODevice *dev)
 {
+    out << action;
     if(action == "Login")
     {
         TQLoginHandler handler;
@@ -424,7 +436,22 @@ QDomDocument TQService::processDev(const QString &action, QIODevice *dev)
         TQProjectListHandler handler;
         return handle(&handler,dev);
     }
-    return errorDoc(-1, "");
+    else if (action == "Query")
+    {
+        TQQueryHandler handler;
+        return handle(&handler,dev);
+    }
+    else if (action == "QueryList")
+    {
+        TQQueryListHandler handler;
+        return handle(&handler,dev);
+    }
+    else if (action == "RecordDef")
+    {
+        TQRecordDefReq handler;
+        return handle(&handler,dev);
+    }
+    return errorDoc(-1, "Unknown action");
 }
 
 QDomDocument TQService::handle(TQMesHandler *handler, QIODevice *dev)
@@ -435,7 +462,7 @@ QDomDocument TQService::handle(TQMesHandler *handler, QIODevice *dev)
     reader.setErrorHandler(handler);
 
     reader.parse(xmlInputSource);
-    return handler->executeTQ();
+    return handler->executeAll();
 }
 
 QDomDocument TQService::errorDoc(int errorCode, const QString &errorDesc, const QString &errorDetail)
@@ -450,8 +477,8 @@ QDomDocument TQService::errorDoc(int errorCode, const QString &errorDesc, const 
 
     QDomDocument xml;
     QDomElement root= xml.createElementNS(SoapNS, "soapenv:Envelope");
-    root.setAttribute("xmlns:xsi","http://www.w3.org/2001/XMLSchema-instance");
-    root.setAttribute("xmlns:xsd","http://www.w3.org/2001/XMLSchema");
+    root.setAttribute("xmlns:xsi", XsiNS /*"http://www.w3.org/2001/XMLSchema-instance"*/);
+    root.setAttribute("xmlns:xsd", XsdNS /*"http://www.w3.org/2001/XMLSchema"*/);
     xml.appendChild(root);
 
     QDomElement body= xml.createElement("soapenv:Body");
@@ -484,14 +511,18 @@ static QHash<QString, TQSession *> sessionsPool;
 TQSession::TQSession(QObject *parent)
 {
     db=new TrkToolDB(this);
-    db->dbmsUser = ""; //sets.value("dbmsUser").toString();
-    db->dbmsPassword = ""; //sets.value("dbmsPassword").toString();
-    db->dbmsName = "SHMAKOVTHINK\\SQLEXPRESS";
+    db->setDbmsParams("SHMAKOVTHINK\\SQLEXPRESS",
+                      "", //sets.value("dbmsUser").toString(),
+                      "" //sets.value("dbmsPassword").toString();
+                      );
+//    db->dbmsUser = "";
+//    db->dbmsPassword = "";
+//    db->dbmsName = "SHMAKOVTHINK\\SQLEXPRESS";
     dbType = "LocalSQL";
     createTime = QDateTime::currentDateTimeUtc();
     lastActivity = createTime;
     sid = QUuid::createUuid().toString();
-    sessionsPool[sid] = this;
+    sessionsPool.insert(sid, this);
     //QScopedPointer<TrkToolProject> prj(db->openProject(argv[1],argv[2],argv[3],argv[4]));
 }
 
@@ -499,7 +530,7 @@ TQSession::~TQSession()
 {
     if(!connectedProjects.isEmpty())
     {
-        foreach(TrkToolProject *prj, connectedProjects)
+        foreach(TQAbstractProject *prj, connectedProjects)
             delete prj;
         connectedProjects.clear();
     }
@@ -518,26 +549,31 @@ QStringList TQSession::projectList()
     return db->projects(dbType);
 }
 
-bool TQSession::login(const QString &user, const QString &password, const QString &project)
+QString TQSession::login(const QString &user, const QString &password, const QString &project)
 {
      //sets.value("dbmsType").toString(),
 //            project = "RS-Bank V.6", //sets.value("project").toString(),
 //            user = QString::fromLocal8Bit("Сергей"), //sets.value("user").toString(),
 //            password = ""; //sets.value("password").toString();
-    TrkToolProject *prj = db->openProject(dbType,project,user,password);
+    TQAbstractProject *prj = db->openProject(dbType,project,user,password);
     if(prj)
         if(prj->isOpened())
         {
             QString pid = QUuid::createUuid().toString();
             connectedProjects[pid] = prj;
-            return true;
+            return pid;
         }
         else
             delete prj;
-    return false;
+    return QString();
 }
 
-TrkToolProject *TQSession::project(const QString &pid) const
+QStringList TQSession::projects()
+{
+    return db->projects(dbType);
+}
+
+TQAbstractProject *TQSession::project(const QString &pid) const
 {
     return connectedProjects.value(pid,0);
 }
@@ -545,16 +581,16 @@ TrkToolProject *TQSession::project(const QString &pid) const
 
 bool TQSession::isOpened(const QString &pid) const
 {
-    TrkToolProject *prj = project(pid);
+    TQAbstractProject *prj = project(pid);
     return prj && prj->isOpened();
 }
 
 QString TQSession::requestRecord(const QString &pid, int id)
 {
-    TrkToolProject *prj = project(pid);
+    TQAbstractProject *prj = project(pid);
     if(!prj)
         return QString();
-    QScopedPointer<TrkToolRecord> rec(prj->createRecordById(id));
+    QScopedPointer<TrkToolRecord> rec(prj->createRecordById(id, prj->defaultRecType()));
     if(rec.isNull())
         return "empty";
     return rec->toXML().toString();
@@ -579,7 +615,7 @@ bool TQHttpRequestDevice::isSequential() const
 
 qint64 TQHttpRequestDevice::readData(char *data, qint64 maxSize)
 {
-    qint64 res=0;
+    qint64 resReaded=0;
     qint64 inBuf = qMin<qint64>(maxSize, qMax<qint64>(ecb->cbAvailable - readed, 0));
     if(inBuf)
     {
@@ -587,9 +623,8 @@ qint64 TQHttpRequestDevice::readData(char *data, qint64 maxSize)
         qMemCopy(data, bufPtr, inBuf);
         readed += inBuf;
         data += inBuf;
-        res += inBuf;
+        resReaded += inBuf;
         maxSize -= inBuf;
-        res += inBuf;
     }
     while(maxSize)
     {
@@ -604,7 +639,7 @@ qint64 TQHttpRequestDevice::readData(char *data, qint64 maxSize)
         if(!size)
             break;
     }
-    return res;
+    return resReaded;
 }
 
 qint64 TQHttpRequestDevice::writeData(const char *data, qint64 maxSize)
@@ -634,19 +669,36 @@ qint64 TQHttpRequestDevice::bytesAvailable() const
 TQMesHandler::TQMesHandler()
 {
     session = 0;
+    resultDoc = QDomDocument();
+    resultRoot = resultDoc.createElementNS(SoapNS, "soapenv:Envelope");
+    //resultRoot.setAttribute("xmlns:soapenv","http://schemas.xmlsoap.org/soap/envelope/");
+    resultRoot.setAttribute("xmlns:xsi","http://www.w3.org/2001/XMLSchema-instance");
+    resultRoot.setAttribute("xmlns:xsd","http://www.w3.org/2001/XMLSchema");
+    resultDoc.appendChild(resultRoot);
+
+    resultBody = resultDoc.createElement("soapenv:Body");
+    resultRoot.appendChild(resultBody);
 }
 
 bool TQMesHandler::startElement(const QString &namespaceURI, const QString &localName, const QString &qName, const QXmlAttributes &attributes)
 {
     log << QString("start element ns: %1, localName: %2, qName: %3").arg(namespaceURI, localName, qName)
         + "\n";
-    if(namespaceURI == AppNS)
+    if(namespaceURI == AppNS || namespaceURI.isEmpty())
     {
         if(localName == "Session")
         {
             //requestType = LoginProject;
             sessionId = attributes.value("sessionID");
             session = sessionsPool.value(sessionId,0);
+            if(!session)
+            {
+                addErrorString(QString("Not found sessionID '%1'").arg(sessionId));
+                QString s("Registered:") ;
+                foreach(const QString &sid, sessionsPool.keys())
+                    s += " " + sid;
+                addErrorString(s);
+            }
             return true;
         }
         else if(localName == "Project")
@@ -656,6 +708,8 @@ bool TQMesHandler::startElement(const QString &namespaceURI, const QString &loca
                 project = session->project(projectId);
             else
                 project = 0;
+            if(!project)
+                addErrorString(QString("Not found projectID '%1'").arg(projectId));
             return true;
         }
     }
@@ -708,9 +762,42 @@ bool TQMesHandler::endTQElement(const QString &namespaceURI, const QString &loca
     return true;
 }
 
-QDomDocument TQMesHandler::executeTQ()
+QDomDocument TQMesHandler::executeAll()
 {
-    return QDomDocument();
+    int res = executeTQ();
+    if(res)
+        return service->errorDoc(res,"Execute error",errorString());
+    return resultDoc;
+}
+
+int TQMesHandler::executeTQ()
+{
+    return 0;
+}
+
+bool TQMesHandler::error(const QXmlParseException &exception)
+{
+    lastErrorString += QString("Error in %1:%2 %3/r/n").arg(exception.lineNumber(),exception.columnNumber()).arg(exception.message());
+    return true;
+}
+
+bool TQMesHandler::fatalError(const QXmlParseException &exception)
+{
+    lastErrorString += QString("Fatal error in %1:%2 %3/r/n")
+            .arg(exception.lineNumber())
+            .arg(exception.columnNumber())
+            .arg(exception.message());
+    return true;
+}
+
+QString TQMesHandler::errorString() const
+{
+    return lastErrorString;
+}
+
+void TQMesHandler::addErrorString(const QString &text)
+{
+    lastErrorString += text;
 }
 
 
@@ -726,9 +813,8 @@ bool TQLoginHandler::startTQElement(const QString &namespaceURI, const QString &
         user = attributes.value("user");
         password = attributes.value("password");
         project = attributes.value("project");
-        return true;
     }
-    return false;
+    return true;
 }
 
 bool TQLoginHandler::endTQElement(const QString &namespaceURI, const QString &localName, const QString &qName)
@@ -736,38 +822,151 @@ bool TQLoginHandler::endTQElement(const QString &namespaceURI, const QString &lo
     return true;
 }
 
-QDomDocument TQLoginHandler::executeTQ()
+int TQLoginHandler::executeTQ()
 {
     bool newSess = !session;
     if(newSess)
         session = new TQSession();
-    if(session->login(user,password,project))
+    QString pid = session->login(user,password,project);
+    TQAbstractProject *prj = 0;
+    if(!pid.isEmpty())
+        prj = session->project(pid);
+    if(prj)
     {
-        QDomDocument xml;
-        QDomElement root= xml.createElementNS(SoapNS, "soapenv:Envelope");
-        root.setAttribute("xmlns:xsi","http://www.w3.org/2001/XMLSchema-instance");
-        root.setAttribute("xmlns:xsd","http://www.w3.org/2001/XMLSchema");
-        xml.appendChild(root);
-
-        QDomElement body= xml.createElement("soapenv:Body");
-        root.appendChild(body);
-        QDomElement res= xml.createElement("Session");
+        QDomElement res = resultDoc.createElement("LoginResult");
+        res.setAttribute("result","true");
+        QString projName = prj->projectName();
+        res.setAttribute("project",projName);
+//        QDomElement sess = resultDoc.createElement("Session");
         res.setAttribute("sessionID",session->sessionID());
-        body.appendChild(res);
-        return xml;
+//        resultBody.appendChild(res);
+//        QDomElement prjNode = resultDoc.createElement("Project");
+        res.setAttribute("projectID",pid);
+        resultBody.appendChild(res);
+        return 0;
     }
     if(newSess)
     {
         delete session;
         session = 0;
     }
-    return QDomDocument();
+    return 10;
 }
 
 
-QDomDocument TQProjectListHandler::executeTQ()
+int TQProjectListHandler::executeTQ()
 {
     if(!session)
-        return QDomDocument();
+        return 10;
+    QDomElement res = resultDoc.createElement("ProjectList");
+    resultBody.appendChild(res);
+    foreach(const QString &p, session->projects())
+    {
+        QDomElement res = resultDoc.createElement("Project");
+        res.setAttribute("name",p);
+        resultBody.appendChild(res);
+    }
+    return 0;
+}
 
+
+TQQueryHandler::TQQueryHandler()
+{
+}
+
+bool TQQueryHandler::startTQElement(const QString &namespaceURI, const QString &localName, const QString &qName, const QXmlAttributes &attributes)
+{
+    if(localName == "Query")
+    {
+        queryName = attributes.value("queryName");
+        QString r = attributes.value("recordType");
+        if(r.isEmpty())
+            recType = 1;
+        else
+            recType = r.toInt();
+    }
+    return true;
+}
+
+int TQQueryHandler::executeTQ()
+{
+    if(!session || !project)
+        return 12;
+    if(queryName.isEmpty())
+        return 13;
+    QList<int> ids = project->getQueryIds(queryName, recType);
+    foreach(int id, ids)
+    {
+        QDomElement res = resultDoc.createElement("Record");
+        res.setAttribute("id",id);
+        resultBody.appendChild(res);
+    }
+    return 0;
+}
+
+
+TQQueryListHandler::TQQueryListHandler()
+{
+}
+
+bool TQQueryListHandler::startTQElement(const QString &namespaceURI, const QString &localName, const QString &qName, const QXmlAttributes &attributes)
+{
+    if(localName.compare("QueryList",Qt::CaseInsensitive) == 0)
+    {
+        QString r = attributes.value("recordType");
+        if(r.isEmpty())
+            recType = 1;
+        else
+            recType = r.toInt();
+    }
+    return true;
+}
+
+int TQQueryListHandler::executeTQ()
+{
+    if(!session || !project)
+        return 12;
+    QAbstractItemModel *model = project->queryModel(recType);
+    QDomElement res = resultDoc.createElement("QueryList");
+    for(int r=0; r<model->rowCount(); r++)
+    {
+        QString name = model->index(r,0).data().toString();
+        QString pub = model->index(r,1).data().toString();
+        QDomElement q = resultDoc.createElement("Query");
+        q.setAttribute("name",name);
+        q.setAttribute("public",pub);
+        res.appendChild(q);
+    }
+    resultBody.appendChild(res);
+    return 0;
+}
+
+
+TQRecordDefReq::TQRecordDefReq()
+{
+}
+
+bool TQRecordDefReq::startTQElement(const QString &namespaceURI, const QString &localName, const QString &qName, const QXmlAttributes &attributes)
+{
+    if(localName.compare("RecordDef",Qt::CaseInsensitive) == 0)
+    {
+        QString r = attributes.value("recordType");
+        if(r.isEmpty())
+            recType = 1;
+        else
+            recType = r.toInt();
+    }
+    return true;
+}
+
+int TQRecordDefReq::executeTQ()
+{
+    if(!session || !project)
+        return 12;
+    QDomDocument defDoc = project->recordTypeDefDoc(recType);
+    QDomElement res = resultDoc.createElement("RecordDef");
+    res.setAttribute("recordType",recType);
+    resultBody.appendChild(res);
+    resultBody.appendChild(defDoc.documentElement());
+    return 0;
 }

@@ -15,6 +15,12 @@
 #include "ttglobal.h"
 #include "unionmodel.h"
 #include "ttfolders.h"
+#define SERV_DB_ON
+#ifdef SERV_DB_ON
+#include "tqservicedb.h"
+#endif
+
+
 
 #include <QtGui>
 #include <QtSql>
@@ -38,13 +44,16 @@ MainWindow::MainWindow(QWidget *parent)
 {
     //qRegisterMetaType<MainWindow>("QMainWindow");
     setupUi(this);
+
+    editServiceUrl->setText("http://localhost:8080/tq");
+
     QWebSettings::globalSettings()->setAttribute(QWebSettings::PluginsEnabled, true);
     QWebSettings::globalSettings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
     QWebSettings::globalSettings()->setAttribute(QWebSettings::JavascriptCanAccessClipboard, true);
 
     statusLine = new QLabel(this);
-    am = new QNetworkAccessManager(this);
-    connect(am,SIGNAL(finished(QNetworkReply*)),SLOT(finishedSearch(QNetworkReply*)));
+//    am = new QNetworkAccessManager(this);
+//    connect(am,SIGNAL(finished(QNetworkReply*)),SLOT(finishedSearch(QNetworkReply*)));
     //solrUrl = "http://localhost:8983/solr/collection1/select?q=%1&fl=Id_i&wt=xml&defType=edismax&qf=Description_t+note_txt&stopwords=true&lowercaseOperators=true";
     progressBar = new QProgressBar(this);
     progressBar->setTextVisible(false);
@@ -67,7 +76,12 @@ MainWindow::MainWindow(QWidget *parent)
 #ifdef DECORATOR
     decorator = new TrkDecorator(this);
 #endif
-    trkdb = new TrkToolDB(this);
+    trkdb = 0;
+//#ifdef SERV_DB_ON
+//    trkdb = new TQServiceDB(this);
+//#else
+//    trkdb = new TrkToolDB(this);
+//#endif
 	trkproject = 0;
     selectionTimer = new QTimer(this);
     selectionTimer->setSingleShot(true);
@@ -460,9 +474,9 @@ void MainWindow::readDbms()
 
 void MainWindow::readProjects()
 {
-    trkdb->dbmsName = serverEdit->text().trimmed();
-    trkdb->dbmsUser = sqlUserEdit->text();
-    trkdb->dbmsPassword = sqlPassEdit->text();
+    trkdb->setDbmsParams(serverEdit->text().trimmed(),
+                         sqlUserEdit->text(),
+                         sqlPassEdit->text());
     QStringList projects = trkdb->projects(dbmsEdit->text());
     QMenu *menu=new QMenu();
     for(int i = 0; i< projects.count(); i++)
@@ -572,7 +586,7 @@ void MainWindow::addWidgetToDock(const QString &title, QWidget *widget, Qt::Dock
     connect(widget,SIGNAL(destroyed()),dw,SLOT(deleteLater()));
 }
 
-void MainWindow::updateModifyPanel(const AbstractRecordTypeDef *typeDef, const QObjectList &records)
+void MainWindow::updateModifyPanel(const TQAbstractRecordTypeDef *typeDef, const QObjectList &records)
 {
     modifyPanel->setRecordDef(typeDef);
     modifyPanel->fillValues(records);
@@ -603,10 +617,14 @@ void MainWindow::connectTracker()
 	QString dbmsPass = sqlPassEdit->text();
 	
 	if(!trkdb)
-		trkdb = new TrkToolDB(this);
-    trkdb->dbmsUser = dbmsUser;
-    trkdb->dbmsPassword = dbmsPass;
-    trkdb->dbmsName = server;
+    {
+//#ifdef SERV_DB_ON
+//        trkdb = new TQServiceDB(this);
+//#else
+        trkdb = new TrkToolDB(this);
+//#endif
+    }
+    trkdb->setDbmsParams(server, dbmsUser, dbmsPass);
     //const QStringList *dbmsTypes = trkdb->dbmsTypes();
 	//return;
     if(trkproject)
@@ -663,11 +681,15 @@ void MainWindow::readQueries()
     folders->setDatabaseTable(db,"folders","user");
     treeModel->appendSourceModel(folders,tr("Личные папки"));
 
-    QAbstractItemModel *userModel = trkproject->createProxyQueryModel(TrkQryFilter::UserOnly, this);
+    TrkQryFilter *userModel = new TrkQryFilter(this);
+    userModel->setSourceQueryModel(trkproject->queryModel(trkproject->defaultRecType()),TrkQryFilter::UserOnly);
+//    QAbstractItemModel *userModel = trkproject->createProxyQueryModel(TrkQryFilter::UserOnly, this);
     //queriesView->setModel(userModel);
     treeModel->appendSourceModel(userModel,tr("Личные выборки"));
 
-    QAbstractItemModel *publicModel = trkproject->createProxyQueryModel(TrkQryFilter::PublicOnly, this);
+    TrkQryFilter *publicModel = new TrkQryFilter(this);
+    publicModel->setSourceQueryModel(trkproject->queryModel(trkproject->defaultRecType()),TrkQryFilter::PublicOnly);
+    //QAbstractItemModel *publicModel = trkproject->createProxyQueryModel(TrkQryFilter::PublicOnly, this);
     treeModel->appendSourceModel(publicModel,tr("Общие выборки"));
 
     treeModel->setMaxColCount(1);
@@ -854,7 +876,7 @@ void MainWindow::findTrkRecords(const QString &line, bool reuse)
     req.setRawHeader("QueryString", line.toLocal8Bit().constData());
     req.setRawHeader("ReuseWindow", QVariant(reuse).toString().toLocal8Bit().constData());
     showProgressBar();
-    am->post(req,line.toLocal8Bit().constData());
+//    am->post(req,line.toLocal8Bit().constData());
 }
 
 QueryPage *MainWindow::curQueryPage()
@@ -1197,7 +1219,7 @@ void MainWindow::on_journalView_doubleClicked(const QModelIndex &index)
         return;
     const TrkHistoryItem &item = model->at(index.row());
     QueryPage *qpage = curQueryPage();
-    TrkToolProject *prj = trkdb->getProject(item.projectName);
+    TQAbstractProject *prj = trkdb->getProject(item.projectName);
     if(!prj)
         return;
     if(!qpage)
@@ -1264,7 +1286,7 @@ void MainWindow::on_actionCloseTab_triggered()
 void MainWindow::on_actionOpenSelected_triggered()
 {
     QueryPage *newpage = createNewPage(tr("Отмеченные"));
-    newpage->openModel(trkproject, trkproject->selectedModel());
+    newpage->openModel(trkproject, trkproject->selectedModel(trkproject->defaultRecType()));
 
 }
 
@@ -1480,9 +1502,64 @@ void MainWindow::on_actionPlansDialog_triggered()
 
 void MainWindow::on_actionNewRequest_triggered()
 {
-    TrkToolRecord *rec = currentProject()->newRecord();
+    TQRecord *rec = currentProject()->newRecord(currentProject()->defaultRecType());
     TTRecordWindow *win = new TTRecordWindow();
     win->setTypeDef(rec->typeDef());
     win->setRecord(rec);
     win->show();
+}
+
+void MainWindow::on_btnService_clicked()
+{
+    QString dbType = editServiceUrl->text().trimmed();
+    QString server = serverEdit->text().trimmed();
+    QString user = userEdit->text();
+    QString project = projectEdit->text().trimmed();
+    QString password = passwordEdit->text().trimmed();
+    QString dbmsUser = sqlUserEdit->text();
+    QString dbmsPass = sqlPassEdit->text();
+
+    if(!trkdb)
+    {
+#ifdef SERV_DB_ON
+        trkdb = new TQServiceDB(this);
+#else
+        return;
+//        trkdb = new TrkToolDB(this);
+#endif
+    }
+    trkdb->setDbmsParams(server, dbmsUser, dbmsPass);
+    //const QStringList *dbmsTypes = trkdb->dbmsTypes();
+    //return;
+    if(trkproject)
+    {
+        delete trkproject;
+        trkproject = NULL;
+    }
+    if(!journal)
+    {
+        journal = new TrkHistory(this);
+        journal->setUnique(true);
+        journalView->setModel(journal);
+    }
+    journal->clearRecords();
+
+    trkproject=trkdb->openProject(
+                dbType,
+                project,
+                user,
+                password);
+    if(trkproject && trkproject->isOpened())
+    {
+        saveSettings();
+        journal->setProject(trkproject);
+        readQueries();
+        //connectButton->setDisabled(true);
+    }
+    /*
+        if(!trkdb)
+            trkdb=new TrkDb;
+        if(trkdb->openProject(getTrkConnectString(),project,user))
+            saveSettings();
+            */
 }

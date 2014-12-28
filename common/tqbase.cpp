@@ -1,0 +1,548 @@
+#include "tqbase.h"
+
+static QHash<QString, TQAbstractProject *> projectList;
+
+TQAbstractDB::TQAbstractDB(QObject *parent)
+    :QObject(parent)
+{
+}
+
+TQAbstractProject *TQAbstractDB::getProject(const QString &projectName)
+{
+    return projectList.value(projectName, 0);
+}
+
+void TQAbstractDB::registerProject(TQAbstractProject *prj)
+{
+    projectList.insert(prj->projectName(), prj);
+}
+
+void TQAbstractDB::unregisterProject(TQAbstractProject *prj)
+{
+    projectList.remove(prj->projectName());
+}
+
+TQAbstractProject::TQAbstractProject(TQAbstractDB *db)
+    :QObject(db)
+{
+    this->db = db;
+}
+
+TQAbstractProject::~TQAbstractProject()
+{
+    if(db)
+    {
+        db = 0;
+//        db->unregisterProject(this);
+    }
+}
+
+TQBaseProject::TQBaseProject(TQAbstractDB *db)
+    :TQAbstractProject(db)
+{
+    opened = false;
+}
+
+bool TQBaseProject::isOpened() const
+{
+    return opened;
+}
+
+QString TQBaseProject::currentUser() const
+{
+    return user;
+}
+
+QString TQBaseProject::projectName() const
+{
+    return name;
+}
+
+QString TQBaseProject::fieldVID2Name(int rectype, int vid)
+{
+    TQAbstractRecordTypeDef* def = recordTypeDef(rectype);
+    if(def)
+        return def->fieldName(vid);
+    return QString();
+}
+
+int TQBaseProject::fieldName2VID(int rectype, const QString &fname)
+{
+    TQAbstractRecordTypeDef* def = recordTypeDef(rectype);
+    if(def)
+        return def->fieldVid(fname);
+    return 0;
+}
+
+int TQBaseProject::fieldNativeType(const QString &name, int recType)
+{
+    TQAbstractRecordTypeDef* def = recordTypeDef(recType);
+    if(def)
+        return def->fieldNativeType(def->fieldVid(name));
+    return 0;
+}
+
+
+int TQBaseProject::defaultRecType() const
+{
+    return 0;
+}
+
+bool TQBaseProject::isSelectedId(int id, int recType) const
+{
+    if(!selected.contains(recType))
+        return false;
+    return selected[recType].contains(id);
+}
+
+void TQBaseProject::setSelectedId(int id, bool value, int recType)
+{
+    if(!selected.contains(recType))
+        selected.insert(recType,TQSelectedSet());
+    if(value)
+        selected[recType].insert(id);
+    else
+        selected[recType].remove(id);
+}
+
+void TQBaseProject::clearSelected(int recType)
+{
+    selected.remove(recType);
+}
+
+TrkToolModel *TQBaseProject::selectedModel(int recType)
+{
+    return selectedModels[recType];
+}
+
+bool TQBaseProject::canFieldSubmit(int vid, int recType)
+{
+    TQAbstractRecordTypeDef* def = recordTypeDef(recType);
+    if(def)
+        def->canFieldSubmit(vid);
+    return false;
+}
+
+bool TQBaseProject::canFieldUpdate(int vid, int recType)
+{
+    TQAbstractRecordTypeDef* def = recordTypeDef(recType);
+    if(def)
+        def->canFieldUpdate(vid);
+    return false;
+}
+
+QString TQBaseProject::userFullName(const QString &login)
+{
+    return userList.value(login);
+}
+
+TQRecord *TQBaseProject::createRecordById(int id, int rectype)
+{
+    Q_UNUSED(id)
+    Q_UNUSED(rectype)
+    return 0;
+}
+
+TQRecord *TQBaseProject::newRecord(int rectype)
+{
+    Q_UNUSED(rectype)
+    return 0;
+}
+
+/*
+TQAbstractRecordTypeDef *TQBaseProject::recordTypeDef(int rectype)
+{
+    return recordDef[rectype];
+}
+*/
+
+QDomDocument TQBaseProject::recordTypeDefDoc(int recType)
+{
+    TQAbstractRecordTypeDef* def = recordTypeDef(recType);
+    if(!def)
+        return QDomDocument();
+    QDomDocument doc;
+    QDomElement root = doc.createElement("RecordDef");
+    root.setAttribute("recordType", recType);
+    QDomElement fields = doc.createElement("Fields");
+    foreach(int vid, def->fieldVids())
+    {
+        QDomElement f = doc.createElement("Field");
+        f.setAttribute("name",def->fieldName(vid));
+        f.setAttribute("type",def->fieldNativeType(vid));
+        f.setAttribute("simpleType",def->fieldSimpleType(vid));
+        f.setAttribute("minValue",def->fieldMinValue(vid).toString());
+        f.setAttribute("maxValue",def->fieldMaxValue(vid).toString());
+        if(def->hasChoiceList(vid))
+        {
+            f.setAttribute("choices",def->fieldChoiceTable(vid));
+        }
+        fields.appendChild(f);
+    }
+    root.appendChild(root);
+    return doc;
+}
+
+void TQBaseProject::initQueryModel(int recType)
+{
+}
+
+QAbstractItemModel *TQBaseProject::queryModel(int type)
+{
+    return 0;
+}
+
+QList<TQToolFile> TQBaseProject::attachedFiles(TQRecord *record)
+{
+    return QList<TQToolFile>();
+}
+
+bool TQBaseProject::saveFileFromRecord(TQRecord *record, int fileIndex, const QString &dest)
+{
+    return false;
+}
+
+
+TQRecord::TQRecord(TQAbstractProject *prj, int rtype, int id)
+    :QObject(prj), m_prj(prj), recType(rtype), recMode(TQRecord::View), recId(id)
+{
+}
+
+TQRecord::TQRecord(const TQRecord &src)
+    :QObject(), m_prj(src.m_prj), recType(src.recType), recMode(src.recMode), recId(src.recId)
+{
+}
+
+/*
+TQRecord &TQRecord::operator =(const TQRecord &src)
+{
+    recType = src.recType;
+    recMode = View;
+    return *this;
+}
+*/
+
+TQRecord::~TQRecord()
+{
+}
+
+int TQRecord::recordType() const
+{
+    return recType;
+}
+
+int TQRecord::recordId() const
+{
+    return recId;
+}
+
+int TQRecord::mode() const
+{
+    return recMode;
+}
+
+void TQRecord::setMode(int newMode)
+{
+    if(recMode != newMode)
+    {
+        recMode = newMode;
+        emit changedState(recMode);
+    }
+}
+
+bool TQRecord::isEditing() const
+{
+    return mode() != TQRecord::View;
+}
+
+bool TQRecord::updateBegin()
+{
+    return project()->updateRecordBegin(this);
+}
+
+bool TQRecord::commit()
+{
+    return project()->commitRecord(this);
+}
+
+bool TQRecord::cancel()
+{
+    return project()->cancelRecord(this);
+}
+
+QString TQRecord::title() const
+{
+    const TQAbstractRecordTypeDef *def = typeDef();
+    if(def)
+    {
+        int vid = def->roleVid(TQAbstractRecordTypeDef::TitleField);
+        if(vid)
+            return value(vid).toString();
+    }
+    return QString();
+}
+
+bool TQRecord::setTitle(const QString &newTitle)
+{
+    const TQAbstractRecordTypeDef *def = typeDef();
+    if(def)
+    {
+        int vid = def->roleVid(TQAbstractRecordTypeDef::TitleField);
+        if(vid)
+            return setValue(vid,newTitle);
+    }
+    return false;
+}
+
+QString TQRecord::description() const
+{
+    const TQAbstractRecordTypeDef *def = typeDef();
+    if(def)
+    {
+        int vid = def->roleVid(TQAbstractRecordTypeDef::DescriptionField);
+        if(vid)
+            return value(vid).toString();
+    }
+    return QString();
+}
+
+bool TQRecord::setDescription(const QString &newDesc)
+{
+    const TQAbstractRecordTypeDef *def = typeDef();
+    if(def)
+    {
+        int vid = def->roleVid(TQAbstractRecordTypeDef::DescriptionField);
+        if(vid)
+            return setValue(vid,newDesc);
+    }
+    return false;
+}
+
+TQNotesCol TQRecord::notes() const
+{
+    return TQNotesCol();
+}
+
+QString TQRecord::noteTitle(int index) const
+{
+    TQNotesCol list = notes();
+    if(index >= 0 && index < list.count())
+        return list.value(index).title;
+    return QString();
+}
+
+QString TQRecord::noteText(int index) const
+{
+    TQNotesCol list = notes();
+    if(index >= 0 && index < list.count())
+        return list.value(index).text;
+    return QString();
+}
+
+bool TQRecord::setNoteTitle(int index, const QString &newTitle)
+{
+    Q_UNUSED(index)
+    Q_UNUSED(newTitle)
+    return false;
+}
+
+bool TQRecord::setNoteText(int index, const QString &newText)
+{
+    Q_UNUSED(index)
+    Q_UNUSED(newText)
+    return false;
+}
+
+bool TQRecord::setNote(int index, const QString &newTitle, const QString &newText)
+{
+    Q_UNUSED(index)
+    Q_UNUSED(newTitle)
+    Q_UNUSED(newText)
+    return false;
+}
+
+int TQRecord::addNote(const QString &noteTitle, const QString &noteText)
+{
+    Q_UNUSED(noteTitle)
+    Q_UNUSED(noteText)
+    return 0;
+}
+
+TQAbstractProject *TQRecord::project() const
+{
+    return m_prj;
+}
+
+const TQAbstractRecordTypeDef *TQRecord::typeDef() const
+{
+    TQAbstractProject *p = project();
+    if(!p)
+        return 0;
+    return p->recordTypeDef(recordType());
+}
+
+QVariant TQRecord::value(int vid, int role) const
+{
+    Q_UNUSED(vid)
+    Q_UNUSED(role)
+    return QVariant();
+}
+
+bool TQRecord::setValue(int vid, const QVariant &newValue, int role)
+{
+    Q_UNUSED(vid)
+    Q_UNUSED(newValue)
+    Q_UNUSED(role)
+    return false;
+}
+
+bool TQRecord::setValues(const QHash<QString, QVariant> &values)
+{
+    const TQAbstractRecordTypeDef *def = typeDef();
+    if(!def)
+        return false;
+    QHash<QString, QVariant>::const_iterator i;
+    for (i = values.constBegin(); i != values.constEnd(); ++i)
+    {
+        int vid = def->fieldVid(i.key());
+        if(!vid)
+            return false;
+        if(!setValue(vid, i.value()))
+            return false;
+    }
+    return true;
+}
+
+QDomDocument TQRecord::toXML() const
+{
+    QDomDocument xml("scr");
+    QDomElement root=xml.createElement("scr");
+    xml.appendChild(root);
+    const TQAbstractRecordTypeDef *def = typeDef();
+    if(!def)
+        return xml;
+    QDomElement flds =xml.createElement("fields");
+    QList<int> vids = def->fieldVids();
+    foreach(int vid, vids)
+    {
+        QString fname = def->fieldName(vid);
+        QVariant ftext = value(vid,Qt::DisplayRole);
+        QVariant fvalue = value(vid,Qt::EditRole);
+
+        QDomElement f = xml.createElement("field");
+        f.setAttribute("name", fname);
+        f.setAttribute("value",fvalue.toString());
+        QDomText v = xml.createTextNode(ftext.toString());
+        f.appendChild(v);
+        flds.appendChild(f);
+    }
+    root.appendChild(flds);
+    int descVid = def->roleVid(TQAbstractRecordTypeDef::DescriptionField);
+    if(descVid)
+    {
+        QDomElement desc = xml.createElement("Description");
+        desc.setAttribute("name", def->fieldName(descVid));
+        QDomText v = xml.createTextNode(description());
+        desc.appendChild(v);
+        root.appendChild(desc);
+    }
+    // fill <notes>
+    QDomElement notes = xml.createElement("notes");
+
+    TQNotesCol notesCol = this->notes();
+    int index=0;
+    foreach(const TQNote &tn, notesCol)
+    {
+        QDomElement note = xml.createElement("note");
+        //const TrkNote &tn = notesCol.at(i);
+        note.setAttribute("title", tn.title);
+        note.setAttribute("author", project()->userFullName(tn.author));
+        note.setAttribute("cdatetime", tn.crdate.toString(Qt::ISODate));
+        note.setAttribute("createdate", tn.crdate.toString(def->dateTimeFormat()));
+        note.setAttribute("mdatetime", tn.mddate.toString(Qt::ISODate));
+        note.setAttribute("modifydate", tn.mddate.toString(def->dateTimeFormat()));
+        note.setAttribute("editable", QString(tn.perm?"true":"false"));
+        if(tn.isAdded)
+            note.setAttribute("isAdded","true");
+        if(tn.isChanged)
+            note.setAttribute("isChanged","true");
+        if(tn.isDeleted)
+            note.setAttribute("isDeleted","true");
+        note.setAttribute("index",index++);
+        QDomText v = xml.createTextNode(tn.text);
+        note.appendChild(v);
+        notes.appendChild(note);
+    }
+    //delete col;
+    root.appendChild(notes);
+
+    // fill <history>
+    QDomElement history = xml.createElement("history");
+    index=0;
+    foreach(const QString &item, historyList())
+    {
+        QDomElement change = xml.createElement("change");
+        QStringList sections = item.split(QChar(' '));
+        QString changeDate = sections[0];
+        QString changeTime = sections[1];//item.left(10+1+5);
+        QDateTime changeDateTime = QDateTime::fromString(changeDate + " " + changeTime, def->dateTimeFormat());
+        QString changeAuthor = sections[2].mid(1,sections[2].length()-3);
+
+        QString changeDesc = QStringList(sections.mid(5)).join(" ");
+        change.setAttribute("author", changeAuthor);
+        change.setAttribute("datetime", changeDateTime.toString(Qt::ISODate));
+        change.setAttribute("createdate", changeDate + " " + changeTime);
+        change.setAttribute("action", changeDesc);
+        change.setAttribute("index",index++);
+        QDomText v = xml.createTextNode(item);
+        change.appendChild(v);
+        history.appendChild(change);
+    }
+    root.appendChild(history);
+    return xml;
+}
+
+QStringList TQRecord::historyList() const
+{
+    return QStringList();
+}
+
+/*
+QString TQRecord::toHTML(const QString &xqCodeFile)
+{
+    QDomDocument xml=toXML();
+    QFile xq(xqCodeFile);
+    xq.open(QIODevice::ReadOnly);
+    QFile trackerXML("data/tracker.xml");
+    trackerXML.open(QIODevice::ReadOnly);
+    QXmlQuery query;
+//#ifdef CLIENT_APP
+//    query.setMessageHandler(sysMessager);
+//#endif
+
+
+    QString page;
+    //QString src=xml.toString();
+    QByteArray ba=xml.toByteArray();
+    QBuffer buf;
+    buf.setData(ba);
+    buf.open(QIODevice::ReadOnly);
+    query.bindVariable("scrdoc",&buf);
+    query.bindVariable("def",&trackerXML);
+    query.setQuery(&xq);
+    //query.setQuery(&xq, QUrl::fromLocalFile(xq.fileName()));
+    query.evaluateTo(&page);
+//#ifdef QT_DEBUG
+//    QFile testXml("!testEdit.xml");
+//    testXml.open(QIODevice::WriteOnly | QIODevice::Text);
+//    QTextStream textOut(&testXml);
+//    xml.save(textOut,4);
+
+//    QFile testRes("!testResult.html");
+//    testRes.open(QIODevice::WriteOnly | QIODevice::Text);
+//    //QTextStream textOutHTML(&testRes);
+//    testRes.write(page.toLocal8Bit());
+//#endif
+    return page;
+}
+*/

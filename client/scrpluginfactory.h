@@ -5,7 +5,7 @@
 
 class TTRecordWindow;
 class QNetworkAccessManager;
-class TrkToolRecord;
+class TQRecord;
 class QWebView;
 class NoteWidget;
 
@@ -15,7 +15,7 @@ class ScrPluginFactory : public QWebPluginFactory
 public:
     explicit ScrPluginFactory(QWebView *webView, TTRecordWindow *parent);
     ~ScrPluginFactory();
-    void setRecord(TrkToolRecord *rec);
+    void setRecord(TQRecord *rec);
     QObject *create(const QString &mimeType, const QUrl &url,
                     const QStringList &argumentNames,
                     const QStringList &argumentValues) const;
@@ -35,7 +35,7 @@ signals:
 
 private:
     QNetworkAccessManager *manager;
-    TrkToolRecord *record;
+    TQRecord *record;
     TTRecordWindow *editor;
     QWebView *web;
     QObjectList *views;

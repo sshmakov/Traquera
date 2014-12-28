@@ -20,7 +20,7 @@ TrkDecorator::TrkDecorator(QObject *parent) :
 {
 }
 
-void TrkDecorator::fillEditPanels(QTabWidget *tabs, const AbstractRecordTypeDef * recDef, EditDefList &def, bool onlyView)
+void TrkDecorator::fillEditPanels(QTabWidget *tabs, const TQAbstractRecordTypeDef * recDef, EditDefList &def, bool onlyView)
 {
     //QList<EditDef> edits;
     //const QStringList & fieldList = record->fields();
@@ -61,7 +61,7 @@ void TrkDecorator::fillEditPanels(QTabWidget *tabs, const AbstractRecordTypeDef 
                     QString fname = field.attribute("name");
                     if(!fieldList.contains(fname,Qt::CaseInsensitive))
                         continue;
-                    AbstractFieldType fdef = recDef->getFieldDef(fname);
+                    TQAbstractFieldType fdef = recDef->getFieldType(fname);
                     EditDef f;
                     QWidget *w;
                     //QLineEdit *ie = 0;
@@ -281,7 +281,7 @@ void TrkDecorator::loadViewDef(QTableView *view)
     delete file;
 }
 
-FieldGroupsDef TrkDecorator::loadGroups(const AbstractRecordTypeDef *recDef)
+FieldGroupsDef TrkDecorator::loadGroups(const TQAbstractRecordTypeDef *recDef)
 {
     FieldGroupsDef res;
 //    QXmlSimpleReader xmlReader;

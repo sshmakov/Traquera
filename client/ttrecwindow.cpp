@@ -7,6 +7,7 @@
 #include "scrpluginfactory.h"
 
 #include <QtWebKit>
+#include <QtXmlPatterns>
 //#include "tqplanswidget.h"
 
 const QString TTRecordState = "TTRecWinState";
@@ -99,17 +100,17 @@ void TTRecordWindow::showNoteEditor(bool show)
 
 }
 
-void TTRecordWindow::setTypeDef(const AbstractRecordTypeDef *recDef)
+void TTRecordWindow::setTypeDef(const TQAbstractRecordTypeDef *recDef)
 {
     props->setRecordDef(recDef);
 }
 
-TrkToolRecord *TTRecordWindow::getRecord()
+TQRecord *TTRecordWindow::getRecord()
 {
     return a_record;
 }
 
-void TTRecordWindow::setRecord(TrkToolRecord *rec)
+void TTRecordWindow::setRecord(TQRecord *rec)
 {
     a_record = rec;
     factory->setRecord(rec);
@@ -221,14 +222,56 @@ void TTRecordWindow::canceledEditing(int index)
     //noteInEdit.remove(index);
 }
 
+static QString xmlToHTML(const QDomDocument &xml, const QString &xqCodeFile)
+{
+    QFile xq(xqCodeFile);
+    xq.open(QIODevice::ReadOnly);
+    QFile trackerXML("data/tracker.xml");
+    trackerXML.open(QIODevice::ReadOnly);
+    QXmlQuery query;
+//#ifdef CLIENT_APP
+//    query.setMessageHandler(sysMessager);
+//#endif
+
+
+    QString page;
+    //QString src=xml.toString();
+    QByteArray ba=xml.toByteArray();
+    QBuffer buf;
+    buf.setData(ba);
+    buf.open(QIODevice::ReadOnly);
+    query.bindVariable("scrdoc",&buf);
+    query.bindVariable("def",&trackerXML);
+    query.setQuery(&xq);
+    //query.setQuery(&xq, QUrl::fromLocalFile(xq.fileName()));
+    query.evaluateTo(&page);
+#ifdef QT_DEBUG
+    QFile testXml("!testEdit.xml");
+    testXml.open(QIODevice::WriteOnly | QIODevice::Text);
+    QTextStream textOut(&testXml);
+    xml.save(textOut,4);
+
+    QFile testRes("!testResult.html");
+    testRes.open(QIODevice::WriteOnly | QIODevice::Text);
+    //QTextStream textOutHTML(&testRes);
+    testRes.write(page.toLocal8Bit());
+#endif
+    return page;
+}
+
+
 void TTRecordWindow::refreshValues()
 {
     //a_record->refresh();
     props->fillValues(QObjectList() << a_record);
-    QString html = a_record->toHTML("data/edit.xq");
+    QString html = xmlToHTML(a_record->toXML(),"data/edit.xq");
     ui->webView->setHtml(html);
     ui->titleBox->clear();
-    ui->titleBox->addItems(a_record->project()->noteTitles);
+    const TQAbstractRecordTypeDef *def = a_record->typeDef();
+    if(def)
+    {
+        ui->titleBox->addItems(def->noteTitleList());
+    }
     QSettings *settings = ttglobal()->settings();
     if(settings->contains("LastNote"))
         ui->titleBox->setEditText(settings->value("LastNote").toString());
@@ -238,7 +281,7 @@ void TTRecordWindow::refreshValues()
 bool TTRecordWindow::addNewNote(const QString &title, const QString &text)
 {
     if(enableModify())
-        if(a_record->appendNote(title,text))
+        if(a_record->addNote(title,text))
         {
             setChanged(true);
             return true;
@@ -361,7 +404,7 @@ bool TTRecordWindow::writeChanges()
         }
         else if(key<0)
         {
-            if(!a_record->appendNote(newText.value(key).title,newText.value(key).text))
+            if(!a_record->addNote(newText.value(key).title,newText.value(key).text))
                 return false;
         }
     }
@@ -413,7 +456,9 @@ bool TTRecordWindow::startEditNote(int index)
         return true;
     }
     ui->titleBox->clear();
-    ui->titleBox->addItems(a_record->project()->noteTitles);
+    const TQAbstractRecordTypeDef *def = a_record->typeDef();
+    if(def)
+        ui->titleBox->addItems(def->noteTitleList());
     if(index == TQ_NEW_NOTE)
     {
         QSettings *settings = ttglobal()->settings();

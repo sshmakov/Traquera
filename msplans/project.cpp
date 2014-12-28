@@ -358,13 +358,20 @@ void PrjItemModel::loadDefinition(QAxObject &app, const QString &fileName)
 	for(int i=0; !field.isNull(); field = field.nextSiblingElement("field"), i++)
 	{
 		PrjField f;
-		f.field = field.attribute("property");
+        f.field = field.attribute("property");
 		f.title = field.attribute("title");
-		if(f.title.isEmpty() && hc.contains(f.field.toUpper()))
-			f.title = app.dynamicCall("FieldConstantToFieldName(QVariant)",hc[f.field.toUpper()]).toString();
-			//f.title = app.dynamicCall("FieldConstantToFieldName(QVariant)",QString("prjTask"+f.field.trimmed())).toString();
-		if(f.title.isEmpty())
-			f.title = f.field;
+        f.fieldId = field.attribute("const").toInt();
+        if(f.field.isEmpty() && !f.fieldId && !f.title.isEmpty())
+            f.fieldId = app.dynamicCall("FieldNameToFieldConstant(QVariant)",f.title).toInt();
+        if(f.title.isEmpty())
+        {
+            if(f.fieldId)
+                f.title = app.dynamicCall("FieldConstantToFieldName(QVariant)",f.fieldId).toString();
+            else if(hc.contains(f.field.toUpper()))
+                f.title = app.dynamicCall("FieldConstantToFieldName(QVariant)",hc[f.field.toUpper()]).toString();
+            if(f.title.isEmpty())
+                f.title = f.field;
+        }
 		f.type = field.attribute("type");
         if(!f.type.compare("SCR",Qt::CaseInsensitive))
             f.stdType = TQ::TQ_FIELD_TYPE_NUMBER;
@@ -390,7 +397,7 @@ QString PrjItemModel::projectName()
 	return prjName;
 }
 
-bool PrjItemModel::addTask(const PrjRecord &record, bool byTitle)
+bool PrjItemModel::addTask(const PrjRecord &record)
 {
 	if(tasks && !tasks->isNull())
 	{
@@ -401,14 +408,17 @@ bool PrjItemModel::addTask(const PrjRecord &record, bool byTitle)
 			++i)
 		{
 			int col;
-			if(byTitle)
-				col= colByTitle.value(i.key(),-1);
-			else
-				col= colByField.value(i.key(),-1);
+//			if(byTitle)
+                col= colByTitle.value(i.key(),-1);
+//			else
+//				col= colByField.value(i.key(),-1);
 			if(col<0)
 				continue;
 			QString f = fields[col].field;
-			task->setProperty(f.toLocal8Bit().constData(),i.value());
+            if(!f.isEmpty())
+                task->setProperty(f.toLocal8Bit().constData(),i.value());
+            else
+                task->dynamicCall("SetField(QVariant,QVariant)",fields[col].fieldId,i.value());
 		}
 		readTask(rows, task);
 		rows++;
@@ -434,18 +444,21 @@ void PrjItemModel::readTask(int row, QAxObject *task)
 		QVariant res;
 		//res = bag[fields[c].field];
 		//res = task->dynamicCall(fields[c].field.toLocal8Bit().constData());
-		res = task->property(fields[c].field.toLocal8Bit().constData());
+        if(!fields[c].field.isEmpty())
+            res = task->property(fields[c].field.toLocal8Bit().constData());
+        else
+            res = task->dynamicCall("GetField(QVariant)",fields[c].fieldId);
 		QStandardItem *item = new QStandardItem();
         item->setData(res, Qt::EditRole);
         const QString &type = fields[c].type;
         const QString &format = fields[c].format;
         if(type == "min")
             if(format == "days")
-                res = QString(tr("%1 ä")).arg(res.toDouble()/60.0/24.0,0,'g',6);
+                res = QString(tr("%1 ä")).arg(res.toDouble()/60.0/8.0,0,'g',3);
             else
-                res = QString(tr("%1 ÷")).arg(res.toDouble()/60.0,0,'g',6);
+                res = QString(tr("%1 ÷")).arg(res.toDouble()/60.0,0,'g',3);
         if(type == "sec")
-            res = QString(tr("%1 ÷")).arg(res.toDouble()/3600.0,0,'g',6);
+            res = QString(tr("%1 ÷")).arg(res.toDouble()/3600.0,0,'g',3);
         if(type == "%")
             res = QString(tr("%1%")).arg(res.toInt());
         item->setData(res, Qt::DisplayRole);
@@ -518,7 +531,7 @@ QStringList TaskTypeDef::fieldNames() const
     return res;
 }
 
-int TaskTypeDef::fieldType(const QString &name) const
+int TaskTypeDef::fieldNativeType(const QString &name) const
 {
     foreach(const PrjField &f, model->fields)
     {
@@ -540,11 +553,13 @@ bool TaskTypeDef::canFieldUpdate(const QString &name) const
     return false;
 }
 
+/*
 ChoiceList TaskTypeDef::choiceList(const QString &fieldName)
 {
     Q_UNUSED(fieldName)
     return ChoiceList();
 }
+*/
 
 QList<int> TaskTypeDef::fieldVids() const
 {

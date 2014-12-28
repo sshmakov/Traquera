@@ -94,7 +94,7 @@ QueryPage::QueryPage(QWidget *parent)
 
     //connect(queryView,SIGNAL(activated(const QModelIndex &)),this,SLOT(recordOpen(const QModelIndex &)));
     connect(queryView,SIGNAL(activated(const QModelIndex &)),actionTest,SLOT(trigger()));
-    connect(this, SIGNAL(openingModel(const TrkToolModel*)),&history,SLOT(openedModel(const TrkToolModel *)),Qt::DirectConnection);
+    connect(this, SIGNAL(openingModel(const QAbstractItemModel*)),&history,SLOT(openedModel(const QAbstractItemModel *)),Qt::DirectConnection);
 
     QShortcut *shortcut;
 
@@ -219,7 +219,7 @@ void QueryPage::setQueryById(const QString& numbers, TrkDb *trkdb)
 }
 */
 
-void QueryPage::setQueryModel(TrkToolProject *prj, TrkToolModel *model)
+void QueryPage::setQueryModel(TQAbstractProject *prj, TrkToolModel *model)
 {
     if(tmodel)
     {
@@ -337,8 +337,8 @@ void QueryPage::changedView(const QModelIndex &index, const QModelIndex &prev)
     QModelIndex qryIndex = mapIndexToModel(index);
     if(!qryIndex.isValid())
         return;
-    TrkToolRecord *record = tmodel->at(qryIndex.row());
 #ifdef DECORATOR
+    TrkToolRecord *record = tmodel->at(qryIndex.row());
     decorator->readValues(record, fieldEdits);
 #endif
 
@@ -993,7 +993,7 @@ void QueryPage::recordOpen(const QModelIndex & index)
 	scr->show();
 }
 
-void QueryPage::openQuery(TrkToolProject *prj, const QString &queryName, int recType)
+void QueryPage::openQuery(TQAbstractProject *prj, const QString &queryName, int recType)
 {
     itIsFolder = false;
     TrkToolModel *newmodel = prj->openQueryModel(queryName, recType);
@@ -1015,11 +1015,11 @@ void QueryPage::openQuery(TrkToolProject *prj, const QString &queryName, int rec
     emit changedQuery(prj->projectName(), queryName);
 }
 
-void QueryPage::openIds(TrkToolProject *prj, const QString &ids, const QString &title, int recType)
+void QueryPage::openIds(TQAbstractProject *prj, const QString &ids, const QString &title, int recType)
 {
     itIsFolder = false;
     QList<int> idlist = toIntList(ids);
-    TrkToolModel *newmodel = prj->openIdsModel(idlist, recType);
+    TrkToolModel *newmodel = qobject_cast<TrkToolModel *>(prj->openIdsModel(idlist, recType));
 	if(!newmodel)
 		return;
     setQueryModel(prj, newmodel);
@@ -1047,10 +1047,10 @@ void QueryPage::openIds(TrkToolProject *prj, const QString &ids, const QString &
     emit changedQuery(prj->projectName(), newTitle);
 }
 
-void QueryPage::openIds(TrkToolProject *prj, const QList<int> &idlist, const QString &title, int recType)
+void QueryPage::openIds(TQAbstractProject *prj, const QList<int> &idlist, const QString &title, int recType)
 {
     itIsFolder = false;
-    TrkToolModel *newmodel = prj->openIdsModel(idlist, recType);
+    TrkToolModel *newmodel = qobject_cast<TrkToolModel *>(prj->openIdsModel(idlist, recType));
     if(!newmodel)
         return;
     setQueryModel(prj, newmodel);
@@ -1066,19 +1066,19 @@ void QueryPage::openIds(TrkToolProject *prj, const QList<int> &idlist, const QSt
     emit changedQuery(prj->projectName(), newTitle);
 }
 
-void QueryPage::openModel(TrkToolProject *prj, TrkToolModel *newModel)
+void QueryPage::openModel(TQAbstractProject *prj, QAbstractItemModel *newModel)
 {
-    setQueryModel(prj, newModel);
+    setQueryModel(prj, qobject_cast<TrkToolModel *>(newModel));
     emit openingModel(newModel);
     emit modelChanged(newModel);
 }
 
-void QueryPage::openFolder(TrkToolProject *prj, const TTFolder &afolder, int recType)
+void QueryPage::openFolder(TQAbstractProject *prj, const TTFolder &afolder, int recType)
 {
     QList<int> idlist = afolder.folderContent();
     itIsFolder = true;
     folder = afolder;
-    TrkToolModel *newmodel = prj->openIdsModel(idlist, recType, false);
+    TrkToolModel *newmodel = qobject_cast<TrkToolModel *>(prj->openIdsModel(idlist, recType, false));
     if(!newmodel)
         return;
     setQueryModel(prj, newmodel);
@@ -1092,7 +1092,7 @@ void QueryPage::openFolder(TrkToolProject *prj, const TTFolder &afolder, int rec
 
 void QueryPage::openQuery(const QString &projectName, const QString &queryName, int recType)
 {
-	TrkToolProject *prj = TrkToolDB::getProject(projectName);
+    TQAbstractProject *prj = TQAbstractDB::getProject(projectName);
 	if(!prj)
 		return;
     openQuery(prj,queryName,recType);
@@ -1105,7 +1105,7 @@ void QueryPage::openHistoryItem(int pos)
 	const TrkHistoryItem &item = history[pos];
 	if(item.isQuery)
 	{
-		TrkToolProject *prj = TrkToolDB::getProject(item.projectName);
+        TQAbstractProject *prj = TQAbstractDB::getProject(item.projectName);
 		if(!prj)
 			return;
         TrkToolModel *newmodel = prj->openQueryModel(item.queryName, item.rectype);
@@ -1117,10 +1117,10 @@ void QueryPage::openHistoryItem(int pos)
 	}
 	else
 	{
-		TrkToolProject *prj = TrkToolDB::getProject(item.projectName);
+        TQAbstractProject *prj = TQAbstractDB::getProject(item.projectName);
 		if(!prj)
 			return;
-        TrkToolModel *newmodel = prj->openIdsModel(stringToIntList(item.queryName), item.rectype);
+        TrkToolModel *newmodel = qobject_cast<TrkToolModel *>(prj->openIdsModel(stringToIntList(item.queryName), item.rectype));
 		if(!newmodel)
 			return;
         setQueryModel(prj, newmodel);
@@ -1182,7 +1182,7 @@ TrkToolRecord *QueryPage::recordOnIndex(const QModelIndex &index)
     return trkmodel->at(f.row());
 }
 
-const AbstractRecordTypeDef *QueryPage::recordTypeDef()
+const TQAbstractRecordTypeDef *QueryPage::recordTypeDef()
 {
     if(!tmodel)
         return 0;
@@ -1256,7 +1256,7 @@ QObjectList QueryPage::markedRecords()
     return list;
 }
 
-TrkToolProject *QueryPage::currentProject()
+TQAbstractProject *QueryPage::currentProject()
 {
     return modelProject;
 }
@@ -1281,7 +1281,7 @@ TrkToolRecord *QueryPage::currentRecord()
 void QueryPage::on_actionAdd_Note_triggered()
 {
     NoteDialog *nd=new NoteDialog();
-    nd->titleEdit->addItems(((const RecordTypeDef*)tmodel->typeDef())->project()->noteTitles);
+    nd->titleEdit->addItems(((const TQRecordTypeDef*)tmodel->typeDef())->project()->noteTitleList());
     QSettings *settings = ttglobal()->settings();
     if(settings->contains("LastNote"))
         nd->titleEdit->setEditText(settings->value("LastNote").toString());
@@ -1289,13 +1289,13 @@ void QueryPage::on_actionAdd_Note_triggered()
     {
         settings->setValue("LastNote",nd->titleEdit->currentText());
         QObjectList records = selectedRecords();
-        TrkToolRecord *rec;
+        TQRecord *rec;
         foreach(QObject *obj, records)
         {
-            rec = qobject_cast<TrkToolRecord *>(obj);
+            rec = qobject_cast<TQRecord *>(obj);
             if(rec->updateBegin())
             {
-                rec->appendNote(nd->titleEdit->currentText(), nd->noteEdit->toPlainText());
+                rec->addNote(nd->titleEdit->currentText(), nd->noteEdit->toPlainText());
                 rec->commit();
             }
         }
@@ -1377,7 +1377,7 @@ void QueryPage::refreshQuery()
 
 void QueryPage::openRecordId(int id)
 {
-    TrkToolRecord *rec = tmodel->project()->createRecordById(id);
+    TQRecord *rec = tmodel->project()->createRecordById(id,tmodel->project()->defaultRecType());
     if(rec)
     {
         TTRecordWindow *win = new TTRecordWindow();
@@ -1458,12 +1458,12 @@ void QueryPage::updateDetails()
 #endif
     drawNotes(qryIndex);
 
-    QList<TrkToolFile> files = record->fileList();
+    QList<TQToolFile> files = record->fileList();
     filesTable->clearContents();
     filesTable->setRowCount(0);
     TTFileIconProvider prov;
     int row=0;
-    foreach(const TrkToolFile &file, files)
+    foreach(const TQToolFile &file, files)
     {
         QFileInfo f(file.fileName);
         filesTable->insertRow(row);

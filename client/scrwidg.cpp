@@ -8,7 +8,7 @@
 #include <QXmlSimpleReader>
 #include <QScrollArea>
 
-ScrWidget::ScrWidget(const AbstractRecordTypeDef *typeDef, QWidget *parent)
+ScrWidget::ScrWidget(const TQAbstractRecordTypeDef *typeDef, QWidget *parent)
 :QMainWindow(parent), record(NULL)
 {
 	setupUi(this);
@@ -54,7 +54,7 @@ void ScrWidget::readRecord()
     notesTable->clearContents();
     notes = record->notes();
     int row=0;
-    foreach(const TrkNote &note, notes)
+    foreach(const TQNote &note, notes)
     {
         notesTable->insertRow(row);
         QTableWidgetItem *item;
@@ -103,7 +103,7 @@ void ScrWidget::updateEditState()
 }
 
 
-void ScrWidget::initEdits(const AbstractRecordTypeDef *typeDef)
+void ScrWidget::initEdits(const TQAbstractRecordTypeDef *typeDef)
 {
     decorator->fillEditPanels(fieldTabs, typeDef, fieldEdits, false);
 }

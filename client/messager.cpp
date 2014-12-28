@@ -10,6 +10,9 @@ Messager::Messager(QObject *parent)
 
 void Messager::handleMessage(QtMsgType type, const QString &description, const QUrl &identifier, const QSourceLocation &sourceLocation)
 {
+    Q_UNUSED(identifier)
+    Q_UNUSED(type)
+
     QString text;
     text += description;
     /*

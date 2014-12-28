@@ -225,7 +225,7 @@ void TTItemEditor::setModelData(const QModelIndex &index)
     QString fieldName = panel->fieldName(index);
     if(fieldName.isEmpty())
         return;
-    AbstractFieldType fdef = panel->fieldDef(index.row());
+    TQAbstractFieldType fdef = panel->fieldDef(index.row());
     if(0!=(ed = qobject_cast<QLineEdit*>(subeditor)))
         panel->setFieldValue(fieldName,ed->text());
         //model->setData(index,ed->text());
@@ -262,32 +262,29 @@ QWidget * TTItemEditor::createSubEditor(const QStyleOptionViewItem &option, cons
     QDateTimeEdit *dt;
     QWidget *res;
     QStringList sl;
-    AbstractFieldType fdef = panel->fieldDef(index.row());
-    int type = fdef.fType(); // panel->fieldRow(index.row()).fieldType;
-    switch((TRK_FIELD_TYPE)type)
+    TQAbstractFieldType fdef = panel->fieldDef(index.row());
+    int type = fdef.simpleType(); // panel->fieldRow(index.row()).fieldType;
+    switch(type)
     {
-    case TRK_FIELD_TYPE_SUBMITTER:
-    case TRK_FIELD_TYPE_OWNER:
-    case TRK_FIELD_TYPE_USER:
-    case TRK_FIELD_TYPE_STATE:
-    case TRK_FIELD_TYPE_CHOICE:
+    case TQ::TQ_FIELD_TYPE_USER:
+    case TQ::TQ_FIELD_TYPE_CHOICE:
         cb = new QComboBox(this);
         sl = fdef.choiceStringList(true);
         cb->addItems(sl);
         cb->setEditable(false);
         cb->setInsertPolicy(QComboBox::NoInsert);
         return cb;
-    case TRK_FIELD_TYPE_STRING:
+    case TQ::TQ_FIELD_TYPE_STRING:
         le = new QLineEdit(this);
         return le;
 
-    case TRK_FIELD_TYPE_NUMBER:
+    case TQ::TQ_FIELD_TYPE_NUMBER:
         sb = new QSpinBox(this);
-        sb->setMinimum(fdef.minValue());
-        sb->setMaximum(fdef.maxValue());
+        sb->setMinimum(fdef.minValueInt());
+        sb->setMaximum(fdef.maxValueInt());
         //sb->setMaximum(100);
         return sb;
-    case TRK_FIELD_TYPE_DATE:
+    case TQ::TQ_FIELD_TYPE_DATE:
         dt = new QDateTimeEdit(this);
         dt->setCalendarPopup(true);
         dt->setDisplayFormat(TT_DATETIME_FORMAT);

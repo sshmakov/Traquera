@@ -17,7 +17,8 @@ DEFINES += TQSERVICE_LIBRARY
 
 SOURCES += tqservice.cpp \
     ../common/ttutils.cpp \
-    ../tracker/trkview.cpp
+    ../tracker/trkview.cpp \
+    ../common/tqbase.cpp
 
 HEADERS += tqservice.h\
         tqservice_global.h \
@@ -25,7 +26,8 @@ HEADERS += tqservice.h\
     ../tracker/trkview.h \
     ../tracker/trktool2.h \
     ../tracker/trdefs.h \
-    ../tracker/tracker.h
+    ../tracker/tracker.h \
+    ../common/tqbase.h
 
 DEFINES += CONSOLE_APP
 INCLUDEPATH += $$PWD/../trktool/lib ../common ../tracker

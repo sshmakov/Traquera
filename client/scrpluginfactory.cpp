@@ -20,7 +20,7 @@ ScrPluginFactory::~ScrPluginFactory()
     delete views;
 }
 
-void ScrPluginFactory::setRecord(TrkToolRecord *rec)
+void ScrPluginFactory::setRecord(TQRecord *rec)
 {
     record = rec;
 }
@@ -107,7 +107,7 @@ void ScrPluginFactory::saveNote(int index, const QString &title, const QString &
 
 void ScrPluginFactory::resetNote(int index)
 {
-    QObject *s = sender();
+//    QObject *s = sender();
     QWebFrame *frame = web->page()->mainFrame();
     frame->evaluateJavaScript("closeNoteWidget("+QString::number(index)+ ");\n");
     emit canceledChanges(index);

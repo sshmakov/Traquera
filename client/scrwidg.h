@@ -14,14 +14,14 @@ class ScrWidget : public QMainWindow, private Ui::ScrWidgForm
 	Q_OBJECT
 protected:
     EditDefList fieldEdits;
-    NotesCol notes;
+    TQNotesCol notes;
 public:
-    ScrWidget(const AbstractRecordTypeDef *typeDef, QWidget *parent = 0);
+    ScrWidget(const TQAbstractRecordTypeDef *typeDef, QWidget *parent = 0);
     virtual ~ScrWidget();
 	TrkToolRecord *record;
 	void setRecord(TrkToolRecord *newrec);
 	void readRecord();
-    void initEdits(const AbstractRecordTypeDef *typeDef);
+    void initEdits(const TQAbstractRecordTypeDef *typeDef);
 protected:
     virtual void hideEvent(QHideEvent *event);
 protected slots:

@@ -16,6 +16,7 @@ struct PrjField {
 	QString internalField;
 	QString field;
 	QString title;
+    int fieldId;
 	QString type;
     int stdType;
     QString display;
@@ -61,7 +62,7 @@ public:
 	void saveToMemory(QAxObject *tasks);
 	QString projectName();
 	friend class PrjModel;
-	bool addTask(const PrjRecord &record, bool byTitle=true);
+    bool addTask(const PrjRecord &record/*, bool byTitle=true*/);
 	void readTask(int row, QAxObject *task);
     int colTaskNum();
 protected slots:
@@ -91,7 +92,7 @@ public:
 	//void readCash();
 };
 
-class TaskTypeDef: /*public QObject,*/ public AbstractRecordTypeDef
+class TaskTypeDef: /*public QObject,*/ public TQAbstractRecordTypeDef
 {
 //    Q_OBJECT
 //    Q_INTERFACES(AbstractRecordTypeDef)
@@ -101,10 +102,10 @@ protected:
 public:
     TaskTypeDef(PrjItemModel *srcModel);
     virtual QStringList fieldNames() const;
-    virtual int fieldType(const QString &name) const;
+    virtual int fieldNativeType(const QString &name) const;
     virtual bool canFieldSubmit(const QString &name) const;
     virtual bool canFieldUpdate(const QString &name) const;
-    virtual ChoiceList choiceList(const QString &fieldName);
+//    virtual ChoiceList choiceList(const QString &fieldName);
     virtual QList<int> fieldVids() const;
     virtual QString fieldName(int vid) const;
 };

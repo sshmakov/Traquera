@@ -290,7 +290,19 @@ void PlanModel::loadDefinition(const QString &fileName)
 		PrjField f;
 		f.field = field.attribute("property");
 		f.title = field.attribute("title");
-		/*
+        f.fieldId = field.attribute("const").toInt();
+        /*
+        if(f.field.isEmpty() && !f.fieldId && !f.title.isEmpty())
+            f.fieldId = app.dynamicCall("FieldNameToFieldConstant(QVariant)",f.title).toInt();
+        if(f.title.isEmpty())
+        {
+            if(f.fieldId)
+                f.title = app.dynamicCall("FieldConstantToFieldName(QVariant)",f.fieldId).toString();
+            if(f.title.isEmpty())
+                f.title = f.field;
+        }
+        */
+        /*
 		if(f.title.isEmpty() && hc.contains(f.field.toUpper()))
 			f.title = app.dynamicCall("FieldConstantToFieldName(QVariant)",hc[f.field.toUpper()]).toString();
 			//f.title = app.dynamicCall("FieldConstantToFieldName(QVariant)",QString("prjTask"+f.field.trimmed())).toString();

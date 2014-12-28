@@ -977,10 +977,10 @@ QSqlRecord TrkModel::record(const QModelIndex& index)
 //
 //}
 
-NotesCol *TrkModel::notes(int row)
+TQNotesCol *TrkModel::notes(int row)
 {
 	QSqlQuery q(trkdb->db);
-	NotesCol *res= new NotesCol;
+    TQNotesCol *res= new TQNotesCol;
 	q.prepare(QString("select "
 		"noteId, noteTitle, noteAuthId, noteText, "
 		" dateadd(second, case noteCrDate when 0 then NULL else noteCrDate end,'01/01/1970 04:00'), "
@@ -993,7 +993,7 @@ NotesCol *TrkModel::notes(int row)
 			q.lastError().text(), QMessageBox::Cancel);
 	while(q.next())
 	{
-		TrkNote n;
+        TQNote n;
 		n.title = q.value(1).toString();
 		n.text = q.value(3).toString();
 		int a = q.value(2).toInt();

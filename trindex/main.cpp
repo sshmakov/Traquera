@@ -59,9 +59,14 @@ MainClass::MainClass(QObject *parent, char *iniFile)
     sets.setIniCodec(QTextCodec::codecForName("windows-1251"));
 
     db=new TrkToolDB(this);
+    db->setDbmsParams(sets.value("dbmsName").toString(),
+                      sets.value("dbmsUser").toString(),
+                      sets.value("dbmsPassword").toString());
+    /*
     db->dbmsUser = sets.value("dbmsUser").toString();
     db->dbmsPassword = sets.value("dbmsPassword").toString();
     db->dbmsName = sets.value("dbmsName").toString(); //"SHMAKOVTHINK\\SQLEXPRESS";
+    */
     uniqueField = sets.value("uniqueId","id").toString();
     url.setUrl(sets.value("solrUpdate","http://localhost:8983/solr/update").toString());
     inFile = url.isLocalFile();
@@ -152,9 +157,12 @@ QDomDocument MainClass::recFieldsXml(TrkToolRecord *rec)
                             .arg(prjName.replace(' ',"_"))
                             .arg(v.toString())));
     root.appendChild(eField(xml,fieldNameTranslate("project",TRK_FIELD_TYPE_NONE),prj->projectName()));
+    TQAbstractRecordTypeDef *rdef = prj->recordTypeDef(rec->recordType());
     foreach(QString fi, rec->fields())
     {
-        int ftype = prj->fieldType(fi, rec->recordType());
+//        int ftype = prj->fieldType(fi, rec->recordType());
+        int fvid = rdef->fieldVid(fi);
+        int ftype = rdef->fieldNativeType(fvid);
         root.appendChild(eField(xml, fieldNameTranslate(fi, ftype), //filterName(fi) + QString(suffix[ftype]),
                                 filter(rec->value(fi).toString()),
                                 ftype));
@@ -162,7 +170,7 @@ QDomDocument MainClass::recFieldsXml(TrkToolRecord *rec)
     root.appendChild(eField(xml,fieldNameTranslate("Description",TRK_FIELD_TYPE_STRING), //"Description_s"
                             rec->description()));
 
-    foreach(const TrkNote &note, rec->notes())
+    foreach(const TQNote &note, rec->notes())
     {
         root.appendChild(eField(xml, fieldNameTranslate("note", TRK_FIELD_TYPE_MULTITEXT), // "note_txt"
                                 QString("%1 [%2 (%3)] %4")
@@ -202,7 +210,7 @@ void MainClass::write(const QDomDocument &dom)
 void MainClass::process()
 {
     //model = prj->openRecentModel(0,sets.value("query","All_SCRs").toString());
-    list = prj->getQueryIds(sets.value("query","All SCRs").toString());
+    list = prj->getQueryIds(sets.value("query","All SCRs").toString(), prj->defaultRecType());
     rowCount = list.count();
     sout << QString("Found %1 records\n").arg(rowCount);
     row = 0;
@@ -219,7 +227,7 @@ void MainClass::sendNextRecord()
         return;
     }
     //PTrkToolRecord rec = model->at(row);
-    PTrkToolRecord rec = prj->createRecordById(list[row]); //model->at(row);
+    PTrkToolRecord rec = prj->createRecordById(list[row], prj->defaultRecType()); //model->at(row);
     QDomDocument xml = recFieldsXml(rec);
     rec->releaseBuffer();
     QDomDocument add("add");

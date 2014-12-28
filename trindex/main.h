@@ -6,6 +6,8 @@
 #include <QtNetwork>
 #include <QDomDocument>
 
+class TQAbstractDB;
+class TQAbstractProject;
 class TrkToolDB;
 class TrkToolProject;
 class TrkToolRecord;
@@ -15,8 +17,8 @@ class MainClass: public QObject
 {
     Q_OBJECT
 protected:
-    TrkToolDB *db;
-    TrkToolProject *prj;
+    TQAbstractDB *db;
+    TQAbstractProject *prj;
     TrkToolModel *model;
     QList<int> list;
     int rowCount;
