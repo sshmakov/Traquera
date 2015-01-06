@@ -24,6 +24,10 @@ font-weight: bold;
 <!--
 -->
 </script>
+<script src="qrc:/js/jquery.js">
+<!--
+-->
+</script>
 </head>
 {let $scr := doc(fn:iri-to-uri(string($scrdoc)))
 return

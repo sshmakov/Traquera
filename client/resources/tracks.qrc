@@ -44,5 +44,6 @@
     </qresource>
     <qresource prefix="/js">
         <file>test.js</file>
+        <file alias="jquery.js">jquery-2.1.3.min.js</file>
     </qresource>
 </RCC>
