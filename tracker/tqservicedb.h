@@ -19,10 +19,8 @@ public:
     virtual ~TQServiceDB();
 
     virtual QStringList dbmsTypes();
-    virtual void setDbmsParams(const QString &dbmsName, const QString &dbmsUser = QString(), const QString &dbmsPass = QString());
     virtual QStringList projects(const QString &dbmsType);
     virtual TQAbstractProject *openProject(
-        const QString &dbmsType,
         const QString &projectName,
         const QString &user,
         const QString &pass);

@@ -34,6 +34,7 @@
 #include "ttfileiconprovider.h"
 #include "preview.h"
 #include "cliputil.h"
+#include "tqcolsdialog.h"
 //#include <Shlwapi.h>
 
 QueryPage::QueryPage(QWidget *parent)
@@ -482,6 +483,12 @@ void QueryPage::headerChanged()
 void QueryPage::initPopupMenu()
 {
 	QHeaderView *hv=queryView->horizontalHeader();
+
+    QAction *action = new QAction(tr("Настройка столбцов..."),this);
+    connect(action,SIGNAL(triggered()),this,SLOT(execColumnsEditor()));
+    hv->addAction(action);
+
+    /*
     QHash<QString, int> fieldPos;
     QStringList labels;
     for(int i=0; i<hv->count(); i++)
@@ -504,6 +511,8 @@ void QueryPage::initPopupMenu()
 		headerActions.append(action);
 	}
     hv->addActions(headerActions);
+    */
+
 	hv->setContextMenuPolicy(Qt::ActionsContextMenu);
 }
 
@@ -1411,7 +1420,14 @@ void QueryPage::popupScrMenu(int id)
 {
 //    QMenu menu;
 //    QAction
-//    menu.addAction(tr("Добавить #$1 в список").arg(id),this,SLOT(appendId(int))
+    //    menu.addAction(tr("Добавить #$1 в список").arg(id),this,SLOT(appendId(int))
+}
+
+void QueryPage::execColumnsEditor()
+{
+    QHeaderView *hv=queryView->horizontalHeader();
+    QScopedPointer<TQColsDialog> dlg(new TQColsDialog(this));
+    dlg->exec(hv);
 }
 
 void QueryPage::on_actionFilter_toggled(bool arg1)

@@ -30,7 +30,7 @@ QModelIndex UnionModel::mapToSource(const QModelIndex &proxyIndex) const
     if(p.isValid())
     {
         QModelIndex sp = mapToSource(p);
-        const MapInfo &m = info[proxyIndex.internalId()];
+        const MapInfo &m = info.value(proxyIndex.internalId());
         QAbstractItemModel *model = m.model;
         return model->index(proxyIndex.row(),proxyIndex.column(),sp);
     }
@@ -299,7 +299,9 @@ QAbstractItemModel *UnionModel::sourceModel(const QModelIndex &proxyIndex) const
         return 0;
     int pid = proxyIndex.internalId();
 
-    const MapInfo &m = info[pid];
+    if(!info.contains(pid))
+        return 0;
+    const MapInfo &m = info.value(pid);
     return m.model;
     /*
     if(!proxyIndex.isValid())

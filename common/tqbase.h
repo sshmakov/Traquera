@@ -55,24 +55,37 @@ class TQQueryFilter: public QSortFilterProxyModel
 
 class TQAbstractDB: public QObject
 {
+    Q_OBJECT
+private:
+    QString m_dbType, m_dbServer, m_dbUser, m_dbPass;
 public:
+    typedef TQAbstractDB *(*createDbFunc)(QObject *);
     TQAbstractDB(QObject *parent = 0);
     virtual QStringList dbmsTypes() = 0;
     virtual QStringList projects(const QString &dbmsType) = 0;
     virtual TQAbstractProject *openProject(
-            const QString &dbmsType,
             const QString &projectName,
-            const QString &user,
-            const QString &pass/*,
-            const QString &dbmsName = QString(),
-            const QString &dbmsUser = QString(),
-            const QString &dbmsPass = QString()*/
+            const QString &user = QString(),
+            const QString &pass = QString()
             ) = 0;
-    virtual void setDbmsParams(const QString &dbmsName, const QString &dbmsUser = QString(), const QString &dbmsPass = QString()) = 0;
+    virtual void setDbmsType(const QString &dbType);
+    virtual QString dbmsType() const;
+    virtual void setDbmsServer(const QString &server);
+    virtual QString dbmsServer() const;
+    virtual void setDbmsUser(const QString &dbmsUser, const QString &dbmsPass = QString());
+    virtual QString dbmsUser() const;
+    virtual QString dbmsPass() const;
     static TQAbstractProject *getProject(const QString &projectName);
 protected:
     static void registerProject(TQAbstractProject *prj);
     static void unregisterProject(TQAbstractProject *prj);
+
+public:
+    static bool registerDbClass(const QString &dbClass, TQAbstractDB::createDbFunc func);
+    static bool unregisterDbClass(const QString &dbClass);
+    static QStringList registeredDbClasses();
+    static TQAbstractDB *createDbClass(const QString &dbClass, QObject *parent = 0);
+
     friend class TQAbstractProject;
 };
 

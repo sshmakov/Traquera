@@ -7,6 +7,42 @@ TQAbstractDB::TQAbstractDB(QObject *parent)
 {
 }
 
+void TQAbstractDB::setDbmsType(const QString &dbType)
+{
+    m_dbType = dbType;
+}
+
+QString TQAbstractDB::dbmsType() const
+{
+    return m_dbType;
+}
+
+void TQAbstractDB::setDbmsServer(const QString &server)
+{
+    m_dbServer = server;
+}
+
+QString TQAbstractDB::dbmsServer() const
+{
+    return m_dbServer;
+}
+
+void TQAbstractDB::setDbmsUser(const QString &dbmsUser, const QString &dbmsPass)
+{
+    m_dbUser = dbmsUser;
+    m_dbPass = dbmsPass;
+}
+
+QString TQAbstractDB::dbmsUser() const
+{
+    return m_dbUser;
+}
+
+QString TQAbstractDB::dbmsPass() const
+{
+    return m_dbPass;
+}
+
 TQAbstractProject *TQAbstractDB::getProject(const QString &projectName)
 {
     return projectList.value(projectName, 0);
@@ -22,6 +58,48 @@ void TQAbstractDB::unregisterProject(TQAbstractProject *prj)
     projectList.remove(prj->projectName());
 }
 
+static QMap<QString, TQAbstractDB::createDbFunc> dbClasses;
+
+bool TQAbstractDB::registerDbClass(const QString &dbClass, createDbFunc func)
+{
+    if(dbClasses.contains(dbClass))
+    {
+        if(dbClasses.value(dbClass) == func)
+            return true;
+        return false;
+    }
+    dbClasses.insert(dbClass, func);
+    return true;
+}
+
+bool TQAbstractDB::unregisterDbClass(const QString &dbClass)
+{
+    if(dbClasses.contains(dbClass))
+    {
+        dbClasses.remove(dbClass);
+        return true;
+    }
+    return false;
+}
+
+QStringList TQAbstractDB::registeredDbClasses()
+{
+    return dbClasses.keys();
+}
+
+TQAbstractDB *TQAbstractDB::createDbClass(const QString &dbClass, QObject *parent)
+{
+    if(dbClasses.contains(dbClass))
+    {
+        TQAbstractDB::createDbFunc func = dbClasses[dbClass];
+        if(func)
+            return func(parent);
+    }
+    return 0;
+}
+
+
+/* TQAbstractProject */
 TQAbstractProject::TQAbstractProject(TQAbstractDB *db)
     :QObject(db)
 {

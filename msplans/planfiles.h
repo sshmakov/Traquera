@@ -23,7 +23,7 @@ protected:
     PlansPlugin *plugin;
 public:
     QList<Plan> plans;
-    QHash<QString, PrjItemModel *> models;
+    QMap<QString, PrjItemModel *> models;
 
     //PlanFilesModel(MainWindow *parent);
     PlanFilesModel(PlansPlugin *main);

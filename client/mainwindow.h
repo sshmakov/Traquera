@@ -31,6 +31,7 @@ class PlanFilesModel;
 class QueryPage;
 //class ProjectPage;
 class TTGlobal;
+class TQProjectTree;
 
 class MainWindow : public QMainWindow, private Ui::MainWindow
 {
@@ -46,9 +47,18 @@ private:
     //QList<QSqlQueryModel *> trkmodels;
     //QList<QSqlQueryModel *> prjmodels;
 	//QList<QSqlDatabase> prjdbs;
-	//TrkDb *trkdb;
+    //TrkDb *trkdb;
+
     TQAbstractDB *trkdb;
-    TQAbstractProject *trkproject;
+    TQAbstractProject * trkproject;
+    TQAbstractProject * activePrj;
+
+//    typedef QPair<QString,QString> src_type; //class, source
+//    QList<src_type> dbSources;
+    QMap<QString, TQAbstractDB *> dbList; // db by connectingString
+    QList<TQAbstractProject *>projects;
+    QMap<QString, TQAbstractProject *>projectByName;
+
     TrkHistory *journal;
     //PlansPlugin *planPlugin;
     //PlanFilesModel *projects;
@@ -62,9 +72,23 @@ private:
     int progressLevel;
 //    QNetworkAccessManager *am;
 //    QString solrUrl;
+    struct {
+        TQProjectTree *prjModel;
+        TQAbstractProject *prj;
+        TTFolderModel *folderModel;
+        TrkQryFilter *qryModel;
+        bool isProjectSelected;
+        bool isFoldersGroupSelected;
+        bool isFolderSelected;
+        QModelIndex folderIndex;
+        bool isQryGroupSelected;
+        bool isQuerySelected;
+        QModelIndex queryIndex;
+        QString queryName;
+    } selectedTreeItem;
 public slots:
-	void readQueries();
-    void openQuery(const QModelIndex &index, bool reusePage=true);
+    void readQueries(TQAbstractProject *prj);
+    void openQuery(TQAbstractProject *project, const QString &queryName, bool reusePage=true);
 //    void showCurrentPlan();
 //    void showPlan(bool linked = false);
     void showPlan(const QModelIndex &index);
@@ -91,15 +115,16 @@ public:
     void loadPlugins();
     //QMenu MainWindow::planMenu(bool forLink=false);
     void readModifications();
-    Q_INVOKABLE TQAbstractProject *currentProject()
-    {
-        return trkproject;
-    }
-
+    Q_INVOKABLE TQAbstractProject *currentProject() const;
+    void setCurrentProject(TQAbstractProject *prj);
     void openCurItem(bool reuse);
     void calcCountRecords();
     //ProjectPage *openPlanPage(const QString &fileName);
     void findTrkRecords(const QString &line, bool reuse=true);
+    TQProjectTree *selectedProjectTree();
+    QModelIndex selectedFolder(TTFolderModel **folderModel);
+    void readSelectedTreeItem();
+    QModelIndex mapFolderIndexToTree(const QModelIndex &index);
 protected:
     QMenu *menuQueryList;
     QMenu *menuId;
@@ -113,6 +138,9 @@ protected:
     FieldValues lastChanges;
     virtual void closeEvent(QCloseEvent *event);
     void saveIdsToList(const QString &list);
+    TQAbstractDB *newDb(const QString &dbClass, const QString &dbType, const QString &dbServer);
+    TQAbstractDB *getDb(const QString &dbClass, const QString &dbType, const QString &dbServer);
+    void registerDBClasses();
 protected slots:
     void deleteTheObject();
     void curSelectionChanged();
@@ -155,6 +183,7 @@ public slots:
 
 private slots:
     void on_changedQuery(const QString & projectName, const QString & queryName);
+    void on_tabChanged(int tab);
     void on_actionPrevious_triggered();
     void on_actionOpen_Query_triggered();
     void on_queriesView_customContextMenuRequested(const QPoint &pos);

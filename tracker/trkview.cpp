@@ -361,19 +361,19 @@ QStringList TrkToolDB::projects(const QString &dbmsType)
 	if(!projectList.contains(dbmsType) || projectList[dbmsType].isEmpty())
 	{
 		TRK_UINT res;
-		if(dbmsUser.isEmpty())
+        if(dbmsUser().isEmpty())
 			res = TrkInitProjectList(handle, 
-			dbmsType.toLocal8Bit().constData(), 
-			dbmsName.toLocal8Bit().constData(), 
+            dbmsType.toLocal8Bit().constData(),
+            dbmsServer().toLocal8Bit().constData(),
 			"", 
 			"", 
 			TRK_USE_DEFAULT_DBMS_LOGIN);
 		else
 			res = TrkInitProjectList(handle, 
 			dbmsType.toLocal8Bit().constData(), 
-			dbmsName.toLocal8Bit().constData(), 
-			dbmsUser.toLocal8Bit().constData(), 
-			dbmsPassword.toLocal8Bit().constData(), 
+            dbmsServer().toLocal8Bit().constData(),
+            dbmsUser().toLocal8Bit().constData(),
+            dbmsPass().toLocal8Bit().constData(),
 			TRK_USE_SPECIFIED_DBMS_LOGIN);
         if(isTrkOK(res))
 		{
@@ -388,26 +388,18 @@ QStringList TrkToolDB::projects(const QString &dbmsType)
 }
 
 TQAbstractProject *TrkToolDB::openProject(
-	const QString &dbmsType,
 	const QString &projectName,
 	const QString &user, 
 	const QString &pass)
 {
 	TrkToolProject *prj = new TrkToolProject(this);
-    prj->login(user, pass, projectName, dbmsType, dbmsName, dbmsUser, dbmsPassword);
+    prj->login(user, pass, projectName);
     openedProjects[projectName]=prj;
     registerProject(prj);
     return prj;
 }
 
-void TrkToolDB::setDbmsParams(const QString &dbmsName, const QString &dbmsUser, const QString &dbmsPass)
-{
-    this->dbmsName = dbmsName;
-    this->dbmsUser = dbmsUser;
-    this->dbmsPassword = dbmsPass;
-}
-
- QHash<QString, TrkToolProject *> TrkToolDB::openedProjects;
+QHash<QString, TrkToolProject *> TrkToolDB::openedProjects;
 
 TQAbstractProject *TrkToolDB::getProject(const QString &projectName)
 {
@@ -448,46 +440,41 @@ QString TrkToolProject::projectName() const
     return name;
 }
 
-bool TrkToolProject::login(
-		const QString &user, 
-		const QString &pass,
-		const QString &project, 
-		const QString &dbmsType, 
-		const QString &dbmsName, 
-		const QString &dbmsUser, 
-		const QString &dbmsPassword)
+bool TrkToolProject::login(const QString &user,
+        const QString &pass,
+        const QString &project)
 {
 	TRK_UINT res;
-	/*
-	char dtype[256];
-	strncpy(dtype,dbmsType.toLocal8Bit().constData(),sizeof(dtype));
-	char dname[256];
-	strncpy(dname,dbmsName.toLocal8Bit().constData(),sizeof(dname));
-	char duser[256];
-	strncpy(duser,dbmsUser.toLocal8Bit().constData(),sizeof(duser));
-	char dpass[256];
-	strncpy(dpass,dbmsPassword.toLocal8Bit().constData(),sizeof(dpass));
-	char puser[256];
-	strncpy(puser,user.toLocal8Bit().constData(),sizeof(puser));
-	char ppass[256];
-	strncpy(ppass,pass.toLocal8Bit().constData(),sizeof(ppass));
-	char pname[256];
-	strncpy(pname,project.toLocal8Bit().constData(),sizeof(pname));
-	*/
 	TRK_UINT mode;
-	if(dbmsUser.isEmpty())
-		mode = TRK_USE_DEFAULT_DBMS_LOGIN;
-	else
-		mode = TRK_USE_SPECIFIED_DBMS_LOGIN;
-	res = TrkProjectLogin(handle,
-        user.toLocal8Bit().constData(),
-		pass.toLocal8Bit().constData(),
-		project.toLocal8Bit().constData(),
-		dbmsType.toLocal8Bit().constData(),
-		dbmsName.toLocal8Bit().constData(), 
-		dbmsUser.toLocal8Bit().constData(),
-		dbmsPassword.toLocal8Bit().constData(), 
-		mode);
+    QString dbmsType = db->dbmsType();
+    QString dbmsServer = db->dbmsServer();
+    QString dbmsUser = db->dbmsUser();
+    QString dbmsPass = db->dbmsPass();
+
+    if(!dbmsType.isEmpty())
+    {
+        if(dbmsUser.isEmpty())
+            mode = TRK_USE_DEFAULT_DBMS_LOGIN;
+        else
+            mode = TRK_USE_SPECIFIED_DBMS_LOGIN;
+        res = TrkProjectLogin(handle,
+                              user.toLocal8Bit().constData(),
+                              pass.toLocal8Bit().constData(),
+                              project.toLocal8Bit().constData(),
+                              dbmsType.toLocal8Bit().constData(),
+                              dbmsServer.toLocal8Bit().constData(),
+                              dbmsUser.toLocal8Bit().constData(),
+                              dbmsPass.toLocal8Bit().constData(),
+                              mode);
+    }
+    else if(!dbmsServer.isEmpty())
+    {
+        res = TrkProjectLoginEx(handle,
+                                user.toLocal8Bit().constData(),
+                                pass.toLocal8Bit().constData(),
+                                project.toLocal8Bit().constData(),
+                                dbmsServer.toLocal8Bit().constData());
+    }
     if(isTrkOK(res))
 	{
 		opened = true;

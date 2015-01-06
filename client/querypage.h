@@ -122,6 +122,7 @@ public slots:
     //void showCurrentTaskInPlan();
     void previewFile(const QString &filePath);
     void popupScrMenu(int id);
+    void execColumnsEditor();
 protected slots:
 	void selectionChanged(const QItemSelection & selected, const QItemSelection & deselected);
     void currentChanged ( const QModelIndex & topLeft, const QModelIndex &  bottomRight);

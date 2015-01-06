@@ -511,14 +511,15 @@ static QHash<QString, TQSession *> sessionsPool;
 TQSession::TQSession(QObject *parent)
 {
     db=new TrkToolDB(this);
-    db->setDbmsParams("SHMAKOVTHINK\\SQLEXPRESS",
-                      "", //sets.value("dbmsUser").toString(),
-                      "" //sets.value("dbmsPassword").toString();
-                      );
+    dbType = "LocalSQL";
+    db->setDbmsType(dbType);
+    db->setDbmsServer("SHMAKOVTHINK\\SQLEXPRESS");
+    db->setDbmsUser("", //sets.value("dbmsUser").toString(),
+                    "" //sets.value("dbmsPassword").toString();
+                    );
 //    db->dbmsUser = "";
 //    db->dbmsPassword = "";
 //    db->dbmsName = "SHMAKOVTHINK\\SQLEXPRESS";
-    dbType = "LocalSQL";
     createTime = QDateTime::currentDateTimeUtc();
     lastActivity = createTime;
     sid = QUuid::createUuid().toString();
@@ -555,7 +556,7 @@ QString TQSession::login(const QString &user, const QString &password, const QSt
 //            project = "RS-Bank V.6", //sets.value("project").toString(),
 //            user = QString::fromLocal8Bit("Сергей"), //sets.value("user").toString(),
 //            password = ""; //sets.value("password").toString();
-    TQAbstractProject *prj = db->openProject(dbType,project,user,password);
+    TQAbstractProject *prj = db->openProject(project,user,password);
     if(prj)
         if(prj->isOpened())
         {
@@ -590,7 +591,7 @@ QString TQSession::requestRecord(const QString &pid, int id)
     TQAbstractProject *prj = project(pid);
     if(!prj)
         return QString();
-    QScopedPointer<TrkToolRecord> rec(prj->createRecordById(id, prj->defaultRecType()));
+    QScopedPointer<TQRecord> rec(prj->createRecordById(id, prj->defaultRecType()));
     if(rec.isNull())
         return "empty";
     return rec->toXML().toString();

@@ -535,17 +535,16 @@ class TrkToolDB: public TQAbstractDB
     Q_OBJECT
 public:
 	TRK_HANDLE handle;
-	QString dbmsName, dbmsUser, dbmsPassword;
+//    QString dbmsType, serverName;
+//	QString dbmsName, dbmsUser, dbmsPassword;
 	TrkToolDB(QObject *parent = 0);
 	~TrkToolDB();
     virtual QStringList dbmsTypes();
     virtual QStringList projects(const QString &dbmsType);
     virtual TQAbstractProject *openProject(
-		const QString &dbmsType,
 		const QString &projectName,
-		const QString &user, 
-		const QString &pass);
-    void setDbmsParams(const QString &dbmsName, const QString &dbmsUser = QString(), const QString &dbmsPass = QString());
+        const QString &user = QString(),
+        const QString &pass = QString());
     TQAbstractProject *getProject(const QString &projectName);
 protected:
 	QStringList dbmsTypeList;
@@ -689,11 +688,7 @@ protected:
     bool login(
         const QString &user,
         const QString &pass,
-        const QString &project,
-        const QString &dbmsType,
-        const QString &dbmsName = QString(),
-        const QString &dbmsUser = QString(),
-        const QString &dbmsPassword = QString());
+        const QString &project);
     bool readQueryList();
 	bool readDefs();
     void readUserList();

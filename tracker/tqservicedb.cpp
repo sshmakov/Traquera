@@ -21,11 +21,7 @@ TQServiceDB::~TQServiceDB()
 
 QStringList TQServiceDB::dbmsTypes()
 {
-    return QStringList("http://localhost:8080");
-}
-
-void TQServiceDB::setDbmsParams(const QString &dbmsName, const QString &dbmsUser, const QString &dbmsPass)
-{
+    return QStringList("http://localhost:8080/tq");
 }
 
 QStringList TQServiceDB::projects(const QString &dbmsType)
@@ -47,7 +43,7 @@ QStringList TQServiceDB::projects(const QString &dbmsType)
     return QStringList();
 }
 
-TQAbstractProject *TQServiceDB::openProject(const QString &dbmsType, const QString &projectName, const QString &user, const QString &pass)
+TQAbstractProject *TQServiceDB::openProject(const QString &projectName, const QString &user, const QString &pass)
 {
     TQLoginReplyHandler handler;
     QString query = QString("<Login project=\"%1\" user=\"%2\" password=\"%3\"/>").
@@ -62,16 +58,17 @@ TQAbstractProject *TQServiceDB::openProject(const QString &dbmsType, const QStri
     reader.setContentHandler(&handler);
     if(reader.parse(source))
     */
-    if(sendRequest(dbmsType, "Login", query, &handler))
+    if(sendRequest(dbmsType(), "Login", query, &handler))
     {
         if(!handler.isFault)
         {
             TQServiceProject *prj = new TQServiceProject(this);
             prj->sessionID = handler.sessionID;
             prj->projectID = handler.projectID;
-            prj->dbmsType = dbmsType;
+            prj->dbmsType = dbmsType();
             prj->opened = true;
             prj->defRecType = 1; // need to chenge to answered type
+            prj->name = projectName;
             idProjects[handler.projectID] = prj;
             return prj;
         }

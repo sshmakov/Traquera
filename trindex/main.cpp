@@ -58,9 +58,17 @@ MainClass::MainClass(QObject *parent, char *iniFile)
 
     sets.setIniCodec(QTextCodec::codecForName("windows-1251"));
 
+    QString
+            dbType = sets.value("dbmsType").toString(),
+            dbServer = sets.value("dbmsName").toString(),
+            project = sets.value("project").toString(),
+            user = sets.value("user").toString(),
+            password = sets.value("password").toString();
+
     db=new TrkToolDB(this);
-    db->setDbmsParams(sets.value("dbmsName").toString(),
-                      sets.value("dbmsUser").toString(),
+    db->setDbmsType(dbType);
+    db->setDbmsServer(dbServer);
+    db->setDbmsUser(sets.value("dbmsUser").toString(),
                       sets.value("dbmsPassword").toString());
     /*
     db->dbmsUser = sets.value("dbmsUser").toString();
@@ -82,12 +90,8 @@ MainClass::MainClass(QObject *parent, char *iniFile)
         localFile.open(QIODevice::WriteOnly | QIODevice::Append);
     }
     //QScopedPointer<TrkToolProject> prj(db->openProject(argv[1],argv[2],argv[3],argv[4]));
-    QString
-            dbType = sets.value("dbmsType").toString(),
-            project = sets.value("project").toString(),
-            user = sets.value("user").toString(),
-            password = sets.value("password").toString();
-    prj = db->openProject(dbType,project,user,password);
+
+    prj = db->openProject(project,user,password);
     if(!prj->isOpened())
         sout << "Error opening project\n";
     prjName = prj->projectName();
@@ -227,7 +231,15 @@ void MainClass::sendNextRecord()
         return;
     }
     //PTrkToolRecord rec = model->at(row);
-    PTrkToolRecord rec = prj->createRecordById(list[row], prj->defaultRecType()); //model->at(row);
+    TQRecord *trec = prj->createRecordById(list[row], prj->defaultRecType()); //model->at(row);
+    if(!trec)
+       return;
+    PTrkToolRecord rec = qobject_cast<TrkToolRecord *>(trec);
+    if(!rec)
+    {
+        delete trec;
+        return;
+    }
     QDomDocument xml = recFieldsXml(rec);
     rec->releaseBuffer();
     QDomDocument add("add");

@@ -35,6 +35,7 @@
 #include <QNetworkRequest>
 #include <QtWebKit>
 #include "ttrecwindow.h"
+#include "projecttree.h"
 
 extern int uniqueAlbumId;
 extern int uniqueArtistId;
@@ -45,7 +46,9 @@ MainWindow::MainWindow(QWidget *parent)
     //qRegisterMetaType<MainWindow>("QMainWindow");
     setupUi(this);
 
-    editServiceUrl->setText("http://localhost:8080/tq");
+    registerDBClasses();
+    dbClassComboBox->addItems(TQAbstractDB::registeredDbClasses());
+//    editServiceUrl->setText("http://localhost:8080/tq");
 
     QWebSettings::globalSettings()->setAttribute(QWebSettings::PluginsEnabled, true);
     QWebSettings::globalSettings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
@@ -76,7 +79,7 @@ MainWindow::MainWindow(QWidget *parent)
 #ifdef DECORATOR
     decorator = new TrkDecorator(this);
 #endif
-    trkdb = 0;
+//    trkdb = 0;
 //#ifdef SERV_DB_ON
 //    trkdb = new TQServiceDB(this);
 //#else
@@ -101,7 +104,7 @@ MainWindow::MainWindow(QWidget *parent)
     //file = albumDetails;
     //readAlbumData();
 
-	connect(actionOpen_Tracker,SIGNAL(activated()),this,SLOT(readQueries()));
+//	connect(actionOpen_Tracker,SIGNAL(activated()),this,SLOT(readQueries()));
 	//connect(actionOpen_Project,SIGNAL(activated()),this,SLOT(openProject()));
     //connect(actionOpen_Linked_Project,SIGNAL(activated()),this,SLOT(openLinkedPlan()));
 
@@ -120,6 +123,7 @@ MainWindow::MainWindow(QWidget *parent)
     tabWidget->setCornerWidget(closeBtn);
 
 	connect(tabWidget,SIGNAL(tabCloseRequested(int)),this,SLOT(closeTab(int)));
+    connect(tabWidget,SIGNAL(currentChanged(int)),this,SLOT(on_tabChanged(int)));
     connect(closeBtn,SIGNAL(clicked()),this,SLOT(closeCurTab()));
 
     //createConnection();
@@ -462,6 +466,19 @@ QString MainWindow::getTrkConnectString()
 
 void MainWindow::readDbms()
 {
+    QString dbClass = dbClassComboBox->currentText();
+    QString dbType = dbmsEdit->text().trimmed();
+    QString dbServer = serverEdit->text().trimmed();
+    if(dbClass.isEmpty())
+        return;
+    QScopedPointer<TQAbstractDB> trkdb(newDb(dbClass,dbType,dbServer));
+    if(trkdb.isNull())
+        return;
+
+    //QScopedPointer<TQAbstractDB> trkdb(new TrkToolDB(this));
+    trkdb->setDbmsUser(sqlUserEdit->text(),
+                       sqlPassEdit->text());
+
     QStringList dbmsList = trkdb->dbmsTypes();
 	QMenu *menu=new QMenu();
     for(int i=0; i<dbmsList.count(); i++)
@@ -474,8 +491,14 @@ void MainWindow::readDbms()
 
 void MainWindow::readProjects()
 {
-    trkdb->setDbmsParams(serverEdit->text().trimmed(),
-                         sqlUserEdit->text(),
+    QString dbClass = dbClassComboBox->currentText();
+    QString dbType = dbmsEdit->text().trimmed();
+    QString dbServer = serverEdit->text().trimmed();
+    if(dbClass.isEmpty())
+        return;
+    QScopedPointer<TQAbstractDB> trkdb(newDb(dbClass,dbType,dbServer));
+//    QScopedPointer<TQAbstractDB> trkdb(newDb TrkToolDB(this));
+    trkdb->setDbmsUser(sqlUserEdit->text(),
                          sqlPassEdit->text());
     QStringList projects = trkdb->projects(dbmsEdit->text());
     QMenu *menu=new QMenu();
@@ -606,16 +629,84 @@ void MainWindow::calcCountRecords()
     statusLine->setText(s);
 }
 
+static TQAbstractDB *newTrkToolDB(QObject *parent)
+{
+    return new TrkToolDB(parent);
+}
+
+static TQAbstractDB *newTQServiceDB(QObject *parent)
+{
+    return new TQServiceDB(parent);
+}
+
+TQAbstractDB *MainWindow::newDb(const QString &dbClass, const QString &dbType, const QString &dbServer)
+{
+    TQAbstractDB *db = TQAbstractDB::createDbClass(dbClass);
+    if(!db)
+        return 0;
+    if(!dbType.isEmpty())
+        db->setDbmsType(dbType);
+    if(!dbServer.isEmpty())
+        db->setDbmsServer(dbServer);
+    return db;
+}
+
+TQAbstractDB *MainWindow::getDb(const QString &dbClass, const QString &dbType, const QString &dbServer)
+{
+    QString conn = dbClass + "/" + dbType.trimmed() + "/" + dbServer.trimmed();
+    if(dbList.contains(conn))
+        return dbList.value(conn);
+    TQAbstractDB *db = TQAbstractDB::createDbClass(dbClass);
+    if(!db)
+        return 0;
+    if(!dbType.isEmpty())
+        db->setDbmsType(dbType);
+    if(!dbServer.isEmpty())
+        db->setDbmsServer(dbServer);
+    dbList.insert(conn, db);
+    return db;
+}
+
+void MainWindow::registerDBClasses()
+{
+    TQAbstractDB::registerDbClass("PVCS Tracker", newTrkToolDB);
+    TQAbstractDB::registerDbClass("TraQuera Service", newTQServiceDB);
+}
+
 void MainWindow::connectTracker()
 {
+    QString dbClass = dbClassComboBox->currentText();
     QString dbType = dbmsEdit->text().trimmed();
-    QString server = serverEdit->text().trimmed();
+    QString dbServer = serverEdit->text().trimmed();
 	QString user = userEdit->text();
 	QString project = projectEdit->text().trimmed();
 	QString password = passwordEdit->text().trimmed();
 	QString dbmsUser = sqlUserEdit->text();
 	QString dbmsPass = sqlPassEdit->text();
 	
+    TQAbstractDB *db = newDb(dbClass,dbType,dbServer);
+    if(!db)
+        return; // !! need messagebox
+    TQAbstractProject *prj = db->openProject(
+                project,
+                user,
+                password);
+    if(prj)
+    {
+        if(prj->isOpened())
+        {
+            projects.append(prj);
+            projectByName.insert(prj->projectName(),prj);
+            saveSettings();
+            //        journal->setProject(prj);
+            readQueries(prj);
+            //connectButton->setDisabled(true);
+        }
+        else
+            delete prj;
+    }
+
+/*
 	if(!trkdb)
     {
 //#ifdef SERV_DB_ON
@@ -624,7 +715,7 @@ void MainWindow::connectTracker()
         trkdb = new TrkToolDB(this);
 //#endif
     }
-    trkdb->setDbmsParams(server, dbmsUser, dbmsPass);
+    trkdb->setDbmsUser(server, dbmsUser, dbmsPass);
     //const QStringList *dbmsTypes = trkdb->dbmsTypes();
 	//return;
     if(trkproject)
@@ -641,7 +732,6 @@ void MainWindow::connectTracker()
     journal->clearRecords();
 
     trkproject=trkdb->openProject(
-                dbType,
                 project,
                 user,
                 password);
@@ -649,19 +739,14 @@ void MainWindow::connectTracker()
     {
         saveSettings();
         journal->setProject(trkproject);
-        readQueries();
+        readQueries(trkproject);
         //connectButton->setDisabled(true);
     }
-	/*
-	if(!trkdb)
-		trkdb=new TrkDb;
-	if(trkdb->openProject(getTrkConnectString(),project,user))
-		saveSettings();
 		*/
 }
 
 
-void MainWindow::readQueries()
+void MainWindow::readQueries(TQAbstractProject *prj)
 {
     //QAbstractItemModel *qryModel = trkproject->createProxyQueryModel(TrkQryFilter::All, this);
     //queriesView->setModel(qryModel);
@@ -674,34 +759,26 @@ void MainWindow::readQueries()
     queriesView->setModelColumn(0);
     */
 
-    treeModel->clear();
+//    treeModel->clear();
 
     TTFolderModel *folders = new TTFolderModel(this);
     QSqlDatabase db = ttglobal()->userDatabase();
     folders->setDatabaseTable(db,"folders","user");
-    treeModel->appendSourceModel(folders,tr("Личные папки"));
+    TQProjectTree *prjTree = new TQProjectTree(this);
+    prjTree->setProject(prj);
+
+    prjTree->appendSourceModel(folders,tr("Личные папки"));
 
     TrkQryFilter *userModel = new TrkQryFilter(this);
-    userModel->setSourceQueryModel(trkproject->queryModel(trkproject->defaultRecType()),TrkQryFilter::UserOnly);
-//    QAbstractItemModel *userModel = trkproject->createProxyQueryModel(TrkQryFilter::UserOnly, this);
-    //queriesView->setModel(userModel);
-    treeModel->appendSourceModel(userModel,tr("Личные выборки"));
+    userModel->setSourceQueryModel(prj->queryModel(prj->defaultRecType()),TrkQryFilter::UserOnly);
+    prjTree->appendSourceModel(userModel,tr("Личные выборки"));
 
     TrkQryFilter *publicModel = new TrkQryFilter(this);
-    publicModel->setSourceQueryModel(trkproject->queryModel(trkproject->defaultRecType()),TrkQryFilter::PublicOnly);
-    //QAbstractItemModel *publicModel = trkproject->createProxyQueryModel(TrkQryFilter::PublicOnly, this);
-    treeModel->appendSourceModel(publicModel,tr("Общие выборки"));
+    publicModel->setSourceQueryModel(prj->queryModel(prj->defaultRecType()),TrkQryFilter::PublicOnly);
+    prjTree->appendSourceModel(publicModel,tr("Общие выборки"));
 
-    treeModel->setMaxColCount(1);
-
-	/*
-	QSqlQueryModel *m= new QSqlQueryModel(this);
-	trkmodels.append(m);
-	m->setQuery(trkdb->queryQueries,trkdb->db);  
-	//queriesView->ins
-	queriesView->setModel(m);
-	queriesView->setModelColumn(4);
-	*/
+    prjTree->setMaxColCount(1);
+    treeModel->appendSourceModel(prjTree, prj->projectName());
 }
 
 QString minTitle(const QString &title)
@@ -711,12 +788,14 @@ QString minTitle(const QString &title)
     return title;
 }
 
-void MainWindow::openQuery(const QModelIndex &index, bool reusePage)
+void MainWindow::openQuery(TQAbstractProject *project, const QString &queryName, bool reusePage)
 {
-    if(!index.isValid() || !index.model())
-		return;
+//    if(!index.isValid() || !index.model())
+//		return;
 	//int id = index.data(Qt::UserRole).toInt();
-	QString title = index.data(Qt::DisplayRole).toString().trimmed();
+//	QString title = index.data(Qt::DisplayRole).toString().trimmed();
+
+    QString title = queryName;
 
     QueryPage *page=NULL; // = qobject_cast<QueryPage *>(w);
     if(reusePage)
@@ -727,10 +806,10 @@ void MainWindow::openQuery(const QModelIndex &index, bool reusePage)
     if(page)
         tabWidget->setTabText(tabWidget->currentIndex(),minTitle(title));
     else
-        page=createNewPage(minTitle(title));
+        page = createNewPage(minTitle(title));
 
 	//QAbstractItemModel *model = trkproject->openQueryModel(title);
-	page->openQuery(trkproject, title);
+    page->openQuery(project, title);
 	//page->setQueryModel(model);
 	//page->setQuery(id, trkdb);
 	// page->setPlanModel(&planModel);
@@ -778,7 +857,7 @@ void MainWindow::openQueryById(const QString &numbers, bool reusePage)
     else
         page = createNewPage(minTitle(numbers));
     showProgressBar();
-    page->openIds(trkproject, numbers, numbers);
+    page->openIds(currentProject(), numbers, numbers);
     hideProgressBar();
 }
 
@@ -793,7 +872,7 @@ void MainWindow::openQueryById(const QList<int> &idList, const QString &title, b
     else
         tabWidget->setTabText(tabWidget->currentIndex(),minTitle(newTitle));
     showProgressBar();
-    page->openIds(trkproject,idList,title);
+    page->openIds(currentProject(),idList,title);
     hideProgressBar();
 }
 
@@ -841,6 +920,9 @@ ProjectPage *MainWindow::openPlanPage(const QString& fileName)
 
 void MainWindow::findTrkRecords(const QString &line, bool reuse)
 {
+    TQAbstractProject *prj = currentProject();
+    if(!prj)
+        return;
     QFile file("data/init.xml");
     QXmlInputSource source(&file); // new???
     QDomDocument dom;
@@ -856,14 +938,14 @@ void MainWindow::findTrkRecords(const QString &line, bool reuse)
         return;
     QDomElement params = trindex.firstChildElement("params");
     QUrl solrUrl(href);
-    QString prj = trkproject->projectName();
-    prj.replace(" ","_");
+    QString prjName = prj->projectName();
+    prjName.replace(" ","_");
     QDomNamedNodeMap pmap = params.attributes();
     for(int i=0; i<pmap.count(); i++)
     {
         QDomNode n = pmap.item(i);
         QString value = n.nodeValue();
-        value.replace("{project}",prj);
+        value.replace("{project}",prjName);
         solrUrl.addQueryItem(n.nodeName(), value);
     }
     QString queryText = line;
@@ -876,7 +958,126 @@ void MainWindow::findTrkRecords(const QString &line, bool reuse)
     req.setRawHeader("QueryString", line.toLocal8Bit().constData());
     req.setRawHeader("ReuseWindow", QVariant(reuse).toString().toLocal8Bit().constData());
     showProgressBar();
-//    am->post(req,line.toLocal8Bit().constData());
+    //    am->post(req,line.toLocal8Bit().constData());
+}
+
+TQProjectTree *MainWindow::selectedProjectTree()
+{
+    return qobject_cast<TQProjectTree*>(treeModel->sourceModel(treeView->currentIndex()));
+}
+
+QModelIndex MainWindow::selectedFolder(TTFolderModel **folderModel)
+{
+    readSelectedTreeItem();
+    if(folderModel)
+        *folderModel = selectedTreeItem.folderModel;
+    return selectedTreeItem.folderIndex;
+}
+
+void MainWindow::readSelectedTreeItem()
+{
+    selectedTreeItem.prjModel = 0;
+    selectedTreeItem.prj = 0;
+    selectedTreeItem.folderModel = 0;
+    selectedTreeItem.qryModel = 0;
+    selectedTreeItem.isProjectSelected = false;
+    selectedTreeItem.isFoldersGroupSelected = false;
+    selectedTreeItem.isFolderSelected = false;
+    selectedTreeItem.folderIndex = QModelIndex();
+    selectedTreeItem.isQryGroupSelected = false;
+    selectedTreeItem.isQuerySelected = false;
+    selectedTreeItem.queryIndex = QModelIndex();
+    selectedTreeItem.queryName = QString();
+
+    QModelIndex curIndex = treeView->currentIndex();
+    if(!curIndex.isValid())
+        return;
+
+    QAbstractItemModel *srcModel = treeModel->sourceModel(curIndex);
+    selectedTreeItem.prjModel = qobject_cast<TQProjectTree*>(srcModel);
+    if(!selectedTreeItem.prjModel)
+        return;
+
+    selectedTreeItem.prj = selectedTreeItem.prjModel->project();
+    QModelIndex prjIndex = treeModel->mapToSource(curIndex);
+    if(!prjIndex.isValid())
+    {
+        selectedTreeItem.isProjectSelected = true;
+        return;
+    }
+    QAbstractItemModel *model = selectedTreeItem.prjModel->sourceModel(prjIndex);
+    QModelIndex index = selectedTreeItem.prjModel->mapToSource(prjIndex);
+    if(!model)
+    {
+        return;
+    }
+    selectedTreeItem.folderModel = qobject_cast<TTFolderModel*>(model);
+    if(selectedTreeItem.folderModel)
+    {
+        selectedTreeItem.folderIndex = index;
+        if(!index.isValid())
+        {
+            selectedTreeItem.isFoldersGroupSelected = true;
+            return;
+        }
+        selectedTreeItem.isFolderSelected = true;
+        return;
+    }
+    selectedTreeItem.qryModel = qobject_cast<TrkQryFilter*>(model);
+    if(selectedTreeItem.qryModel)
+    {
+        selectedTreeItem.folderIndex = index;
+        if(!index.isValid())
+        {
+            selectedTreeItem.isQryGroupSelected = true;
+            return;
+        }
+        selectedTreeItem.isQuerySelected = true;
+        selectedTreeItem.queryName = index.data(Qt::DisplayRole).toString();
+        return;
+    }
+    /*
+    QModelIndex index = treeView->currentIndex();
+    if(!index.isValid())
+        return;
+    bool isMainGroup = !index.parent().isValid();
+    QAbstractItemModel *model = treeModel->sourceModel(index);
+    TQProjectTree *prjmodel = qobject_cast<TQProjectTree*>(model);
+    QModelIndex prjIndex = treeModel->mapToSource(index);
+    if(!prjmodel)
+        return;
+    QAbstractItemModel *grpmodel = prjmodel->sourceModel(prjIndex);
+    TrkQryFilter *qryModel = qobject_cast<TrkQryFilter*>(grpmodel);
+    TTFolderModel *folderModel = qobject_cast<TTFolderModel*>(grpmodel);
+    if(qryModel && !isMainGroup)
+    {
+        openQuery(index, reuse);
+        return;
+    }
+    if(folderModel && !isMainGroup)
+    {
+        index = treeModel->mapToSource(index);
+        if(!index.isValid())
+            return;
+
+        QueryPage *page = curQueryPage(); // = qobject_cast<QueryPage *>(w);
+        QString folderName = index.sibling(index.row(),0).data().toString();
+        int folderId = index.sibling(index.row(),1).data().toInt();
+        if(folderName.isEmpty())
+            folderName = tr("Папка");
+        if(!page || !reuse)
+            page = createNewPage(folderName);
+        page->openFolder(trkproject,folderModel->folder(index));
+        tabWidget->setTabText(tabWidget->currentIndex(),folderName);
+    }
+    */
+}
+
+QModelIndex MainWindow::mapFolderIndexToTree(const QModelIndex &index)
+{
+    QModelIndex prjIndex = selectedTreeItem.prjModel->mapFromSource(index);
+    QModelIndex treeIndex = treeModel->mapFromSource(prjIndex);
+    return treeIndex;
 }
 
 QueryPage *MainWindow::curQueryPage()
@@ -937,6 +1138,16 @@ void MainWindow::readModifications()
     connect(modifyPanel,SIGNAL(applyButtonPressed()),this,SLOT(applyChanges()));
     connect(modifyPanel,SIGNAL(repeatButtonClicked()),this,SLOT(repeatLastChanges()));
     dockPropsContents->layout()->addWidget(modifyPanel);
+}
+
+TQAbstractProject *MainWindow::currentProject() const
+{
+    return activePrj;
+}
+
+void MainWindow::setCurrentProject(TQAbstractProject *prj)
+{
+    activePrj = prj;
 }
 
 void MainWindow::closeTab(int index)
@@ -1114,13 +1325,39 @@ void MainWindow::openCurItem(bool reuse)
     */
     if(treeView->isVisible())
     {
+        readSelectedTreeItem();
+        QModelIndex index = treeView->currentIndex();
+        if(selectedTreeItem.isQuerySelected)
+        {
+            openQuery(selectedTreeItem.prj, selectedTreeItem.queryName, reuse);
+            return;
+        }
+        if(selectedTreeItem.isFolderSelected)
+        {
+            QueryPage *page = curQueryPage(); // = qobject_cast<QueryPage *>(w);
+            QString folderName = selectedTreeItem.folderIndex.sibling(index.row(),0).data().toString();
+//            int folderId = index.sibling(index.row(),1).data().toInt();
+            if(folderName.isEmpty())
+                folderName = tr("Папка");
+            if(!page || !reuse)
+                page = createNewPage(folderName);
+            page->openFolder(selectedTreeItem.prj, selectedTreeItem.folderModel->folder(selectedTreeItem.folderIndex));
+            tabWidget->setTabText(tabWidget->currentIndex(),folderName);
+            return;
+        }
+        /*
         QModelIndex index = treeView->currentIndex();
         if(!index.isValid())
             return;
         bool isMainGroup = !index.parent().isValid();
         QAbstractItemModel *model = treeModel->sourceModel(index);
-        TrkQryFilter *qryModel = qobject_cast<TrkQryFilter*>(model);
-        TTFolderModel *folderModel = qobject_cast<TTFolderModel*>(model);
+        TQProjectTree *prjmodel = qobject_cast<TQProjectTree*>(model);
+        QModelIndex prjIndex = treeModel->mapToSource(index);
+        if(!prjmodel)
+            return;
+        QAbstractItemModel *grpmodel = prjmodel->sourceModel(prjIndex);
+        TrkQryFilter *qryModel = qobject_cast<TrkQryFilter*>(grpmodel);
+        TTFolderModel *folderModel = qobject_cast<TTFolderModel*>(grpmodel);
         if(qryModel && !isMainGroup)
         {
             openQuery(index, reuse);
@@ -1142,6 +1379,7 @@ void MainWindow::openCurItem(bool reuse)
             page->openFolder(trkproject,folderModel->folder(index));
             tabWidget->setTabText(tabWidget->currentIndex(),folderName);
         }
+        */
     }
 }
 
@@ -1174,6 +1412,17 @@ void MainWindow::on_changedQuery(const QString & /*projectName*/, const QString 
     int ind = tabWidget->indexOf(qpage);
     QString newTitle = minTitle(queryName);
     tabWidget->setTabText(ind, newTitle);
+    if(tabWidget->currentIndex() == ind)
+        setCurrentProject(qpage->modelProject);
+}
+
+void MainWindow::on_tabChanged(int tab)
+{
+    QObject *w = tabWidget->currentWidget();
+    QueryPage *qpage = qobject_cast<QueryPage *>(w);
+    if(!qpage)
+        return;
+    setCurrentProject(qpage->modelProject);
 }
 
 void MainWindow::on_actionForward_triggered()
@@ -1212,6 +1461,7 @@ void MainWindow::on_btnDBMS_clicked()
 
 void MainWindow::on_journalView_doubleClicked(const QModelIndex &index)
 {
+    /*
     if(!index.isValid())
         return;
     const TrkHistory *model = qobject_cast<const TrkHistory *>(index.model());
@@ -1229,7 +1479,7 @@ void MainWindow::on_journalView_doubleClicked(const QModelIndex &index)
     else
         qpage->openIds(prj, item.queryName,  item.queryName, item.rectype);
     tabWidget->setTabText(tabWidget->currentIndex(),item.queryName);
-
+    */
 }
 
 void MainWindow::on_tabWidget_currentChanged(QWidget *arg1)
@@ -1285,14 +1535,43 @@ void MainWindow::on_actionCloseTab_triggered()
 
 void MainWindow::on_actionOpenSelected_triggered()
 {
+    TQAbstractProject *prj = currentProject();
+    if(!prj)
+        return;
     QueryPage *newpage = createNewPage(tr("Отмеченные"));
-    newpage->openModel(trkproject, trkproject->selectedModel(trkproject->defaultRecType()));
+    newpage->openModel(prj, prj->selectedModel(prj->defaultRecType()));
 
 }
 
 void MainWindow::on_treeView_customContextMenuRequested(const QPoint &pos)
 {
+    QMenu menu;
     QPoint gPos = treeView->mapToGlobal(pos);
+    readSelectedTreeItem();
+    if(selectedTreeItem.isFolderSelected || selectedTreeItem.isQuerySelected)
+    {
+        menu.addAction(actionOpen_Query);
+        menu.addAction(actionOpen_QueryInNew);
+        menu.addSeparator();
+    }
+    if(selectedTreeItem.isFolderSelected)
+    {
+        menu.addAction(actionAddToFolder);
+        menu.addAction(actionEditContents);
+        menu.addSeparator();
+    }
+    if(selectedTreeItem.isFoldersGroupSelected || selectedTreeItem.isFolderSelected)
+    {
+        menu.addAction(actionNewFolder);
+        if(!selectedTreeItem.isFoldersGroupSelected)
+        {
+            menu.addAction(actionDeleteFolder);
+            menu.addAction(actionRenameFolder);
+        }
+    }
+    menu.exec(gPos);
+
+    /*
     QueryPage *qpage = curQueryPage();
     QModelIndex index = treeView->indexAt(pos);
     if(!index.isValid())
@@ -1321,6 +1600,7 @@ void MainWindow::on_treeView_customContextMenuRequested(const QPoint &pos)
         menu.addAction(actionRenameFolder);
     }
     menu.exec(gPos);
+    */
 }
 
 void MainWindow::on_actionAddToFolder_triggered()
@@ -1328,6 +1608,7 @@ void MainWindow::on_actionAddToFolder_triggered()
     QueryPage *qpage = curQueryPage();
     if(!qpage)
         return;
+    /*
     QModelIndex index = treeView->currentIndex();
     if(!index.isValid())
         return;
@@ -1336,18 +1617,43 @@ void MainWindow::on_actionAddToFolder_triggered()
         return;
     QAbstractItemModel *model = treeModel->sourceModel(index);
     TTFolderModel *folderModel = qobject_cast<TTFolderModel*>(model);
+    */
+    readSelectedTreeItem();
+    TTFolderModel *folderModel = selectedTreeItem.folderModel;
     if(!folderModel)
         return;
     QObjectList records = qpage->selectedRecords();
     foreach(const QObject *obj, records)
     {
         const TrkToolRecord *rec = (TrkToolRecord *)obj;
-        folderModel->addRecordId(treeModel->mapToSource(index),rec->recordId());
+        folderModel->addRecordId(selectedTreeItem.folderIndex,rec->recordId());
     }
 }
 
 void MainWindow::on_actionNewFolder_triggered()
 {
+    readSelectedTreeItem();
+    if(!selectedTreeItem.isFolderSelected && !selectedTreeItem.isFoldersGroupSelected)
+        return;
+    QPersistentModelIndex pIndex(selectedTreeItem.folderIndex);
+    QString title = tr("Новая папка");
+    bool ok;
+    title = QInputDialog::getText(this,
+                                          tr("Создание новой папки"),
+                                          tr("Название новой папки"),
+                                          QLineEdit::Normal,
+                                          title,
+                                          &ok).trimmed();
+    if(!ok || title.isEmpty())
+        return;
+    if(!selectedTreeItem.folderModel->insertRow(0,selectedTreeItem.folderIndex))
+        return;
+    QModelIndex nIndex = selectedTreeItem.folderModel->index(0,0,pIndex);
+    QModelIndex tIndex = mapFolderIndexToTree(nIndex);
+    selectedTreeItem.folderModel->setData(nIndex,title);
+    treeView->setCurrentIndex(tIndex);
+
+    /*
     QModelIndex index = treeView->currentIndex();
     if(!index.isValid())
         return;
@@ -1372,21 +1678,22 @@ void MainWindow::on_actionNewFolder_triggered()
     treeView->setCurrentIndex(treeModel->mapFromSource(nIndex));
     if(!title.isEmpty())
         folderModel->setData(nIndex,title);
-
-    /*
-    QPersistentModelIndex pIndex(index);
-    if(!treeModel->insertRow(0,index))
-        return;
-    if(title.isEmpty())
-        return;
-    QModelIndex nIndex = treeModel->index(0,0,pIndex);
-    treeModel->setData(nIndex,title);
-    treeView->setCurrentIndex(nIndex);
     */
 }
 
 void MainWindow::on_actionDeleteFolder_triggered()
 {
+    readSelectedTreeItem();
+    if(!selectedTreeItem.isFolderSelected)
+        return;
+    QString folderTitle = selectedTreeItem.folderIndex.data().toString();
+    if(QMessageBox::Ok != QMessageBox::question(this,
+                                                tr("Удаление папки"),
+                                                tr("Удалить папку '%1'?").arg(folderTitle),
+                                                QMessageBox::Ok,QMessageBox::Cancel))
+        return;
+    selectedTreeItem.folderModel->removeRow(selectedTreeItem.folderIndex.row());
+    /*
     QModelIndex index = treeView->currentIndex();
     if(!index.isValid())
         return;
@@ -1398,10 +1705,29 @@ void MainWindow::on_actionDeleteFolder_triggered()
     if(!folderModel)
         return;
     treeModel->removeRow(index.row(),index.parent());
+    */
 }
 
 void MainWindow::on_actionRenameFolder_triggered()
 {
+    readSelectedTreeItem();
+    if(!selectedTreeItem.isFolderSelected)
+        return;
+    QString folderTitle = selectedTreeItem.folderIndex.data().toString();
+    bool ok;
+    QString title = QInputDialog::getText(this,
+                                          tr("Переименовать папку"),
+                                          tr("Новое название"),
+                                          QLineEdit::Normal,
+                                          folderTitle,
+                                          &ok);
+    if(!ok)
+        return;
+    if(title.isEmpty())
+        return;
+    selectedTreeItem.folderModel->setData(selectedTreeItem.folderIndex,title);
+
+/*
     QModelIndex index = treeView->currentIndex();
     if(!index.isValid())
         return;
@@ -1424,6 +1750,7 @@ void MainWindow::on_actionRenameFolder_triggered()
     if(title.isEmpty())
         return;
     treeModel->setData(index,title);
+    */
 }
 
 void MainWindow::on_actionOpenIds_triggered()
@@ -1470,6 +1797,19 @@ void MainWindow::on_actionRefresh_Query_triggered()
 
 void MainWindow::on_actionEditContents_triggered()
 {
+    readSelectedTreeItem();
+    if(!selectedTreeItem.isFolderSelected)
+        return;
+    QScopedPointer<IdInput> dlg(new IdInput(this));
+    dlg->setData(intListToString(selectedTreeItem.folderModel->folderContent(selectedTreeItem.folderIndex)));
+    if(dlg->exec())
+    {
+        QString res = dlg->getData();
+        selectedTreeItem.folderModel->setFolderContent(selectedTreeItem.folderIndex,stringToIntList(res));
+    }
+
+
+    /*
     QModelIndex index = treeView->currentIndex();
     if(!index.isValid())
         return;
@@ -1489,6 +1829,7 @@ void MainWindow::on_actionEditContents_triggered()
         folderModel->setFolderContent(fIndex,stringToIntList(res));
     }
     delete dlg;
+    */
 }
 
 /*
@@ -1511,6 +1852,7 @@ void MainWindow::on_actionNewRequest_triggered()
 
 void MainWindow::on_btnService_clicked()
 {
+    /*
     QString dbType = editServiceUrl->text().trimmed();
     QString server = serverEdit->text().trimmed();
     QString user = userEdit->text();
@@ -1556,10 +1898,5 @@ void MainWindow::on_btnService_clicked()
         readQueries();
         //connectButton->setDisabled(true);
     }
-    /*
-        if(!trkdb)
-            trkdb=new TrkDb;
-        if(trkdb->openProject(getTrkConnectString(),project,user))
-            saveSettings();
-            */
+    */
 }
