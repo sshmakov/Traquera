@@ -14,6 +14,10 @@
 #include <QXmlInputSource>
 #include <QDomDocument>
 #include <QXmlQuery>
+//#include <QtSql>
+//#include <Windows.h>
+//#include <odbcinst.h>
+//#include <sqlext.h>
 
 
 bool isTrkOK(int result, bool show = true)
@@ -354,6 +358,118 @@ QStringList TrkToolDB::dbmsTypes()
 				dbmsTypeList.append(QString::fromLocal8Bit(buf));
 		}
     return dbmsTypeList;
+}
+
+static QString findRegDSN(const QString &desc)
+{
+    // HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\ODBC\ODBC.INI\ODBC Data Sources
+    QSettings sets("ODBC","ODBC.INI");
+    sets.beginGroup("ODBC Data Sources");
+    QStringList sources = sets.allKeys();
+    sets.endGroup();
+    foreach(QString dsn, sources)
+    {
+        sets.beginGroup(dsn);
+        if(sets.value("Description").toString() == desc)
+            return dsn;
+        sets.endGroup();
+    }
+    return QString();
+}
+
+static QString findRegServer(const QString &desc)
+{
+    // HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\ODBC\ODBC.INI\ODBC Data Sources
+    QSettings sets("ODBC","ODBC.INI");
+    sets.beginGroup("ODBC Data Sources");
+    QStringList sources = sets.allKeys();
+    sets.endGroup();
+    foreach(QString dsn, sources)
+    {
+        sets.beginGroup(dsn);
+        if(sets.value("Description").toString() == desc)
+            return sets.value("Server").toString();
+        sets.endGroup();
+    }
+    return QString();
+}
+
+/*
+static QString findDSN(const QString &desc)
+{
+    QString dsn;
+    SQLRETURN ret;
+    SQLHENV hEnv;
+    SQLSMALLINT pcbDSN, pcbDescription;
+    SQLWCHAR szDSN[1024];
+    SQLWCHAR szDescription[1024];
+    SQLAllocEnv(&hEnv);
+    ret = SQLDataSourcesW(hEnv, SQL_FETCH_FIRST,
+                         szDSN, sizeof(szDSN), &pcbDSN,
+                         szDescription, sizeof(szDescription), &pcbDescription);
+    while(ret == SQL_SUCCESS || ret == SQL_SUCCESS_WITH_INFO)
+    {
+        if(desc == QString::fromWCharArray(szDescription))
+        {
+            dsn = QString::fromWCharArray(szDSN);
+            break;
+        }
+        ret = SQLDataSources(hEnv, SQL_FETCH_NEXT,
+                             szDSN, sizeof(szDSN), &pcbDSN,
+                             szDescription, sizeof(szDescription), &pcbDescription);
+    }
+    SQLFreeEnv(hEnv);
+    return dsn;
+}
+
+static QString findServer(const QString &dsn)
+{
+    QString server;
+    SQLRETURN ret;
+    SQLHENV hEnv;
+    SQLSMALLINT pcbDSN, pcbDescription;
+    SQLWCHAR szDSN[1024];
+    SQLWCHAR szDescription[1024];
+    SQLAllocEnv(&hEnv);
+//    SQLConfigDataSource()
+//    SQLBrowseConnect()
+    ret = SQLDataSourcesW(hEnv, SQL_FETCH_FIRST,
+                         szDSN, sizeof(szDSN), &pcbDSN,
+                         szDescription, sizeof(szDescription), &pcbDescription);
+    while(ret == SQL_SUCCESS || ret == SQL_SUCCESS_WITH_INFO)
+    {
+        if(dsn == QString::fromWCharArray(szDSN))
+        {
+            server = QString::fromWCharArray(szDSN);
+            break;
+        }
+        ret = SQLDataSources(hEnv, SQL_FETCH_NEXT,
+                             szDSN, sizeof(szDSN), &pcbDSN,
+                             szDescription, sizeof(szDescription), &pcbDescription);
+    }
+    SQLFreeEnv(hEnv);
+    return server;
+
+}
+*/
+
+QString TrkToolDB::dbmsServer() const
+{
+    QString customServer = TQAbstractDB::dbmsServer();
+    if(!customServer.isEmpty())
+        return customServer;
+    /*
+    QString dsn = findRegDSN(dbmsType());
+    if(dsn.isEmpty())
+        return QString();
+        */
+    QString server = findRegServer(dbmsType());
+    return server;
+    /*
+    QSqlDatabase db = QSqlDatabase::database("QODBC");
+    db.setDatabaseName(dsn);
+    return db.hostName();
+    */
 }
 
 QStringList TrkToolDB::projects(const QString &dbmsType)
@@ -1927,257 +2043,6 @@ void TrkToolProject::clearSelected(int recType)
         selectedModels[recType]->clearRecords();
 }
 
-// ============= TrkToolModel ===============
-
-TrkToolModel::TrkToolModel(TQAbstractProject *project, int type, QObject *parent)
-	:
-	prj(project),
-	rectype(type),
-    BaseRecModel<PTrkToolRecord>(parent),
-    prevTransId(0)
-{
-    idFieldName = prj->fieldVID2Name(rectype,VID_Id); //.toLocal8Bit().constData();
-	QHash<TRK_VID, TrkFieldDef>::const_iterator fi;
-    TQAbstractRecordTypeDef *recDef = prj->recordTypeDef(rectype);
-    if(recDef)
-    {
-        headers = recDef->fieldNames();
-        vids = recDef->fieldVids();
-    }
-    idCol = vids.indexOf(VID_Id);
-    connect(project,SIGNAL(recordChanged(int)),this,SLOT(recordChanged(int)));
-}
-
-TrkToolModel::~TrkToolModel()
-{
-    clear();
-}
-
-/*
-bool TrkToolModel::openQuery(const QString &queryName, qint64 afterTransId)
-{
-    beginResetModel();
-    clearRecords();
-    this->queryName = queryName;
-    isQuery = true;
-    bool res = prj->fillModel(this, queryName, this->rectype, afterTransId);
-    endResetModel();
-    return res;
-}
-
-bool TrkToolModel::openIds(const QList<int> &ids)
-{
-    beginResetModel();
-    QList <int> unique = uniqueIntList(ids);
-    prevTransId=0;
-    foreach(int id, unique)
-    {
-        TrkToolRecord *rec = prj->createRecordById(id,rectype);
-        if(rec)
-            append(rec);
-    }
-    queryName = intListToString(unique);
-    isQuery = false;
-    endResetModel();
-	return true;
-
-}
-*/
-
-void TrkToolModel::appendRecordId(TRK_UINT id)
-{
-    if(rowOfRecordId(id)!=-1)
-        return;
-    TrkToolRecord *rec = qobject_cast<TrkToolRecord *>(prj->createRecordById(id, rectype));
-    if(rec)
-    {
-        emit layoutAboutToBeChanged();
-        append(rec);
-        addedIds.insert(id);
-        rec->addLink();
-        emit layoutChanged();
-    }
-}
-
-void TrkToolModel::removeRecordId(TRK_UINT id)
-{
-    int r = rowOfRecordId(id);
-    if(r==-1)
-        return;
-    beginRemoveRows(QModelIndex(),r,r);
-    TrkToolRecord *rec = records.takeAt(r);
-    if(rec)
-        rec->removeLink(this);
-    endRemoveRows();
-    addedIds.remove(id);
-}
-
-QVariant TrkToolModel::data(const QModelIndex & index, int role) const
-{
-    if(!index.isValid())
-        return QVariant();
-    if(role == Qt::CheckStateRole && index.column()==idCol)
-	{
-		bool isSel = records[index.row()]->isSelected();
-		Qt::CheckState state = isSel ? Qt::Checked : Qt::Unchecked;
-		return QVariant::fromValue<int>(state);
-	}
-#ifdef CLIENT_APP
-    if(role == Qt::FontRole)
-    {
-        QFont font;
-        if(addedIds.contains(records[index.row()]->recordId()))
-           font.setItalic(true);
-        return font;
-    }
-#endif
-    return BaseRecModel::data(index, role);
-}
-
-bool TrkToolModel::setData(const QModelIndex & index, const QVariant & value, int role) 
-{
-    if(role == Qt::CheckStateRole && index.isValid() /*&& index.column()==idCol*/)
-	{
-		Qt::CheckState state = (Qt::CheckState)value.toInt();
-		bool sel = (state == Qt::Checked);
-		int row = index.row();
-        if(!records[row]->isSelected() == sel)
-        {
-            records[row]->setSelected(sel);
-            emit dataChanged(index, index);
-        }
-		return true;
-	}
-    return BaseRecModel::setData(index, value, role);
-}
-
-const TQAbstractRecordTypeDef *TrkToolModel::typeDef()
-{
-    if(!prj)
-        return 0;
-    return prj->recordTypeDef(rectype);
-}
-
-void TrkToolModel::clearRecords()
-{
-    TrkToolRecord *rec;
-    foreach(rec, records)
-        if(rec)
-            rec->removeLink(this);
-    addedIds.clear();
-    BaseRecModel::clearRecords();
-}
-
-QVariant TrkToolModel::displayColData(const PTrkToolRecord & rec, int col) const
-{
-	int vid = vids[col];
-    return rec->value(vid,Qt::DisplayRole);
-}
-
-QVariant TrkToolModel::editColData(const PTrkToolRecord &rec, int col) const
-{
-    int vid = vids[col];
-    return rec->value(vid,Qt::EditRole);
-}
-
-bool TrkToolModel::setEditColData(const PTrkToolRecord & rec, int col, const QVariant & value)
-{
-	int vid = vids[col];
-	if(vid)
-	{
-        rec->setValue(vid, value);
-		return true;
-	}
-    return false;
-}
-
-void TrkToolModel::recordChanged(int id)
-{
-    int row = rowOfRecordId(id);
-    if(row<0)
-        return;
-    emit dataChanged(index(row,0),index(row,columnCount()-1));
-}
-
-QDomDocument TrkToolModel::recordXml(int row) const
-{
-	TrkToolRecord * rec = at(row);
-    if(!rec)
-        return QDomDocument();
-    rec->refresh();
-	return rec->toXML();
-}
-
-void TrkToolModel::refreshQuery()
-{
-    beginResetModel();
-    prj->refreshModel(this);
-    /*
-    QSet<int> a = addedIds;
-    if(isQuery)
-    {
-        QString q = queryName;
-        openQuery(q,prevTransId);
-    }
-    else
-    {
-        QList<int> ids = stringToIntList(queryName);
-        openIds(ids);
-    }
-    foreach(int id, a)
-        appendRecordId(id);
-        */
-    endResetModel();
-}
-
-TRK_UINT TrkToolModel::rowId(int row) const
-{
-    //int col=vids.indexOf(VID_Id);
-    if(idCol == -1)
-		return 0;
-    return index(row,idCol).data().toUInt();
-}
-
-int TrkToolModel::rowOfRecordId(int id) const
-{
-    for(int r=0; r<rowCount(); ++r)
-        if(rowId(r) == id)
-            return r;
-    return -1;
-}
-
-Qt::ItemFlags TrkToolModel::flags ( const QModelIndex & index ) const
-{
-	Qt::ItemFlags res = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
-	const TrkToolRecord *rec = at(index.row());
-	if(!index.column())
-		res |= Qt::ItemIsUserCheckable;
-	if(rec->mode() == TrkToolRecord::View)
-		return res;
-	return res | Qt::ItemIsEditable;
-}
-
-QString TrkToolModel::getQueryName() const
-{
-    return queryName;
-}
-
-QList<int> TrkToolModel::getIdList() const
-{
-    QList<int> res;
-    foreach(PTrkToolRecord rec, records)
-    {
-        uint id = rec->recordId(); // value(idFieldName).toUInt();
-        res << id;
-    }
-    return res;
-}
-
-bool TrkToolModel::isSystemModel()
-{
-    return prj->isSystemModel(this);
-}
-
 
 
 //====================== TrkToolRecordSet =====================
@@ -2201,10 +2066,11 @@ int TrkToolRecordSet::recCount() const
 
 
 TrkToolRecord::TrkToolRecord(TrkToolProject *parent, TRK_RECORD_TYPE rtype)
-    : TQRecord(0,rtype,0), prj(parent),
+    : TQRecord(parent,rtype,0), prj(parent),
       //rectype(rtype),
       //lockHandle(0),
-      fieldList(), links(0), textsReaded(false)
+      fieldList(), //links(0),
+      textsReaded(false)
 {
     fieldList = prj->recordTypeDef(recType)->fieldNames();
     init();
@@ -2214,7 +2080,8 @@ TrkToolRecord::TrkToolRecord(const TrkToolRecord &src)
     : TQRecord(src), prj(src.prj),
       //rectype(src.rectype), recMode(View),
       //lockHandle(0),
-      fieldList(), links(0), textsReaded(false)
+      fieldList(), //links(0),
+      textsReaded(false)
 {
     fieldList = prj->recordTypeDef(recType)->fieldNames();
     init();
@@ -2262,7 +2129,7 @@ QVariant TrkToolRecord::value(const QString& fieldName, int role) const
         return QVariant();
 }
 
-QVariant TrkToolRecord::value(TRK_VID vid, int role) const
+QVariant TrkToolRecord::value(int vid, int role) const
 {
     if(!vid)
         return QVariant();
@@ -2288,7 +2155,7 @@ QVariant TrkToolRecord::value(TRK_VID vid, int role) const
     return v;
 }
 
-QString TrkToolRecord::title()
+QString TrkToolRecord::title() const
 {
     return value(VID_Title).toString();
 }
@@ -2833,18 +2700,7 @@ const QStringList & TrkToolRecord::fields() const
 	return fieldList;
 }
 
-bool TrkToolRecord::isSelected() const
-{
-    return prj->isSelectedId(recordId(),recordType());
-}
-
-void TrkToolRecord::setSelected(bool value)
-{
-    prj->setSelectedId(recordId(), value, recordType());
-    emit changed(recordId());
-}
-
-bool TrkToolRecord::isFieldReadOnly(const QString &field)
+bool TrkToolRecord::isFieldReadOnly(const QString &field) const
 {
     if(mode() == View)
         return true;
@@ -3068,6 +2924,7 @@ QString TrkToolRecord::noteText(int index)
     */
 }
 
+/*
 void TrkToolRecord::addLink()
 {
     links++;
@@ -3082,6 +2939,7 @@ void TrkToolRecord::removeLink(const QObject *receiver)
     if(--links <= 0)
         deleteLater();
 }
+*/
 
 TQNotesCol TrkToolRecord::notes()
 {
@@ -3228,41 +3086,6 @@ QVariant TrkToolQryModel::displayColData(const TrkQuery &rec, int col) const
     }
     return QVariant();
 }
-
-#ifdef CLIENT_APP
-//TrkQryFilter
-
-TrkQryFilter::TrkQryFilter(QObject *parent)
-    : QSortFilterProxyModel(parent),
-      filter(All)
-{
-}
-
-void TrkQryFilter::setSourceQueryModel(QAbstractItemModel *sourceModel, TrkQryFilter::Filter filter)
-{
-    QSortFilterProxyModel::setSourceModel(sourceModel);
-    switch(filter)
-    {
-    case All:
-        setFilterRegExp("");
-        setFilterKeyColumn(1);
-        curFilter = filter;
-        break;
-    case UserOnly:
-        setFilterRegExp("false");
-        setFilterKeyColumn(1);
-        curFilter = filter;
-        break;
-    case PublicOnly:
-        setFilterRegExp("true");
-        setFilterKeyColumn(1);
-        curFilter = filter;
-        break;
-    }
-    sort(0);
-}
-
-#endif
 
 //ChoiceList TrkFieldDef::emptyChoices;
 

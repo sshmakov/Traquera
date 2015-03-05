@@ -8,7 +8,8 @@
 #include <QClipboard>
 #include <QApplication>
 
-#include "../tracker/trkview.h"
+//#include "../tracker/trkview.h"
+#include "tqbase.h"
 
 #define TABLE_HEADER "<table border=1 cellpadding=3 cellspacing=0 bordercolor=#000000 style='border-collapse:collapse;border:none'>"
 #define ROW_START    "<tr>"
@@ -27,7 +28,7 @@ QString copyRecordsToHTMLTable(const QObjectList &records, const QStringList &fi
     }
     foreach(QObject *obj, records)
     {
-        TrkToolRecord *rec = (TrkToolRecord *)obj;
+        TQRecord *rec = (TQRecord *)obj;
         html.append(ROW_START);
         foreach(const QString &f, fields)
             html.append(QString(CELL_START "%1</td>").arg(rec->value(f).toString()));

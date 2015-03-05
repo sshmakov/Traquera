@@ -5,6 +5,7 @@
 #include <QMainWindow>
 #include <QWidget>
 #include "trdefs.h"
+#include "tqbase.h"
 #include "trkdecorator.h"
 
 class TrkToolRecord;
@@ -18,8 +19,8 @@ protected:
 public:
     ScrWidget(const TQAbstractRecordTypeDef *typeDef, QWidget *parent = 0);
     virtual ~ScrWidget();
-	TrkToolRecord *record;
-	void setRecord(TrkToolRecord *newrec);
+    TQRecord *record;
+    void setRecord(TQRecord *newrec);
 	void readRecord();
     void initEdits(const TQAbstractRecordTypeDef *typeDef);
 protected:

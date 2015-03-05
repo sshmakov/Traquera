@@ -191,7 +191,7 @@ void ModifyPanel::fillValues(const QObjectList &records)
         row.displayValue = "";
         for(int i=0; i<records.count(); i++)
         {
-            const TrkToolRecord *rec = qobject_cast<const TrkToolRecord *>(records[i]);
+            const TQRecord *rec = qobject_cast<const TQRecord *>(records[i]);
             if(!rec)
                 continue;
             if(!i)

@@ -8,7 +8,7 @@
 #include <QFormLayout>
 #include <QHeaderView>
 #include <QScrollArea>
-#include "trkview.h"
+//#include "trkview.h"
 #include "trkdecorator.h"
 #include "settings.h"
 #include "ttglobal.h"
@@ -142,7 +142,7 @@ void TrkDecorator::fillEditPanels(QTabWidget *tabs, const TQAbstractRecordTypeDe
     //return edits;
 }
 
-void TrkDecorator::readValues(TrkToolRecord *record, EditDefList &def)
+void TrkDecorator::readValues(TQRecord *record, EditDefList &def)
 {
     def.connectToRecord(record);
     def.readValues();
@@ -159,7 +159,7 @@ void TrkDecorator::readValues(TrkToolRecord *record, EditDefList &def)
     */
 }
 
-void TrkDecorator::updateState(TrkToolRecord *record, EditDefList &def)
+void TrkDecorator::updateState(TQRecord *record, EditDefList &def)
 {
     def.connectToRecord(record);
     def.updateState();
@@ -346,7 +346,7 @@ TrkFieldEdit::TrkFieldEdit(const QString &fieldName)
 {
 }
 
-void TrkFieldEdit::connectToRecord(TrkToolRecord *record)
+void TrkFieldEdit::connectToRecord(TQRecord *record)
 {
     rec = record;
 }
@@ -430,7 +430,7 @@ void TrkChoiceBox::onEditTextChanged(const QString &text)
 
 // ======================= EditDefList ================================
 
-void EditDefList::connectToRecord(TrkToolRecord *record)
+void EditDefList::connectToRecord(TQRecord *record)
 {
     if(rec!=record)
     {

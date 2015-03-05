@@ -18,7 +18,8 @@ DEFINES += TQSERVICE_LIBRARY
 SOURCES += tqservice.cpp \
     ../common/ttutils.cpp \
     ../tracker/trkview.cpp \
-    ../common/tqbase.cpp
+    ../common/tqbase.cpp \
+    ../common/tqmodels.cpp
 
 HEADERS += tqservice.h\
         tqservice_global.h \
@@ -27,12 +28,13 @@ HEADERS += tqservice.h\
     ../tracker/trktool2.h \
     ../tracker/trdefs.h \
     ../tracker/tracker.h \
-    ../common/tqbase.h
+    ../common/tqbase.h \
+    ../common/tqmodels.h
 
 DEFINES += CONSOLE_APP
 INCLUDEPATH += $$PWD/../trktool/lib ../common ../tracker
 DEPENDPATH += $$PWD/../trktool/lib
-win32: LIBS += -L$$PWD/../trktool/lib -ltrktooln -lshell32 -lshlwapi
+win32: LIBS += -L$$PWD/../trktool/lib -ltrktooln -lshell32 -lshlwapi -lodbc32
 
 OTHER_FILES += \
     verifyn.dll \

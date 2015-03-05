@@ -1,6 +1,7 @@
 #include "notewidget.h"
 #include "ui_notewidget.h"
-#include <trkview.h>
+//#include <trkview.h>
+#include "tqbase.h"
 #include <QPlainTextEdit>
 
 NoteWidget::NoteWidget(TQRecord *rec, QWidget *parent) :
@@ -9,7 +10,7 @@ NoteWidget::NoteWidget(TQRecord *rec, QWidget *parent) :
 {
     ui->setupUi(this);
     record = rec;
-    ui->titleEdit->addItems(((TQRecordTypeDef*)record->typeDef())->project()->noteTitleList());
+    ui->titleEdit->addItems(record->typeDef()->noteTitleList());
     connect(ui->titleEdit,SIGNAL(editTextChanged(QString)),SLOT(onTitleChanged(QString)));
     connect(ui->noteEdit,SIGNAL(textChanged()),SLOT(onTextChanged()));
     connect(ui->submitButton,SIGNAL(clicked()),SLOT(onSubmitClicked()));

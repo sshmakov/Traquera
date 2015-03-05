@@ -1,5 +1,6 @@
 #include "unionmodel.h"
 #include <QMutexLocker>
+#include <QFont>
 
 UnionModel::UnionModel(QObject *parent) :
     QAbstractProxyModel(parent),models(),maxColCount(0)
@@ -53,10 +54,22 @@ QVariant UnionModel::data(const QModelIndex &proxyIndex, int role) const
         return QVariant();
     const MapInfo &m = info[id];
     if(m.parentId<0)
-        if(role == Qt::DisplayRole && proxyIndex.column()==0 && proxyIndex.row()<titles.count())
-            return titles[proxyIndex.row()];
-        else
-            return QVariant();
+    {
+        if(proxyIndex.column()==0 && proxyIndex.row()<titles.count())
+        {
+            switch(role)
+            {
+            case Qt::DisplayRole:
+                return titles[proxyIndex.row()];
+            case Qt::FontRole:
+                QFont boldFont;
+                if(m.model == selModel)
+                    boldFont.setBold(true);
+                return boldFont;
+            }
+        }
+        return QVariant();
+    }
     QModelIndex si = mapToSource(proxyIndex);
     return si.data(role);
 }
@@ -270,7 +283,7 @@ bool UnionModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int 
 void UnionModel::appendSourceModel(QAbstractItemModel *model, const QString &title)
 {
     QMutexLocker lock(&mutex);
-    emit layoutAboutToBeChanged();
+//    emit layoutAboutToBeChanged();
     int cols = model->columnCount();
     if(maxColCount < cols)
         maxColCount = cols;
@@ -290,6 +303,27 @@ void UnionModel::appendSourceModel(QAbstractItemModel *model, const QString &tit
     connect(model,SIGNAL(rowsInserted(QModelIndex,int,int)),this,SLOT(do_rowsInserted()));
     connect(model,SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),this,SLOT(do_rowsAboutToBeRemoved(QModelIndex,int,int)));
     connect(model,SIGNAL(rowsRemoved(QModelIndex,int,int)),this,SLOT(do_rowsRemoved()));
+    emit layoutChanged();
+}
+
+void UnionModel::removeSourceModel(QAbstractItemModel *model)
+{
+    QMutexLocker lock(&mutex);
+    //emit layoutAboutToBeChanged();
+    int row = models.indexOf(model);
+    if(row == -1)
+        return;
+    foreach(MapInfo m, info)
+    {
+        if(m.model == model)
+        {
+            info.remove(m.id);
+            models.removeAt(m.row);
+            titles.removeAt(m.row);
+            disconnect(model);
+            break;
+        }
+    }
     emit layoutChanged();
 }
 
@@ -314,6 +348,16 @@ QAbstractItemModel *UnionModel::sourceModel(const QModelIndex &proxyIndex) const
     } while(p.isValid());
     return models[i.row()];
     */
+}
+
+void UnionModel::setSelectedModel(QAbstractItemModel *model)
+{
+    int row = models.indexOf(model);
+    if(row == -1)
+        selModel = 0;
+    else
+        selModel = model;
+    emit dataChanged(index(row,0,QModelIndex()), index(row,0,QModelIndex()));
 }
 
 void UnionModel::setMaxColCount(int value)

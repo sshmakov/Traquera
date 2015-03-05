@@ -280,14 +280,20 @@ bool TQBaseProject::saveFileFromRecord(TQRecord *record, int fileIndex, const QS
     return false;
 }
 
+//========================= TQRecord ==================================
+TQRecord::TQRecord()
+    :QObject(0), m_prj(0), recType(0), recMode(TQRecord::View), recId(0), links(0)
+{
+}
+
 
 TQRecord::TQRecord(TQAbstractProject *prj, int rtype, int id)
-    :QObject(prj), m_prj(prj), recType(rtype), recMode(TQRecord::View), recId(id)
+    :QObject(prj), m_prj(prj), recType(rtype), recMode(TQRecord::View), recId(id), links(0)
 {
 }
 
 TQRecord::TQRecord(const TQRecord &src)
-    :QObject(), m_prj(src.m_prj), recType(src.recType), recMode(src.recMode), recId(src.recId)
+    :QObject(), m_prj(src.m_prj), recType(src.recType), recMode(src.recMode), recId(src.recId), links(0)
 {
 }
 
@@ -302,6 +308,11 @@ TQRecord &TQRecord::operator =(const TQRecord &src)
 
 TQRecord::~TQRecord()
 {
+}
+
+bool TQRecord::isValid() const
+{
+    return m_prj!=0;
 }
 
 int TQRecord::recordType() const
@@ -335,21 +346,29 @@ bool TQRecord::isEditing() const
 
 bool TQRecord::updateBegin()
 {
+    if(!isValid())
+        return false;
     return project()->updateRecordBegin(this);
 }
 
 bool TQRecord::commit()
 {
+    if(!isValid())
+        return false;
     return project()->commitRecord(this);
 }
 
 bool TQRecord::cancel()
 {
+    if(!isValid())
+        return false;
     return project()->cancelRecord(this);
 }
 
 QString TQRecord::title() const
 {
+    if(!isValid())
+        return QString();
     const TQAbstractRecordTypeDef *def = typeDef();
     if(def)
     {
@@ -362,6 +381,8 @@ QString TQRecord::title() const
 
 bool TQRecord::setTitle(const QString &newTitle)
 {
+    if(!isValid())
+        return false;
     const TQAbstractRecordTypeDef *def = typeDef();
     if(def)
     {
@@ -372,8 +393,10 @@ bool TQRecord::setTitle(const QString &newTitle)
     return false;
 }
 
-QString TQRecord::description() const
+QString TQRecord::description()
 {
+    if(!isValid())
+        return QString();
     const TQAbstractRecordTypeDef *def = typeDef();
     if(def)
     {
@@ -386,6 +409,8 @@ QString TQRecord::description() const
 
 bool TQRecord::setDescription(const QString &newDesc)
 {
+    if(!isValid())
+        return false;
     const TQAbstractRecordTypeDef *def = typeDef();
     if(def)
     {
@@ -403,6 +428,8 @@ TQNotesCol TQRecord::notes() const
 
 QString TQRecord::noteTitle(int index) const
 {
+    if(!isValid())
+        return QString();
     TQNotesCol list = notes();
     if(index >= 0 && index < list.count())
         return list.value(index).title;
@@ -411,6 +438,8 @@ QString TQRecord::noteTitle(int index) const
 
 QString TQRecord::noteText(int index) const
 {
+    if(!isValid())
+        return QString();
     TQNotesCol list = notes();
     if(index >= 0 && index < list.count())
         return list.value(index).text;
@@ -446,6 +475,16 @@ int TQRecord::addNote(const QString &noteTitle, const QString &noteText)
     return 0;
 }
 
+QList<TQToolFile> TQRecord::fileList()
+{
+    return QList<TQToolFile>();
+}
+
+bool TQRecord::saveFile(int fileIndex, const QString &dest)
+{
+    return false;
+}
+
 TQAbstractProject *TQRecord::project() const
 {
     return m_prj;
@@ -453,6 +492,8 @@ TQAbstractProject *TQRecord::project() const
 
 const TQAbstractRecordTypeDef *TQRecord::typeDef() const
 {
+    if(!isValid())
+        return 0;
     TQAbstractProject *p = project();
     if(!p)
         return 0;
@@ -463,6 +504,18 @@ QVariant TQRecord::value(int vid, int role) const
 {
     Q_UNUSED(vid)
     Q_UNUSED(role)
+    return QVariant();
+}
+
+QVariant TQRecord::value(const QString &fieldName, int role) const
+{
+    const TQAbstractRecordTypeDef *def = typeDef();
+    if(def)
+    {
+        int vid = def->fieldVid(fieldName);
+        if(vid)
+            return value(vid);
+    }
     return QVariant();
 }
 
@@ -491,7 +544,7 @@ bool TQRecord::setValues(const QHash<QString, QVariant> &values)
     return true;
 }
 
-QDomDocument TQRecord::toXML() const
+QDomDocument TQRecord::toXML()
 {
     QDomDocument xml("scr");
     QDomElement root=xml.createElement("scr");
@@ -585,6 +638,21 @@ QStringList TQRecord::historyList() const
     return QStringList();
 }
 
+bool TQRecord::isFieldReadOnly(const QString &field) const
+{
+    if(mode() == TQRecord::View)
+        return true;
+    const TQAbstractRecordTypeDef *def = typeDef();
+    if(!def)
+        return true;
+    int vid = def->fieldVid(field);
+    if(mode() == TQRecord::Edit)
+        return !def->canFieldUpdate(vid);
+    if(mode() == TQRecord::Insert)
+        return !def->canFieldSubmit(vid);
+    return true;
+}
+
 /*
 QString TQRecord::toHTML(const QString &xqCodeFile)
 {
@@ -624,3 +692,42 @@ QString TQRecord::toHTML(const QString &xqCodeFile)
     return page;
 }
 */
+
+void TQRecord::addLink()
+{
+    links++;
+}
+
+void TQRecord::removeLink(const QObject *receiver)
+{
+    if(!this)
+        return;
+    if(receiver)
+        disconnect(receiver);
+    if(--links <= 0)
+        deleteLater();
+}
+
+bool TQRecord::isSelected() const
+{
+    if(!isValid())
+        return false;
+    return project()->isSelectedId(recordId(),recordType());
+}
+
+void TQRecord::setSelected(bool value)
+{
+    if(!isValid())
+        return
+    project()->setSelectedId(recordId(), value, recordType());
+    emit changed(recordId());
+}
+
+void TQRecord::refresh()
+{
+    if(recMode == Insert)
+        return;
+    m_prj->readRecordWhole(this);
+    //valuesReloaded();
+}
+

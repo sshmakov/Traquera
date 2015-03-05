@@ -8,12 +8,14 @@
 #include "ui_querypage.h"
 #include "trdefs.h"
 #include "tracker.h"
-#include "trkview.h"
+#include "tqbase.h"
+//#include "trkview.h"
 //#include "plans.h"
 //#include "planproxy.h"
 //#include "trkdecorator.h"
 #include "ttfolders.h"
 #include "preview.h"
+#include <tqmodels.h>
 
 /*
 struct TrkHistoryItem 
@@ -39,7 +41,7 @@ protected:
 //    PlanProxyModel planViewModel;
     QSortFilterProxyModel *qryFilterModel;
 	QString linkField;
-    TrkHistory history;
+//    TrkHistory history;
     //QList<TrkHistoryItem> history;
 	int curHistoryPos;
     QString filterString;
@@ -62,13 +64,13 @@ public:
 #endif
 	//void setQuery(int id, TrkDb *trkdb);
 	//void setQueryById(const QString& numbers, TrkDb *trkdb);
-    void openQuery(TQAbstractProject *prj, const QString &queryName, int recType = TRK_SCR_TYPE);
-	void openQuery(const QString &projectName, const QString &queryName, int recType = TRK_SCR_TYPE);
-    void openIds(TQAbstractProject *prj, const QString &ids, const QString &title=QString(), int recType = TRK_SCR_TYPE);
-    void openIds(TQAbstractProject *prj, const QList<int> &idlist, const QString &title=QString(), int recType = TRK_SCR_TYPE);
+    void openQuery(TQAbstractProject *prj, const QString &queryName, int recType);
+    void openQuery(const QString &projectName, const QString &queryName, int recType);
+    void openIds(TQAbstractProject *prj, const QString &ids, const QString &title, int recType);
+    void openIds(TQAbstractProject *prj, const QList<int> &idlist, const QString &title, int recType);
     //void openModel(TQAbstractProject *prj, TrkToolModel *newModel);
     void openModel(TQAbstractProject *prj, QAbstractItemModel *newModel);
-    void openFolder(TQAbstractProject *prj, const TTFolder &afolder, int recType = TRK_SCR_TYPE);
+    void openFolder(TQAbstractProject *prj, const TTFolder &afolder, int recType);
     //void setPlanModel(PlanModel *newmodel);
 	int getColNum(const QString &colname);
 	QString makeRecordPage(const QModelIndex &qryIndex, const QString& xqCodeFile);
@@ -82,8 +84,8 @@ public:
     Q_INVOKABLE QObjectList allRecords();
     Q_INVOKABLE QObjectList markedRecords();
     Q_INVOKABLE TQAbstractProject *currentProject();
-    Q_INVOKABLE TrkToolRecord *currentRecord();
-    Q_INVOKABLE TrkToolRecord *recordOnIndex(const QModelIndex &index);
+    Q_INVOKABLE TQRecord *currentRecord();
+    Q_INVOKABLE TQRecord *recordOnIndex(const QModelIndex &index);
     Q_INVOKABLE const TQAbstractRecordTypeDef *recordTypeDef();
     Q_INVOKABLE void setRecordsChecked(const QString &ids, bool flag);
     void initWidgets();

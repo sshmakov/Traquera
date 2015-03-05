@@ -1,7 +1,8 @@
 #include "ttrecwindow.h"
 #include "ui_ttrecwindow.h"
 #include "modifypanel.h"
-#include "trkview.h"
+//#include "trkview.h"
+#include "tqbase.h"
 #include "settings.h"
 #include "ttglobal.h"
 #include "scrpluginfactory.h"
@@ -375,7 +376,7 @@ void TTRecordWindow::populateJavaScriptWindowObject()
 bool TTRecordWindow::enableModify()
 {
     bool res=false;
-    if(a_record->mode() == TrkToolRecord::View)
+    if(a_record->mode() == TQRecord::View)
         res = a_record->updateBegin();
     else
         res = true;
@@ -385,7 +386,7 @@ bool TTRecordWindow::enableModify()
 
 bool TTRecordWindow::writeChanges()
 {
-    if(a_record->mode() == TrkToolRecord::View)
+    if(a_record->mode() == TQRecord::View)
         return false;
     //applyNewNote();
     factory->closeEdits(true);

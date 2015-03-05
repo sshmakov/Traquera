@@ -1,5 +1,6 @@
 #include "ttdelegate.h"
-#include "trkview.h"
+//#include "trkview.h"
+#include "tqbase.h"
 #include "modifypanel.h"
 
 #include <QtGui>
@@ -245,7 +246,8 @@ void TTItemEditor::setModelData(const QModelIndex &index)
     else if(0 != (dt = qobject_cast<QDateTimeEdit*>(subeditor)))
     {
         QString text = dt->text();
-        QDateTime d = QDateTime::fromString(text,TT_DATETIME_FORMAT);
+        QDateTime d = QDateTime::fromString(text,fdef.recordDef()->dateTimeFormat());
+//        QDateTime d = QDateTime::fromString(text,TT_DATETIME_FORMAT);
         if(d.isValid())
             panel->setFieldValue(fieldName,dt->dateTime());
         else
@@ -287,7 +289,8 @@ QWidget * TTItemEditor::createSubEditor(const QStyleOptionViewItem &option, cons
     case TQ::TQ_FIELD_TYPE_DATE:
         dt = new QDateTimeEdit(this);
         dt->setCalendarPopup(true);
-        dt->setDisplayFormat(TT_DATETIME_FORMAT);
+        dt->setDisplayFormat(fdef.recordDef()->dateTimeFormat());
+//        dt->setDisplayFormat(TT_DATETIME_FORMAT);
         return dt;
 
         /*

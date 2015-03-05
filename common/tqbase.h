@@ -7,6 +7,22 @@
 #include "tqplug.h"
 
 
+class ConnectParams
+{
+public:
+    int id;
+    QString dbClass;
+    QString dbType;
+    QString dbServer;
+    QString user;
+    QString project;
+    QString password;
+    bool dbOsUser;
+    QString dbmsUser;
+    QString dbmsPass;
+    bool autoLogin;
+};
+
 
 //need delete
 class TrkToolModel;
@@ -148,7 +164,7 @@ public:
 signals:
     void openedModel(const QAbstractItemModel *model);
     void recordChanged(int id);
-    void recordValuesLoaded(int recId);
+    void recordValuesLoaded(int recId) const;
     void recordStateChanged(int recId);
 };
 
@@ -209,6 +225,7 @@ protected:
     int recType;
     int recMode;
     int recId;
+    int links;
 
     /*
     //QHash<QString, QVariant> values;
@@ -237,10 +254,12 @@ protected:
     */
 public: //protected: // Project specific data
     //TRK_RECORD_HANDLE lockHandle;
+    TQRecord();
     TQRecord(TQAbstractProject *prj, int rtype, int id);
     TQRecord(const TQRecord &src);
 //    TQRecord & operator = (const TQRecord &src);
     virtual ~TQRecord();
+    Q_INVOKABLE virtual bool isValid() const;
     Q_INVOKABLE virtual int recordType() const;
     Q_INVOKABLE virtual int recordId() const;
 
@@ -255,7 +274,7 @@ public: //protected: // Project specific data
     Q_INVOKABLE virtual QString title() const;
     Q_INVOKABLE virtual bool setTitle(const QString &newTitle);
 
-    Q_INVOKABLE virtual QString description() const;
+    Q_INVOKABLE virtual QString description() ;
     Q_INVOKABLE virtual bool setDescription(const QString &newDesc);
 
     virtual TQNotesCol notes() const;
@@ -266,23 +285,32 @@ public: //protected: // Project specific data
     Q_INVOKABLE virtual bool setNote(int index, const QString &newTitle, const QString &newText);
     Q_INVOKABLE virtual int addNote(const QString &noteTitle, const QString &noteText);
 
+    virtual QList<TQToolFile> fileList();
+    Q_INVOKABLE virtual bool saveFile(int fileIndex, const QString &dest);
+
     virtual TQAbstractProject *project() const;
     virtual const TQAbstractRecordTypeDef *typeDef() const;
 
     Q_INVOKABLE virtual QVariant value(int vid, int role = Qt::DisplayRole) const ;
+    Q_INVOKABLE virtual QVariant value(const QString& fieldName, int role = Qt::DisplayRole) const;
     Q_INVOKABLE virtual bool setValue(int vid, const QVariant& newValue, int role = Qt::EditRole);
     virtual bool setValues(const QHash<QString, QVariant> &values);
-//    Q_INVOKABLE QVariant value(const QString& fieldName, int role = Qt::DisplayRole) const;
 //    Q_INVOKABLE  int recordId() const { return values[VID_Id].toInt(); } // TRK_UINT
 //    Q_INVOKABLE void setValue(const QString& fieldName, const QVariant& value, int role = Qt::EditRole);
 
-    virtual QDomDocument toXML() const;
+    virtual QDomDocument toXML();
 //    Q_INVOKABLE virtual QString toHTML(const QString &xqCodeFile);
     Q_INVOKABLE virtual QStringList historyList() const;
+    Q_INVOKABLE bool isFieldReadOnly(const QString &field) const;
 
+    Q_INVOKABLE virtual void addLink();
+    Q_INVOKABLE virtual void removeLink(const QObject *receiver=0);
+    Q_INVOKABLE virtual bool isSelected() const;
+    Q_INVOKABLE virtual void setSelected(bool value);
+    Q_INVOKABLE virtual void refresh();
 signals:
-    void changedState(int newMode);
-    void changed(int recId);
+    void changedState(int newMode) ;
+    void changed(int recId) ;
 
 //    virtual void setRecordId(int id) { values[VID_Id] = QVariant::fromValue(id); }
 //    TQRecord(const TQRecord& src);
@@ -372,5 +400,6 @@ protected slots:
     */
 };
 
+Q_DECLARE_METATYPE(TQRecord)
 
 #endif // TQBASE_H

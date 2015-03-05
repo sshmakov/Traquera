@@ -13,11 +13,11 @@ TTFolderModel::TTFolderModel(QObject *parent) :
 {
 }
 
-void TTFolderModel::setDatabaseTable(const QSqlDatabase &database, const QString &table, const QString &filterValue)
+void TTFolderModel::setDatabaseTable(const QSqlDatabase &database, const QString &table, const QString &projectName)
 {
     db = database;
     tableName = table;
-    this->filterValue = filterValue;
+    this->projectId = projectName;
     refreshAll();
 }
 
@@ -32,7 +32,9 @@ void TTFolderModel::refreshAll()
     pf.childrens.clear();
     folders.insert(0,pf);
     QSqlQuery query(db);
-    if(query.exec(QString("select id, parentId, title from folders order by title") /* .arg(tableName).arg(filterValue) */))
+    query.prepare("select id, parentId, title, project from folders where project is null or project=? order by title;");
+    query.bindValue(0,projectId);
+    if(query.exec())
     {
         QList<int> keys;
         while(query.next())
@@ -41,6 +43,7 @@ void TTFolderModel::refreshAll()
             f.id = query.value(0).toInt();
             f.parentId = query.value(1).toInt();
             f.title = query.value(2).toString();
+            f.projectId = query.value(3).toString();
             folders.insert(f.id, f);
             keys.append(f.id);
             //rows.append(f.id);
@@ -210,10 +213,11 @@ bool TTFolderModel::insertRows(int row, int count, const QModelIndex &parent)
                 .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd"))
                 .arg(i);
         QSqlQuery q(db);
-        if(q.exec(QString("insert into folders(parentId, title) values(%1, '%2');")
-               .arg(pid)
-               .arg(title)
-               ))
+        q.prepare("insert into folders(parentId, title, project) values(?, ?, ?);");
+        q.bindValue(0, pid);
+        q.bindValue(1, title);
+        q.bindValue(2, projectId);
+        if(q.exec())
         {
             int fid = q.lastInsertId().toInt();
             TTFolder f;
@@ -249,7 +253,9 @@ bool TTFolderModel::removeRows(int row, int count, const QModelIndex &parent)
         //TTFolder &f =  folders[fid];
         removeChildrens(fid);
         QSqlQuery q(db);
-        if(!q.exec(QString("delete from folders where id = %1").arg(fid)))
+        q.prepare("delete from folders where id = ?");
+        q.bindValue(0, fid);
+        if(!q.exec())
         {
             SQLError(q.lastError());
             break;
@@ -425,7 +431,9 @@ void TTFolderModel::removeChildrens(int parentId)
         int fid = f.childrens[i];
         removeChildrens(fid);
         QSqlQuery q(db);
-        if(!q.exec(QString("delete from folders where id = %1").arg(fid)))
+        q.prepare("delete from folders where id = ?");
+        q.bindValue(0, fid);
+        if(!q.exec())
         {
             SQLError(q.lastError());
             break;
@@ -474,9 +482,14 @@ bool TTFolderModel::moveIndexToNewParent(const QModelIndex &index, const QModelI
         return false;
     TTFolder &oldP = folders[f.parentId];
     TTFolder &newP = folders[newPid];
+    if(oldP.projectId != newP.projectId)
+        return false;
     int destRow = findRow(f, newP);
     QSqlQuery q(db);
-    if(!q.exec(QString("update folders set parentId = %1 where id = %2").arg(newPid).arg(fid)))
+    q.prepare("update folders set parentId = ? where id = ?");
+    q.bindValue(0, newPid);
+    q.bindValue(1, fid);
+    if(!q.exec())
     {
         SQLError(q.lastError());
         return false;
@@ -550,4 +563,39 @@ bool TTFolder::setRecords(const QString &records)
 {
     return TTFolder::setRecords(id, records);
 }
+
+#ifdef CLIENT_APP
+//TrkQryFilter
+
+TrkQryFilter::TrkQryFilter(QObject *parent)
+    : QSortFilterProxyModel(parent),
+      filter(All)
+{
+}
+
+void TrkQryFilter::setSourceQueryModel(QAbstractItemModel *sourceModel, TrkQryFilter::Filter filter)
+{
+    QSortFilterProxyModel::setSourceModel(sourceModel);
+    switch(filter)
+    {
+    case All:
+        setFilterRegExp("");
+        setFilterKeyColumn(1);
+        curFilter = filter;
+        break;
+    case UserOnly:
+        setFilterRegExp("false");
+        setFilterKeyColumn(1);
+        curFilter = filter;
+        break;
+    case PublicOnly:
+        setFilterRegExp("true");
+        setFilterKeyColumn(1);
+        curFilter = filter;
+        break;
+    }
+    sort(0);
+}
+
+#endif
 

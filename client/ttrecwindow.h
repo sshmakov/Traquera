@@ -2,7 +2,8 @@
 #define TTRECWINDOW_H
 
 #include <QMainWindow>
-#include <trkview.h>
+//#include <trkview.h>
+#include "tqbase.h"
 
 namespace Ui {
 class TTRecordWindow;
@@ -57,7 +58,7 @@ signals:
 
 protected:
     ModifyPanel *props;
-    TQRecordTypeDef *recDef;
+    TQAbstractRecordTypeDef *recDef;
     TQRecord *a_record;
     ScrPluginFactory *factory;
     bool changed;

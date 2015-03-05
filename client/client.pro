@@ -29,7 +29,8 @@ FORMS += ui/tracksmain.ui ui/querypage.ui ui/trklogin.ui ui/filters.ui ui/scrwid
     ui/ttrecwindow.ui \
     ui/preview.ui \
     notewidget.ui \
-    tqcolsdialog.ui
+    tqcolsdialog.ui \
+    tqconnectwidget.ui
 #    ui/planfilesform.ui \
 #    ui/projectpage.ui
 
@@ -66,7 +67,9 @@ HEADERS += \
     ../common/tqbase.h \
     replyhdl.h \
     projecttree.h \
-    tqcolsdialog.h
+    tqcolsdialog.h \
+    ../common/tqmodels.h \
+    tqconnectwidget.h
 
 #    plans.h planproxy.h \
 #    planfiles.h \
@@ -104,7 +107,9 @@ SOURCES += database.cpp main.cpp mainwindow.cpp querypage.cpp \
     ../common/tqbase.cpp \
     replyhdl.cpp \
     projecttree.cpp \
-    tqcolsdialog.cpp
+    tqcolsdialog.cpp \
+    ../common/tqmodels.cpp \
+    tqconnectwidget.cpp
 
 #    planfilesform.cpp \
 #    project.cpp projectpage.cpp plans.cpp planproxy.cpp planfiles.cpp \
@@ -114,6 +119,7 @@ SOURCES += database.cpp main.cpp mainwindow.cpp querypage.cpp \
 RESOURCES += resources/tracks.qrc
 
 win32: LIBS += -L$$PWD/../trktool/lib/ -ltrktooln -lshell32 -lshlwapi
+# win32: LIBS += -lodbc32
 
 INCLUDEPATH += $$PWD/../trktool
 DEPENDPATH += $$PWD/../trktool

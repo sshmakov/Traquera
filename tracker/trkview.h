@@ -13,6 +13,7 @@
 #include "tracker.h"
 #include "tqplug.h"
 #include "tqbase.h"
+#include "tqmodels.h"
 
 #define TT_DATETIME_FORMAT "dd.MM.yyyy H:mm:ss"
 
@@ -311,165 +312,8 @@ public:
 };
 
 
-
-template <class R>
-class BaseRecModel: public QAbstractItemModel
-{
-	//Q_OBJECT
-protected:
-	QList<R> records;
-
-	virtual QVariant displayColData(const R & /*rec*/, int /*col*/) const = 0;
-    virtual QVariant editColData(const R & rec, int col) const
-    {
-        return displayColData(rec, col);
-    }
-    /*
-	{
-		return QVariant();
-	}
-	*/
-	virtual bool setEditColData(const R & /*rec*/, int /*col*/, const QVariant & /*value*/)
-	{
-		return false;
-	}
-public:
-	QStringList headers;
-
-	BaseRecModel(QObject *parent = 0)
-        :QAbstractItemModel(parent)
-	{
-	}
-    virtual ~BaseRecModel()
-    {
-    }
-	virtual void setHeaders(const QStringList &newHeaders)
-	{
-		headers.clear();
-		headers.append(newHeaders);
-	}
-	virtual int	columnCount(const QModelIndex & /*parent*/ = QModelIndex() ) const
-	{
-		return headers.count();
-	}
-	virtual QVariant data(const QModelIndex & index, int role = Qt::DisplayRole ) const
-	{
-		if(!index.isValid())
-			return QVariant();
-		int row=index.row();
-		int col=index.column();
-        if(row<0 || row>=rowCount())
-            return QVariant();
-        if(col<0 || col >=columnCount())
-            return QVariant();
-        if(row>=records.count())
-            return QVariant();
-        switch(role)
-        {
-        case Qt::DisplayRole:
-            return displayColData(records[row], col);
-        case Qt::EditRole:
-            return editColData(records[row], col);
-        }
-        return QVariant();
-	}
-	virtual bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole) 
-	{
-		if(!index.isValid())
-			return false;
-		int row=index.row();
-		int col=index.column();
-		if(role != Qt::EditRole)
-			return false;
-		bool res = setEditColData(records[row], col, value);
-		if(res)
-			emit dataChanged(index, index);
-		return res;
-	}
-	virtual QVariant headerData ( int section, Qt::Orientation orientation, int role = Qt::DisplayRole ) const
-	{
-		if(role !=Qt::DisplayRole)
-			return QVariant();
-		if(orientation != Qt::Horizontal)
-			return QVariant();
-		if(section <0 || section >= headers.count())
-			return QVariant();
-		return headers[section];
-	}
-    virtual int	rowCount(const QModelIndex & parent = QModelIndex() ) const
-	{
-        if(parent.isValid())
-            return 0;
-		return records.count();
-	}
-
-	virtual QModelIndex	index ( int row, int column, const QModelIndex & /*parent*/ = QModelIndex() ) const
-	{
-		return createIndex(row,column);
-	}
-
-	virtual QModelIndex parent(const QModelIndex &/*child*/) const
-	{
-		return QModelIndex();
-	}
-
-    virtual bool insertRow(int row, const QModelIndex &parent)
-    {
-        if(parent.isValid())
-            return false;
-        if(row<0 || row >records.count())
-            return false;
-        beginInsertRows(parent, row, row);
-        R value;
-        records.insert(row, value);
-        endInsertRows();
-        return true;
-    }
-
-	virtual void append(const R &rec)
-	{
-        beginInsertRows(QModelIndex(), records.count(), records.count());
-        records.append(rec);
-        endInsertRows();
-	}
-
-	virtual void append(const QList<R> &list)
-	{
-        if(list.count())
-        {
-            beginInsertRows(QModelIndex(), records.count(), records.count()+list.count());
-            records.append(list);
-            endInsertRows();
-        }
-    }
-
-    virtual void clearRecords()
-    {
-        if(records.count())
-        {
-            beginRemoveRows(QModelIndex(), 0, records.count()-1);
-            records.clear();
-            endRemoveRows();
-        }
-    }
-    virtual void clear()
-	{
-        beginResetModel();
-        clearRecords();
-		headers.clear();
-        endResetModel();
-	}
-	const R & at(int row) const
-	{
-		return records.at(row);
-	}
-    virtual const R &operator [](int i) const
-    {
-        return at(i);
-    }
-};
-
-
+/* not used
+ *
 class TrkStringModel : public BaseRecModel<QString>
 {
 	Q_OBJECT
@@ -479,7 +323,7 @@ public:
 	{
     }
 protected:
-	virtual QVariant displayColData(const QString &rec, int /*col*/) const
+    virtual QVariant displayColData(const QString &rec, int col) const
 	{
 		return rec;
 	}
@@ -503,6 +347,8 @@ protected:
 	}
 };
 
+*/
+
 //struct TrkQuery
 class TrkToolQryModel: public BaseRecModel<TrkQuery>
 {
@@ -514,19 +360,6 @@ protected:
     virtual QVariant displayColData(const TrkQuery &rec, int col) const;
 };
 
-#ifdef CLIENT_APP
-
-class TrkQryFilter: public QSortFilterProxyModel
-{
-    Q_OBJECT
-public:
-    enum Filter {All, UserOnly, PublicOnly} filter;
-    TrkQryFilter(QObject *parent=0);
-    void setSourceQueryModel(QAbstractItemModel *sourceModel, Filter filter);
-private:
-    Filter curFilter;
-};
-#endif
 
 class TrkToolProject;
 
@@ -540,6 +373,7 @@ public:
 	TrkToolDB(QObject *parent = 0);
 	~TrkToolDB();
     virtual QStringList dbmsTypes();
+    virtual QString dbmsServer() const;
     virtual QStringList projects(const QString &dbmsType);
     virtual TQAbstractProject *openProject(
 		const QString &projectName,
@@ -591,7 +425,7 @@ protected:
     QString user;
     QStringList noteTitles;
 protected: // Work with record handlers
-    QMutex handlerMutex;
+    mutable QMutex handlerMutex;
     QList<TrkRecHandler> handlers;
     //QHash<TrkToolRecord *, int> locks;
 
@@ -702,37 +536,6 @@ protected:
     friend class TrkScopeRecHandle;
 };
 
-struct TrkHistoryItem
-{
-    QString projectName;
-    QString queryName;
-    bool isQuery;
-    QString foundIds;
-    TRK_RECORD_TYPE rectype;
-    QDateTime createDateTime;
-};
-
-class TrkHistory: public BaseRecModel<TrkHistoryItem>
-{
-    Q_OBJECT
-    //Q_PROPERTY(bool unique READ unique WRITE setUnique)
-protected:
-    TQAbstractProject *prj;
-    bool unique;
-public:
-    TrkHistory(QObject *parent = 0);
-    virtual ~TrkHistory();
-    void setProject(TQAbstractProject *project);
-    void setUnique(bool value);
-    //virtual Qt::ItemFlags flags ( const QModelIndex & index ) const;
-    //virtual QVariant data(const QModelIndex & index, int role = Qt::DisplayRole ) const;
-    void removeLast();
-protected:
-    virtual QVariant displayColData(const TrkHistoryItem & rec, int col) const;
-public slots:
-    void openedModel(const TrkToolModel *model);
-};
-
 class TrkToolRecordSet: public QObject
 {
 	Q_OBJECT
@@ -756,70 +559,6 @@ public:
 
 typedef TrkToolRecord *PTrkToolRecord;
 class QDomDocument;
-
-class TrkToolModel: public BaseRecModel<PTrkToolRecord> //QAbstractItemModel
-{
-	Q_OBJECT
-    Q_PROPERTY(QString queryName READ getQueryName)
-protected:
-	//QList<int> recIds;
-    //TrkToolProject *prj;
-    TQAbstractProject *prj;
-    int rectype;
-	QString idFieldName;
-    int idCol;
-    qint64 prevTransId, lastTransId;
-
-    //TrkToolRecordSet rset;
-	QList<int> vids;
-    QSet<int> addedIds;
-    QString queryName;
-    bool isQuery;
-public:
-    TrkToolModel(TQAbstractProject *project, int type, QObject *parent = 0);
-    virtual ~TrkToolModel();
-
-    TQAbstractProject *project() const
-    {
-        return prj;
-    }
-	// Tracker specific
-//    bool openQuery(const QString &queryName, qint64 afterTransId=0);
-//    bool openIds(const QList<int> &ids);
-	QDomDocument recordXml(int row) const;
-	TRK_UINT rowId(int row) const;
-    int rowOfRecordId(int id) const;
-	bool saveRecord(TrkToolRecord *record);
-	virtual Qt::ItemFlags flags ( const QModelIndex & index ) const;
-	virtual QVariant data(const QModelIndex & index, int role = Qt::DisplayRole ) const;
-	virtual bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole);
-    const TQAbstractRecordTypeDef *typeDef();
-    virtual void clearRecords();
-    QString getQueryName() const;
-    QList<int> getIdList() const;
-    int idColumn() const { return idCol; }
-    bool isSystemModel();
-    int lastTransactionId() { return lastTransId; }
-	/*
-public:
-	bool openScrs(const QList<int> &ids);
-	bool openScrs(const QStringList &lines);
-	bool openScrs(const QString &line);
-    void close();*/
-    void appendRecordId(TRK_UINT id);
-    void removeRecordId(TRK_UINT id);
-    void refreshQuery();
-protected:
-//    bool appendRecordByHandle(TRK_RECORD_HANDLE recHandle);
-    virtual QVariant displayColData(const PTrkToolRecord & rec, int col) const;
-    virtual QVariant editColData(const PTrkToolRecord & rec, int col) const;
-    virtual bool setEditColData(const PTrkToolRecord & rec, int col, const QVariant & value);
-protected slots:
-    void recordChanged(int id);
-
-    friend class TrkHistory;
-    friend class TrkToolProject;
-};
 
 class QDomDocument;
 
@@ -875,7 +614,7 @@ protected:
 
     //void readHandle(TRK_RECORD_HANDLE handle, bool force=false);
     //void readFieldValue(TRK_RECORD_HANDLE handle, TRK_VID vid);
-    int links;
+//    int links;
     //NotesCol addedNotes;
 //    QList<int> deletedNotes;
 //    QHash<int, TrkNote> addedNotes;
@@ -898,15 +637,15 @@ public:
     TrkToolRecord(const TrkToolRecord &src);
 //    TrkToolRecord & operator =(const TrkToolRecord &src);
     virtual ~TrkToolRecord();
-    Q_INVOKABLE bool isValid()
-    {
-        return prj!=0;
-    }
+//    Q_INVOKABLE bool isValid()
+//    {
+//        return prj!=0;
+//    }
 
     Q_INVOKABLE QVariant value(const QString& fieldName, int role = Qt::DisplayRole) const;
-    Q_INVOKABLE QVariant value(TRK_VID vid, int role = Qt::DisplayRole) const ;
+    Q_INVOKABLE QVariant value(int vid, int role = Qt::DisplayRole) const ;
     Q_INVOKABLE  int recordId() const { return values[VID_Id].toInt(); } // TRK_UINT
-    Q_INVOKABLE QString title();
+    Q_INVOKABLE QString title() const;
     Q_INVOKABLE bool setTitle(const QString &newTitle);
     Q_INVOKABLE bool setValue(const QString& fieldName, const QVariant& value, int role = Qt::EditRole);
     Q_INVOKABLE bool setValue(int vid, const QVariant& value, int role = Qt::EditRole);
@@ -923,9 +662,9 @@ public:
     QString description();
     Q_INVOKABLE bool setDescription(const QString &newDesc);
     Q_INVOKABLE const QStringList & fields() const;
-    Q_INVOKABLE bool isSelected() const;
-    Q_INVOKABLE void setSelected(bool value);
-    Q_INVOKABLE bool isFieldReadOnly(const QString &field);
+//    Q_INVOKABLE bool isSelected() const;
+//    Q_INVOKABLE void setSelected(bool value);
+    Q_INVOKABLE bool isFieldReadOnly(const QString &field) const;
     const TQAbstractRecordTypeDef *typeDef() const
     {
         return prj->recordTypeDef(recType);
@@ -959,8 +698,8 @@ public:
 //    Q_INVOKABLE bool appendNote(const QString &noteTitle, const QString &note);
     Q_INVOKABLE QString noteTitle(int index);
     Q_INVOKABLE QString noteText(int index);
-    void addLink();
-    void removeLink(const QObject *receiver=0);
+//    void addLink();
+//    void removeLink(const QObject *receiver=0);
     TQNotesCol notes();
     QList<TQToolFile> fileList();
     bool saveFile(int fileIndex, const QString &dest);

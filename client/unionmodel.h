@@ -27,6 +27,7 @@ protected:
     QList<const QAbstractItemModel *>models;
     QStringList titles;
     int maxColCount;
+    QAbstractItemModel *selModel;
     mutable QHash<int, MapInfo> info;
     mutable QMutex mutex;
 public:
@@ -48,8 +49,11 @@ public:
     virtual QStringList mimeTypes() const;
     virtual bool dropMimeData(const QMimeData *data,
          Qt::DropAction action, int row, int column, const QModelIndex &parent);
+
     void appendSourceModel(QAbstractItemModel *model, const QString &title);
+    void removeSourceModel(QAbstractItemModel *model);
     QAbstractItemModel *sourceModel(const QModelIndex &proxyIndex) const;
+    void setSelectedModel(QAbstractItemModel *models);
     void setMaxColCount(int value);
     void clear();
     //Qt::DropActions supportedDragActions () const;

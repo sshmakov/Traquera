@@ -3,6 +3,7 @@
 
 #include <QAbstractItemModel>
 #include <QtSql>
+#include <QSortFilterProxyModel>
 //class QSqlDatabase;
 
 struct TTFolder
@@ -11,6 +12,7 @@ public:
     int id;
     int parentId;
     QString title;
+    QString projectId;
     QList<int> childrens; //list of Id, ordered
     QList<int> folderContent() const;
     QString folderRecords() const;
@@ -26,13 +28,13 @@ class TTFolderModel : public QAbstractItemModel
 private:
     QSqlDatabase db;
     QString tableName;
-    QString filterValue;
+    QString projectId;
     QHash<int, TTFolder> folders; // by Id
     //QList<int> rows; // sort ordered Id for top folders
     mutable QMutex mutex;
 public:
     explicit TTFolderModel(QObject *parent = 0);
-    void setDatabaseTable(const QSqlDatabase &database, const QString &table, const QString& filterValue);
+    void setDatabaseTable(const QSqlDatabase &database, const QString &table, const QString& projectName);
     void refreshAll();
     virtual QVariant data(const QModelIndex &index, int role) const;
     virtual bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
@@ -65,5 +67,20 @@ signals:
 public slots:
     
 };
+
+#ifdef CLIENT_APP
+
+class TrkQryFilter: public QSortFilterProxyModel
+{
+    Q_OBJECT
+public:
+    enum Filter {All, UserOnly, PublicOnly} filter;
+    TrkQryFilter(QObject *parent=0);
+    void setSourceQueryModel(QAbstractItemModel *sourceModel, Filter filter);
+private:
+    Filter curFilter;
+};
+#endif
+
 
 #endif // TTFOLDERS_H

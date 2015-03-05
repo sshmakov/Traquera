@@ -10,7 +10,7 @@
 #include "ui_tracksmain.h"
 #include "tracker.h"
 //#include "plans.h"
-#include "trkview.h"
+//#include "trkview.h"
 #include "modifypanel.h"
 #include "unionmodel.h"
 
@@ -32,6 +32,7 @@ class QueryPage;
 //class ProjectPage;
 class TTGlobal;
 class TQProjectTree;
+class TQConnectWidget;
 
 class MainWindow : public QMainWindow, private Ui::MainWindow
 {
@@ -40,6 +41,14 @@ class MainWindow : public QMainWindow, private Ui::MainWindow
 public:
 	MainWindow(QWidget *parent = 0);
     virtual ~MainWindow();
+protected:
+    struct ProjectModel {
+        TQProjectTree *prjTree;
+        TTFolderModel *folders;
+        TrkQryFilter *userModel;
+        TrkQryFilter *publicModel;
+    };
+    QList<ProjectModel> projectModels;
 
 private slots:
     void about();
@@ -49,9 +58,10 @@ private:
 	//QList<QSqlDatabase> prjdbs;
     //TrkDb *trkdb;
 
-    TQAbstractDB *trkdb;
-    TQAbstractProject * trkproject;
+//    TQAbstractDB *trkdb;
+//    TQAbstractProject * trkproject;
     TQAbstractProject * activePrj;
+    TQConnectWidget *connectWidget;
 
 //    typedef QPair<QString,QString> src_type; //class, source
 //    QList<src_type> dbSources;
@@ -85,10 +95,11 @@ private:
         bool isQuerySelected;
         QModelIndex queryIndex;
         QString queryName;
+        int recordType;
     } selectedTreeItem;
 public slots:
     void readQueries(TQAbstractProject *prj);
-    void openQuery(TQAbstractProject *project, const QString &queryName, bool reusePage=true);
+    void openQuery(TQAbstractProject *project, const QString &queryName, int recordType, bool reusePage=true);
 //    void showCurrentPlan();
 //    void showPlan(bool linked = false);
     void showPlan(const QModelIndex &index);
@@ -98,9 +109,10 @@ public slots:
     void readDbms();
 	void readProjects();
     void openQueryByIdClip();
-    void openQueryById(const QString &numbers, bool reusePage=true);
-    void openQueryById(const QList<int> &idList, const QString &title = QString(), bool reusePage=true);
+    void openQueryById(const QString &numbers, int recordType=0, bool reusePage=true);
+    void openQueryById(const QList<int> &idList, const QString &title = QString(), int recordType = 0, bool reusePage=true);
     void connectTracker();
+    void connectTrackerParams(const ConnectParams &params);
     void setDbmsType();
     void setProject();
     void closeTab(int index);
@@ -128,7 +140,7 @@ public:
 protected:
     QMenu *menuQueryList;
     QMenu *menuId;
-	QString getTrkConnectString();
+//	QString getTrkConnectString();
     void makeMenus();
     void setupToolbar();
     QueryPage *createNewPage(const QString &title);
@@ -215,6 +227,7 @@ private slots:
     //void on_actionPlansDialog_triggered();
     void on_actionNewRequest_triggered();
     void on_btnService_clicked();
+    void on_actionClose_Project_triggered();
 };
 
 #endif

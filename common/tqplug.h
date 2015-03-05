@@ -89,7 +89,7 @@ public:
     virtual QVariant fieldMinValue(int vid) const = 0;
     virtual QVariant fieldMaxValue(int vid) const = 0;
     virtual QString fieldChoiceTable(int vid) const = 0;
-    virtual int roleVid(int vid) const = 0;
+    virtual int roleVid(int role) const = 0;
     virtual QString dateTimeFormat() const = 0;
     virtual QStringList noteTitleList() const = 0;
 };
@@ -451,6 +451,10 @@ public:
     inline int virtualID() const
     {
         return vid;
+    }
+    inline const TQAbstractRecordTypeDef *recordDef() const
+    {
+        return def;
     }
 
     friend class TQAbstractRecordTypeDef;

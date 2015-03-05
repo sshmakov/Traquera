@@ -22,7 +22,7 @@
 #include <QtWebKit>
 
 #include "querypage.h"
-#include "trkview.h"
+//#include "trkview.h"
 #include "settings.h"
 #include "scrwidg.h"
 #include "notedialog.h"
@@ -42,7 +42,7 @@ QueryPage::QueryPage(QWidget *parent)
     , modelProject(0)
     , tmodel(0)
 //    , planViewModel(this)
-	, history()
+//	, history()
     , itIsFolder(false)
     , isInteractive(true)
 {
@@ -95,7 +95,7 @@ QueryPage::QueryPage(QWidget *parent)
 
     //connect(queryView,SIGNAL(activated(const QModelIndex &)),this,SLOT(recordOpen(const QModelIndex &)));
     connect(queryView,SIGNAL(activated(const QModelIndex &)),actionTest,SLOT(trigger()));
-    connect(this, SIGNAL(openingModel(const QAbstractItemModel*)),&history,SLOT(openedModel(const QAbstractItemModel *)),Qt::DirectConnection);
+//    connect(this, SIGNAL(openingModel(const QAbstractItemModel*)),&history,SLOT(openedModel(const QAbstractItemModel *)),Qt::DirectConnection);
 
     QShortcut *shortcut;
 
@@ -339,7 +339,7 @@ void QueryPage::changedView(const QModelIndex &index, const QModelIndex &prev)
     if(!qryIndex.isValid())
         return;
 #ifdef DECORATOR
-    TrkToolRecord *record = tmodel->at(qryIndex.row());
+    TQRecord *record = tmodel->at(qryIndex.row());
     decorator->readValues(record, fieldEdits);
 #endif
 
@@ -632,7 +632,7 @@ QString QueryPage::makeRecordsPage(const QObjectList &records, const QString &xq
     xml.appendChild(root);
     foreach(QObject *obj, records)
     {
-        TrkToolRecord *rec = qobject_cast<TrkToolRecord *>(obj);
+        TQRecord *rec = qobject_cast<TQRecord *>(obj);
         if(!rec)
             continue;
         rec->refresh();
@@ -726,7 +726,7 @@ void QueryPage::sendEmail(const QObjectList &records)
     QString subject;
     if(records.count()==1)
     {
-        TrkToolRecord *rec = qobject_cast<TrkToolRecord *>(records[0]);
+        TQRecord *rec = qobject_cast<TQRecord *>(records[0]);
         subject = QString(tr("Запрос %1. %2")).arg((int)(rec->recordId())).arg(rec->value("Title").toString());
     }
     else
@@ -734,7 +734,7 @@ void QueryPage::sendEmail(const QObjectList &records)
         subject = tr("Запросы ");
         for(int i=0; i<records.count(); i++)
         {
-            const TrkToolRecord *rec = qobject_cast<TrkToolRecord *>(records[i]);
+            const TQRecord *rec = qobject_cast<TQRecord *>(records[i]);
             if(i)
                 subject += ", ";
             subject += QString("%1").arg(rec->recordId());
@@ -992,9 +992,9 @@ void QueryPage::recordOpen(const QModelIndex & index)
     const TrkToolModel *model = qobject_cast<const TrkToolModel *>(mapIndexToModel(index).model());
 	if(!model)
 		return;
-	TrkToolRecord *rec = model->at(index.row());
+    TQRecord *rec = model->at(index.row());
     */
-    TrkToolRecord *rec = currentRecord();
+    TQRecord *rec = currentRecord();
     if(!rec)
         return;
     ScrWidget *scr = new ScrWidget(rec->typeDef());
@@ -1020,7 +1020,7 @@ void QueryPage::openQuery(TQAbstractProject *prj, const QString &queryName, int 
     //for(int i=history.count()-1; i>curHistoryPos; i--)
     //	history.removeLast();
     //history.append(item);
-    curHistoryPos = history.rowCount()-1;
+//    curHistoryPos = history.rowCount()-1;
     emit changedQuery(prj->projectName(), queryName);
 }
 
@@ -1047,7 +1047,7 @@ void QueryPage::openIds(TQAbstractProject *prj, const QString &ids, const QStrin
 		history.removeLast();
 	history.append(item);
     */
-    curHistoryPos = history.rowCount()-1;
+//    curHistoryPos = history.rowCount()-1;
     QString newTitle;
     if(title.isEmpty())
         newTitle = ids;
@@ -1065,7 +1065,7 @@ void QueryPage::openIds(TQAbstractProject *prj, const QList<int> &idlist, const 
     setQueryModel(prj, newmodel);
     emit openingModel(newmodel);
     emit modelChanged(newmodel);
-    curHistoryPos = history.rowCount()-1;
+//    curHistoryPos = history.rowCount()-1;
 
     QString newTitle;
     if(title.isEmpty())
@@ -1093,7 +1093,7 @@ void QueryPage::openFolder(TQAbstractProject *prj, const TTFolder &afolder, int 
     setQueryModel(prj, newmodel);
     emit openingModel(newmodel);
     emit modelChanged(newmodel);
-    curHistoryPos = history.rowCount()-1;
+//    curHistoryPos = history.rowCount()-1;
     QString ids = intListToString(idlist);
     emit changedQuery(prj->projectName(), ids);
 
@@ -1109,6 +1109,7 @@ void QueryPage::openQuery(const QString &projectName, const QString &queryName, 
 
 void QueryPage::openHistoryItem(int pos)
 {
+    /*
     if(pos<0 || pos>=history.rowCount())
 		return;
 	const TrkHistoryItem &item = history[pos];
@@ -1136,6 +1137,7 @@ void QueryPage::openHistoryItem(int pos)
         emit changedQuery(item.projectName, item.queryName);
         curHistoryPos = pos;
 	}
+    */
 }
 
 void QueryPage::goBack()
@@ -1176,7 +1178,7 @@ void QueryPage::printPreview()
 }
 
 
-TrkToolRecord *QueryPage::recordOnIndex(const QModelIndex &index)
+TQRecord *QueryPage::recordOnIndex(const QModelIndex &index)
 {
     QModelIndex f = index;
     const QAbstractItemModel *model = f.model();
@@ -1218,7 +1220,7 @@ QObjectList QueryPage::selectedRecords()
     QModelIndexList ii = selectedRows();
     foreach(QModelIndex f, ii)
     {
-        TrkToolRecord *rec = recordOnIndex(f);
+        TQRecord *rec = recordOnIndex(f);
         if(!rec)
             continue;
         list.append(rec);
@@ -1232,7 +1234,7 @@ QList<int> QueryPage::selectedIds()
     QModelIndexList ii = selectedRows();
     foreach(QModelIndex f, ii)
     {
-        TrkToolRecord *rec = recordOnIndex(f);
+        TQRecord *rec = recordOnIndex(f);
         if(!rec)
             continue;
         list.append(rec->recordId());
@@ -1246,7 +1248,7 @@ QObjectList QueryPage::allRecords()
     for(int r=0; r<queryView->model()->rowCount(); r++)
     {
         QModelIndex index = queryView->model()->index(r,0);
-        TrkToolRecord *rec = recordOnIndex(index);
+        TQRecord *rec = recordOnIndex(index);
         list << rec;
     }
     return list;
@@ -1258,7 +1260,7 @@ QObjectList QueryPage::markedRecords()
     for(int r=0; r<queryView->model()->rowCount(); r++)
     {
         QModelIndex index = queryView->model()->index(r,0);
-        TrkToolRecord *rec = recordOnIndex(index);
+        TQRecord *rec = recordOnIndex(index);
         if(rec->isSelected())
             list << rec;
     }
@@ -1270,7 +1272,7 @@ TQAbstractProject *QueryPage::currentProject()
     return modelProject;
 }
 
-TrkToolRecord *QueryPage::currentRecord()
+TQRecord *QueryPage::currentRecord()
 {
     QModelIndex cur = queryView->currentIndex();
     if(!cur.isValid())
@@ -1290,7 +1292,9 @@ TrkToolRecord *QueryPage::currentRecord()
 void QueryPage::on_actionAdd_Note_triggered()
 {
     NoteDialog *nd=new NoteDialog();
-    nd->titleEdit->addItems(((const TQRecordTypeDef*)tmodel->typeDef())->project()->noteTitleList());
+    const TQAbstractRecordTypeDef *def = tmodel->typeDef();
+    nd->titleEdit->addItems(def->noteTitleList());
+//    nd->titleEdit->addItems(((const TQAbstractRecordTypeDef*)tmodel->typeDef())->project()->noteTitleList());
     QSettings *settings = ttglobal()->settings();
     if(settings->contains("LastNote"))
         nd->titleEdit->setEditText(settings->value("LastNote").toString());
@@ -1454,7 +1458,7 @@ void QueryPage::updateDetails()
     QObjectList selected = selectedRecords();
     foreach(QObject *obj, selected)
     {
-        TrkToolRecord *rec = qobject_cast<TrkToolRecord *>(obj);
+        TQRecord *rec = qobject_cast<TQRecord *>(obj);
         QString key = QString::number(rec->recordId());
         if(!key.isEmpty())
             keys.append(key);
@@ -1468,7 +1472,8 @@ void QueryPage::updateDetails()
     QModelIndex qryIndex = mapIndexToModel(queryView->currentIndex());
     if(!qryIndex.isValid())
         return;
-    TrkToolRecord *record = tmodel->at(qryIndex.row());
+    TQRecord *record = tmodel->at(qryIndex.row());
+    const TQAbstractRecordTypeDef *def = record->typeDef();
 #ifdef DECORATOR
     decorator->readValues(record, fieldEdits);
 #endif
@@ -1484,7 +1489,7 @@ void QueryPage::updateDetails()
         QFileInfo f(file.fileName);
         filesTable->insertRow(row);
         filesTable->setItem(row,0,new QTableWidgetItem(prov.icon(f),f.fileName()));
-        filesTable->setItem(row,1,new QTableWidgetItem(file.createDateTime.toString(TT_DATETIME_FORMAT)));
+        filesTable->setItem(row,1,new QTableWidgetItem(file.createDateTime.toString(def->dateTimeFormat())));
         filesTable->setItem(row,2,new QTableWidgetItem(f.dir().path()));
         row++;
     }
@@ -1498,7 +1503,7 @@ void QueryPage::on_actionCopyId_triggered()
     QString numbers;
     foreach(QObject *obj, selectedRecords())
     {
-        const TrkToolRecord *rec = (TrkToolRecord *)obj;
+        const TQRecord *rec = (TQRecord *)obj;
         int id = rec->recordId();
         numList.append(QString::number(id));
     }
@@ -1554,7 +1559,7 @@ void QueryPage::on_actionSelectRecords_triggered()
 {
     foreach(QObject *rec, selectedRecords())
     {
-        ((TrkToolRecord *)rec)->setSelected(true);
+        ((TQRecord *)rec)->setSelected(true);
     }
     /*
     foreach(QModelIndex index, queryView->selectionModel()->selectedRows())
@@ -1570,7 +1575,7 @@ void QueryPage::on_actionDeselectRecords_triggered()
 {
     foreach(QObject *obj, selectedRecords())
     {
-        TrkToolRecord *rec = (TrkToolRecord *)obj;
+        TQRecord *rec = (TQRecord *)obj;
         rec->setSelected(false);
     }
     /*
@@ -1585,7 +1590,7 @@ void QueryPage::on_actionCopyMarkedId_triggered()
     QString numbers;
     foreach(QObject *obj, markedRecords())
     {
-        TrkToolRecord *rec = (TrkToolRecord *)obj;
+        TQRecord *rec = (TQRecord *)obj;
         int id = rec->recordId();
         numList.append(QString::number(id));
     }
@@ -1633,7 +1638,7 @@ void QueryPage::on_actionCopyMarkedRecords_triggered()
 void QueryPage::on_actionDeleteMarked_triggered()
 {
     foreach(QObject *rec, markedRecords())
-        tmodel->removeRecordId(((TrkToolRecord *)rec)->recordId());
+        tmodel->removeRecordId(((TQRecord *)rec)->recordId());
 }
 
 void QueryPage::on_actionSelectMarked_triggered()
@@ -1644,7 +1649,7 @@ void QueryPage::on_actionSelectMarked_triggered()
 void QueryPage::on_actionDeleteFromList_triggered()
 {
     foreach(QObject *rec, selectedRecords())
-        tmodel->removeRecordId(((TrkToolRecord *)rec)->recordId());
+        tmodel->removeRecordId(((TQRecord *)rec)->recordId());
 }
 
 void QueryPage::on_queryView_customContextMenuRequested(const QPoint &pos)
@@ -1687,7 +1692,7 @@ void QueryPage::on_actionDeleteFromFolder_triggered()
         return;
     foreach(QObject *rec, selectedRecords())
     {
-        int recId = ((TrkToolRecord *)rec)->recordId();
+        int recId = ((TQRecord *)rec)->recordId();
         folder.deleteRecordId(recId);
         tmodel->removeRecordId(recId);
     }
@@ -1696,7 +1701,7 @@ void QueryPage::on_actionDeleteFromFolder_triggered()
 void QueryPage::slotFilesTable_doubleClicked(const QModelIndex &index)
 {
     previewTimer->stop();
-    TrkToolRecord *rec = recordOnIndex(queryView->currentIndex());
+    TQRecord *rec = recordOnIndex(queryView->currentIndex());
     if(!rec || !index.isValid())
         return;
     QString fileName = filesTable->item(index.row(),0)->text();
@@ -1732,7 +1737,7 @@ void QueryPage::slotFilePreview()
     QTableWidgetItem *fileItem = filesTable->currentItem();
     if(recIndex.isValid() && fileItem && fileItem->isSelected())
     {
-        TrkToolRecord *rec = recordOnIndex(recIndex);
+        TQRecord *rec = recordOnIndex(recIndex);
         if(rec)
         {
             QString fileName = fileItem->text();
@@ -1754,7 +1759,7 @@ void QueryPage::slotCurrentFileChanged()
 
 void QueryPage::on_actionTest_triggered()
 {
-    TrkToolRecord *rec = currentRecord();
+    TQRecord *rec = currentRecord();
     if(!rec)
         return;
     int id = rec->recordId();
@@ -1765,7 +1770,7 @@ void QueryPage::on_actionSelectTrigger_triggered()
 {
     foreach(QObject *obj, selectedRecords())
     {
-        TrkToolRecord * rec = (TrkToolRecord *)obj;
+        TQRecord * rec = (TQRecord *)obj;
         rec->setSelected(!rec->isSelected());
     }
     queryView->selectRow(queryView->currentIndex().row()+1);

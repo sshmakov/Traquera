@@ -1,7 +1,7 @@
 #ifndef MODIFYPANEL_H
 #define MODIFYPANEL_H
 
-#include "trkview.h"
+//#include "trkview.h"
 //#include "trkdecorator.h"
 #include "querypage.h"
 #include <QWidget>

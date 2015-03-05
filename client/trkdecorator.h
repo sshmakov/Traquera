@@ -6,7 +6,9 @@
 #include <QComboBox>
 #include <QLineEdit>
 #include <QStringList>
-#include "trkview.h"
+//#include "trkview.h"
+#include "tqbase.h"
+#include <QTableView>
 
 #define Settings_Grid "TrackerGrid3"
 
@@ -23,7 +25,7 @@ class EditDefList: public QObject
 {
     Q_OBJECT
 protected:
-    TrkToolRecord *rec;
+    TQRecord *rec;
 public:
     QList<EditDef> edits;
     QList<QWidget *> panels;
@@ -35,7 +37,7 @@ public:
     {
     }
     ~EditDefList();
-    void connectToRecord(TrkToolRecord *record);
+    void connectToRecord(TQRecord *record);
     void readValues();
     void updateState();
     void clear();
@@ -66,8 +68,8 @@ class TrkDecorator : public QObject
 public:
     explicit TrkDecorator(QObject *parent = 0);
     void fillEditPanels(QTabWidget *tabs, const TQAbstractRecordTypeDef *recDef, EditDefList &def, bool onlyView = true);
-    void readValues(TrkToolRecord *record, EditDefList &def);
-    void updateState(TrkToolRecord *record, EditDefList &def);
+    void readValues(TQRecord *record, EditDefList &def);
+    void updateState(TQRecord *record, EditDefList &def);
     void loadViewDef(QTableView *view);
     FieldGroupsDef loadGroups(const TQAbstractRecordTypeDef *recDef);
 protected:
@@ -91,10 +93,10 @@ class TrkFieldEdit
 {
 protected:
     QString field;
-    TrkToolRecord *rec;
+    TQRecord *rec;
 public:
     explicit TrkFieldEdit(const QString &fieldName);
-    void connectToRecord(TrkToolRecord *record);
+    void connectToRecord(TQRecord *record);
     virtual void clearValue() = 0;
     virtual void setValue(const QVariant &value) = 0;
     virtual QVariant value() const = 0;

@@ -1,5 +1,5 @@
 #include "scrwidg.h"
-#include "trkview.h"
+//#include "trkview.h"
 #include "trkdecorator.h"
 #include <QDomDocument>
 #include <QFile>
@@ -24,7 +24,7 @@ ScrWidget::~ScrWidget()
 {
     if(record)
     {
-        if(record->mode() != TrkToolRecord::View)
+        if(record->mode() != TQRecord::View)
             record->cancel();
         fieldEdits.connectToRecord(0);
         record->removeLink();
@@ -32,7 +32,7 @@ ScrWidget::~ScrWidget()
     record = NULL;
 }
 
-void ScrWidget::setRecord(TrkToolRecord *newrec)
+void ScrWidget::setRecord(TQRecord *newrec)
 {
 	if(record)
 	{
@@ -79,9 +79,9 @@ void ScrWidget::readRecord()
 
 void ScrWidget::updateEditState()
 {
-    bool view = (record->mode() == TrkToolRecord::View);
-    bool edit = (record->mode() == TrkToolRecord::Edit);
-    bool insert = (record->mode() == TrkToolRecord::Insert);
+    bool view = (record->mode() == TQRecord::View);
+    bool edit = (record->mode() == TQRecord::Edit);
+    bool insert = (record->mode() == TQRecord::Insert);
 
     decorator->updateState(record, fieldEdits);
     /*
@@ -118,7 +118,7 @@ void ScrWidget::on_actionEdit_Record_triggered()
 {
     if(!record)
         return;
-    if(record->mode() == TrkToolRecord::View)
+    if(record->mode() == TQRecord::View)
         record->updateBegin();
     updateEditState();
 }

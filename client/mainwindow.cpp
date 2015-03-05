@@ -36,6 +36,7 @@
 #include <QtWebKit>
 #include "ttrecwindow.h"
 #include "projecttree.h"
+#include "tqconnectwidget.h"
 
 extern int uniqueAlbumId;
 extern int uniqueArtistId;
@@ -47,7 +48,6 @@ MainWindow::MainWindow(QWidget *parent)
     setupUi(this);
 
     registerDBClasses();
-    dbClassComboBox->addItems(TQAbstractDB::registeredDbClasses());
 //    editServiceUrl->setText("http://localhost:8080/tq");
 
     QWebSettings::globalSettings()->setAttribute(QWebSettings::PluginsEnabled, true);
@@ -85,7 +85,7 @@ MainWindow::MainWindow(QWidget *parent)
 //#else
 //    trkdb = new TrkToolDB(this);
 //#endif
-	trkproject = 0;
+//	trkproject = 0;
     selectionTimer = new QTimer(this);
     selectionTimer->setSingleShot(true);
     selectionTimer->setInterval(0);
@@ -135,15 +135,24 @@ MainWindow::MainWindow(QWidget *parent)
 	tabWidget->setCurrentIndex(tabWidget->insertTab(0, new QueryPage(), "Query"));
 	*/
 	loadSettings();
-	connect(readProjectsBtn, SIGNAL(clicked()),this,SLOT(readProjects()));
+    /*
+    dbClassComboBox->addItems(TQAbstractDB::registeredDbClasses());
+    connect(readProjectsBtn, SIGNAL(clicked()),this,SLOT(readProjects()));
 	connect(connectButton, SIGNAL(clicked()),this,SLOT(connectTracker()));
 	connect(trustedUserBox, SIGNAL(stateChanged(int)), this, SLOT(trustChanged(int)));
+    */
     //readFilters();
     readModifications();
     setupToolbar();
     treeView->addAction(actionOpen_Query);
     //Preview *prev = new Preview(this);
     //prev->setSourceFile("C:/1/Doc1.doc");
+
+
+    connectWidget = new TQConnectWidget(this);
+    gridLayout->addWidget(connectWidget,0,0,-1,-1);
+    connect(connectWidget,SIGNAL(connectClicked(ConnectParams)),SLOT(connectTrackerParams(ConnectParams)));
+
 }
 
 const QString MainWindowGeometry = "MainWindowGeometry";
@@ -171,6 +180,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 void MainWindow::loadSettings()
 {
     QSettings *settings = ttglobal()->settings();
+    /*
     dbmsEdit->setText(settings->value("TrackerDBMSType",dbmsEdit->text()).toString());
     serverEdit->setText(settings->value("TrackerSQLServer",serverEdit->text()).toString());
 	sqlUserEdit->setText(settings->value("TrackerSQLUser",sqlUserEdit->text()).toString());
@@ -179,23 +189,8 @@ void MainWindow::loadSettings()
 	trustChanged(trustedUserBox->checkState());
 	projectEdit->setText(settings->value("TrackerProject",projectEdit->text()).toString());
 	userEdit->setText(settings->value("TrackerUser",userEdit->text()).toString());
-    /*
-	settings->beginGroup("Plans");
-	{
-		QStringList keys=settings->childKeys();
-		for(int i=0; i<keys.count(); i++)
-		{
-            const QString &key = keys[i];
-            if(!key.contains(".RO"))
-            {
-                QString prj = settings->value(key).toString();
-                bool readOnly = settings->value(key+".RO",false).toBool();
-                projects->addPlan(prj, readOnly);
-            }
-		}
-	}
-	settings->endGroup();
     */
+
     if(settings->contains(MainWindowGeometry))
         restoreGeometry(settings->value(MainWindowGeometry).toByteArray());
     if(settings->contains(MainWindowState))
@@ -206,6 +201,7 @@ void MainWindow::loadSettings()
 void MainWindow::saveSettings()
 {
     QSettings *settings = ttglobal()->settings();
+    /*
     settings->setValue("TrackerDBMSType",dbmsEdit->text());
     settings->setValue("TrackerSQLServer",serverEdit->text());
 	settings->setValue("TrackerSQLUser",sqlUserEdit->text());
@@ -213,6 +209,7 @@ void MainWindow::saveSettings()
 	settings->setValue("TrackerSQL",trustedUserBox->isChecked());
 	settings->setValue("TrackerProject",projectEdit->text());
 	settings->setValue("TrackerUser",userEdit->text());
+    */
 //    settings->setValue("TrackerIndex", solrUrl);
     /*
 	settings->beginGroup("Plans");
@@ -328,7 +325,7 @@ void MainWindow::setDbmsType()
     QAction *a=qobject_cast<QAction*>(s);
     if(a)
     {
-        dbmsEdit->setText(a->text());
+//        dbmsEdit->setText(a->text());
     }
 }
 
@@ -338,7 +335,7 @@ void MainWindow::setProject()
 	QAction *a=qobject_cast<QAction*>(s);
 	if(a)
 	{
-		projectEdit->setText(a->text());
+//		projectEdit->setText(a->text());
 	}
 }
 
@@ -346,13 +343,13 @@ void MainWindow::trustChanged(int State)
 {
 	if(State == Qt::Checked)
 	{
-		sqlUserEdit->setEnabled(false);
-		sqlPassEdit->setEnabled(false);
+//		sqlUserEdit->setEnabled(false);
+//		sqlPassEdit->setEnabled(false);
 	}
 	else
 	{
-		sqlUserEdit->setEnabled(true);
-		sqlPassEdit->setEnabled(true);
+//		sqlUserEdit->setEnabled(true);
+//		sqlPassEdit->setEnabled(true);
     }
 }
 
@@ -453,19 +450,21 @@ void MainWindow::slotOpenRecordsClicked(ScrSet res)
     openQueryById(res.toList(),intListToString(res.toList()),false);
 }
 
-QString MainWindow::getTrkConnectString()
-{
-	QString dsn = "Driver={SQL Server};Server="+serverEdit->text()+";";
-	if(trustedUserBox->isChecked())
-		dsn += "Trusted_Connection=yes";
-	else
-		dsn += "User Id=" + sqlUserEdit->text()+";"
-			+ "Password=" + sqlPassEdit->text()+";";
-	return dsn;
-}
+
+//QString MainWindow::getTrkConnectString()
+//{
+//	QString dsn = "Driver={SQL Server};Server="+serverEdit->text()+";";
+//	if(trustedUserBox->isChecked())
+//		dsn += "Trusted_Connection=yes";
+//	else
+//		dsn += "User Id=" + sqlUserEdit->text()+";"
+//			+ "Password=" + sqlPassEdit->text()+";";
+//	return dsn;
+//}
 
 void MainWindow::readDbms()
 {
+    /*
     QString dbClass = dbClassComboBox->currentText();
     QString dbType = dbmsEdit->text().trimmed();
     QString dbServer = serverEdit->text().trimmed();
@@ -487,10 +486,12 @@ void MainWindow::readDbms()
 	}
 	menu->popup(QCursor::pos());
     connect(menu,SIGNAL(aboutToHide()),this,SLOT(deleteTheObject()));
+    */
 }
 
 void MainWindow::readProjects()
 {
+    /*
     QString dbClass = dbClassComboBox->currentText();
     QString dbType = dbmsEdit->text().trimmed();
     QString dbServer = serverEdit->text().trimmed();
@@ -508,6 +509,7 @@ void MainWindow::readProjects()
     }
     menu->popup(QCursor::pos());
     connect(menu,SIGNAL(aboutToHide()),this,SLOT(deleteTheObject()));
+    */
 }
 
 void MainWindow::deleteTheObject()
@@ -675,6 +677,7 @@ void MainWindow::registerDBClasses()
 
 void MainWindow::connectTracker()
 {
+    /*
     QString dbClass = dbClassComboBox->currentText();
     QString dbType = dbmsEdit->text().trimmed();
     QString dbServer = serverEdit->text().trimmed();
@@ -705,44 +708,33 @@ void MainWindow::connectTracker()
         else
             delete prj;
     }
+*/
+}
 
-/*
-	if(!trkdb)
+void MainWindow::connectTrackerParams(const ConnectParams &params)
+{
+    TQAbstractDB *db = newDb(params.dbClass, params.dbType, params.dbServer);
+    if(!db)
+        return; // !! need messagebox
+    TQAbstractProject *prj = db->openProject(
+                params.project,
+                params.user,
+                params.password);
+    if(prj)
     {
-//#ifdef SERV_DB_ON
-//        trkdb = new TQServiceDB(this);
-//#else
-        trkdb = new TrkToolDB(this);
-//#endif
+        if(prj->isOpened())
+        {
+            projects.append(prj);
+            projectByName.insert(prj->projectName(),prj);
+            saveSettings();
+            //        journal->setProject(prj);
+            readQueries(prj);
+            //connectButton->setDisabled(true);
+        }
+        else
+            delete prj;
     }
-    trkdb->setDbmsUser(server, dbmsUser, dbmsPass);
-    //const QStringList *dbmsTypes = trkdb->dbmsTypes();
-	//return;
-    if(trkproject)
-    {
-        delete trkproject;
-        trkproject = NULL;
-    }
-    if(!journal)
-    {
-        journal = new TrkHistory(this);
-        journal->setUnique(true);
-        journalView->setModel(journal);
-    }
-    journal->clearRecords();
 
-    trkproject=trkdb->openProject(
-                project,
-                user,
-                password);
-    if(trkproject && trkproject->isOpened())
-    {
-        saveSettings();
-        journal->setProject(trkproject);
-        readQueries(trkproject);
-        //connectButton->setDisabled(true);
-    }
-		*/
 }
 
 
@@ -763,9 +755,9 @@ void MainWindow::readQueries(TQAbstractProject *prj)
 
     TTFolderModel *folders = new TTFolderModel(this);
     QSqlDatabase db = ttglobal()->userDatabase();
-    folders->setDatabaseTable(db,"folders","user");
+    folders->setDatabaseTable(db,"folders",prj->projectName());
     TQProjectTree *prjTree = new TQProjectTree(this);
-    prjTree->setProject(prj);
+    prjTree->setProject(prj, prj->defaultRecType());
 
     prjTree->appendSourceModel(folders,tr("Личные папки"));
 
@@ -778,6 +770,12 @@ void MainWindow::readQueries(TQAbstractProject *prj)
     prjTree->appendSourceModel(publicModel,tr("Общие выборки"));
 
     prjTree->setMaxColCount(1);
+    ProjectModel m;
+    m.prjTree = prjTree;
+    m.userModel = userModel;
+    m.publicModel = publicModel;
+    m.folders = folders;
+    projectModels.append(m);
     treeModel->appendSourceModel(prjTree, prj->projectName());
 }
 
@@ -788,7 +786,7 @@ QString minTitle(const QString &title)
     return title;
 }
 
-void MainWindow::openQuery(TQAbstractProject *project, const QString &queryName, bool reusePage)
+void MainWindow::openQuery(TQAbstractProject *project, const QString &queryName, int recordType, bool reusePage)
 {
 //    if(!index.isValid() || !index.model())
 //		return;
@@ -809,7 +807,7 @@ void MainWindow::openQuery(TQAbstractProject *project, const QString &queryName,
         page = createNewPage(minTitle(title));
 
 	//QAbstractItemModel *model = trkproject->openQueryModel(title);
-    page->openQuery(project, title);
+    page->openQuery(project, title, recordType);
 	//page->setQueryModel(model);
 	//page->setQuery(id, trkdb);
 	// page->setPlanModel(&planModel);
@@ -847,7 +845,7 @@ void MainWindow::openQueryByIdClip()
     openQueryById(numbers);
 }
 
-void MainWindow::openQueryById(const QString &numbers, bool reusePage)
+void MainWindow::openQueryById(const QString &numbers, int recordType, bool reusePage)
 {
     QueryPage *page=NULL; // = qobject_cast<QueryPage *>(w);
     QObject *w = tabWidget->currentWidget();
@@ -857,11 +855,11 @@ void MainWindow::openQueryById(const QString &numbers, bool reusePage)
     else
         page = createNewPage(minTitle(numbers));
     showProgressBar();
-    page->openIds(currentProject(), numbers, numbers);
+    page->openIds(currentProject(), numbers, numbers, recordType);
     hideProgressBar();
 }
 
-void MainWindow::openQueryById(const QList<int> &idList, const QString &title, bool reusePage)
+void MainWindow::openQueryById(const QList<int> &idList, const QString &title, int recordType, bool reusePage)
 {
     QueryPage *page = curQueryPage(); // = qobject_cast<QueryPage *>(w);
     QString newTitle = title;
@@ -872,7 +870,7 @@ void MainWindow::openQueryById(const QList<int> &idList, const QString &title, b
     else
         tabWidget->setTabText(tabWidget->currentIndex(),minTitle(newTitle));
     showProgressBar();
-    page->openIds(currentProject(),idList,title);
+    page->openIds(currentProject(),idList,title, recordType);
     hideProgressBar();
 }
 
@@ -999,6 +997,7 @@ void MainWindow::readSelectedTreeItem()
         return;
 
     selectedTreeItem.prj = selectedTreeItem.prjModel->project();
+    selectedTreeItem.recordType = selectedTreeItem.prjModel->recordType();
     QModelIndex prjIndex = treeModel->mapToSource(curIndex);
     if(!prjIndex.isValid())
     {
@@ -1148,6 +1147,11 @@ TQAbstractProject *MainWindow::currentProject() const
 void MainWindow::setCurrentProject(TQAbstractProject *prj)
 {
     activePrj = prj;
+    int row = projects.indexOf(prj);
+    if(row == -1)
+        treeModel->setSelectedModel(0);
+    else
+        treeModel->setSelectedModel(projectModels[row].prjTree);
 }
 
 void MainWindow::closeTab(int index)
@@ -1341,7 +1345,7 @@ void MainWindow::openCurItem(bool reuse)
                 folderName = tr("Папка");
             if(!page || !reuse)
                 page = createNewPage(folderName);
-            page->openFolder(selectedTreeItem.prj, selectedTreeItem.folderModel->folder(selectedTreeItem.folderIndex));
+            page->openFolder(selectedTreeItem.prj, selectedTreeItem.folderModel->folder(selectedTreeItem.folderIndex), selectedTreeItem.recordType);
             tabWidget->setTabText(tabWidget->currentIndex(),folderName);
             return;
         }
@@ -1568,6 +1572,11 @@ void MainWindow::on_treeView_customContextMenuRequested(const QPoint &pos)
             menu.addAction(actionDeleteFolder);
             menu.addAction(actionRenameFolder);
         }
+    }
+    if(selectedTreeItem.isProjectSelected)
+    {
+        menu.addSeparator();
+        menu.addAction(actionClose_Project);
     }
     menu.exec(gPos);
 
@@ -1899,4 +1908,33 @@ void MainWindow::on_btnService_clicked()
         //connectButton->setDisabled(true);
     }
     */
+}
+
+void MainWindow::on_actionClose_Project_triggered()
+{
+    readSelectedTreeItem();
+    if(selectedTreeItem.isProjectSelected)
+    {
+        int row = projects.indexOf(selectedTreeItem.prj);
+        if(row == -1)
+            return;
+        ProjectModel pm = projectModels.takeAt(row);
+        if(selectedTreeItem.prj == currentProject())
+        {
+            if(row>0)
+                setCurrentProject(projects[row-1]);
+            else if(row<projects.count()-1)
+                setCurrentProject(projects[row+1]);
+            else
+                setCurrentProject(0);
+        }
+        treeModel->removeSourceModel(pm.prjTree);
+        delete pm.folders;
+        delete pm.publicModel;
+        delete pm.userModel;
+        delete pm.prjTree;
+        projects.removeAt(row);
+        delete selectedTreeItem.prj;
+    }
+
 }
