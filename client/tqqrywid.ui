@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>TQQueryWidget</class>
+ <widget class="QDialog" name="TQQueryWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>598</width>
+    <height>428</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="5" column="3">
+      <widget class="QPushButton" name="btnMoveUp">
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="resources/tracks.qrc">
+         <normaloff>:/images/up.png</normaloff>:/images/up.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="0" colspan="5">
+      <widget class="QPlainTextEdit" name="pteQueryText">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>100</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>100</height>
+        </size>
+       </property>
+       <property name="baseSize">
+        <size>
+         <width>0</width>
+         <height>100</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="3">
+      <widget class="QPushButton" name="btnMoveDown">
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="resources/tracks.qrc">
+         <normaloff>:/images/down.png</normaloff>:/images/down.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="3" rowspan="2" colspan="2">
+      <widget class="QGroupBox" name="groupBox">
+       <property name="title">
+        <string/>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <widget class="QRadioButton" name="rbAnd">
+          <property name="text">
+           <string>И</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="rbOr">
+          <property name="text">
+           <string>ИЛИ</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="cbOpenBracket">
+          <property name="text">
+           <string>(</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="cbNot">
+          <property name="text">
+           <string>НЕ</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="cbCloseBracket">
+          <property name="text">
+           <string>)</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item row="1" column="2" rowspan="7">
+      <widget class="QListWidget" name="lwCond"/>
+     </item>
+     <item row="3" column="3" colspan="2">
+      <widget class="QPushButton" name="btnModify">
+       <property name="text">
+        <string>Изменить...</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="3">
+      <spacer name="verticalSpacer">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="0" column="2">
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Условия:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="3" colspan="2">
+      <widget class="QPushButton" name="btnRemove">
+       <property name="text">
+        <string>Удалить</string>
+       </property>
+       <property name="icon">
+        <iconset resource="resources/tracks.qrc">
+         <normaloff>:/images/list-remove.png</normaloff>:/images/list-remove.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Поля:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QToolButton" name="btnAdd">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>Добавить...</string>
+       </property>
+       <property name="icon">
+        <iconset resource="resources/tracks.qrc">
+         <normaloff>:/images/list-add.png</normaloff>:/images/list-add.png</iconset>
+       </property>
+       <property name="popupMode">
+        <enum>QToolButton::MenuButtonPopup</enum>
+       </property>
+       <property name="toolButtonStyle">
+        <enum>Qt::ToolButtonTextBesideIcon</enum>
+       </property>
+       <property name="arrowType">
+        <enum>Qt::NoArrow</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0" rowspan="7">
+      <widget class="QListWidget" name="lwFields"/>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <tabstops>
+  <tabstop>lwFields</tabstop>
+  <tabstop>lwCond</tabstop>
+  <tabstop>rbAnd</tabstop>
+  <tabstop>rbOr</tabstop>
+  <tabstop>cbOpenBracket</tabstop>
+  <tabstop>cbNot</tabstop>
+  <tabstop>cbCloseBracket</tabstop>
+  <tabstop>btnModify</tabstop>
+  <tabstop>btnRemove</tabstop>
+  <tabstop>btnMoveUp</tabstop>
+  <tabstop>btnMoveDown</tabstop>
+  <tabstop>pteQueryText</tabstop>
+  <tabstop>buttonBox</tabstop>
+ </tabstops>
+ <resources>
+  <include location="resources/tracks.qrc"/>
+ </resources>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>TQQueryWidget</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>395</x>
+     <y>398</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>294</x>
+     <y>399</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>TQQueryWidget</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>413</x>
+     <y>399</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>183</x>
+     <y>397</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

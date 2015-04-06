@@ -62,7 +62,7 @@ protected:
     QHash<int, QString> m_fields; // vid => name
     QHash<QString, int> m_Vids; // name => vid
     QHash<int, FieldProps> m_props; // vid =>prop
-    QHash<QString, ChoiceList> choices; // tableName =>list
+    QHash<QString, TQChoiceList> choices; // tableName =>list
     QByteArray m_defSrc;
     QString m_dateTimeFormat;
     QHash<int, int> m_roleVids; // role =>vid
@@ -98,7 +98,7 @@ public:
     virtual bool hasChoiceList(int vid) const;
     //virtual ChoiceList choiceList(int vid) const = 0;
     //virtual ChoiceList choiceList(const QString &fieldName) const = 0;
-    virtual ChoiceList choiceTable(const QString &tableName) const;
+    virtual TQChoiceList choiceTable(const QString &tableName) const;
     virtual bool containFieldVid(int vid) const;
     virtual int fieldVid(const QString &name) const;
     virtual QList<int> fieldVids() const;

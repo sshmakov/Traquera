@@ -19,7 +19,9 @@ SOURCES += tqservice.cpp \
     ../common/ttutils.cpp \
     ../tracker/trkview.cpp \
     ../common/tqbase.cpp \
-    ../common/tqmodels.cpp
+    ../common/tqmodels.cpp \
+    ../common/tqcond.cpp \
+    ../tracker/trkcond.cpp
 
 HEADERS += tqservice.h\
         tqservice_global.h \
@@ -29,7 +31,9 @@ HEADERS += tqservice.h\
     ../tracker/trdefs.h \
     ../tracker/tracker.h \
     ../common/tqbase.h \
-    ../common/tqmodels.h
+    ../common/tqmodels.h \
+    ../common/tqcond.h \
+    ../tracker/trkcond.h
 
 DEFINES += CONSOLE_APP
 INCLUDEPATH += $$PWD/../trktool/lib ../common ../tracker

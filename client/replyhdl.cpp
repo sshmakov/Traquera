@@ -436,7 +436,7 @@ bool TQServiceRecordDef::hasChoiceList(int vid) const
     return false;
 }
 
-ChoiceList TQServiceRecordDef::choiceTable(const QString &tableName) const
+TQChoiceList TQServiceRecordDef::choiceTable(const QString &tableName) const
 {
     return choices.value(tableName);
 }
@@ -487,8 +487,8 @@ QString TQServiceRecordDef::valueToDisplay(int vid, const QVariant &value) const
         QString table = fieldChoiceTable(vid);
         if(table.isEmpty())
             return "";
-        ChoiceList list = choiceTable(table);
-        foreach(const TrkToolChoice &c, list)
+        TQChoiceList list = choiceTable(table);
+        foreach(const TQChoiceItem &c, list)
         {
             if(c.fieldValue == value)
                 return c.displayText;
@@ -522,8 +522,8 @@ QVariant TQServiceRecordDef::displayToValue(int vid, const QString &text) const
         QString table = fieldChoiceTable(vid);
         if(table.isEmpty())
             return "";
-        ChoiceList list = choiceTable(table);
-        foreach(const TrkToolChoice &c, list)
+        TQChoiceList list = choiceTable(table);
+        foreach(const TQChoiceItem &c, list)
         {
             if(c.displayText.compare(text,Qt::CaseInsensitive) == 0)
                 return c.fieldValue;

@@ -30,7 +30,8 @@ FORMS += ui/tracksmain.ui ui/querypage.ui ui/trklogin.ui ui/filters.ui ui/scrwid
     ui/preview.ui \
     notewidget.ui \
     tqcolsdialog.ui \
-    tqconnectwidget.ui
+    tqconnectwidget.ui \
+    tqqrywid.ui
 #    ui/planfilesform.ui \
 #    ui/projectpage.ui
 
@@ -69,7 +70,12 @@ HEADERS += \
     projecttree.h \
     tqcolsdialog.h \
     ../common/tqmodels.h \
-    tqconnectwidget.h
+    tqconnectwidget.h \
+    tqqrywid.h \
+    ../common/tqcond.h \
+    ../tracker/trkcond.h \
+    ../common/tqcondwidgets.h \
+    ../tracker/trkcondwidgets.h
 
 #    plans.h planproxy.h \
 #    planfiles.h \
@@ -109,7 +115,12 @@ SOURCES += database.cpp main.cpp mainwindow.cpp querypage.cpp \
     projecttree.cpp \
     tqcolsdialog.cpp \
     ../common/tqmodels.cpp \
-    tqconnectwidget.cpp
+    tqconnectwidget.cpp \
+    tqqrywid.cpp \
+    ../common/tqcond.cpp \
+    ../tracker/trkcond.cpp \
+    ../common/tqcondwidgets.cpp \
+    ../tracker/trkcondwidgets.cpp
 
 #    planfilesform.cpp \
 #    project.cpp projectpage.cpp plans.cpp planproxy.cpp planfiles.cpp \

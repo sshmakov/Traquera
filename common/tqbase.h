@@ -5,7 +5,7 @@
 #include <QtXml>
 //#include <QtGui>
 #include "tqplug.h"
-
+#include "tqcond.h"
 
 class ConnectParams
 {
@@ -27,9 +27,6 @@ public:
 //need delete
 class TrkToolModel;
 // --
-
-
-
 
 class TQAbstractProject;
 class TQRecord;
@@ -57,6 +54,17 @@ struct TQToolFile
     QString fileName;
     QDateTime createDateTime;
 };
+
+struct TQUser
+{
+    int id;
+    QString login;
+    QString displayName;
+    QString fullName;
+    bool isDeleted;
+};
+
+typedef QList<TQUser> TQUserList;
 
 /*
 class TQQueryFilter: public QSortFilterProxyModel
@@ -106,6 +114,19 @@ public:
 };
 
 typedef QList<int> IntList;
+
+/*
+struct TQConditionLine {
+    bool isOpenBracket;
+    bool isNot;
+    int vid;
+    int op;
+    QVariant value1, value2;
+    bool isCloseBracket;
+    bool isOr;
+};
+*/
+
 
 class TQAbstractProject: public QObject
 {
@@ -160,7 +181,7 @@ public:
     virtual QStringList historyList(TQRecord *record) = 0;
     virtual QHash<int,QString> baseRecordFields(int rectype) = 0;
     virtual bool isSystemModel(QAbstractItemModel *model) const = 0;
-
+    virtual TQQueryDef *queryDefinition(const QString &queryName, int rectype) = 0;
 signals:
     void openedModel(const QAbstractItemModel *model);
     void recordChanged(int id);
@@ -212,6 +233,7 @@ public:
     QAbstractItemModel *queryModel(int type);
     virtual QList<TQToolFile> attachedFiles(TQRecord *record);
     virtual bool saveFileFromRecord(TQRecord *record, int fileIndex, const QString &dest);
+    virtual TQQueryDef *queryDefinition(const QString &queryName, int rectype);
 };
 
 

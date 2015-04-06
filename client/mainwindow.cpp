@@ -37,6 +37,7 @@
 #include "ttrecwindow.h"
 #include "projecttree.h"
 #include "tqconnectwidget.h"
+#include "tqqrywid.h"
 
 extern int uniqueAlbumId;
 extern int uniqueArtistId;
@@ -1556,6 +1557,10 @@ void MainWindow::on_treeView_customContextMenuRequested(const QPoint &pos)
     {
         menu.addAction(actionOpen_Query);
         menu.addAction(actionOpen_QueryInNew);
+        if(selectedTreeItem.isQuerySelected)
+        {
+            menu.addAction(actionEditQuery);
+        }
         menu.addSeparator();
     }
     if(selectedTreeItem.isFolderSelected)
@@ -1936,5 +1941,15 @@ void MainWindow::on_actionClose_Project_triggered()
         projects.removeAt(row);
         delete selectedTreeItem.prj;
     }
+}
 
+void MainWindow::on_actionEditQuery_triggered()
+{
+    readSelectedTreeItem();
+    if(selectedTreeItem.isQuerySelected)
+    {
+        TQQueryWidget dlg;
+        dlg.setQueryDefinition(selectedTreeItem.prj->queryDefinition(selectedTreeItem.queryName, selectedTreeItem.recordType));
+        dlg.exec();
+    }
 }

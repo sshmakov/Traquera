@@ -8,6 +8,7 @@
 #include "messager.h"
 #endif
 #include "ttutils.h"
+#include "trkcond.h"
 
 #include <QSettings>
 #include <QXmlSimpleReader>
@@ -335,31 +336,7 @@ int TrkView::findColumn(const QString &label) const
 }
 #endif
 
-
-// =============== TrkToolDB =================
-TrkToolDB::TrkToolDB(QObject *parent)
-    :TQAbstractDB(parent), dbmsTypeList()
-{
-	TrkHandleAlloc(TRK_VERSION_ID, &handle);
-}
-
-TrkToolDB::~TrkToolDB()
-{
-	TrkHandleFree(&handle);
-}
-
-QStringList TrkToolDB::dbmsTypes()
-{
-	if(dbmsTypeList.isEmpty())
-        if(isTrkOK(TrkInitDBMSTypeList(handle)))
-		{
-			char buf[1024];
-            while(TRK_SUCCESS == TrkGetNextDBMSType(handle, 1024, buf))
-				dbmsTypeList.append(QString::fromLocal8Bit(buf));
-		}
-    return dbmsTypeList;
-}
-
+//============================================
 static QString findRegDSN(const QString &desc)
 {
     // HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\ODBC\ODBC.INI\ODBC Data Sources
@@ -394,82 +371,60 @@ static QString findRegServer(const QString &desc)
     return QString();
 }
 
-/*
-static QString findDSN(const QString &desc)
+// =============== TrkToolDB =================
+TrkToolDB::TrkToolDB(QObject *parent)
+    :TQAbstractDB(parent), dbmsTypeList()
 {
-    QString dsn;
-    SQLRETURN ret;
-    SQLHENV hEnv;
-    SQLSMALLINT pcbDSN, pcbDescription;
-    SQLWCHAR szDSN[1024];
-    SQLWCHAR szDescription[1024];
-    SQLAllocEnv(&hEnv);
-    ret = SQLDataSourcesW(hEnv, SQL_FETCH_FIRST,
-                         szDSN, sizeof(szDSN), &pcbDSN,
-                         szDescription, sizeof(szDescription), &pcbDescription);
-    while(ret == SQL_SUCCESS || ret == SQL_SUCCESS_WITH_INFO)
-    {
-        if(desc == QString::fromWCharArray(szDescription))
-        {
-            dsn = QString::fromWCharArray(szDSN);
-            break;
-        }
-        ret = SQLDataSources(hEnv, SQL_FETCH_NEXT,
-                             szDSN, sizeof(szDSN), &pcbDSN,
-                             szDescription, sizeof(szDescription), &pcbDescription);
-    }
-    SQLFreeEnv(hEnv);
-    return dsn;
+	TrkHandleAlloc(TRK_VERSION_ID, &handle);
 }
 
-static QString findServer(const QString &dsn)
+TrkToolDB::~TrkToolDB()
 {
-    QString server;
-    SQLRETURN ret;
-    SQLHENV hEnv;
-    SQLSMALLINT pcbDSN, pcbDescription;
-    SQLWCHAR szDSN[1024];
-    SQLWCHAR szDescription[1024];
-    SQLAllocEnv(&hEnv);
-//    SQLConfigDataSource()
-//    SQLBrowseConnect()
-    ret = SQLDataSourcesW(hEnv, SQL_FETCH_FIRST,
-                         szDSN, sizeof(szDSN), &pcbDSN,
-                         szDescription, sizeof(szDescription), &pcbDescription);
-    while(ret == SQL_SUCCESS || ret == SQL_SUCCESS_WITH_INFO)
+    TrkHandleFree(&handle);
+}
+
+void TrkToolDB::setDbmsType(const QString &dbType)
+{
+    TQAbstractDB::setDbmsType(dbType);
+
+    // HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\ODBC\ODBC.INI\ODBC Data Sources
+    QSettings sets("ODBC","ODBC.INI");
+    sets.beginGroup("ODBC Data Sources");
+    QStringList sources = sets.allKeys();
+    sets.endGroup();
+    foreach(QString dsn, sources)
     {
-        if(dsn == QString::fromWCharArray(szDSN))
+        sets.beginGroup(dsn);
+        if(sets.value("Description").toString() == dbType)
         {
-            server = QString::fromWCharArray(szDSN);
+            odbcDSN = dsn;
+            odbcServer = sets.value("Server").toString();
             break;
         }
-        ret = SQLDataSources(hEnv, SQL_FETCH_NEXT,
-                             szDSN, sizeof(szDSN), &pcbDSN,
-                             szDescription, sizeof(szDescription), &pcbDescription);
+        sets.endGroup();
     }
-    SQLFreeEnv(hEnv);
-    return server;
-
 }
-*/
+
+QStringList TrkToolDB::dbmsTypes()
+{
+	if(dbmsTypeList.isEmpty())
+        if(isTrkOK(TrkInitDBMSTypeList(handle)))
+		{
+			char buf[1024];
+            while(TRK_SUCCESS == TrkGetNextDBMSType(handle, 1024, buf))
+				dbmsTypeList.append(QString::fromLocal8Bit(buf));
+		}
+    return dbmsTypeList;
+}
 
 QString TrkToolDB::dbmsServer() const
 {
     QString customServer = TQAbstractDB::dbmsServer();
     if(!customServer.isEmpty())
         return customServer;
-    /*
-    QString dsn = findRegDSN(dbmsType());
-    if(dsn.isEmpty())
-        return QString();
-        */
-    QString server = findRegServer(dbmsType());
-    return server;
-    /*
-    QSqlDatabase db = QSqlDatabase::database("QODBC");
-    db.setDatabaseName(dsn);
-    return db.hostName();
-    */
+    return odbcServer;
+//    QString server = findRegServer(dbmsType());
+//    return server;
 }
 
 QStringList TrkToolDB::projects(const QString &dbmsType)
@@ -519,7 +474,17 @@ QHash<QString, TrkToolProject *> TrkToolDB::openedProjects;
 
 TQAbstractProject *TrkToolDB::getProject(const QString &projectName)
 {
-	return openedProjects[projectName];
+    return openedProjects[projectName];
+}
+
+QSqlDatabase TrkToolDB::openSqlDatabase()
+{
+    QSqlDatabase sqlDb = QSqlDatabase::addDatabase("QODBC","trackerquery");
+    sqlDb.setDatabaseName(odbcDSN);
+    sqlDb.setUserName(dbmsUser());
+    sqlDb.setPassword(dbmsPass());
+    sqlDb.open();
+    return sqlDb;
 }
 
 // ============= TrkToolProject ==============
@@ -596,6 +561,7 @@ bool TrkToolProject::login(const QString &user,
 		opened = true;
 		name = project;
         this->user = user;
+        readProjectDatabaseName();
         readUserList();
         readQueryList();
 		readDefs();
@@ -666,6 +632,7 @@ bool TrkToolProject::readDefs()
 	QHash<TRK_RECORD_TYPE, QString>::const_iterator ri;
 	for(ri = recordTypes.constBegin(); ri != recordTypes.constEnd(); ++ri)
 	{
+        recType = ri.key();
         if(!recordDef.contains(ri.key()))
         {
             recordDef[ri.key()] = new TQRecordTypeDef(this);
@@ -738,12 +705,30 @@ bool TrkToolProject::readDefs()
 					}
 				}
                 */
-				def[vid] =  id;
+                def[vid] =  id;
 //				if(!nameVids.contains(ri.key()))
 //					nameVids[ri.key()] = NameVid();
 //				nameVids[ri.key()][id.name] = vid;
             }
-		}
+            QSqlDatabase sqlDb = db->openSqlDatabase();
+            QSqlQuery query(sqlDb);
+            query.prepare("select fldVid, fldId from "+dbName+"..trkfld where fldTypeId = ?");
+            int iRecType = recType;
+            query.bindValue(0, iRecType);
+            if(query.exec())
+                while(query.next())
+                {
+                    int vid = query.value(0).toInt();
+                    int id = query.value(1).toInt();
+                    if(def.contains(vid))
+                    {
+                        TrkFieldDef *fdef = def[vid];
+                        fdef->internalId = id;
+                    }
+                }
+            else
+                qDebug() << query.lastError().text();
+        }
         recordDef[ri.key()]->fieldDefs = def;
         if(def.contains(VID_Id))
             recordDef[ri.key()]->baseFields[VID_Id] = def[VID_Id]->name;
@@ -764,15 +749,21 @@ void TrkToolProject::readUserList()
     if(isTrkOK(TrkInitUserList(handle)))
     {
         char userName[1024];
-        //int order = 0;
-        while(TRK_SUCCESS == TrkGetNextUser(handle, sizeof(userName), userName))
+        TRK_UINT id = 0;
+        TRK_UINT deleted = 0;
+        while(TRK_SUCCESS == TrkGetNextUserInternal(handle, sizeof(userName), userName, &id, &deleted))
         {
-            QString login = QString::fromLocal8Bit(userName);
+            TQUser item;
+            item.id = id;
+            item.isDeleted = deleted;
+            item.login = QString::fromLocal8Bit(userName);
             char fullName[1024];
             if(TRK_SUCCESS == TrkGetUserFullName(handle, userName, sizeof(fullName), fullName))
-                userList.insert(login,QString::fromLocal8Bit(fullName));
+                item.fullName = QString::fromLocal8Bit(fullName);
             else
-                userList.insert(login,login);
+                item.fullName = item.login;
+            item.displayName = item.fullName;
+            userList.insert(item.login,item);
         }
     }
 }
@@ -837,28 +828,31 @@ void TrkToolProject::initQueryModel(int type)
 }
 
 
-bool displayLessThan(const TrkToolChoice &c1, const TrkToolChoice &c2)
+bool displayLessThan(const TQChoiceItem &c1, const TQChoiceItem &c2)
 {
     return QString::compare(c1.displayText,c2.displayText,Qt::CaseInsensitive)<0;
 }
 
-ChoiceList *TrkToolProject::fieldChoiceList(const QString &name, int recType)
+TQChoiceList *TrkToolProject::fieldChoiceList(const QString &name, int recType)
 {
-    ChoiceList *list = new ChoiceList();
+    TQChoiceList *list = new TQChoiceList();
     TRK_FIELD_TYPE fType = fieldNativeType(name, recType);
     if((fType == TRK_FIELD_TYPE_CHOICE) || (fType == TRK_FIELD_TYPE_STATE))
     {
         if(isTrkOK(TrkInitChoiceList( handle, name.toLocal8Bit().constData(), recType)))
         {
-            TrkToolChoice ch;
+            TQChoiceItem ch;
             char chname[1024];
-            int order = 0;
-            while(TRK_SUCCESS == TrkGetNextChoice(handle, sizeof(chname), chname))
+            TRK_UINT order = 0;
+            TRK_UINT id, weight;
+//            while(TRK_SUCCESS == TrkGetNextChoice(handle, sizeof(chname), chname))
+            while(TRK_SUCCESS == TrkGetNextChoiceInternal(handle, sizeof(chname), chname, &id, &order, &weight))
             {
                 ch.displayText = QString::fromLocal8Bit(chname);
                 ch.fieldValue = ch.displayText;
-                ch.order = ++order;
-                ch.weight = 1;
+                ch.id = id;
+                ch.order = order;
+                ch.weight = weight;
                 list->append(ch);
             }
         }
@@ -870,9 +864,10 @@ ChoiceList *TrkToolProject::fieldChoiceList(const QString &name, int recType)
         int order = 0;
         foreach(const QString &login, userList.keys())
         {
-            TrkToolChoice ch;
+            TQChoiceItem ch;
+            ch.id = 0;
             ch.fieldValue = login;
-            ch.displayText = userList.value(login);
+            ch.displayText = userList[login].displayName;
             ch.order = ++order;
             ch.weight = 1;
             list->append(ch);
@@ -953,7 +948,7 @@ QString TrkToolProject::userFullName(const QString &login)
     if(login.isEmpty())
         return res;
     else if(userList.contains(login))
-        res = userList[login];
+        res = userList[login].fullName;
     else
     {
         char buf[256];
@@ -1042,8 +1037,8 @@ QDomDocument TrkToolProject::recordTypeDefDoc(int rectype)
             f.setAttribute("choices", tableName);
             QDomElement ch = doc.createElement("ChoiceTable");
             ch.setAttribute("name", tableName);
-            ChoiceList chList = def->choiceTable(tableName);
-            foreach(const TrkToolChoice& item, chList)
+            TQChoiceList chList = def->choiceTable(tableName);
+            foreach(const TQChoiceItem& item, chList)
             {
                 QDomElement ci = doc.createElement("ChoiceItem");
                 ci.setAttribute("displayText", item.displayText);
@@ -1081,6 +1076,93 @@ bool TrkToolProject::isSystemModel(QAbstractItemModel *model) const
             return true;
     }
     return false;
+}
+
+static QString nextCItem(QString &str)
+{
+    int i = str.indexOf(',');
+    QString res;
+    if(i<0)
+    {
+        res = str;
+        str = QString();
+    }
+    else
+    {
+        res =str.left(i);
+        str = str.mid(i+1);
+    }
+    return res;
+}
+
+TQQueryDef *TrkToolProject::queryDefinition(const QString &queryName, int rectype)
+{
+    TQRecordTypeDef *recDef = recordDef.value(rectype);
+    if(!recDef)
+        return 0;
+    QString str;
+    QSqlDatabase sqlDb = db->openSqlDatabase();
+    if(sqlDb.isOpen())
+    {
+        QSqlQuery query2(sqlDb);
+        QVariant vQueryName(queryName);
+        query2.prepare("select qryCont from "+dbName+"..trkqry where qryName = ? and qryTypeId in (?, ?)");
+        query2.bindValue(0, vQueryName);
+        query2.bindValue(1, rectype);
+        query2.bindValue(2, rectype+2);
+        if(query2.exec())
+        {
+            if(query2.next())
+                str = query2.value(0).toString();
+        }
+        else
+        {
+            qDebug() << query2.lastError().text();
+            return 0;
+        }
+    }
+    if(str.isEmpty())
+        return 0;
+    TrkQueryDef *resultDef = new TrkQueryDef(this, recDef);
+    resultDef->parseSavedString(str);
+    return resultDef;
+    /*
+    TrkCond res;
+    while(!str.isEmpty())
+    {
+        bool moduleSearch = nextCItem(str).toInt() == 1;
+        bool changeSearch = nextCItem(str).toInt() == 1;
+        int fcount = nextCItem(str).toInt();
+        while(!str.isEmpty() && fcount--)
+        {
+            TQConditionLine line;
+            line.vid = nextCItem(str).toInt();
+            int ftype = recDef->fieldNativeType(line.vid);
+            switch(ftype)
+            {
+            case TRK_FIELD_TYPE_CHOICE:
+
+                break;
+            }
+        }
+    }
+    return QString();
+    */
+}
+
+void TrkToolProject::readProjectDatabaseName()
+{
+    dbName.clear();
+    QSqlDatabase sqlDb = db->openSqlDatabase();
+    if(sqlDb.isOpen())
+    {
+        QSqlQuery query(sqlDb);
+        query.prepare("select prjDbName from trkmaster..trkprj where prjDescr = ?");
+        query.bindValue(0, projectName());
+        if(query.exec() && query.next())
+            dbName = query.value(0).toString();
+
+    }
 }
 
 bool TrkToolProject::fillModel(TrkToolModel *model, const QString &queryName,
@@ -3091,7 +3173,7 @@ QVariant TrkToolQryModel::displayColData(const TrkQuery &rec, int col) const
 
 TrkFieldDef::TrkFieldDef(TQRecordTypeDef *recordDef, int fieldVID)
     : //AbstractFieldDef(recordDef, fieldVID)
-    recDef(recordDef), name(), nativeType(TRK_FIELD_TYPE_NONE),  cashedChoiceList(new ChoiceList()),
+    recDef(recordDef), name(), nativeType(TRK_FIELD_TYPE_NONE),  cashedChoiceList(new TQChoiceList()),
     vid(fieldVID),
       nullable(false), minValue(0), maxValue(INT_MAX)
 {
@@ -3100,23 +3182,23 @@ TrkFieldDef::TrkFieldDef(TQRecordTypeDef *recordDef, int fieldVID)
 
 TrkFieldDef::TrkFieldDef(const TrkFieldDef &src)
     : //AbstractFieldDef(src)
-    recDef(src.recDef), name(src.name), nativeType(src.nativeType), cashedChoiceList(new ChoiceList(*src.cashedChoiceList)),
+    recDef(src.recDef), name(src.name), nativeType(src.nativeType), cashedChoiceList(new TQChoiceList(*src.cashedChoiceList)),
       nullable(src.nullable), minValue(src.minValue), maxValue(src.maxValue), defaultValue(src.defaultValue),
     vid(src.vid)
 {
 
 }
 
-ChoiceList TrkFieldDef::choiceList() const
+TQChoiceList TrkFieldDef::choiceList() const
 {
     if(!isChoice())
-        return QList<TrkToolChoice>();
+        return QList<TQChoiceItem>();
 
     if(recDef && !cashedChoiceList->count())
     {
         if(isNullable())
         {
-            TrkToolChoice ch;
+            TQChoiceItem ch;
             ch.displayText="";
             ch.fieldValue=QVariant();
             ch.order = 0;
@@ -3134,7 +3216,7 @@ QStringList TrkFieldDef::choiceStringList(bool isDisplayText) const
 {
     QStringList list;
     //const ChoiceList &chList = choiceList();
-    foreach(const TrkToolChoice &item, choiceList())
+    foreach(const TQChoiceItem &item, choiceList())
     {
         if(isDisplayText)
             list.append(item.displayText);
@@ -3179,9 +3261,9 @@ TQRecordTypeDef::~TQRecordTypeDef()
 {
     clearFieldDefs();
     nameVids.clear();
-    QHash<QString, ChoiceList *>::iterator i = choices.begin();
+    QHash<QString, TQChoiceList *>::iterator i = choices.begin();
     while (i != choices.end()) {
-        ChoiceList *list = i.value();
+        TQChoiceList *list = i.value();
         i++;
         delete list;
     }
@@ -3364,7 +3446,7 @@ ChoiceList TQRecordTypeDef::choiceList(const QString &fieldName) const
 }
 */
 
-ChoiceList TQRecordTypeDef::choiceTable(const QString &tableName) const
+TQChoiceList TQRecordTypeDef::choiceTable(const QString &tableName) const
 {
     const char *ttag = "Table_";
     if(choices.contains(tableName))
@@ -3375,14 +3457,15 @@ ChoiceList TQRecordTypeDef::choiceTable(const QString &tableName) const
     {
 //        if(!userChoices.isEmpty())
 //            return userChoices;
-        ChoiceList res;
+        TQChoiceList res;
         int order = 0;
-        QMap<QString, QString>::const_iterator i;
+        QMap<QString, TQUser>::const_iterator i;
         for (i = prj->userList.constBegin(); i != prj->userList.constEnd(); ++i)
         {
-            TrkToolChoice item;
+            TQChoiceItem item;
+            item.id = i.value().id;
             item.fieldValue = i.key();
-            item.displayText = i.value();
+            item.displayText = i.value().displayName;
             item.order = ++order;
             item.weight = 1;
             res.append(item);
@@ -3394,10 +3477,10 @@ ChoiceList TQRecordTypeDef::choiceTable(const QString &tableName) const
         QString fName = tableName.mid(QString(ttag).length());
 //        return choiceList(fName);
         if(fName.isEmpty())
-            return ChoiceList();
+            return TQChoiceList();
         if(!choices.contains(tableName))
         {
-            ChoiceList *list = prj->fieldChoiceList(fName, recType);
+            TQChoiceList *list = prj->fieldChoiceList(fName, recType);
             choices.insert(tableName, list);
             return *list;
         }
@@ -3463,8 +3546,8 @@ QString TQRecordTypeDef::valueToDisplay(int vid, const QVariant &value) const
         QString table = fieldChoiceTable(vid);
         if(table.isEmpty())
             return "";
-        ChoiceList list = choiceTable(table);
-        foreach(const TrkToolChoice &c, list)
+        TQChoiceList list = choiceTable(table);
+        foreach(const TQChoiceItem &c, list)
         {
             if(c.fieldValue == value)
                 return c.displayText;
@@ -3501,8 +3584,8 @@ QVariant TQRecordTypeDef::displayToValue(int vid, const QString &text) const
         QString table = fieldChoiceTable(vid);
         if(!table.isEmpty())
         {
-            ChoiceList list = choiceTable(table);
-            foreach(const TrkToolChoice &c, list)
+            TQChoiceList list = choiceTable(table);
+            foreach(const TQChoiceItem &c, list)
             {
                 if(c.displayText.compare(text,Qt::CaseInsensitive) == 0)
                     return c.fieldValue;
@@ -3571,6 +3654,22 @@ QStringList TQRecordTypeDef::noteTitleList() const
 TrkToolProject *TQRecordTypeDef::project() const
 {
     return prj;
+}
+
+int TQRecordTypeDef::fieldVidByInternalId(int id) const
+{
+    foreach(const TrkFieldDef *fDef, fieldDefs)
+        if(fDef->internalId == id)
+            return fDef->vid;
+    return 0;
+}
+
+int TQRecordTypeDef::fieldInternalIdByVid(int vid) const
+{
+    const TrkFieldDef *fDef = fieldDefs.value(vid,0);
+    if(!fDef)
+        return 0;
+    return fDef->internalId;
 }
 
 // ============ TrkScopeRecHandle =================

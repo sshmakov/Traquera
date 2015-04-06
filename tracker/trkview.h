@@ -55,6 +55,7 @@ class TrkToolProject;
 class TrkToolModel;
 
 
+/*
 struct TQUser {
     QString userName;
     QString fullName;
@@ -62,13 +63,14 @@ struct TQUser {
 };
 
 typedef QList<TQUser> UserList;
+*/
 
 class TQRecordTypeDef;
 
 class TrkFieldDef //: public AbstractFieldDef
 {
 protected:
-    mutable ChoiceList *cashedChoiceList;
+    mutable TQChoiceList *cashedChoiceList;
 //    QString choiceName;
     TQRecordTypeDef *recDef;
     int vid;
@@ -80,6 +82,7 @@ protected:
     int minValue;
     int maxValue;
     QVariant defaultValue;
+    int internalId;
     //const ChoiceList *userList();
 
     TrkFieldDef(TQRecordTypeDef *recordDef, int fieldVID);
@@ -109,7 +112,7 @@ public:
     }
     */
 
-    ChoiceList choiceList() const;
+    TQChoiceList choiceList() const;
 //    QString choiceListName() const;
     QStringList choiceStringList(bool isDisplayText = true) const;
 
@@ -265,11 +268,11 @@ protected:
     TrkVidDefs fieldDefs;
     QHash<int, QString> baseFields;
     QHash<QString, int> nameVids;
-    mutable QHash<QString, ChoiceList *> choices; // by tableName
+    mutable QHash<QString, TQChoiceList *> choices; // by tableName
     void clearFieldDefs();
-    ChoiceList userChoices;
+    TQChoiceList userChoices;
 private:
-    ChoiceList emptyChoices;
+    TQChoiceList emptyChoices;
 public:
     TQRecordTypeDef(TrkToolProject *project = 0);
     ~TQRecordTypeDef();
@@ -286,7 +289,7 @@ public:
     bool hasChoiceList(int vid) const;
     //ChoiceList choiceList(int vid) const;
 //    ChoiceList choiceList(const QString &fieldName) const;
-    ChoiceList choiceTable(const QString &tableName) const;
+    TQChoiceList choiceTable(const QString &tableName) const;
 
 
     bool containFieldVid(int vid) const;
@@ -306,6 +309,8 @@ public:
     QStringList noteTitleList() const;
 
     TrkToolProject *project() const;
+    int fieldVidByInternalId(int id) const;
+    int fieldInternalIdByVid(int vid) const;
 
 
     friend class TrkToolProject;
@@ -360,7 +365,7 @@ protected:
     virtual QVariant displayColData(const TrkQuery &rec, int col) const;
 };
 
-
+class QSqlDatabase;
 class TrkToolProject;
 
 class TrkToolDB: public TQAbstractDB
@@ -372,6 +377,7 @@ public:
 //	QString dbmsName, dbmsUser, dbmsPassword;
 	TrkToolDB(QObject *parent = 0);
 	~TrkToolDB();
+    void setDbmsType(const QString &dbType);
     virtual QStringList dbmsTypes();
     virtual QString dbmsServer() const;
     virtual QStringList projects(const QString &dbmsType);
@@ -381,9 +387,12 @@ public:
         const QString &pass = QString());
     TQAbstractProject *getProject(const QString &projectName);
 protected:
+    QSqlDatabase openSqlDatabase();
+protected:
 	QStringList dbmsTypeList;
 	QHash<QString, QStringList> projectList; // by DBMStype
 	static QHash<QString, TrkToolProject *> openedProjects;
+    QString odbcDSN, odbcServer;
     friend class TrkToolProject;
 };
 
@@ -401,14 +410,13 @@ public:
     int links;
 };
 
-
-
 class TrkToolProject: public TQAbstractProject
 {
     Q_OBJECT
     Q_PROPERTY(QString name READ projectName)
 private:
     TRK_HANDLE handle;
+    QString dbName;
 protected:
     QString name;
     TrkToolDB *db;
@@ -421,7 +429,7 @@ protected:
     QHash<int, TrkToolQryModel *> theQueryModel;
     QHash<TRK_RECORD_TYPE, TQSelectedSet> selected;
     QHash<TRK_RECORD_TYPE, TrkToolModel*> selectedModels;
-    QMap<QString, QString> userList;
+    QMap<QString, TQUser> userList;
     QString user;
     QStringList noteTitles;
 protected: // Work with record handlers
@@ -476,7 +484,9 @@ public:
     virtual QDomDocument recordTypeDefDoc(int rectype);
     virtual TQRecord *recordOfIndex(const QModelIndex &index);
     virtual bool isSystemModel(QAbstractItemModel *model) const;
+    virtual TQQueryDef * queryDefinition(const QString &queryName, int rectype);
 protected:
+    void readProjectDatabaseName();
     /* Model manipulations */
     bool fillModel(TrkToolModel *model, const QString &queryName, int type,
                    qint64 afterTransId = 0);
@@ -518,7 +528,7 @@ private:
     QStringList doGetHistoryList(TRK_RECORD_HANDLE recHandle);
     //QString doFieldVID2Name(TRK_RECORD_TYPE rectype, TRK_VID vid);
 protected:
-    ChoiceList *fieldChoiceList(const QString &name, int recType);
+    TQChoiceList *fieldChoiceList(const QString &name, int recType);
     bool login(
         const QString &user,
         const QString &pass,

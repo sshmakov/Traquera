@@ -590,6 +590,11 @@
     <string>Ctrl+N</string>
    </property>
   </action>
+  <action name="actionEditQuery">
+   <property name="text">
+    <string>Изменить запрос...</string>
+   </property>
+  </action>
  </widget>
  <resources>
   <include location="../resources/tracks.qrc"/>

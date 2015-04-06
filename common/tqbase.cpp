@@ -280,6 +280,11 @@ bool TQBaseProject::saveFileFromRecord(TQRecord *record, int fileIndex, const QS
     return false;
 }
 
+TQQueryDef *TQBaseProject::queryDefinition(const QString &queryName, int rectype)
+{
+    return 0;
+}
+
 //========================= TQRecord ==================================
 TQRecord::TQRecord()
     :QObject(0), m_prj(0), recType(0), recMode(TQRecord::View), recId(0), links(0)

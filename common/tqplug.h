@@ -32,23 +32,26 @@ enum TQFieldType {
     TQ_FIELD_TYPE_USER			= 7};
 */
 
-class TrkToolChoice {
+class TQChoiceItem {
 public:
     QString displayText;
     QVariant fieldValue;
+    int id;
     int weight;
     int order;
-    TrkToolChoice() {}
-    TrkToolChoice(const TrkToolChoice &src)
-        :displayText(src.displayText), fieldValue(src.fieldValue), order(src.order), weight(src.weight)
+    TQChoiceItem()
+        :order(0), weight(0), id(0)
     {}
-    ~TrkToolChoice() {}
+    TQChoiceItem(const TQChoiceItem &src)
+        :displayText(src.displayText), fieldValue(src.fieldValue), order(src.order), weight(src.weight), id(src.id)
+    {}
+    ~TQChoiceItem() {}
     //TRK_UINT res;
 };
 
 typedef QHash<QString, QVariant> FieldValues;
 
-typedef QList<TrkToolChoice> ChoiceList;
+typedef QList<TQChoiceItem> TQChoiceList;
 
 class TQAbstractFieldType;
 
@@ -76,7 +79,7 @@ public:
     virtual bool hasChoiceList(int vid) const = 0;
     //virtual ChoiceList choiceList(int vid) const = 0;
     //virtual ChoiceList choiceList(const QString &fieldName) const = 0;
-    virtual ChoiceList choiceTable(const QString &tableName) const = 0;
+    virtual TQChoiceList choiceTable(const QString &tableName) const = 0;
     virtual bool containFieldVid(int vid) const = 0;
     virtual int fieldVid(const QString &name) const = 0;
     virtual QList<int> fieldVids() const = 0;
@@ -342,17 +345,17 @@ public:
         return QString();
     }
 
-    virtual ChoiceList choiceList() const
+    virtual TQChoiceList choiceList() const
     {
         if(isValid())
         {
             QString table = choiceTableName();
             if(!table.isEmpty())
             {
-                ChoiceList res;
+                TQChoiceList res;
                 if(isNullable())
                 {
-                    TrkToolChoice ch;
+                    TQChoiceItem ch;
                     ch.displayText="";
                     ch.fieldValue=QVariant();
                     ch.order = 0;
@@ -363,7 +366,7 @@ public:
                 return res;
             }
         }
-        return QList<TrkToolChoice>(); //&AbstractFieldDef::emptyChoices;
+        return QList<TQChoiceItem>(); //&AbstractFieldDef::emptyChoices;
     }
 
     virtual QStringList choiceStringList(bool isDisplayText = true) const
@@ -371,7 +374,7 @@ public:
         QStringList res;
         if(isValid())
         {
-            foreach(const TrkToolChoice &ch, choiceList())
+            foreach(const TQChoiceItem &ch, choiceList())
                 if(isDisplayText)
                     res.append(ch.displayText);
                 else

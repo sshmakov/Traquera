@@ -119,6 +119,23 @@ TRKAPI TrkGetNextChange( //@12
                          TRK_STR					changes);				// Output
 
 
+TRKAPI TrkGetNextChoiceInternal( //@24
+                                 TRK_HANDLE	trkHandle,				// Input
+                                 TRK_UINT	bufferSize,				// Input
+                                 TRK_STR	label,			// Output
+                                 TRK_UINT	FAR *id,				// Input
+                                 TRK_UINT	FAR *order,				// Input
+                                 TRK_UINT	FAR *weight				// Input
+                                 );
+
+TRKAPI TrkGetNextUserInternal( //@20
+                               TRK_HANDLE					trkHandle,				// Input
+                               TRK_UINT					bufferSize,				// Input
+                               TRK_STR						userName,				// Output
+                               TRK_UINT	FAR *id,				// Input
+                               TRK_UINT	FAR *order				// Input
+);
+
 //_TrkHandleAlloc@8
 //_TrkHandleFree@4
 //_TrkProjectLogin@36

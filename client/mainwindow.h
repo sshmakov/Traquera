@@ -228,6 +228,7 @@ private slots:
     void on_actionNewRequest_triggered();
     void on_btnService_clicked();
     void on_actionClose_Project_triggered();
+    void on_actionEditQuery_triggered();
 };
 
 #endif

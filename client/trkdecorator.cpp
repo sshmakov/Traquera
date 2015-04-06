@@ -72,7 +72,7 @@ void TrkDecorator::fillEditPanels(QTabWidget *tabs, const TQAbstractRecordTypeDe
                         //ie = new QLineEdit();
                         //c->setLineEdit(ie);
                         //c->setEditable(false);
-                        TrkToolChoice choice;
+                        TQChoiceItem choice;
                         foreach(choice,fdef.choiceList())
                         {
                             c->addItem(choice.displayText, choice.fieldValue /*  QVariant((int)(choice.order)) */);

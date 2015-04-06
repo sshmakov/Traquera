@@ -18,6 +18,7 @@ TrkConnect::TrkConnect(QWidget *parent)
     dbClassComboBox->addItems(TQAbstractDB::registeredDbClasses());
 }
 
+/*
 TrkDb * TrkConnect::connectTracker()
 {
 	TrkConnect *d = new TrkConnect();
@@ -38,6 +39,7 @@ TrkDb * TrkConnect::connectTracker()
 	settings->setValue("TrackerUser",d->userEdit->text());
     return res;
 }
+*/
 
 QString TrkConnect::dbClass()
 {
@@ -182,7 +184,7 @@ void TrkConnect::showProjectsMenu()
     */
 }
 
-
+/*
 void TrkConnect::reloadProjects()
 {
 	db.close();
@@ -197,13 +199,12 @@ void TrkConnect::reloadProjects()
 	QSqlQuery query(db);
 	query.exec("select prjDescr from trkmaster.dbo.trkprj");
     projectEdit->clear();
-    /*
-	while(query.next())
-	{
-		prjBox->addItem(query.value(0).toString());
-    }
-    */
+//	while(query.next())
+//	{
+//		prjBox->addItem(query.value(0).toString());
+//    }
 }
+*/
 
 void TrkConnect::setDBType(const QString &type)
 {

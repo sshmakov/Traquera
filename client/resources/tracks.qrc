@@ -38,6 +38,10 @@
         <file>plan.png</file>
         <file>trackerTable.png</file>
         <file>closetab_1.png</file>
+        <file>down.png</file>
+        <file>up.png</file>
+        <file>list-add.png</file>
+        <file>list-remove.png</file>
     </qresource>
     <qresource prefix="/sql">
         <file>upgrade1.sql</file>

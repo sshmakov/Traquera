@@ -11,7 +11,7 @@ protected:
     QDialogButtonBox::StandardButton m_btn;
 public:
 	TrkConnect(QWidget *parent=0);
-	static TrkDb *connectTracker();
+//	static TrkDb *connectTracker();
 
     QString dbClass();
     QString dbType();
@@ -30,7 +30,7 @@ protected:
     void showDBTypesMenu();
     void showProjectsMenu();
 public slots:
-	void reloadProjects();
+//	void reloadProjects();
     void setDBType(const QString &type);
     void setProject(const QString &project);
 private slots:
