@@ -83,9 +83,10 @@ TRKAPI TrkGetQueryIsPublic( //@12
 
 
 TRKAPI TrkInitNoteTitleList( //@4
-                             TRK_HANDLE					trkHandle);				// Input
+                             TRK_NOTE_HANDLE					trkHandle				// Input
+                             );
 TRKAPI TrkGetNextNoteTitle( //@16
-                            TRK_HANDLE					trkHandle,				// Input
+                            TRK_NOTE_HANDLE					trkHandle,				// Input
                             TRK_UINT					bufferSize,				// Input
                             TRK_STR						noteTitle,				// Output
                             TRK_UINT FAR*				unknown);				// Output

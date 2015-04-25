@@ -562,10 +562,10 @@ bool TrkToolProject::login(const QString &user,
 		name = project;
         this->user = user;
         readProjectDatabaseName();
+        readNoteTitles();
         readUserList();
         readQueryList();
 		readDefs();
-        readNoteTitles();
 	}
     else
 #ifdef CONSOLE_APP
@@ -583,7 +583,7 @@ void TrkToolProject::close()
 	TrkHandleFree(&handle);
 	TrkHandleAlloc(TRK_VERSION_ID, &handle);
 	recordTypes.clear();
-    foreach(TQRecordTypeDef *p, recordDef)
+    foreach(TrkRecordTypeDef *p, recordDef)
 		delete p;
     recordDef.clear();
 	opened = false;
@@ -635,7 +635,7 @@ bool TrkToolProject::readDefs()
         recType = ri.key();
         if(!recordDef.contains(ri.key()))
         {
-            recordDef[ri.key()] = new TQRecordTypeDef(this);
+            recordDef[ri.key()] = new TrkRecordTypeDef(this);
             recordDef[ri.key()]->recType = ri.key();
         }
         TrkVidDefs def;
@@ -651,7 +651,7 @@ bool TrkToolProject::readDefs()
                 TRK_BOOL nullValid=0;
                 TrkGetFieldIsNullValid(handle,bufname,ri.key(), &nullValid);
                 recordDef[ri.key()]->nameVids[fieldName] = vid;
-                TQRecordTypeDef *rDef = recordDef[ri.key()];
+                TrkRecordTypeDef *rDef = recordDef[ri.key()];
                 TrkFieldDef *id = new TrkFieldDef(rDef,vid);
                 id->name = fieldName;
                 id->nativeType = fType;
@@ -745,7 +745,7 @@ bool TrkToolProject::readDefs()
 
 void TrkToolProject::readUserList()
 {
-    userList.clear();
+    m_userList.clear();
     if(isTrkOK(TrkInitUserList(handle)))
     {
         char userName[1024];
@@ -763,7 +763,7 @@ void TrkToolProject::readUserList()
             else
                 item.fullName = item.login;
             item.displayName = item.fullName;
-            userList.insert(item.login,item);
+            m_userList.insert(item.login,item);
         }
     }
 }
@@ -771,7 +771,7 @@ void TrkToolProject::readUserList()
 void TrkToolProject::readNoteTitles()
 {
     noteTitles.clear();
-//    QXmlSimpleReader xmlReader;
+/*
     QFile file("data/tracker.xml");
     QXmlInputSource source(&file);
     QDomDocument dom;
@@ -789,17 +789,24 @@ void TrkToolProject::readNoteTitles()
         }
     }
 
-/*
-    if(isTrkOK(TrkInitNoteTitleList(handle)))
+*/
+
+    TrkScopeRecHandle recHandle(this);
+//    if(!isTrkOK(TrkNewRecordBegin(*recHandle,defaultRecType())))
+//        return;
+    TrkScopeNoteHandle noteHandle(*recHandle);
+//    TRK_RECORD_HANDLE rr = (TRK_RECORD_HANDLE)defaultRecType();
+
+    if(isTrkOK(TrkInitNoteTitleList(*noteHandle)))
     {
         char buf[1024];
-        TRK_UINT unk;
-        while(TRK_SUCCESS == TrkGetNextNoteTitle(handle, sizeof(buf), buf, &unk))
+        TRK_UINT type; // 1 - user title, 2 - system title
+        while(TRK_SUCCESS == TrkGetNextNoteTitle(*noteHandle, sizeof(buf), buf, &type))
         {
             noteTitles.append(buf);
         }
     }
-    */
+//    TrkRecordCancelTransaction(*recHandle);
 }
 
 void TrkToolProject::initQueryModel(int type)
@@ -862,12 +869,12 @@ TQChoiceList *TrkToolProject::fieldChoiceList(const QString &name, int recType)
              || (fType == TRK_FIELD_TYPE_USER))
     {
         int order = 0;
-        foreach(const QString &login, userList.keys())
+        foreach(const QString &login, m_userList.keys())
         {
             TQChoiceItem ch;
             ch.id = 0;
             ch.fieldValue = login;
-            ch.displayText = userList[login].displayName;
+            ch.displayText = m_userList[login].displayName;
             ch.order = ++order;
             ch.weight = 1;
             list->append(ch);
@@ -899,7 +906,7 @@ TQChoiceList *TrkToolProject::fieldChoiceList(const QString &name, int recType)
 
 int TrkToolProject::fieldNativeType(const QString &name, int recType)
 {
-    const TQRecordTypeDef *rdef = recordDef[recType];
+    const TrkRecordTypeDef *rdef = recordDef[recType];
     TRK_FIELD_TYPE fType = rdef->fieldNativeType(name);
     return fType;
 }
@@ -947,8 +954,8 @@ QString TrkToolProject::userFullName(const QString &login)
     QString res;
     if(login.isEmpty())
         return res;
-    else if(userList.contains(login))
-        res = userList[login].fullName;
+    else if(m_userList.contains(login))
+        res = m_userList[login].fullName;
     else
     {
         char buf[256];
@@ -1097,7 +1104,7 @@ static QString nextCItem(QString &str)
 
 TQQueryDef *TrkToolProject::queryDefinition(const QString &queryName, int rectype)
 {
-    TQRecordTypeDef *recDef = recordDef.value(rectype);
+    TrkRecordTypeDef *recDef = recordDef.value(rectype);
     if(!recDef)
         return 0;
     QString str;
@@ -1148,6 +1155,33 @@ TQQueryDef *TrkToolProject::queryDefinition(const QString &queryName, int rectyp
     }
     return QString();
     */
+}
+
+QStringList TrkToolProject::userNames()
+{
+    QStringList names;
+    foreach(const TQUser &user, m_userList)
+        names.append(user.fullName);
+    return names;
+}
+
+QMap<QString, TQUser> TrkToolProject::userList()
+{
+    return m_userList;
+}
+
+QString TrkToolProject::userFullName(int userId)
+{
+    QString login = userLogin(userId);
+    return userFullName(login);
+}
+
+QString TrkToolProject::userLogin(int userId)
+{
+    foreach(const TQUser &user, userList())
+        if(user.id == userId)
+            return user.login;
+    return QString();
 }
 
 void TrkToolProject::readProjectDatabaseName()
@@ -1789,7 +1823,7 @@ QStringList TrkToolProject::historyList(TQRecord *record)
 
 QHash<int, QString> TrkToolProject::baseRecordFields(int rectype)
 {
-    TQRecordTypeDef *def = recordDef[rectype];
+    TrkRecordTypeDef *def = recordDef[rectype];
     return def->baseFields;
 }
 
@@ -2074,7 +2108,7 @@ QString TrkToolProject::doFieldVID2Name(TRK_RECORD_TYPE rectype, TRK_VID vid)
 
 QString TrkToolProject::fieldVID2Name(int rectype, int vid)
 {
-    TQRecordTypeDef* def = recordDef.value(rectype,0);
+    TrkRecordTypeDef* def = recordDef.value(rectype,0);
     if(def && def->fieldDefs.contains(vid))
         return def->fieldDefs[vid]->name;
     return QString();
@@ -2082,7 +2116,7 @@ QString TrkToolProject::fieldVID2Name(int rectype, int vid)
 
 int TrkToolProject::fieldName2VID(int rectype, const QString &fname)
 {
-    TQRecordTypeDef* def = recordDef.value(rectype,0);
+    TrkRecordTypeDef* def = recordDef.value(rectype,0);
     if(!def)
         return 0;
     NameVid & nv = recordDef[rectype]->nameVids;
@@ -3171,7 +3205,7 @@ QVariant TrkToolQryModel::displayColData(const TrkQuery &rec, int col) const
 
 //ChoiceList TrkFieldDef::emptyChoices;
 
-TrkFieldDef::TrkFieldDef(TQRecordTypeDef *recordDef, int fieldVID)
+TrkFieldDef::TrkFieldDef(TrkRecordTypeDef *recordDef, int fieldVID)
     : //AbstractFieldDef(recordDef, fieldVID)
     recDef(recordDef), name(), nativeType(TRK_FIELD_TYPE_NONE),  cashedChoiceList(new TQChoiceList()),
     vid(fieldVID),
@@ -3192,7 +3226,7 @@ TrkFieldDef::TrkFieldDef(const TrkFieldDef &src)
 TQChoiceList TrkFieldDef::choiceList() const
 {
     if(!isChoice())
-        return QList<TQChoiceItem>();
+        return TQChoiceList();
 
     if(recDef && !cashedChoiceList->count())
     {
@@ -3246,18 +3280,18 @@ QVariant TrkFieldDef::displayToValue(const QString &text) const
     return recDef->displayToValue(vid, text);
 }
 
-TQRecordTypeDef *TrkFieldDef::recordDef() const
+TrkRecordTypeDef *TrkFieldDef::recordDef() const
 {
-    return (TQRecordTypeDef *)recDef;
+    return (TrkRecordTypeDef *)recDef;
 }
 
 // ================ RecordTypeDef =================
-TQRecordTypeDef::TQRecordTypeDef(TrkToolProject *project)
+TrkRecordTypeDef::TrkRecordTypeDef(TrkToolProject *project)
     : QObject(project), prj(project), fieldDefs(), nameVids(), recType(-1), isReadOnly(true), choices()
 {}
 //RecordTypeDef(const RecordTypeDef & src): prj(src.prj), fieldDefs(src.fieldDefs), nameVids(src.nameVids) {}
 
-TQRecordTypeDef::~TQRecordTypeDef()
+TrkRecordTypeDef::~TrkRecordTypeDef()
 {
     clearFieldDefs();
     nameVids.clear();
@@ -3270,7 +3304,7 @@ TQRecordTypeDef::~TQRecordTypeDef()
     choices.clear();
 }
 
-int TQRecordTypeDef::roleVid(int role) const
+int TrkRecordTypeDef::roleVid(int role) const
 {
     switch(role)
     {
@@ -3292,7 +3326,7 @@ int TQRecordTypeDef::roleVid(int role) const
     return 0;
 }
 
-void TQRecordTypeDef::clearFieldDefs()
+void TrkRecordTypeDef::clearFieldDefs()
 {
     TrkVidDefs::iterator i;
     while((i = fieldDefs.begin()) != fieldDefs.end())
@@ -3305,7 +3339,7 @@ void TQRecordTypeDef::clearFieldDefs()
 }
 
 
-QStringList TQRecordTypeDef::fieldNames() const
+QStringList TrkRecordTypeDef::fieldNames() const
 {
     return nameVids.keys();
     /*
@@ -3319,7 +3353,7 @@ QStringList TQRecordTypeDef::fieldNames() const
     return res;
     */
 }
-TQAbstractFieldType TQRecordTypeDef::getFieldType(int vid, bool *ok) const
+TQAbstractFieldType TrkRecordTypeDef::getFieldType(int vid, bool *ok) const
 {
     bool res = fieldDefs.contains(vid);
     if(ok)
@@ -3328,13 +3362,13 @@ TQAbstractFieldType TQRecordTypeDef::getFieldType(int vid, bool *ok) const
         return TQAbstractFieldType();
     return TQAbstractFieldType(this,vid);
 }
-TQAbstractFieldType TQRecordTypeDef::getFieldType(const QString &name, bool *ok) const
+TQAbstractFieldType TrkRecordTypeDef::getFieldType(const QString &name, bool *ok) const
 {
     TRK_VID vid = nameVids[name];
     return getFieldType(vid,ok);
 }
 
-int TQRecordTypeDef::fieldNativeType(const QString &name) const
+int TrkRecordTypeDef::fieldNativeType(const QString &name) const
 {
     TRK_VID vid = fieldVid(name);
     return fieldNativeType(vid);
@@ -3356,7 +3390,7 @@ int RecordTypeDef::fieldNativeType(const QString &name) const // not work????
 }
 */
 
-int TQRecordTypeDef::fieldNativeType(int vid) const
+int TrkRecordTypeDef::fieldNativeType(int vid) const
 {
     const TrkFieldDef *fdef = fieldDefs.value(vid,0);
     if(fdef)
@@ -3364,7 +3398,7 @@ int TQRecordTypeDef::fieldNativeType(int vid) const
     return TRK_FIELD_TYPE_NONE;
 }
 
-int TQRecordTypeDef::fieldSimpleType(int vid) const
+int TrkRecordTypeDef::fieldSimpleType(int vid) const
 {
     int native = fieldNativeType(vid);
     switch(native)
@@ -3392,24 +3426,24 @@ int TQRecordTypeDef::fieldSimpleType(int vid) const
 }
 
 
-bool TQRecordTypeDef::canFieldSubmit(int vid) const
+bool TrkRecordTypeDef::canFieldSubmit(int vid) const
 {
     return prj->canFieldSubmit(vid, recType);
 }
 
-bool TQRecordTypeDef::canFieldUpdate(int vid) const
+bool TrkRecordTypeDef::canFieldUpdate(int vid) const
 {
     return prj->canFieldUpdate(vid, recType);
 }
 
-bool TQRecordTypeDef::isNullable(int vid) const
+bool TrkRecordTypeDef::isNullable(int vid) const
 {
     if(fieldDefs.contains(vid))
         return fieldDefs.value(vid)->nullable;
     return false;
 }
 
-bool TQRecordTypeDef::hasChoiceList(int vid) const
+bool TrkRecordTypeDef::hasChoiceList(int vid) const
 {
     switch(fieldNativeType(vid))
     {
@@ -3446,7 +3480,7 @@ ChoiceList TQRecordTypeDef::choiceList(const QString &fieldName) const
 }
 */
 
-TQChoiceList TQRecordTypeDef::choiceTable(const QString &tableName) const
+TQChoiceList TrkRecordTypeDef::choiceTable(const QString &tableName) const
 {
     const char *ttag = "Table_";
     if(choices.contains(tableName))
@@ -3460,7 +3494,7 @@ TQChoiceList TQRecordTypeDef::choiceTable(const QString &tableName) const
         TQChoiceList res;
         int order = 0;
         QMap<QString, TQUser>::const_iterator i;
-        for (i = prj->userList.constBegin(); i != prj->userList.constEnd(); ++i)
+        for (i = prj->m_userList.constBegin(); i != prj->m_userList.constEnd(); ++i)
         {
             TQChoiceItem item;
             item.id = i.value().id;
@@ -3489,7 +3523,7 @@ TQChoiceList TQRecordTypeDef::choiceTable(const QString &tableName) const
     return emptyChoices;
 }
 
-bool TQRecordTypeDef::containFieldVid(int vid) const
+bool TrkRecordTypeDef::containFieldVid(int vid) const
 {
     return fieldDefs.contains(vid);
 }
@@ -3501,12 +3535,12 @@ QList<TRK_VID> RecordTypeDef::fieldVids() const
 }
 */
 
-int TQRecordTypeDef::fieldVid(const QString &name) const
+int TrkRecordTypeDef::fieldVid(const QString &name) const
 {
     return nameVids.value(name);
 }
 
-QList<int> TQRecordTypeDef::fieldVids() const
+QList<int> TrkRecordTypeDef::fieldVids() const
 {
     QList<int> vids;
     foreach(int vid, nameVids.values())
@@ -3514,24 +3548,24 @@ QList<int> TQRecordTypeDef::fieldVids() const
     return vids;
 }
 
-int TQRecordTypeDef::recordType() const
+int TrkRecordTypeDef::recordType() const
 {
     return recType;
 }
 
-QString TQRecordTypeDef::fieldName(int vid) const
+QString TrkRecordTypeDef::fieldName(int vid) const
 {
     if(fieldDefs.contains(vid))
         return fieldDefs.value(vid)->name;
     return QString();
 }
 
-QIODevice *TQRecordTypeDef::defineSource() const
+QIODevice *TrkRecordTypeDef::defineSource() const
 {
     return new QFile("data/tracker.xml");
 }
 
-QString TQRecordTypeDef::valueToDisplay(int vid, const QVariant &value) const
+QString TrkRecordTypeDef::valueToDisplay(int vid, const QVariant &value) const
 {
     QDateTime dt;
     switch(fieldNativeType(vid))
@@ -3566,7 +3600,7 @@ QString TQRecordTypeDef::valueToDisplay(int vid, const QVariant &value) const
     return value.toString();
 }
 
-QVariant TQRecordTypeDef::displayToValue(int vid, const QString &text) const
+QVariant TrkRecordTypeDef::displayToValue(int vid, const QString &text) const
 {
     QDateTime dt;
     switch(fieldNativeType(vid))
@@ -3607,7 +3641,7 @@ QVariant TQRecordTypeDef::displayToValue(int vid, const QString &text) const
     return text;
 }
 
-QVariant TQRecordTypeDef::fieldDefaultValue(int vid) const
+QVariant TrkRecordTypeDef::fieldDefaultValue(int vid) const
 {
     const TrkFieldDef *fDef = fieldDefs.value(vid,0);
     if(!fDef)
@@ -3615,7 +3649,7 @@ QVariant TQRecordTypeDef::fieldDefaultValue(int vid) const
     return fDef->defaultValue;
 }
 
-QVariant TQRecordTypeDef::fieldMinValue(int vid) const
+QVariant TrkRecordTypeDef::fieldMinValue(int vid) const
 {
     const TrkFieldDef *fDef = fieldDefs.value(vid,0);
     if(!fDef)
@@ -3623,7 +3657,7 @@ QVariant TQRecordTypeDef::fieldMinValue(int vid) const
     return fDef->minValue;
 }
 
-QVariant TQRecordTypeDef::fieldMaxValue(int vid) const
+QVariant TrkRecordTypeDef::fieldMaxValue(int vid) const
 {
     const TrkFieldDef *fDef = fieldDefs.value(vid,0);
     if(!fDef)
@@ -3631,7 +3665,7 @@ QVariant TQRecordTypeDef::fieldMaxValue(int vid) const
     return fDef->maxValue;
 }
 
-QString TQRecordTypeDef::fieldChoiceTable(int vid) const
+QString TrkRecordTypeDef::fieldChoiceTable(int vid) const
 {
     const TrkFieldDef *fDef = fieldDefs.value(vid,0);
     if(!fDef || !fDef->isChoice())
@@ -3641,22 +3675,22 @@ QString TQRecordTypeDef::fieldChoiceTable(int vid) const
     return "Table_" + fDef->name;
 }
 
-QString TQRecordTypeDef::dateTimeFormat() const
+QString TrkRecordTypeDef::dateTimeFormat() const
 {
     return TT_DATETIME_FORMAT;
 }
 
-QStringList TQRecordTypeDef::noteTitleList() const
+QStringList TrkRecordTypeDef::noteTitleList() const
 {
     return project()->noteTitleList();
 }
 
-TrkToolProject *TQRecordTypeDef::project() const
+TrkToolProject *TrkRecordTypeDef::project() const
 {
     return prj;
 }
 
-int TQRecordTypeDef::fieldVidByInternalId(int id) const
+int TrkRecordTypeDef::fieldVidByInternalId(int id) const
 {
     foreach(const TrkFieldDef *fDef, fieldDefs)
         if(fDef->internalId == id)
@@ -3664,7 +3698,7 @@ int TQRecordTypeDef::fieldVidByInternalId(int id) const
     return 0;
 }
 
-int TQRecordTypeDef::fieldInternalIdByVid(int vid) const
+int TrkRecordTypeDef::fieldInternalIdByVid(int vid) const
 {
     const TrkFieldDef *fDef = fieldDefs.value(vid,0);
     if(!fDef)

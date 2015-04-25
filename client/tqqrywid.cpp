@@ -128,11 +128,11 @@ void TQQueryWidget::refreshControls()
     ui->btnRemove->setEnabled(cond);
     if(!cond)
         return;
-    ui->rbAnd->setChecked(cond->isAnd);
-    ui->rbOr->setChecked(!cond->isAnd);
-    ui->cbOpenBracket->setChecked(cond->isOpenBracket);
-    ui->cbNot->setChecked(cond->isNot);
-    ui->cbCloseBracket->setChecked(cond->isCloseBracket);
+    ui->rbAnd->setChecked(!cond->isOr());
+    ui->rbOr->setChecked(cond->isOr());
+    ui->cbOpenBracket->setChecked(cond->isOpenBracket());
+    ui->cbNot->setChecked(cond->isNot());
+    ui->cbCloseBracket->setChecked(cond->isCloseBracket());
 }
 
 void TQQueryWidget::on_lwCond_itemActivated(QListWidgetItem *item)
@@ -170,7 +170,7 @@ void TQQueryWidget::on_rbAnd_clicked(bool checked)
     TQCond *cond = currentCondition();
     if(!cond)
         return;
-    cond->isAnd = checked;
+    cond->setIsOr(!checked);
     refreshCondLine(cond);
 }
 
@@ -221,4 +221,38 @@ void TQQueryWidget::on_btnMoveDown_clicked()
     queryDef->insertCondition(i+1, cond);
     refreshCList();
     setCurrentCondition(cond);
+}
+
+void TQQueryWidget::on_cbOpenBracket_clicked(bool checked)
+{
+    TQCond *cond = currentCondition();
+    if(!cond)
+        return;
+    cond->setIsOpenBracket(checked);
+    refreshCondLine(cond);
+}
+
+void TQQueryWidget::on_cbNot_clicked(bool checked)
+{
+    TQCond *cond = currentCondition();
+    if(!cond)
+        return;
+    cond->setIsNot(checked);
+    refreshCondLine(cond);
+}
+
+void TQQueryWidget::on_cbCloseBracket_clicked(bool checked)
+{
+    TQCond *cond = currentCondition();
+    if(!cond)
+        return;
+    cond->setIsCloseBracket(checked);
+    refreshCondLine(cond);
+}
+
+void TQQueryWidget::on_btnModify_clicked()
+{
+    QListWidgetItem *item = ui->lwCond->currentItem();
+    if(item)
+        on_lwCond_itemActivated(item);
 }

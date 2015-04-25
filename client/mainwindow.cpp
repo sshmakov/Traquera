@@ -777,7 +777,8 @@ void MainWindow::readQueries(TQAbstractProject *prj)
     m.publicModel = publicModel;
     m.folders = folders;
     projectModels.append(m);
-    treeModel->appendSourceModel(prjTree, prj->projectName());
+    QModelIndex index  = treeModel->appendSourceModel(prjTree, prj->projectName());
+    treeView->expand(index);
 }
 
 QString minTitle(const QString &title)

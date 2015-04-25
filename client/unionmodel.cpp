@@ -280,7 +280,7 @@ bool UnionModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int 
         return model->dropMimeData(data,action,sourceIndex.row(),sourceIndex.column(),sourceIndex.parent());
 }
 
-void UnionModel::appendSourceModel(QAbstractItemModel *model, const QString &title)
+QModelIndex UnionModel::appendSourceModel(QAbstractItemModel *model, const QString &title)
 {
     QMutexLocker lock(&mutex);
 //    emit layoutAboutToBeChanged();
@@ -304,6 +304,8 @@ void UnionModel::appendSourceModel(QAbstractItemModel *model, const QString &tit
     connect(model,SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),this,SLOT(do_rowsAboutToBeRemoved(QModelIndex,int,int)));
     connect(model,SIGNAL(rowsRemoved(QModelIndex,int,int)),this,SLOT(do_rowsRemoved()));
     emit layoutChanged();
+    lock.unlock();
+    return index(m.row,0,QModelIndex());
 }
 
 void UnionModel::removeSourceModel(QAbstractItemModel *model)

@@ -33,4 +33,46 @@ public slots:
     
 };
 
+namespace Ui {
+class TrkChangeCondDialog;
+}
+
+class TrkChangeCondDialog : public QDialog
+{
+    Q_OBJECT
+protected:
+    TrkChangeCond cond;
+    QString recordChangeTypes, fieldChangeTypes, noteChangeTypes, moduleChangeTypes, fileChangeTypes;
+
+    QList<QWidget *> dateEdits;
+    QMutex mutex;
+    int locks;
+public:
+    explicit TrkChangeCondDialog(QWidget *parent = 0);
+    void setCondition(const TQCond &condition);
+    TQCond &condition();
+    QSize minimumSizeHint() const;
+protected slots:
+    void updateUI();
+    void updateObjValues();
+    void updateFieldValues();
+    void rbObjectToggled(bool value);
+    void btnAddNoteClicked();
+    void fieldSelected(const QString &field);
+    void rbDaysToggled(bool value);
+    void rbBetweenToggled(bool value);
+private:
+    void deleteDateEdits(QLayout *lay);
+    void setDateMode(TrkChangeCond::DateModeEnum mode);
+protected:
+    bool isInteractive();
+    void lockChanges();
+    void unlockChanges();
+signals:
+    void fieldChanges();
+
+protected:
+    Ui::TrkChangeCondDialog *ui;
+};
+
 #endif // TRKCONDWIDGETS_H

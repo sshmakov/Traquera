@@ -151,7 +151,6 @@ public:
     virtual TrkToolModel *selectedModel(int recType) = 0;
     virtual bool canFieldSubmit(int vid, int recType) = 0;
     virtual bool canFieldUpdate(int vid, int recType) = 0;
-    virtual QString userFullName(const QString &login) = 0;
     virtual TQRecord *createRecordById(int id, int rectype) = 0;
     virtual TQRecord *newRecord(int rectype) = 0;
     virtual TQAbstractRecordTypeDef *recordTypeDef(int rectype) = 0;
@@ -182,6 +181,11 @@ public:
     virtual QHash<int,QString> baseRecordFields(int rectype) = 0;
     virtual bool isSystemModel(QAbstractItemModel *model) const = 0;
     virtual TQQueryDef *queryDefinition(const QString &queryName, int rectype) = 0;
+    virtual QStringList userNames() = 0;
+    virtual QMap<QString, TQUser> userList() = 0;
+    virtual QString userFullName(const QString &login) = 0;
+    virtual QString userFullName(int userId) = 0;
+    virtual QString userLogin(int userId) = 0;
 signals:
     void openedModel(const QAbstractItemModel *model);
     void recordChanged(int id);
@@ -205,7 +209,7 @@ protected:
     //TrkToolQryModel theQueryModel;
     QHash<int, TQSelectedSet> selected;
     QHash<int, TrkToolModel*> selectedModels;
-    QMap<QString, QString> userList;
+    QMap<QString, TQUser> m_userList;
     QString user;
     QStringList noteTitles;
 public:
@@ -234,6 +238,10 @@ public:
     virtual QList<TQToolFile> attachedFiles(TQRecord *record);
     virtual bool saveFileFromRecord(TQRecord *record, int fileIndex, const QString &dest);
     virtual TQQueryDef *queryDefinition(const QString &queryName, int rectype);
+    virtual QStringList userNames();
+    virtual QMap<QString, TQUser> userList();
+    virtual QString userFullName(int userId);
+    virtual QString userLogin(int userId);
 };
 
 

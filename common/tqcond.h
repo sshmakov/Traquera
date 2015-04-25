@@ -6,21 +6,34 @@
 
 class TQQueryCond;
 class TQQueryDef;
+class TQAbstractRecordTypeDef;
 
 class TQCond : public QObject
 {
     Q_OBJECT
+protected:
+    int m_vid;
+//    bool m_isAnd;
+//    bool m_isOpenBracket;
+//    bool m_isCloseBracket;
+//    bool m_isNot;
+
 public:
-    int vid;
-    bool isAnd;
-    bool isOpenBracket;
-    bool isCloseBracket;
-    bool isNot;
     TQQueryDef *queryDef;
 
     enum StringPos {
         First, Middle, Last
     };
+    enum Flag {
+        OrFlag = 0x1,
+        NotFlag = 0x2,
+        OpenFlag = 0x4,
+        CloseFlag = 0x8
+    };
+    Q_DECLARE_FLAGS(CondFlags, Flag)
+
+protected:
+    CondFlags m_flags, m_mask;
 
 public:
     explicit TQCond(TQQueryDef *parent=0);
@@ -30,6 +43,21 @@ public:
     virtual QString makeQueryString(int pos = TQCond::Middle) const;
     virtual QString condSubString() const;
     virtual bool editProperties();
+    TQCond::CondFlags flags() const;
+    TQCond::CondFlags mask() const;
+    virtual int vid() const;
+    virtual bool isOr() const;
+    virtual bool isOpenBracket() const;
+    virtual bool isCloseBracket() const;
+    virtual bool isNot() const;
+    virtual void setVid(int value);
+    virtual void setIsOr(bool value);
+    virtual void setIsOpenBracket(bool value);
+    virtual void setIsNot(bool value);
+    virtual void setIsCloseBracket(bool value);
+    virtual void setFlags(TQCond::CondFlags value);
+    virtual void setMask(TQCond::CondFlags value);
+    TQAbstractRecordTypeDef *recordType() const;
     /*
     virtual bool parseSavedString(const QString &s);
     virtual QString makeSavedString() const;
@@ -41,6 +69,10 @@ signals:
 public slots:
     
 };
+
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(TQCond::CondFlags)
+
 
 class TQChoiceCond: public TQCond
 {
@@ -158,13 +190,14 @@ class TQQueryDef: public QObject
 {
     Q_OBJECT
 protected:
-    TQAbstractProject *project;
+    TQAbstractProject *m_project;
     QList<TQCond *> nestedCond;
     int recordType;
 public:
     //TQQueryCond *condition;
     explicit TQQueryDef(TQAbstractProject *prj, int rectype);
     virtual TQAbstractRecordTypeDef *recordDef();
+    TQAbstractProject *project() const;
     virtual QStringList queryDefLines();
     virtual QString condLine(int index);
     TQCond *condition(int index);

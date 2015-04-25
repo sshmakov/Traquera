@@ -211,7 +211,7 @@ bool TQBaseProject::canFieldUpdate(int vid, int recType)
 
 QString TQBaseProject::userFullName(const QString &login)
 {
-    return userList.value(login);
+    return m_userList.value(login).fullName;
 }
 
 TQRecord *TQBaseProject::createRecordById(int id, int rectype)
@@ -263,26 +263,61 @@ QDomDocument TQBaseProject::recordTypeDefDoc(int recType)
 
 void TQBaseProject::initQueryModel(int recType)
 {
+    Q_UNUSED(recType)
 }
 
 QAbstractItemModel *TQBaseProject::queryModel(int type)
 {
+    Q_UNUSED(type)
     return 0;
 }
 
 QList<TQToolFile> TQBaseProject::attachedFiles(TQRecord *record)
 {
+    Q_UNUSED(record)
     return QList<TQToolFile>();
 }
 
 bool TQBaseProject::saveFileFromRecord(TQRecord *record, int fileIndex, const QString &dest)
 {
+    Q_UNUSED(record)
+    Q_UNUSED(fileIndex)
+    Q_UNUSED(dest)
     return false;
 }
 
 TQQueryDef *TQBaseProject::queryDefinition(const QString &queryName, int rectype)
 {
+    Q_UNUSED(queryName)
+    Q_UNUSED(rectype)
     return 0;
+}
+
+QStringList TQBaseProject::userNames()
+{
+    QStringList names;
+    foreach(const TQUser &user, m_userList)
+        names.append(user.fullName);
+    return names;
+}
+
+QMap<QString, TQUser> TQBaseProject::userList()
+{
+    return m_userList;
+}
+
+QString TQBaseProject::userFullName(int userId)
+{
+    QString login = userLogin(userId);
+    return userFullName(login);
+}
+
+QString TQBaseProject::userLogin(int userId)
+{
+    foreach(const TQUser &user, userList())
+        if(user.id == userId)
+            return user.login;
+    return QString();
 }
 
 //========================= TQRecord ==================================
@@ -487,6 +522,8 @@ QList<TQToolFile> TQRecord::fileList()
 
 bool TQRecord::saveFile(int fileIndex, const QString &dest)
 {
+    Q_UNUSED(fileIndex)
+    Q_UNUSED(dest)
     return false;
 }
 
@@ -514,6 +551,7 @@ QVariant TQRecord::value(int vid, int role) const
 
 QVariant TQRecord::value(const QString &fieldName, int role) const
 {
+    Q_UNUSED(role)
     const TQAbstractRecordTypeDef *def = typeDef();
     if(def)
     {

@@ -65,14 +65,14 @@ struct TQUser {
 typedef QList<TQUser> UserList;
 */
 
-class TQRecordTypeDef;
+class TrkRecordTypeDef;
 
 class TrkFieldDef //: public AbstractFieldDef
 {
 protected:
     mutable TQChoiceList *cashedChoiceList;
 //    QString choiceName;
-    TQRecordTypeDef *recDef;
+    TrkRecordTypeDef *recDef;
     int vid;
     //static ChoiceList emptyChoices;
 
@@ -85,7 +85,7 @@ protected:
     int internalId;
     //const ChoiceList *userList();
 
-    TrkFieldDef(TQRecordTypeDef *recordDef, int fieldVID);
+    TrkFieldDef(TrkRecordTypeDef *recordDef, int fieldVID);
     TrkFieldDef(const TrkFieldDef& src);
 public:
     ~TrkFieldDef()
@@ -150,11 +150,11 @@ public:
     bool canUpdate();
     QString valueToDisplay(const QVariant &value) const;
     QVariant displayToValue(const QString &text) const;
-    TQRecordTypeDef *recordDef() const;
+    TrkRecordTypeDef *recordDef() const;
 
     friend class TrkToolProject;
     //friend class TrkFieldType;
-    friend class TQRecordTypeDef;
+    friend class TrkRecordTypeDef;
 };
 
 /*class TrkFieldType: public AbstractFieldType
@@ -257,7 +257,7 @@ typedef QHash<TRK_VID, TrkFieldDef *> TrkVidDefs;
 typedef QHash<QString, int> NameVid;
 
 
-class TQRecordTypeDef: public QObject, public TQAbstractRecordTypeDef
+class TrkRecordTypeDef: public QObject, public TQAbstractRecordTypeDef
 {
     Q_OBJECT
     Q_INTERFACES(TQAbstractRecordTypeDef)
@@ -274,8 +274,8 @@ protected:
 private:
     TQChoiceList emptyChoices;
 public:
-    TQRecordTypeDef(TrkToolProject *project = 0);
-    ~TQRecordTypeDef();
+    TrkRecordTypeDef(TrkToolProject *project = 0);
+    ~TrkRecordTypeDef();
     int roleVid(int role) const;
     QStringList fieldNames() const;
     TQAbstractFieldType getFieldType(int vid, bool *ok = 0) const;
@@ -290,7 +290,6 @@ public:
     //ChoiceList choiceList(int vid) const;
 //    ChoiceList choiceList(const QString &fieldName) const;
     TQChoiceList choiceTable(const QString &tableName) const;
-
 
     bool containFieldVid(int vid) const;
 //    QList<TRK_VID> fieldVids() const;
@@ -423,13 +422,13 @@ protected:
     bool opened;
 	QHash<TRK_RECORD_TYPE, QString> recordTypes;
 	QHash<TRK_RECORD_TYPE, QStringList*> qList; //QueryList
-    QHash<TRK_RECORD_TYPE, TQRecordTypeDef*> recordDef;
+    QHash<TRK_RECORD_TYPE, TrkRecordTypeDef*> recordDef;
     //QHash<TRK_RECORD_TYPE, TrkIntDef> fields; // field by vid by record_type
     //QHash<TRK_RECORD_TYPE, NameVid> nameVids;
     QHash<int, TrkToolQryModel *> theQueryModel;
     QHash<TRK_RECORD_TYPE, TQSelectedSet> selected;
     QHash<TRK_RECORD_TYPE, TrkToolModel*> selectedModels;
-    QMap<QString, TQUser> userList;
+    QMap<QString, TQUser> m_userList;
     QString user;
     QStringList noteTitles;
 protected: // Work with record handlers
@@ -485,6 +484,11 @@ public:
     virtual TQRecord *recordOfIndex(const QModelIndex &index);
     virtual bool isSystemModel(QAbstractItemModel *model) const;
     virtual TQQueryDef * queryDefinition(const QString &queryName, int rectype);
+    virtual QStringList userNames();
+    virtual QMap<QString, TQUser> userList();
+    virtual QString userFullName(int userId);
+    virtual QString userLogin(int userId);
+
 protected:
     void readProjectDatabaseName();
     /* Model manipulations */
@@ -542,7 +546,7 @@ protected:
     friend class TrkToolDB;
     friend class TrkToolModel;
     friend class TrkToolRecord;
-    friend class TQRecordTypeDef;
+    friend class TrkRecordTypeDef;
     friend class TrkScopeRecHandle;
 };
 

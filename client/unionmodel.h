@@ -50,7 +50,7 @@ public:
     virtual bool dropMimeData(const QMimeData *data,
          Qt::DropAction action, int row, int column, const QModelIndex &parent);
 
-    void appendSourceModel(QAbstractItemModel *model, const QString &title);
+    QModelIndex appendSourceModel(QAbstractItemModel *model, const QString &title);
     void removeSourceModel(QAbstractItemModel *model);
     QAbstractItemModel *sourceModel(const QModelIndex &proxyIndex) const;
     void setSelectedModel(QAbstractItemModel *models);

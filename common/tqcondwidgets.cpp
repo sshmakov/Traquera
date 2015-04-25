@@ -48,7 +48,7 @@ TQNumberCondDialog::TQNumberCondDialog(QWidget *parent) :
 void TQNumberCondDialog::setCondition(const TQCond &condition)
 {
     cond = condition;
-    fLabel->setText(cond.queryDef->recordDef()->fieldName(cond.vid));
+    fLabel->setText(cond.queryDef->recordDef()->fieldName(cond.vid()));
     opBtn->setText(opTexts[cond.op]);
     numEdit1->setText(cond.value1.toString());
     numEdit2->setText(cond.value2.toString());
@@ -95,6 +95,7 @@ void TQNumberCondDialog::valueChanged()
 
 
 TQChoiceCondDialog::TQChoiceCondDialog(QWidget *parent)
+    :TQAbstractCondDialog(parent)
 {
     QVBoxLayout *lay = new QVBoxLayout(this);
     box = new QGroupBox();
@@ -131,7 +132,7 @@ TQChoiceCondDialog::TQChoiceCondDialog(QWidget *parent)
 void TQChoiceCondDialog::setCondition(const TQCond &condition)
 {
     cond = condition;
-    QString chTable = cond.queryDef->recordDef()->fieldChoiceTable(cond.vid);
+    QString chTable = cond.queryDef->recordDef()->fieldChoiceTable(cond.vid());
     TQChoiceList choices = cond.queryDef->recordDef()->choiceTable(chTable);
     QMutexLocker locker(&mutex);
     vList->clear();
@@ -218,7 +219,7 @@ void TQUserCondDialog::setCondition(const TQCond &condition)
 {
     QMutexLocker locker(&mutex);
     cond = condition;
-    QString chTable = cond.queryDef->recordDef()->fieldChoiceTable(cond.vid);
+    QString chTable = cond.queryDef->recordDef()->fieldChoiceTable(cond.vid());
     TQChoiceList choices = cond.queryDef->recordDef()->choiceTable(chTable);
     vList->clear();
     foreach(const TQChoiceItem &item, choices)
@@ -263,6 +264,7 @@ void TQUserCondDialog::selectionChanged()
 
 
 TQStringCondDialog::TQStringCondDialog(QWidget *parent)
+    : TQAbstractCondDialog(parent)
 {
     QVBoxLayout *vLay = new QVBoxLayout(this);
     QVBoxLayout *lay = new QVBoxLayout();

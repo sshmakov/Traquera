@@ -51,7 +51,22 @@ public:
 
 typedef QHash<QString, QVariant> FieldValues;
 
-typedef QList<TQChoiceItem> TQChoiceList;
+class TQChoiceList: public QList<TQChoiceItem>
+{
+public:
+    inline QStringList displayLines() const
+    {
+        QStringList lines;
+        for(int i=0; i<count(); i++)
+            lines.append(operator [](i).displayText);
+        return lines;
+    }
+    inline TQChoiceList &operator =(const QList<TQChoiceItem> &src)
+    {
+        QList<TQChoiceItem>::operator =(src);
+        return *this;
+    }
+};
 
 class TQAbstractFieldType;
 
@@ -366,7 +381,7 @@ public:
                 return res;
             }
         }
-        return QList<TQChoiceItem>(); //&AbstractFieldDef::emptyChoices;
+        return TQChoiceList(); //&AbstractFieldDef::emptyChoices;
     }
 
     virtual QStringList choiceStringList(bool isDisplayText = true) const

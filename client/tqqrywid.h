@@ -48,6 +48,14 @@ private slots:
 
     void on_btnMoveDown_clicked();
 
+    void on_cbOpenBracket_clicked(bool checked);
+
+    void on_cbNot_clicked(bool checked);
+
+    void on_cbCloseBracket_clicked(bool checked);
+
+    void on_btnModify_clicked();
+
 private:
     Ui::TQQueryWidget *ui;
 };

@@ -7,14 +7,14 @@
 #endif
 
 TQCond::TQCond(TQQueryDef *parent) :
-    QObject(parent), queryDef(parent), isAnd(true), isOpenBracket(false), isCloseBracket(false), isNot(false)
+    QObject(parent), queryDef(parent), m_flags(0), m_mask(0)
 {
 }
 
 
 TQCond::TQCond(const TQCond &src)
     : QObject(src.parent()), //nestedCond(src.nestedCond), nestedAnd(src.nestedAnd)
-      isAnd(src.isAnd), isOpenBracket(src.isOpenBracket), isCloseBracket(src.isCloseBracket), isNot(src.isNot),
+      m_flags(src.m_flags), m_mask(src.m_mask),
       queryDef(src.queryDef)
 {
 
@@ -22,11 +22,13 @@ TQCond::TQCond(const TQCond &src)
 
 TQCond &TQCond::operator =(const TQCond &src)
 {
-    vid = src.vid;
-    isAnd = src.isAnd;
-    isOpenBracket = src.isOpenBracket;
-    isCloseBracket = src.isCloseBracket;
-    isNot = src.isNot;
+    m_vid = src.vid();
+    m_flags = src.flags();
+    m_mask = src.mask();
+//    m_isAnd = src.m_isAnd;
+//    m_isOpenBracket = src.m_isOpenBracket;
+//    m_isCloseBracket = src.m_isCloseBracket;
+//    m_isNot = src.m_isNot;
     queryDef = src.queryDef;
     return *this;
 }
@@ -39,17 +41,17 @@ QString TQCond::fieldName() const
     TQAbstractRecordTypeDef *recDef = queryDef->recordDef();
     if(!recDef)
         return QString();
-    QString fname = recDef->fieldName(vid);
+    QString fname = recDef->fieldName(m_vid);
     return fname;
 }
 
 QString TQCond::makeQueryString(int pos) const
 {
-    QString andS = pos != TQCond::First ? (isAnd ? tr("and ") : tr("or ")) : "";
-    QString openB = isOpenBracket ? "(" : "";
-    QString closeB = isCloseBracket ? ")" : "";
-    QString notS = isNot ? tr("not ") : "";
-    return tr("%1%2%3%4%5").arg(andS, openB, notS, condSubString(), closeB);
+    QString orS = pos != TQCond::First ? (isOr() ? tr("ÈËÈ ") : tr("È ")) : "";
+    QString openB = isOpenBracket() ? "(" : "";
+    QString closeB = isCloseBracket() ? ")" : "";
+    QString notS = isNot() ? tr("ÍÅ ") : "";
+    return tr("%1%2%3%4%5").arg(orS, openB, notS, condSubString(), closeB);
 }
 
 QString TQCond::condSubString() const
@@ -64,6 +66,107 @@ bool TQCond::editProperties()
     QMessageBox::information(0,tr("Condition"),condSubString());
 #endif
     return false;
+}
+
+TQCond::CondFlags TQCond::flags() const
+{
+    return m_flags;
+}
+
+TQCond::CondFlags TQCond::mask() const
+{
+    return m_mask;
+}
+
+int TQCond::vid() const
+{
+    return m_vid;
+}
+
+bool TQCond::isOr() const
+{
+    return m_flags & TQCond::OrFlag;
+}
+
+bool TQCond::isOpenBracket() const
+{
+    return m_flags & TQCond::OpenFlag;
+}
+
+bool TQCond::isCloseBracket() const
+{
+    return m_flags & TQCond::CloseFlag;
+}
+
+bool TQCond::isNot() const
+{
+    return m_flags & TQCond::NotFlag;
+}
+
+void TQCond::setVid(int value)
+{
+    m_vid = value;
+}
+
+void TQCond::setIsOr(bool value)
+{
+    if(m_mask & TQCond::OrFlag)
+        return;
+    if(value)
+        m_flags |= TQCond::OrFlag;
+    else
+        m_flags &= ~TQCond::OrFlag;
+}
+
+void TQCond::setIsOpenBracket(bool value)
+{
+    if(m_mask & TQCond::OpenFlag)
+        return;
+    if(m_flags & TQCond::CloseFlag)
+        return;
+    if(value)
+        m_flags |= TQCond::OpenFlag;
+    else
+        m_flags &= ~TQCond::OpenFlag;
+}
+
+void TQCond::setIsNot(bool value)
+{
+    if(m_mask & TQCond::NotFlag)
+        return;
+    if(value)
+        m_flags |= TQCond::NotFlag;
+    else
+        m_flags &= ~TQCond::NotFlag;
+}
+
+void TQCond::setIsCloseBracket(bool value)
+{
+    if(m_mask & TQCond::CloseFlag)
+        return;
+    if(m_flags & TQCond::OpenFlag)
+        return;
+    if(value)
+        m_flags |= TQCond::CloseFlag;
+    else
+        m_flags &= ~TQCond::CloseFlag;
+}
+
+void TQCond::setFlags(TQCond::CondFlags value)
+{
+    m_flags = value;
+}
+
+void TQCond::setMask(TQCond::CondFlags value)
+{
+    m_mask = value;
+}
+
+TQAbstractRecordTypeDef *TQCond::recordType() const
+{
+    if(!queryDef)
+        return 0;
+    return queryDef->recordDef();
 }
 
 TQChoiceCond::TQChoiceCond(TQQueryDef *parent)
@@ -318,6 +421,7 @@ QString TQDateCond::condSubString() const
             return tr("%1 <= %2").arg(fieldName()).arg(value1.toString());
         }
     }
+    return tr("(%1)").arg(fieldName());
 }
 
 TQStringCond::TQStringCond(TQQueryDef *parent)
@@ -382,16 +486,21 @@ QString TQQueryCond::makeSavedString() const
 */
 
 TQQueryDef::TQQueryDef(TQAbstractProject *prj, int rectype)
-    : QObject(prj), project(prj), recordType(rectype)
+    : QObject(prj), m_project(prj), recordType(rectype)
 {
 //    condition = new TQQueryCond(this);
 }
 
 TQAbstractRecordTypeDef *TQQueryDef::recordDef()
 {
-    if(!project)
+    if(!m_project)
         return 0;
-    return project->recordTypeDef(recordType);
+    return m_project->recordTypeDef(recordType);
+}
+
+TQAbstractProject *TQQueryDef::project() const
+{
+    return m_project;
 }
 
 QStringList TQQueryDef::queryDefLines()
@@ -457,12 +566,14 @@ bool TQQueryDef::editProperties(int index)
     return false;
     */
 #else
+    Q_UNUSED(index)
     return false;
 #endif
 }
 
 TQCond *TQQueryDef::newCondition(int fieldVid)
 {
+    Q_UNUSED(fieldVid)
     return 0;
 }
 
@@ -503,6 +614,7 @@ QStringList TQQueryDef::miscActions()
 
 void TQQueryDef::miscActionTriggered(const QString &actionText)
 {
+    Q_UNUSED(actionText)
 }
 
 /*
