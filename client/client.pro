@@ -32,7 +32,8 @@ FORMS += ui/tracksmain.ui ui/querypage.ui ui/trklogin.ui ui/filters.ui ui/scrwid
     tqcolsdialog.ui \
     tqconnectwidget.ui \
     tqqrywid.ui \
-    ../tracker/trkchangedlg.ui
+    ../tracker/trkchangedlg.ui \
+    ../tracker/trkdatesdlg.ui
 #    ui/planfilesform.ui \
 #    ui/projectpage.ui
 

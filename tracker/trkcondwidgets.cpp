@@ -2,6 +2,7 @@
 
 #include <QtGui>
 #include "ui_trkchangedlg.h"
+#include "ui_trkdatesdlg.h"
 #include "trkview.h"
 
 TrkKeywordCondDialog::TrkKeywordCondDialog(QWidget *parent) :
@@ -72,6 +73,7 @@ TrkKeywordCondDialog::TrkKeywordCondDialog(QWidget *parent) :
 
             edOnlyTitle = new QComboBox();
             connect(edOnlyTitle, SIGNAL(editTextChanged(QString)), SLOT(onlyTitleEdited()));
+            edOnlyTitle->setEditable(true);
             nLay->addWidget(edOnlyTitle);
         }
     }
@@ -81,12 +83,18 @@ TrkKeywordCondDialog::TrkKeywordCondDialog(QWidget *parent) :
     connect(bbox,SIGNAL(accepted()),SLOT(accept()));
     connect(bbox,SIGNAL(rejected()),SLOT(reject()));
     hLay->addWidget(bbox);
+    resetControls();
 }
 
 void TrkKeywordCondDialog::setCondition(const TQCond &condition)
 {
     QMutexLocker locker(&mutex);
     cond = condition;
+    resetControls();
+}
+
+void TrkKeywordCondDialog::resetControls()
+{
     for(int i = 0; i<keyEdits.count(); i++)
     {
         if(i < cond.keys.count())
@@ -95,15 +103,19 @@ void TrkKeywordCondDialog::setCondition(const TQCond &condition)
             keyEdits[i]->clear();
     }
     cbCase->setChecked(cond.isKeyCase);
-    rbOr->setChecked(!cond.isOr());
-    rbAnd->setChecked(cond.isOr());
+    rbOr->setChecked(!cond.isKeyAnd);
+    rbAnd->setChecked(cond.isKeyAnd);
     foreach(QLabel *l, keyLabels)
-        l->setText(andOr(cond.isOr()));
+        l->setText(andOr(!cond.isKeyAnd));
     cbTitle->setChecked(cond.isKeyInRecTitles);
     cbDesc->setChecked(cond.isKeyInDesc);
     cbNoteTitles->setChecked(cond.isKeyInNoteTitles);
     cbNoteText->setChecked(cond.isKeyInNoteText);
     cbNoteOnly->setChecked(cond.isKeyInNoteOnly);
+    edOnlyTitle->clear();
+    TQAbstractRecordTypeDef *rdef = cond.recordType();
+    if(rdef)
+        edOnlyTitle->addItems(rdef->noteTitleList());
     edOnlyTitle->setEditText(cond.noteTitleSearch);
 }
 
@@ -138,9 +150,9 @@ void TrkKeywordCondDialog::rbAndOrChecked()
 {
     if(!mutex.tryLock())
         return;
-    cond.setIsOr(rbOr->isChecked());
+    cond.isKeyAnd = !rbOr->isChecked();
     foreach(QLabel *l, keyLabels)
-        l->setText(andOr(cond.isOr()));
+        l->setText(andOr(!cond.isKeyAnd));
     mutex.unlock();
 }
 
@@ -185,7 +197,7 @@ void TrkKeywordCondDialog::onlyTitleEdited()
 {
     if(!mutex.tryLock())
         return;
-//    cond.noteTitleSearch = edOnlyTitle->currentText();
+    cond.noteTitleSearch = edOnlyTitle->currentText();
     mutex.unlock();
 }
 
@@ -197,6 +209,7 @@ TrkChangeCondDialog::TrkChangeCondDialog(QWidget *parent)
 {
 //    isInteractive = false;
     lockChanges();
+    dummyAnyField = tr("-- Любое поле --");
     ui->setupUi(this);
     connect(ui->rbField, SIGNAL(toggled(bool)),SLOT(rbObjectToggled(bool)));
     connect(ui->rbRecord, SIGNAL(toggled(bool)),SLOT(rbObjectToggled(bool)));
@@ -204,7 +217,7 @@ TrkChangeCondDialog::TrkChangeCondDialog(QWidget *parent)
     connect(ui->rbModule, SIGNAL(toggled(bool)),SLOT(rbObjectToggled(bool)));
     connect(ui->rbFile, SIGNAL(toggled(bool)),SLOT(rbObjectToggled(bool)));
     connect(ui->btnAddNoteTitle,SIGNAL(clicked()),SLOT(btnAddNoteClicked()));
-    connect(ui->coField,SIGNAL(currentIndexChanged(QString)),SLOT(fieldSelected(QString)));
+    connect(ui->coField,SIGNAL(currentIndexChanged(int)),SLOT(fieldIndexSelected(int)));
     connect(ui->rbDays,SIGNAL(toggled(bool)),SLOT(rbDaysToggled(bool)));
     connect(ui->rbDate,SIGNAL(toggled(bool)),SLOT(rbDaysToggled(bool)));
     connect(ui->rbDateTime,SIGNAL(toggled(bool)),SLOT(rbDaysToggled(bool)));
@@ -213,6 +226,11 @@ TrkChangeCondDialog::TrkChangeCondDialog(QWidget *parent)
     connect(ui->rbNotBetween,SIGNAL(toggled(bool)),SLOT(rbBetweenToggled(bool)));
     connect(ui->rbBefore,SIGNAL(toggled(bool)),SLOT(rbBetweenToggled(bool)));
     connect(ui->rbAfter,SIGNAL(toggled(bool)),SLOT(rbBetweenToggled(bool)));
+    connect(ui->grDateTime,SIGNAL(toggled(bool)),SLOT(grDateTimeToggled(bool)));
+    connect(ui->lwOldValues,SIGNAL(itemSelectionChanged()),SLOT(valuesSelected()));
+    connect(ui->lwNewValues,SIGNAL(itemSelectionChanged()),SLOT(valuesSelected()));
+    connect(ui->grAuthor,SIGNAL(toggled(bool)),SLOT(grAuthorToggled(bool)));
+    connect(ui->coAuthor,SIGNAL(currentIndexChanged(int)),SLOT(coAuthorChanged(int)));
 
     noteChangeTypes = tr("Любое изменение,0;Нота добавлена,1;Нота изменена,2;Нота удалена,3");
     fileChangeTypes = tr("Любое изменение,0;Файл добавлен,1;Файл удален,3");
@@ -241,9 +259,18 @@ void TrkChangeCondDialog::updateUI()
     ui->lwNewValues->clear();
     ui->coAuthor->clear();
     ui->coField->clear();
-    QStringList fNames = cond.queryDef->recordDef()->fieldNames();
-    fNames.sort();
-    ui->coField->addItems(fNames);
+    ui->coField->addItem(dummyAnyField, QVariant((int)0));
+    TQAbstractRecordTypeDef *rDef = cond.queryDef->recordDef();
+    if(rDef)
+    {
+        QStringList fNames = rDef->fieldNames();
+        fNames.sort();
+        foreach(const QString &f, fNames)
+        {
+            int vid = rDef->fieldVid(f);
+            ui->coField->addItem(f, vid);
+        }
+    }
     updateObjValues();
 
     int i = 0, found = -1;
@@ -258,6 +285,7 @@ void TrkChangeCondDialog::updateUI()
         ui->coAuthor->setCurrentIndex(found);
     ui->grAuthor->setChecked(cond.authorId != 0);
     setDateMode(cond.dateMode);
+    setBetweenMode(cond.changeDate);
     resize(10,10);
     unlockChanges();
 }
@@ -269,10 +297,14 @@ void TrkChangeCondDialog::updateObjValues()
     {
     case TrkChangeCond::FieldChange:
     {
-        QString fname = cond.fieldName();
-        int fi = ui->coField->findText(fname);
-        ui->coField->setCurrentIndex(fi);
-
+        if(cond.vid())
+        {
+            QString fname = cond.fieldName();
+            int fi = ui->coField->findText(fname);
+            ui->coField->setCurrentIndex(fi);
+        }
+        else
+            ui->coField->setCurrentIndex(0);
         ui->rbField->setChecked(true);
         ui->frChangeType->setVisible(false);
         ui->frField->setVisible(true);
@@ -364,24 +396,26 @@ void TrkChangeCondDialog::updateFieldValues()
     QString tableName = cond.recordType()->fieldChoiceTable(cond.vid());
     if(!tableName.isEmpty())
     {
-        TQChoiceList list = cond.recordType()->choiceTable(tableName);
+        TQChoiceList chTable = cond.choiceTable();
 
         QListWidgetItem *item;
         ui->lwOldValues->clear();
         item = new QListWidgetItem(tr("<Пусто>"), ui->lwOldValues);
         item->setData(Qt::UserRole, 0);
+        item->setSelected(cond.choiceIds1.contains(0));
         ui->lwNewValues->clear();
         item = new QListWidgetItem(tr("<Пусто>"), ui->lwNewValues);
         item->setData(Qt::UserRole, 0);
+        item->setSelected(cond.choiceIds2.contains(0));
 
-        foreach(const TQChoiceItem& ch, list)
+        foreach(const TQChoiceItem& ch, chTable)
         {
             item = new QListWidgetItem(ch.displayText, ui->lwOldValues);
             item->setData(Qt::UserRole, ch.id);
-            item->setSelected(cond.oldValues.contains(QString::number(ch.id)));
+            item->setSelected(cond.choiceIds1.contains(ch.id));
             item = new QListWidgetItem(ch.displayText, ui->lwNewValues);
             item->setData(Qt::UserRole, ch.id);
-            item->setSelected(cond.newValues.contains(QString::number(ch.id)));
+            item->setSelected(cond.choiceIds2.contains(ch.id));
         }
         ui->grValues->setVisible(true);
     }
@@ -424,17 +458,35 @@ void TrkChangeCondDialog::btnAddNoteClicked()
     }
 }
 
-void TrkChangeCondDialog::fieldSelected(const QString &field)
+void TrkChangeCondDialog::fieldIndexSelected(int index)
 {
     if(!isInteractive())
         return;
-    int vid =  cond.queryDef->recordDef()->fieldVid(field);
+    int vid = ui->coField->itemData(index).toInt();
     int condVid = cond.vid();
     if(vid != condVid)
     {
         cond.setVid(vid);
         updateFieldValues();
     }
+}
+
+void TrkChangeCondDialog::grDateTimeToggled(bool value)
+{
+    if(!isInteractive())
+        return;
+    if(value)
+    {
+        cond.dateMode = TrkChangeCond::Days;
+        cond.changeDate = TrkChangeCond::AfterDate;
+    }
+    else
+    {
+        cond.dateMode = TrkChangeCond::Days;
+        cond.changeDate = TrkChangeCond::AnyDate;
+    }
+    setDateMode(cond.dateMode);
+    setBetweenMode(cond.changeDate);
 }
 
 void TrkChangeCondDialog::rbDaysToggled(bool value)
@@ -444,11 +496,13 @@ void TrkChangeCondDialog::rbDaysToggled(bool value)
     if(!value)
         return;
     if(sender() == ui->rbDays)
-        setDateMode(TrkChangeCond::Days);
+        cond.dateMode = TrkChangeCond::Days;
     else if(sender() == ui->rbDate)
-        setDateMode(TrkChangeCond::Date);
+        cond.dateMode = TrkChangeCond::Date;
     else if(sender() == ui->rbDateTime)
-        setDateMode(TrkChangeCond::DateTime);
+        cond.dateMode = TrkChangeCond::DateTime;
+    setDateMode(cond.dateMode);
+    setBetweenMode(cond.changeDate);
 }
 
 void TrkChangeCondDialog::rbBetweenToggled(bool value)
@@ -456,34 +510,101 @@ void TrkChangeCondDialog::rbBetweenToggled(bool value)
     if(!isInteractive())
         return;
     if(!value)
+    {
+        QRadioButton *rb = qobject_cast<QRadioButton *>(sender());
+        if(rb && !ui->rbBetween->isChecked()
+                && !ui->rbNotBetween->isChecked()
+                && !ui->rbBefore->isChecked()
+                && !ui->rbAfter->isChecked())
+            rb->setChecked(true);
         return;
+    }
     if(sender() == ui->rbBetween)
-    {
-        ui->hlBetween->setEnabled(true);
-        ui->hlNotBetween->setEnabled(false);
-        ui->hlBefore->setEnabled(false);
-        ui->hlAfter->setEnabled(false);
-    }
+        cond.changeDate = TrkChangeCond::BetweenDates;
     else if(sender() == ui->rbNotBetween)
-    {
-        ui->hlBetween->setEnabled(false);
-        ui->hlNotBetween->setEnabled(true);
-        ui->hlBefore->setEnabled(false);
-        ui->hlAfter->setEnabled(false);
-    }
+        cond.changeDate = TrkChangeCond::NotBetweenDates;
     else if(sender() == ui->rbBefore)
-    {
-        ui->hlBetween->setEnabled(false);
-        ui->hlNotBetween->setEnabled(false);
-        ui->hlBefore->setEnabled(true);
-        ui->hlAfter->setEnabled(false);
-    }
+        cond.changeDate = TrkChangeCond::BeforeDate;
     else if(sender() == ui->rbAfter)
+        cond.changeDate = TrkChangeCond::AfterDate;
+    setBetweenMode(cond.changeDate);
+}
+
+void TrkChangeCondDialog::sbDays1Changed(int days)
+{
+    if(!isInteractive())
+        return;
+    cond.days1 = days;
+}
+
+void TrkChangeCondDialog::sbDays2Changed(int days)
+{
+    if(!isInteractive())
+        return;
+    cond.days2 = days;
+}
+
+void TrkChangeCondDialog::deDate1Changed(QDateTime date)
+{
+    if(!isInteractive())
+        return;
+    cond.date1 = date;
+}
+
+void TrkChangeCondDialog::deDate2Changed(QDateTime date)
+{
+    if(!isInteractive())
+        return;
+    cond.date2 = date;
+}
+
+void TrkChangeCondDialog::valuesSelected()
+{
+    if(!isInteractive())
+        return;
+    QList<int> list;
+    if(sender() == ui->lwOldValues)
     {
-        ui->hlBetween->setEnabled(false);
-        ui->hlNotBetween->setEnabled(false);
-        ui->hlBefore->setEnabled(false);
-        ui->hlAfter->setEnabled(true);
+        foreach(QListWidgetItem *item, ui->lwOldValues->selectedItems())
+        {
+            int id = item->data(Qt::UserRole).toInt();
+            list.append(id);
+        }
+        cond.choiceIds1 = list;
+    }
+    else
+    {
+        foreach(QListWidgetItem *item, ui->lwNewValues->selectedItems())
+        {
+            int id = item->data(Qt::UserRole).toInt();
+            list.append(id);
+        }
+        cond.choiceIds2 = list;
+    }
+}
+
+void TrkChangeCondDialog::grAuthorToggled(bool value)
+{
+    if(!isInteractive())
+        return;
+    if(value)
+    {
+        int id;
+        id = ui->coAuthor->itemData(ui->coAuthor->currentIndex()).toInt();
+        cond.authorId = id;
+    }
+    else
+        cond.authorId = 0;
+}
+
+void TrkChangeCondDialog::coAuthorChanged(int index)
+{
+    if(!isInteractive())
+        return;
+    if(ui->grAuthor->isChecked())
+    {
+        int id = ui->coAuthor->itemData(index).toInt();
+        cond.authorId = id;
     }
 }
 
@@ -508,6 +629,20 @@ void TrkChangeCondDialog::deleteDateEdits(QLayout *lay)
     }
 }
 
+void TrkChangeCondDialog::setEnableDateEdits(QLayout *lay, bool value)
+{
+    for(int i=0; i<lay->count(); i++)
+    {
+        QLayoutItem *item = lay->itemAt(i);
+        if(item)
+        {
+            QWidget *w = item->widget();
+            if(w)
+                w->setEnabled(value);
+        }
+    }
+}
+
 void TrkChangeCondDialog::setDateMode(TrkChangeCond::DateModeEnum mode)
 {
     lockChanges();
@@ -517,16 +652,19 @@ void TrkChangeCondDialog::setDateMode(TrkChangeCond::DateModeEnum mode)
     deleteDateEdits(ui->hlAfter);
     if(mode == TrkChangeCond::Days)
     {
+        ui->rbDays->setChecked(true);
         QSpinBox *sb;
         sb = new QSpinBox(this);
         sb->setValue(cond.days1);
         ui->hlBetween->insertWidget(0, sb);
         dateEdits.append(sb);
+        connect(sb,SIGNAL(valueChanged(int)),SLOT(sbDays1Changed(int)));
         ui->hlBetween->insertWidget(1, new QLabel(tr("и")));
         sb = new QSpinBox(this);
         sb->setValue(cond.days2);
         ui->hlBetween->insertWidget(2, sb);
         dateEdits.append(sb);
+        connect(sb,SIGNAL(valueChanged(int)),SLOT(sbDays2Changed(int)));
         ui->hlBetween->insertWidget(3, new QLabel(tr("дней назад")));
 
         sb = new QSpinBox(this);
@@ -534,103 +672,167 @@ void TrkChangeCondDialog::setDateMode(TrkChangeCond::DateModeEnum mode)
         ui->hlNotBetween->insertWidget(0, sb);
         dateEdits.append(sb);
         ui->hlNotBetween->insertWidget(1, new QLabel(tr("и после")));
+        connect(sb,SIGNAL(valueChanged(int)),SLOT(sbDays1Changed(int)));
         sb = new QSpinBox(this);
         sb->setValue(cond.days2);
         ui->hlNotBetween->insertWidget(2, sb);
         dateEdits.append(sb);
+        connect(sb,SIGNAL(valueChanged(int)),SLOT(sbDays2Changed(int)));
         ui->hlNotBetween->insertWidget(3, new QLabel(tr("дней назад")));
 
         sb = new QSpinBox(this);
         sb->setValue(cond.days1);
         ui->hlBefore->insertWidget(0, sb);
         dateEdits.append(sb);
+        connect(sb,SIGNAL(valueChanged(int)),SLOT(sbDays1Changed(int)));
         ui->hlBefore->insertWidget(1, new QLabel(tr("дней назад")));
 
         sb = new QSpinBox(this);
         sb->setValue(cond.days1);
         ui->hlAfter->insertWidget(0, sb);
         dateEdits.append(sb);
+        connect(sb,SIGNAL(valueChanged(int)),SLOT(sbDays1Changed(int)));
         ui->hlAfter->insertWidget(1, new QLabel(tr("дней назад")));
     }
     else if(mode == TrkChangeCond::Date)
     {
+        ui->rbDate->setChecked(true);
         QDateEdit *de;
         de = new QDateEdit(this);
         de->setDateTime(cond.date1);
         de->setCalendarPopup(true);
         ui->hlBetween->insertWidget(0, de);
         dateEdits.append(de);
+        connect(de,SIGNAL(dateTimeChanged(QDateTime)),SLOT(deDate1Changed(QDateTime)));
         ui->hlBetween->insertWidget(1, new QLabel(tr("и")));
         de = new QDateEdit(this);
         de->setDateTime(cond.date2);
         de->setCalendarPopup(true);
         ui->hlBetween->insertWidget(2, de);
         dateEdits.append(de);
+        connect(de,SIGNAL(dateTimeChanged(QDateTime)),SLOT(deDate2Changed(QDateTime)));
 
         de = new QDateEdit(this);
         de->setDateTime(cond.date1);
         de->setCalendarPopup(true);
         ui->hlNotBetween->insertWidget(0, de);
         dateEdits.append(de);
+        connect(de,SIGNAL(dateTimeChanged(QDateTime)),SLOT(deDate1Changed(QDateTime)));
         ui->hlNotBetween->insertWidget(1, new QLabel(tr("и после")));
         de = new QDateEdit(this);
         de->setDateTime(cond.date2);
         de->setCalendarPopup(true);
         ui->hlNotBetween->insertWidget(2, de);
         dateEdits.append(de);
+        connect(de,SIGNAL(dateTimeChanged(QDateTime)),SLOT(deDate2Changed(QDateTime)));
 
         de = new QDateEdit(this);
         de->setDateTime(cond.date1);
         de->setCalendarPopup(true);
         ui->hlBefore->insertWidget(0, de);
         dateEdits.append(de);
+        connect(de,SIGNAL(dateTimeChanged(QDateTime)),SLOT(deDate1Changed(QDateTime)));
 
         de = new QDateEdit(this);
         de->setDateTime(cond.date1);
         de->setCalendarPopup(true);
         ui->hlAfter->insertWidget(0, de);
         dateEdits.append(de);
+        connect(de,SIGNAL(dateTimeChanged(QDateTime)),SLOT(deDate1Changed(QDateTime)));
     }
     else if(mode == TrkChangeCond::DateTime)
     {
+        ui->rbDateTime->setChecked(true);
         QDateTimeEdit *de;
         de = new QDateTimeEdit(this);
         de->setDateTime(cond.date1);
         de->setCalendarPopup(true);
         ui->hlBetween->insertWidget(0, de);
         dateEdits.append(de);
+        connect(de,SIGNAL(dateTimeChanged(QDateTime)),SLOT(deDate1Changed(QDateTime)));
         ui->hlBetween->insertWidget(1, new QLabel(tr("и")));
         de = new QDateTimeEdit(this);
         de->setDateTime(cond.date2);
         de->setCalendarPopup(true);
         ui->hlBetween->insertWidget(2, de);
         dateEdits.append(de);
+        connect(de,SIGNAL(dateTimeChanged(QDateTime)),SLOT(deDate2Changed(QDateTime)));
 
         de = new QDateTimeEdit(this);
         de->setDateTime(cond.date1);
         de->setCalendarPopup(true);
         ui->hlNotBetween->insertWidget(0, de);
         dateEdits.append(de);
+        connect(de,SIGNAL(dateTimeChanged(QDateTime)),SLOT(deDate1Changed(QDateTime)));
         ui->hlNotBetween->insertWidget(1, new QLabel(tr("и после")));
         de = new QDateTimeEdit(this);
         de->setDateTime(cond.date2);
         de->setCalendarPopup(true);
         ui->hlNotBetween->insertWidget(2, de);
         dateEdits.append(de);
+        connect(de,SIGNAL(dateTimeChanged(QDateTime)),SLOT(deDate2Changed(QDateTime)));
 
         de = new QDateTimeEdit(this);
         de->setDateTime(cond.date1);
         de->setCalendarPopup(true);
         ui->hlBefore->insertWidget(0, de);
         dateEdits.append(de);
+        connect(de,SIGNAL(dateTimeChanged(QDateTime)),SLOT(deDate1Changed(QDateTime)));
 
         de = new QDateTimeEdit(this);
         de->setDateTime(cond.date1);
         de->setCalendarPopup(true);
         ui->hlAfter->insertWidget(0, de);
         dateEdits.append(de);
+        connect(de,SIGNAL(dateTimeChanged(QDateTime)),SLOT(deDate1Changed(QDateTime)));
     }
     unlockChanges();
+}
+
+void TrkChangeCondDialog::setBetweenMode(TrkChangeCond::ChangeDateEnum mode)
+{
+    ui->grDateTime->setEnabled(true);
+//    ui->grDateTime->setCheckable(true);
+    if(mode == TrkChangeCond::AnyDate)
+    {
+        ui->grDateTime->setChecked(false);
+    }
+    else
+    {
+        ui->grDateTime->setChecked(true);
+        if(mode == TrkChangeCond::BetweenDates)
+        {
+            setEnableDateEdits(ui->hlBetween, true);
+            setEnableDateEdits(ui->hlNotBetween, false);
+            setEnableDateEdits(ui->hlBefore, false);
+            setEnableDateEdits(ui->hlAfter, false);
+            ui->rbBetween->setChecked(true);
+        }
+        else if(mode == TrkChangeCond::NotBetweenDates)
+        {
+            setEnableDateEdits(ui->hlBetween, false);
+            setEnableDateEdits(ui->hlNotBetween, true);
+            setEnableDateEdits(ui->hlBefore, false);
+            setEnableDateEdits(ui->hlAfter, false);
+            ui->rbNotBetween->setChecked(true);
+        }
+        else if(mode == TrkChangeCond::BeforeDate)
+        {
+            setEnableDateEdits(ui->hlBetween, false);
+            setEnableDateEdits(ui->hlNotBetween, false);
+            setEnableDateEdits(ui->hlBefore, true);
+            setEnableDateEdits(ui->hlAfter, false);
+            ui->rbBefore->setChecked(true);
+        }
+        else if(mode == TrkChangeCond::AfterDate)
+        {
+            setEnableDateEdits(ui->hlBetween, false);
+            setEnableDateEdits(ui->hlNotBetween, false);
+            setEnableDateEdits(ui->hlBefore, false);
+            setEnableDateEdits(ui->hlAfter, true);
+            ui->rbAfter->setChecked(true);
+        }
+    }
 }
 
 bool TrkChangeCondDialog::isInteractive()
@@ -665,5 +867,264 @@ QSize TrkChangeCondDialog::minimumSizeHint() const
     h += ui->frField->isVisible() ? ui->frField->height() : 0;
     h += ui->grDateTime->isVisible() ? ui->grDateTime->height() : 0;
     return QSize(sz.width(), h);
+}
+
+//===================================================================================
+TrkDateCondDialog::TrkDateCondDialog(QWidget *parent)
+    : QDialog(parent), locks(0),
+      ui(new Ui::TrkDateCondDialog)
+{
+    ui->setupUi(this);
+    connect(ui->cbEqual,SIGNAL(toggled(bool)),SLOT(sectionToggled(bool)));
+    connect(ui->cbAfter,SIGNAL(toggled(bool)),SLOT(sectionToggled(bool)));
+    connect(ui->cbBefore,SIGNAL(toggled(bool)),SLOT(sectionToggled(bool)));
+    // section Equal
+    connect(ui->rbEqualNull,SIGNAL(toggled(bool)),SLOT(rbToggled(bool)));
+    connect(ui->rbEqualCurDate,SIGNAL(toggled(bool)),SLOT(rbToggled(bool)));
+    connect(ui->rbEqualDate,SIGNAL(toggled(bool)),SLOT(rbToggled(bool)));
+    connect(ui->dteEqual,SIGNAL(dateTimeChanged(QDateTime)),SLOT(dteChanged(QDateTime)));
+    // section After
+    connect(ui->rbAfterCurDate,SIGNAL(toggled(bool)),SLOT(rbToggled(bool)));
+    connect(ui->rbAfterDate,SIGNAL(toggled(bool)),SLOT(rbToggled(bool)));
+    connect(ui->sbAfterDays,SIGNAL(valueChanged(int)),SLOT(sbDaysChanged(int)));
+    connect(ui->dteAfter,SIGNAL(dateTimeChanged(QDateTime)),SLOT(dteChanged(QDateTime)));
+    // section Before
+    connect(ui->rbBeforeCurDate,SIGNAL(toggled(bool)),SLOT(rbToggled(bool)));
+    connect(ui->rbBeforeDate,SIGNAL(toggled(bool)),SLOT(rbToggled(bool)));
+    connect(ui->sbBeforeDays,SIGNAL(valueChanged(int)),SLOT(sbDaysChanged(int)));
+    connect(ui->dteBefore,SIGNAL(dateTimeChanged(QDateTime)),SLOT(dteChanged(QDateTime)));
+}
+
+void TrkDateCondDialog::setCondition(const TQCond &condition)
+{
+    lockChanges();
+    cond = condition;
+    ui->cbEqual->setChecked(cond.op == TQDateCond::Equals);
+    ui->cbAfter->setChecked(cond.op == TQDateCond::GreaterThan
+                            || cond.op == TQDateCond::Between);
+    ui->cbBefore->setChecked(cond.op == TQDateCond::LessThan
+                            || cond.op == TQDateCond::Between);
+    ui->frEqual->setEnabled(ui->cbEqual->isChecked());
+    ui->frAfter->setEnabled(ui->cbAfter->isChecked());
+    ui->frBefore->setEnabled(ui->cbBefore->isChecked());
+    if(cond.isDaysValue)
+    {
+        ui->rbEqualCurDate->setChecked(true);
+        ui->rbBeforeCurDate->setChecked(true);
+        ui->rbAfterCurDate->setChecked(true);
+        ui->sbAfterDays->setValue(cond.days1);
+        ui->sbBeforeDays->setValue(cond.days2);
+    }
+    else
+    {
+        ui->dteEqual->setDateTime(cond.value1);
+        ui->dteAfter->setDateTime(cond.value1);
+        ui->dteBefore->setDateTime(cond.value2);
+        ui->rbEqualNull->setChecked(!cond.isCurrentDate1 && cond.value1.isNull());
+        ui->rbEqualCurDate->setChecked(cond.isCurrentDate1);
+        ui->rbEqualDate->setChecked(!cond.isCurrentDate1 && !cond.value1.isNull());
+        ui->rbAfterCurDate->setChecked(cond.isCurrentDate1);
+        ui->rbAfterDate->setChecked(!cond.isCurrentDate1);
+        ui->rbBeforeCurDate->setChecked(cond.isCurrentDate2);
+        ui->rbBeforeDate->setChecked(!cond.isCurrentDate2);
+    }
+    unlockChanges();
+}
+
+TQCond &TrkDateCondDialog::condition()
+{
+    return cond;
+}
+
+void TrkDateCondDialog::sectionToggled(bool value)
+{
+    if(!isInteractive())
+        return;
+    lockChanges();
+    if(sender() == ui->cbEqual)
+    {
+        setDaysMode(false);
+        ui->frEqual->setEnabled(value);
+        if(value)
+        {
+            ui->cbAfter->setChecked(false);
+            ui->cbBefore->setChecked(false);
+        }
+        else if(!ui->cbAfter->isChecked() && ui->cbBefore->isChecked())
+            ui->cbAfter->setChecked(true);
+    }
+    else if(sender() == ui->cbAfter)
+    {
+        ui->frAfter->setEnabled(value);
+        if(value)
+            ui->cbEqual->setChecked(false);
+        if(!value && !ui->cbBefore->isChecked())
+            ui->cbBefore->setChecked(true);
+    }
+    else if (sender() == ui->cbBefore)
+    {
+        ui->frBefore->setEnabled(value);
+        if(value)
+            ui->cbEqual->setChecked(false);
+        if(!value && !ui->cbAfter->isChecked())
+            ui->cbAfter->setChecked(true);
+    }
+    ui->frEqual->setEnabled(ui->cbEqual->isChecked());
+    ui->frAfter->setEnabled(ui->cbAfter->isChecked());
+    ui->frBefore->setEnabled(ui->cbBefore->isChecked());
+    if(ui->cbEqual->isChecked())
+        cond.op = TQDateCond::Equals;
+    else if(ui->cbAfter->isChecked() && ui->cbBefore->isChecked())
+        cond.op = TQDateCond::Between;
+    else if(ui->cbAfter->isChecked())
+        cond.op = TQDateCond::GreaterThan;
+    else if(ui->cbBefore->isChecked())
+        cond.op = TQDateCond::LessThan;
+    unlockChanges();
+}
+
+void TrkDateCondDialog::rbToggled(bool value)
+{
+    if(!isInteractive())
+        return;
+    if(!value)
+        return;
+    lockChanges();
+    if(sender() == ui->rbEqualNull)
+    {
+        setDaysMode(false);
+        cond.value1 = QDateTime();
+        cond.isCurrentDate1 = false;
+    }
+    else if(sender() == ui->rbEqualCurDate)
+    {
+        setDaysMode(false);
+        cond.days1 = 0;
+//        cond.value1 = QDateTime::currentDateTime();
+        cond.isCurrentDate1 = true;
+    }
+    else if(sender() == ui->rbEqualDate)
+    {
+        setDaysMode(false);
+        cond.isCurrentDate1 = false;
+        if(cond.value1.isNull())
+            cond.value1 = QDateTime::currentDateTime();
+        ui->dteEqual->setDateTime(cond.value1);
+    }
+    else if(sender() == ui->rbAfterCurDate)
+    {
+        cond.days1 = 0;
+//        cond.value1 = QDateTime::currentDateTime();
+        cond.isCurrentDate1 = true;
+        ui->sbAfterDays->setValue(0);
+    }
+    else if(sender() == ui->rbAfterDate)
+    {
+        setDaysMode(false);
+        cond.isCurrentDate1 = false;
+        if(cond.value1.isNull())
+            cond.value1 = QDateTime::currentDateTime();
+        ui->dteAfter->setDateTime(cond.value1);
+    }
+    else if(sender() == ui->rbBeforeCurDate)
+    {
+        cond.days2 = 0;
+//        cond.value2 = QDateTime::currentDateTime();
+        cond.isCurrentDate2 = true;
+        ui->sbBeforeDays->setValue(0);
+    }
+    else if(sender() == ui->rbBeforeDate)
+    {
+        setDaysMode(false);
+        cond.isCurrentDate2 = false;
+        if(cond.value2.isNull())
+            cond.value2 = QDateTime::currentDateTime();
+        ui->dteBefore->setDateTime(cond.value2);
+    }
+    unlockChanges();
+}
+
+void TrkDateCondDialog::sbDaysChanged(int value)
+{
+    if(!isInteractive())
+        return;
+    lockChanges();
+    if(sender() == ui->sbAfterDays)
+    {
+        cond.days1 = value;
+        ui->rbAfterCurDate->setChecked(true);
+    }
+    else if(sender() == ui->sbBeforeDays)
+    {
+        cond.days2 = value;
+        ui->rbBeforeCurDate->setChecked(true);
+    }
+    if(value)
+        setDaysMode(true);
+    unlockChanges();
+}
+
+void TrkDateCondDialog::dteChanged(const QDateTime &value)
+{
+    if(!isInteractive())
+        return;
+    lockChanges();
+    setDaysMode(false);
+    if(sender() == ui->dteEqual)
+    {
+        cond.value1 = value;
+        cond.isCurrentDate1 = false;
+        ui->rbEqualDate->setChecked(true);
+    }
+    else if(sender() == ui->dteAfter)
+    {
+        cond.value1 = value;
+        cond.isCurrentDate1 = false;
+        ui->rbAfterDate->setChecked(true);
+    }
+    else if(sender() == ui->dteBefore)
+    {
+        cond.value2 = value;
+        cond.isCurrentDate1 = false;
+        ui->rbBeforeDate->setChecked(true);
+    }
+    unlockChanges();
+}
+
+bool TrkDateCondDialog::isInteractive()
+{
+    return locks<=0;
+}
+
+void TrkDateCondDialog::lockChanges()
+{
+    locks++;
+}
+
+void TrkDateCondDialog::unlockChanges()
+{
+    locks--;
+}
+
+void TrkDateCondDialog::setDaysMode(bool value)
+{
+    if(value)
+    {
+        cond.isDaysValue = true;
+        cond.isCurrentDate1 = false;
+        cond.isCurrentDate2 = false;
+        if(ui->rbEqualDate->isChecked())
+            ui->rbEqualCurDate->setChecked(true);
+        ui->rbAfterCurDate->setChecked(true);
+        ui->rbBeforeCurDate->setChecked(true);
+    }
+    else
+    {
+        cond.isDaysValue = false;
+        cond.days1 = 0;
+        cond.days2 = 0;
+        ui->sbAfterDays->setValue(cond.days1);
+        ui->sbBeforeDays->setValue(cond.days2);
+    }
 }
 

@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QtCore>
+#include <tqplug.h>
 
 class TQQueryCond;
 class TQQueryDef;
@@ -73,6 +74,21 @@ public slots:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(TQCond::CondFlags)
 
+/*
+class TQFieldCond: public TQCond
+{
+    Q_OBJECT
+protected:
+    int m_vid;
+public:
+    explicit TQFieldCond(TQQueryDef *parent=0);
+    virtual TQCond &operator =(const TQCond &src);
+    virtual QString fieldName() const;
+    virtual QString condSubString() const;
+    virtual int vid() const;
+    virtual void setVid(int value);
+};
+*/
 
 class TQChoiceCond: public TQCond
 {
@@ -86,7 +102,7 @@ public:
     };
 
     int op; // 1 - null, 2 - any, 3 - selected values
-    QVariantList values;
+    TQChoiceList values;
     explicit TQChoiceCond(TQQueryDef *parent=0);
     TQChoiceCond(const TQChoiceCond &src);
     TQCond &operator =(const TQCond &src);
@@ -146,13 +162,15 @@ public:
         Equals, Between, GreaterThan, LessThan
     };
 
-    int op; //  1 = equals, 2 = between, 3 = greater than, 4 = less than.
+    Operations op; //  1 = equals, 2 = between, 3 = greater than, 4 = less than.
         // 7 = between (days ago), 6 = greater than (days ago), 5 = less than (days ago)
     bool isDaysValue;
+    bool isCurrentDate1, isCurrentDate2;
     QDateTime value1, value2;
     int days1, days2;
     int flags1, flags2; // 0 = use the next number as the date value; 1 = use current date/time as the date value; 2 = <<Unassigned>>.
     explicit TQDateCond(TQQueryDef *parent=0);
+    TQCond &operator = (const TQCond &src);
     virtual QString condSubString() const;
 };
 
@@ -193,6 +211,7 @@ protected:
     TQAbstractProject *m_project;
     QList<TQCond *> nestedCond;
     int recordType;
+    QString m_name;
 public:
     //TQQueryCond *condition;
     explicit TQQueryDef(TQAbstractProject *prj, int rectype);
@@ -211,6 +230,8 @@ public:
     virtual int count();
 //    virtual QList<QAction *>actionsAddCond();
     virtual QStringList miscActions();
+    virtual QString name();
+    virtual void setName(const QString &name);
 public slots:
     void miscActionTriggered(const QString &actionText);
 signals:

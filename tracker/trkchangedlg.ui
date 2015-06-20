@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Поиск по изменениям</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -618,6 +618,41 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>rbRecord</tabstop>
+  <tabstop>rbField</tabstop>
+  <tabstop>rbNote</tabstop>
+  <tabstop>rbModule</tabstop>
+  <tabstop>rbFile</tabstop>
+  <tabstop>coChangeType</tabstop>
+  <tabstop>coField</tabstop>
+  <tabstop>grName</tabstop>
+  <tabstop>leName</tabstop>
+  <tabstop>grNoteTitles</tabstop>
+  <tabstop>lwNoteTitles</tabstop>
+  <tabstop>btnAddNoteTitle</tabstop>
+  <tabstop>grValues</tabstop>
+  <tabstop>lwOldValues</tabstop>
+  <tabstop>lwNewValues</tabstop>
+  <tabstop>grAuthor</tabstop>
+  <tabstop>coAuthor</tabstop>
+  <tabstop>grDateTime</tabstop>
+  <tabstop>rbDays</tabstop>
+  <tabstop>rbDate</tabstop>
+  <tabstop>rbDateTime</tabstop>
+  <tabstop>rbBetween</tabstop>
+  <tabstop>spinBox</tabstop>
+  <tabstop>spinBox_2</tabstop>
+  <tabstop>rbNotBetween</tabstop>
+  <tabstop>spinBox_6</tabstop>
+  <tabstop>spinBox_7</tabstop>
+  <tabstop>rbBefore</tabstop>
+  <tabstop>spinBox_4</tabstop>
+  <tabstop>rbAfter</tabstop>
+  <tabstop>spinBox_5</tabstop>
+  <tabstop>pteDescription</tabstop>
+  <tabstop>buttonBox</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

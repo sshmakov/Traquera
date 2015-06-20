@@ -193,7 +193,7 @@ void TTItemEditor::setEditorData(const QModelIndex &index)
     QPlainTextEdit *pe;
     QSpinBox *sb;
     QComboBox *cb;
-    QDateTimeEdit *dt;
+    TQDateTimeEdit *dt;
 //    TrkFieldType fdef = panel->fieldDef(index.row());
 //    int type = fdef.fType();
     if(0!=(ed = qobject_cast<QLineEdit*>(subeditor)))
@@ -209,9 +209,10 @@ void TTItemEditor::setEditorData(const QModelIndex &index)
         if(i>=0)
             cb->setCurrentIndex(i);
     }
-    else if(0 != (dt = qobject_cast<QDateTimeEdit*>(subeditor)))
+    else if(0 != (dt = qobject_cast<TQDateTimeEdit*>(subeditor)))
     {
-        QDateTime value = index.data(Qt::EditRole).toDateTime();
+        QVariant v = index.data(Qt::EditRole);
+        QDateTime value = QDateTime::fromString(v.toString(), dt->displayFormat());
         dt->setDateTime(value);
     }
 }
@@ -222,7 +223,7 @@ void TTItemEditor::setModelData(const QModelIndex &index)
     QPlainTextEdit *pe;
     QSpinBox *sb;
     QComboBox *cb;
-    QDateTimeEdit *dt;
+    TQDateTimeEdit *dt;
     QString fieldName = panel->fieldName(index);
     if(fieldName.isEmpty())
         return;
@@ -243,7 +244,7 @@ void TTItemEditor::setModelData(const QModelIndex &index)
         else
             panel->setFieldValue(fieldName,QVariant());
     }
-    else if(0 != (dt = qobject_cast<QDateTimeEdit*>(subeditor)))
+    else if(0 != (dt = qobject_cast<TQDateTimeEdit*>(subeditor)))
     {
         QString text = dt->text();
         QDateTime d = QDateTime::fromString(text,fdef.recordDef()->dateTimeFormat());
@@ -258,11 +259,12 @@ void TTItemEditor::setModelData(const QModelIndex &index)
 
 QWidget * TTItemEditor::createSubEditor(const QStyleOptionViewItem &option, const QModelIndex &index)
 {
+    Q_UNUSED(option)
     QComboBox *cb;
     QLineEdit *le;
     QSpinBox *sb;
-    QDateTimeEdit *dt;
-    QWidget *res;
+    TQDateTimeEdit *dt;
+//    QWidget *res;
     QStringList sl;
     TQAbstractFieldType fdef = panel->fieldDef(index.row());
     int type = fdef.simpleType(); // panel->fieldRow(index.row()).fieldType;
@@ -287,9 +289,10 @@ QWidget * TTItemEditor::createSubEditor(const QStyleOptionViewItem &option, cons
         //sb->setMaximum(100);
         return sb;
     case TQ::TQ_FIELD_TYPE_DATE:
-        dt = new QDateTimeEdit(this);
-        dt->setCalendarPopup(true);
+        dt = new TQDateTimeEdit(this);
+        QDateTime minDt = fdef.minValue().toDateTime();
         dt->setDisplayFormat(fdef.recordDef()->dateTimeFormat());
+        dt->setMinimumDateTime(minDt);
 //        dt->setDisplayFormat(TT_DATETIME_FORMAT);
         return dt;
 
@@ -325,12 +328,14 @@ void TTItemEditor::initInternal(const QStyleOptionViewItem &option, const QModel
 {
     subeditor = createSubEditor(option, index);
     clearBtn = new QToolButton(this);
+    clearBtn->setContentsMargins(0,0,0,0);
     clearBtn->setIcon(QIcon(":/images/cleartext.png"));
     resetBtn = new QToolButton(this);
+    resetBtn->setContentsMargins(0,0,0,0);
     resetBtn->setIcon(QIcon(":/images/resetproperty.png"));
     QHBoxLayout *lay = new QHBoxLayout(this);
     lay->setContentsMargins(0,0,0,0);
-    lay->setSpacing(1);
+    lay->setSpacing(0);
     lay->addWidget(subeditor);
     lay->addWidget(clearBtn);
     lay->addWidget(resetBtn);
@@ -340,3 +345,34 @@ void TTItemEditor::initInternal(const QStyleOptionViewItem &option, const QModel
     connect(clearBtn,SIGNAL(clicked()),this,SLOT(doClearClick()));
     connect(resetBtn,SIGNAL(clicked()),this,SLOT(doResetClick()));
 }
+
+//===================================== TQDateTimeEdit ======================================
+TQDateTimeEdit::TQDateTimeEdit(QWidget *parent)
+    : QDateTimeEdit(parent)
+{
+    setSpecialValueText(tr("пусто"));
+    setCalendarPopup(true);
+}
+
+void TQDateTimeEdit::clear()
+{
+    QDateTimeEdit::setDateTime(minimumDateTime());
+}
+
+void TQDateTimeEdit::setDateTime(const QDateTime &dateTime)
+{
+    if(dateTime.isNull())
+        clear();
+    else
+        QDateTimeEdit::setDateTime(dateTime);
+}
+
+QDateTime TQDateTimeEdit::dateTime()
+{
+    QDateTime dt = QDateTimeEdit::dateTime();
+    if(dt.isNull() || dt == minimumDateTime())
+        return QDateTime();
+    return dt;
+}
+
+

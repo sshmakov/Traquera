@@ -64,6 +64,11 @@ void TQQueryWidget::setQueryDefinition(TQQueryDef *def)
     modified = false;
 }
 
+TQQueryDef *TQQueryWidget::queryDefinition()
+{
+    return queryDef;
+}
+
 int TQQueryWidget::currentField()
 {
     QListWidgetItem *item = ui->lwFields->currentItem();
@@ -127,12 +132,16 @@ void TQQueryWidget::refreshControls()
     ui->btnModify->setEnabled(cond);
     ui->btnRemove->setEnabled(cond);
     if(!cond)
+    {
+        ui->pteQueryText->clear();
         return;
+    }
     ui->rbAnd->setChecked(!cond->isOr());
     ui->rbOr->setChecked(cond->isOr());
     ui->cbOpenBracket->setChecked(cond->isOpenBracket());
     ui->cbNot->setChecked(cond->isNot());
     ui->cbCloseBracket->setChecked(cond->isCloseBracket());
+    ui->pteQueryText->setPlainText(cond->condSubString());
 }
 
 void TQQueryWidget::on_lwCond_itemActivated(QListWidgetItem *item)
@@ -142,9 +151,10 @@ void TQQueryWidget::on_lwCond_itemActivated(QListWidgetItem *item)
     {
         modified = true;
         item->setText(queryDef->condLine(row));
+        TQCond *cond = currentCondition();
+        if(cond)
+            ui->pteQueryText->setPlainText(cond->condSubString());
     }
-//    TQCond *cond = queryDef->condition(row);
-//    cond->editProperties();
 }
 
 void TQQueryWidget::on_btnAdd_clicked()

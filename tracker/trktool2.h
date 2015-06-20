@@ -137,6 +137,76 @@ TRKAPI TrkGetNextUserInternal( //@20
                                TRK_UINT	FAR *order				// Input
 );
 
+/*
+qryId
+ int
+ Internal unique ID for this query. [PK]
+
+qryClass
+ int
+ A value of 0 signifies a query that was created in version v6.5 or earlier of Tracker. Values of 1 and greater signify queries created in later versions.
+
+qryFlags
+ int
+ Reserved for future use.
+
+qryTypeId
+ int
+ The record type ID from the trktype table that this query corresponds to. Foreign key: typeVid in the trktype table.
+
+qryName
+ char(64)
+ The name of the query. If it is empty, then it is an embedded query from a report.
+
+qryAuthId
+ int
+ The user ID that originally authored this query. Foreign key: usrId in the trkusr table.
+
+qryOwnerId
+ int
+ The user ID that currently owns this query. Stored separately from author ID for permission reasons and in case the original author is deleted. The initial owner is the author. Foreign key: usrId in the trkusr table.
+
+qryCrDate
+ int
+ The date and time this report was created. Tracker does not display this value anywhere.
+
+qryMdDate
+ int
+ The date and time this report was last modified. Tracker does not display this value anywhere.
+
+qryTitle
+ varchar(128)
+ The name of the query; a duplicate of the qryname field. If it is empty, then it is an embedded query from a report.
+
+qryCont
+ text
+ A null terminated, comma-separated string representing the contents of the query. See Notes below.
+
+qryComment
+ varchar(254)
+ A comment about the query. Tracker displays it in the Query Run dialog.
+
+qryDescr
+ varchar(254)
+ Reserved for future use.
+
+qryParm1 - qryParm8
+ int
+ Reserved for future use.
+
+*/
+TRKAPI TrkSaveQuery( //@24
+                     TRK_HANDLE	trkHandle,				// Input
+                     TRK_CSTR					queryName,				// Input
+                     TRK_CSTR					queryTitle,				// Input
+//                     TRK_UINT userId,
+                     TRK_CSTR queryCont,
+                     TRK_CSTR queryDescr,
+                     TRK_RECORD_TYPE recordType
+                     );
+//_TrkSaveUserQuery@12
+
+
 //_TrkHandleAlloc@8
 //_TrkHandleFree@4
 //_TrkProjectLogin@36

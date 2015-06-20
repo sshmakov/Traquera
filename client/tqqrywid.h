@@ -24,6 +24,7 @@ public:
 
     void setRecordTypeDef(TQAbstractRecordTypeDef *def);
     void setQueryDefinition(TQQueryDef *def);
+    TQQueryDef *queryDefinition();
     int currentField();
     int currentCIndex();
     TQCond *currentCondition();

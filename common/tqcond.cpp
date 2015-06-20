@@ -22,9 +22,9 @@ TQCond::TQCond(const TQCond &src)
 
 TQCond &TQCond::operator =(const TQCond &src)
 {
-    m_vid = src.vid();
     m_flags = src.flags();
     m_mask = src.mask();
+    m_vid = src.vid();
 //    m_isAnd = src.m_isAnd;
 //    m_isOpenBracket = src.m_isOpenBracket;
 //    m_isCloseBracket = src.m_isCloseBracket;
@@ -33,6 +33,15 @@ TQCond &TQCond::operator =(const TQCond &src)
     return *this;
 }
 
+
+QString TQCond::makeQueryString(int pos) const
+{
+    QString orS = pos != TQCond::First ? (isOr() ? tr("ИЛИ ") : tr("И ")) : "";
+    QString openB = isOpenBracket() ? "(" : "";
+    QString closeB = isCloseBracket() ? ")" : "";
+    QString notS = isNot() ? tr("НЕ ") : "";
+    return tr("%1%2%3%4%5").arg(orS, openB, notS, condSubString(), closeB);
+}
 
 QString TQCond::fieldName() const
 {
@@ -45,19 +54,20 @@ QString TQCond::fieldName() const
     return fname;
 }
 
-QString TQCond::makeQueryString(int pos) const
-{
-    QString orS = pos != TQCond::First ? (isOr() ? tr("ИЛИ ") : tr("И ")) : "";
-    QString openB = isOpenBracket() ? "(" : "";
-    QString closeB = isCloseBracket() ? ")" : "";
-    QString notS = isNot() ? tr("НЕ ") : "";
-    return tr("%1%2%3%4%5").arg(orS, openB, notS, condSubString(), closeB);
-}
-
 QString TQCond::condSubString() const
 {
     QString fname = fieldName();
-    return tr("[%4]").arg(fname);
+    return tr("[%1]").arg(fname);
+}
+
+int TQCond::vid() const
+{
+    return m_vid;
+}
+
+void TQCond::setVid(int value)
+{
+    m_vid = value;
 }
 
 bool TQCond::editProperties()
@@ -78,11 +88,6 @@ TQCond::CondFlags TQCond::mask() const
     return m_mask;
 }
 
-int TQCond::vid() const
-{
-    return m_vid;
-}
-
 bool TQCond::isOr() const
 {
     return m_flags & TQCond::OrFlag;
@@ -101,11 +106,6 @@ bool TQCond::isCloseBracket() const
 bool TQCond::isNot() const
 {
     return m_flags & TQCond::NotFlag;
-}
-
-void TQCond::setVid(int value)
-{
-    m_vid = value;
 }
 
 void TQCond::setIsOr(bool value)
@@ -197,19 +197,19 @@ QString TQChoiceCond::condSubString() const
     switch(op)
     {
     case TQChoiceCond::Null:
-        return tr("%1 is null").arg(fieldName());
+        return tr("%1 не заполнено").arg(fieldName());
     case TQChoiceCond::Any:
-        return tr("%1 is not null").arg(fieldName());
+        return tr("%1 заполнено").arg(fieldName());
     case TQChoiceCond::Selected:
-        QString s = tr("%1 in (%2)");
+        QString s = values.count()>0 ? tr("%1 равно (%2)") : tr("%1 равно %2");
         bool first = true;
         QString list;
-        foreach(const QVariant &value, values)
+        foreach(const TQChoiceItem &value, values)
         {
             if(!first)
                 list += ", ";
             first = false;
-            list += value.toString();
+            list += value.displayText;
         }
         return s.arg(fieldName()).arg(list);
     }
@@ -280,7 +280,7 @@ QString TQNumberCond::condSubString() const
     case TQNumberCond::Equals:
         return tr("%1 = %2").arg(fieldName()).arg(value1.toInt());
     case TQNumberCond::Between:
-        return tr("%1 between %2 and %3").arg(fieldName()).arg(value1.toInt()).arg(value2.toInt());
+        return tr("%1 между %2 и %3").arg(fieldName()).arg(value1.toInt()).arg(value2.toInt());
     case TQNumberCond::GreaterThan:
         return tr("%1 >= %2").arg(fieldName()).arg(value1.toInt());
     case TQNumberCond::LessThan:
@@ -337,7 +337,7 @@ QString TQUserCond::condSubString() const
     bool first = true;
     if(isNullIncluded)
     {
-        pre += "<Null>";
+        pre += "<Пустое>";
         first = false;
     }
     if(isCurrentIncluded)
@@ -346,7 +346,7 @@ QString TQUserCond::condSubString() const
             pre += ", ";
         else
             first = false;
-        pre += "<CurrentUser>";
+        pre += "<Текущий>";
         first = false;
     }
     foreach(uint id, ids)
@@ -355,18 +355,19 @@ QString TQUserCond::condSubString() const
             pre += ", ";
         else
             first = false;
-        pre += QString::number(id);
+        QString name = queryDef->recordDef()->project()->userFullName(id);
+        pre += name;
     }
     if(isGroups)
-        pre = tr("%1 in groups (%2)").arg(fieldName()).arg(pre);
+        pre = tr("%1 в группах (%2)").arg(fieldName()).arg(pre);
     else
-        pre = tr("%1 in (%2)").arg(fieldName()).arg(pre);
+        pre = tr("%1 в (%2)").arg(fieldName()).arg(pre);
     if(isActiveIncluded && isDeletedIncluded)
-        pre += tr(" in any state");
+        pre += tr("");
     else if(isActiveIncluded)
-        pre += tr(" only active");
+        pre += tr(", если активный");
     else if(isDeletedIncluded)
-        pre += tr(" only deleted");
+        pre += tr(", если удаленный");
     return pre;
 }
 
@@ -389,6 +390,36 @@ bool TQUserCond::editProperties()
 TQDateCond::TQDateCond(TQQueryDef *parent)
     : TQCond(parent)
 {
+    op = Equals;
+    isDaysValue = false;
+    value1 = QDateTime::currentDateTime();
+    value2 = QDateTime::currentDateTime();
+    days1 = 0;
+    days2 = 0;
+    flags1 = 0;
+    flags2 = 0;
+    isCurrentDate1 = true;
+    isCurrentDate2 = true;
+}
+
+TQCond &TQDateCond::operator =(const TQCond &src)
+{
+    TQCond::operator =(src);
+    const TQDateCond *dsrc =qobject_cast<const TQDateCond *>(&src);
+    if(dsrc)
+    {
+        op = dsrc->op;
+        isDaysValue = dsrc->isDaysValue;
+        value1 = dsrc->value1;
+        value2 = dsrc->value2;
+        days1 = dsrc->days1;
+        days2 = dsrc->days2;
+        flags1 = dsrc->flags1;
+        flags2 = dsrc->flags2;
+        isCurrentDate1 = dsrc->isCurrentDate1;
+        isCurrentDate2 = dsrc->isCurrentDate2;
+    }
+    return *this;
 }
 
 QString TQDateCond::condSubString() const
@@ -398,27 +429,41 @@ QString TQDateCond::condSubString() const
         switch(op)
         {
         case TQDateCond::Equals:
-            return tr("%1 = %2 days ago").arg(fieldName()).arg(days1);
+            return tr("%1 = %2 дней назад от текущей даты").arg(fieldName()).arg(days1);
         case TQDateCond::Between:
-            return tr("%1 between %2 and %3 days ago").arg(fieldName()).arg(days1).arg(days2);
+            return tr("%1 между %2 и %3 днями назад от текущей даты").arg(fieldName()).arg(days1).arg(days2);
         case TQDateCond::GreaterThan:
-            return tr("%1 >= %2").arg(fieldName()).arg(days1);
+            return tr("%1 позже %2 дней назад от текущей даты").arg(fieldName()).arg(days1);
         case TQDateCond::LessThan:
-            return tr("%1 <= %2").arg(fieldName()).arg(days1);
+            return tr("%1 ранее %2 дней назад от текущей даты").arg(fieldName()).arg(days1);
         }
     }
     else
     {
+        QString s1, s2;
+        QString cur(tr("<Текущая дата>")), format(tr("dd.MM.yy hh:mm")), emp(tr("<Пусто>"));
+        if(isCurrentDate1)
+            s1 = cur;
+        else if(value1.isNull())
+            s1 = emp;
+        else
+            s1 = value1.toString(format);
+        if(isCurrentDate2)
+            s2 = cur;
+        else if(value2.isNull())
+            s2 = emp;
+        else
+            s2 = value2.toString(format);
         switch(op)
         {
         case TQDateCond::Equals:
-            return tr("%1 = %2").arg(fieldName()).arg(value1.toString());
+            return tr("%1 = %2").arg(fieldName()).arg(s1);
         case TQDateCond::Between:
-            return tr("%1 between %2 and %3").arg(fieldName()).arg(value1.toString()).arg(value2.toString());
+            return tr("%1 между %2 и %3").arg(fieldName(),s1,s2);
         case TQDateCond::GreaterThan:
-            return tr("%1 >= %2").arg(fieldName()).arg(value1.toString());
+            return tr("%1 позже %2").arg(fieldName(),s1);
         case TQDateCond::LessThan:
-            return tr("%1 <= %2").arg(fieldName()).arg(value1.toString());
+            return tr("%1 ранее %2").arg(fieldName(),s2);
         }
     }
     return tr("(%1)").arg(fieldName());
@@ -443,7 +488,7 @@ TQCond &TQStringCond::operator =(const TQCond &src)
 
 QString TQStringCond::condSubString() const
 {
-    return tr("%1 like \"%2\"").arg(fieldName()).arg(isCaseSensitive ? value : value.toLower());
+    return tr("%1 равно \"%2\"").arg(fieldName()).arg(isCaseSensitive ? value : value.toLower());
 }
 
 bool TQStringCond::editProperties()
@@ -612,6 +657,16 @@ QStringList TQQueryDef::miscActions()
     return QStringList();
 }
 
+QString TQQueryDef::name()
+{
+    return m_name;
+}
+
+void TQQueryDef::setName(const QString &name)
+{
+    m_name = name;
+}
+
 void TQQueryDef::miscActionTriggered(const QString &actionText)
 {
     Q_UNUSED(actionText)
@@ -622,4 +677,47 @@ QList<QAction *> TQQueryDef::actionsAddCond()
 {
     return QList<QAction *>();
 }
+*/
+
+/*
+TQFieldCond::TQFieldCond(TQQueryDef *parent)
+    : TQCond(parent)
+{
+}
+
+TQCond &TQFieldCond::operator =(const TQCond &src)
+{
+    TQCond::operator =(src);
+    const TQFieldCond *fsrc = qobject_cast<const TQFieldCond *>(&src);
+    if(fsrc)
+        m_vid = fsrc->vid();
+    return *this;
+}
+QString TQFieldCond::fieldName() const
+{
+    if(!queryDef)
+        return QString();
+    TQAbstractRecordTypeDef *recDef = queryDef->recordDef();
+    if(!recDef)
+        return QString();
+    QString fname = recDef->fieldName(m_vid);
+    return fname;
+}
+
+QString TQFieldCond::condSubString() const
+{
+    QString fname = fieldName();
+    return tr("[%1]").arg(fname);
+}
+
+int TQFieldCond::vid() const
+{
+    return m_vid;
+}
+
+void TQFieldCond::setVid(int value)
+{
+    m_vid = value;
+}
+
 */

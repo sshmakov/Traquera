@@ -46,6 +46,15 @@ public:
         :displayText(src.displayText), fieldValue(src.fieldValue), order(src.order), weight(src.weight), id(src.id)
     {}
     ~TQChoiceItem() {}
+    bool operator == (const TQChoiceItem &src)
+    {
+        return displayText == src.displayText
+                && fieldValue == src.fieldValue
+                && order == src.order
+                && weight == src.weight
+                && id == src.id;
+    }
+
     //TRK_UINT res;
 };
 
@@ -69,6 +78,7 @@ public:
 };
 
 class TQAbstractFieldType;
+class TQAbstractProject;
 
 class TQAbstractRecordTypeDef
 {
@@ -110,6 +120,7 @@ public:
     virtual int roleVid(int role) const = 0;
     virtual QString dateTimeFormat() const = 0;
     virtual QStringList noteTitleList() const = 0;
+    virtual TQAbstractProject *project() const = 0;
 };
 
 /*class AbstractFieldDef {

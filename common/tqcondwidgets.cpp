@@ -133,7 +133,7 @@ void TQChoiceCondDialog::setCondition(const TQCond &condition)
 {
     cond = condition;
     QString chTable = cond.queryDef->recordDef()->fieldChoiceTable(cond.vid());
-    TQChoiceList choices = cond.queryDef->recordDef()->choiceTable(chTable);
+    choices = cond.queryDef->recordDef()->choiceTable(chTable);
     QMutexLocker locker(&mutex);
     vList->clear();
     foreach(const TQChoiceItem &item, choices)
@@ -142,7 +142,7 @@ void TQChoiceCondDialog::setCondition(const TQCond &condition)
         line->setText(item.displayText);
         QVariant value = QVariant(item.fieldValue);
         line->setData(Qt::UserRole, value);
-        if(cond.values.contains(value))
+        if(cond.values.contains(item))
             line->setSelected(true);
     }
     rbNull->setChecked(cond.op == TQChoiceCond::Null);
@@ -173,7 +173,12 @@ void TQChoiceCondDialog::selectionChanged()
     foreach(QListWidgetItem *line, vList->selectedItems())
     {
         QVariant value = line->data(Qt::UserRole);
-        cond.values.append(value);
+        foreach(const TQChoiceItem &item, choices)
+            if(item.fieldValue == value)
+            {
+                cond.values.append(item);
+                break;
+            }
     }
     mutex.unlock();
 }

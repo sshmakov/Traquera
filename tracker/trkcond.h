@@ -73,13 +73,62 @@ protected:
     TrkToolProject *prj;
     TrkRecordTypeDef *recDef;
     QStringList listActions;
+    QString oldString;
+    QString qryTitle, qryComment;
+protected: //unused
+    bool moduleSearch;
+    bool changeSearch;
+    bool useQuerySort;
+    bool useQueryStyle;
+    bool useQueryPrint;
+    bool outToPrinter;
+    struct SortF {
+        int vid;
+        bool isPrintSectionBreaks;
+        bool isPageBreaks;
+        bool isDescending;
+        int sequence;
+    };
+    QList<SortF> sortCond;
+    int styleLoc;
+    QString styleName;
+    int printerOrient;
+    int pageBreak;
+    double leftMargin;
+    double topMargin;
+    double rightMargin;
+    double bottomMargin;
+    bool isPrintSummary;
+    bool isPrintDetail;
+    bool isPrintTotal;
+    double headerOffset;
+    double footerOffset;
+    QString header;
+    QString footer;
+
+    int reserv;
 public:
     explicit TrkQueryDef(TrkToolProject *m_project, TrkRecordTypeDef *def);
     virtual TQCond *newCondition(int fieldVid);
     bool parseSavedString(QString str);
+    QString makeSaveString();
+    QString makeFieldsString();
+    QString makeSortString();
+    QString makeStyleString();
+    QString makePrintString();
+    QString makeModuleString();
+    QString makeKeywordString();
     static QString nextCItem(QString &str);
+    static QString & addCItem(QString &list, const QString &item, const QString &separator = ",");
 //    virtual QList<QAction *>actionsAddCond();
     virtual QStringList miscActions();
+    bool parseFields(QString &str);
+    QString title() const;
+    void setTitle(const QString &title);
+    QString comment() const;
+    void setComment(const QString &comment);
+    TrkRecordTypeDef *trkRecordDef();
+    TQAbstractRecordTypeDef *recordDef();
 public slots:
     void miscActionTriggered(const QString &actionText);
 protected slots:
@@ -115,6 +164,7 @@ class TrkChangeCond: public TQCond
 {
     Q_OBJECT
 public:
+//    int fieldVid;
     enum ChangeObjectEnum {
         FieldChange=1, RecordChange, FileChange, NoteChange, ModuleChange
     };
@@ -142,7 +192,7 @@ public:
     QList<int> choiceIds1, choiceIds2;
     QDateTime date1, date2;
     int days1, days2;
-    QStringList oldValues, newValues;
+//    QStringList oldValues, newValues;
 
     TrkQueryDef *qDef;
 
@@ -151,6 +201,19 @@ public:
     virtual QString condSubString() const;
     virtual bool editProperties();
     bool parseString(QString s);
+    QString makeString();
+    static QString &addLine(QString &result, const QString &line);
+    TQChoiceList choiceTable() const;
+    void setVid(int value);
+};
+
+class TrkDateCond: public TQDateCond
+{
+    Q_OBJECT
+public:
+    explicit TrkDateCond(TrkQueryDef *parent = 0);
+    TQCond &operator =(const TQCond &src);
+    bool editProperties();
 };
 
 #endif // TRKCOND_H

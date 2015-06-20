@@ -4,6 +4,7 @@
 #include <QStyledItemDelegate>
 #include <QComboBox>
 #include <QWidget>
+#include <QDateTimeEdit>
 
 class QTableWidget;
 class ModifyPanel;
@@ -77,5 +78,16 @@ class TTUserEditor : public QComboBox
     Q_OBJECT
 public:
 };
+
+class TQDateTimeEdit: public QDateTimeEdit
+{
+    Q_OBJECT
+public:
+    explicit TQDateTimeEdit(QWidget *parent = 0);
+    void clear();
+    void setDateTime(const QDateTime &dateTime);
+    QDateTime dateTime();
+};
+
 
 #endif // TTDELEGATE_H

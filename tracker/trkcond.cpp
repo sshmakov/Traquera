@@ -34,7 +34,8 @@ TrkQueryCond::TrkQueryCond(TrkQueryDef *parent)
 */
 
 TrkQueryDef::TrkQueryDef(TrkToolProject *project, TrkRecordTypeDef *def)
-    : TQQueryDef(project, def->recordType()), prj(project), recDef(def)
+    : TQQueryDef(project, def->recordType()), prj(project), recDef(def),
+      styleLoc(2), styleName("Standard")
 {
     listActions.append(tr("Добавить текстовый поиск..."));
     listActions.append(tr("Добавить поиск по изменениям..."));
@@ -81,7 +82,7 @@ TQCond *TrkQueryDef::newCondition(int fieldVid)
     }
     case TRK_FIELD_TYPE_DATE:
     {
-        TQDateCond *dcond = new TQDateCond(this);
+        TrkDateCond *dcond = new TrkDateCond(this);
         dcond->isDaysValue = false;
         dcond->op = TQDateCond::Equals;
         dcond->value1 = QDateTime::currentDateTime();
@@ -155,39 +156,43 @@ TQCond *TrkQueryDef::newCondition(int fieldVid)
  */
 bool TrkQueryDef::parseSavedString(QString str)
 {
+    oldString = str;
     if(!str.isEmpty())
     {
-        bool moduleSearch = nextCItem(str).toInt() == 1;
-        bool changeSearch = nextCItem(str).toInt() == 1;
-        int res = nextCItem(str).toInt();
-        bool useQuerySort  = nextCItem(str).toInt() == 0;
-        bool useQueryStyle = nextCItem(str).toInt() == 0;
-        bool useQueryPrint = nextCItem(str).toInt() == 0;
-        bool outToPrinter = nextCItem(str).toInt() == 1;
+        moduleSearch = nextCItem(str).toInt() == 1;
+        changeSearch = nextCItem(str).toInt() == 1;
+//        int res = nextCItem(str).toInt();
+        parseFields(str);
+        useQuerySort  = nextCItem(str).toInt() == 0;
+        useQueryStyle = nextCItem(str).toInt() == 0;
+        useQueryPrint = nextCItem(str).toInt() == 0;
+        outToPrinter = nextCItem(str).toInt() == 1;
         int sortFCount = nextCItem(str).toInt();
         while(!str.isEmpty() && sortFCount--)
         {
-            int vid = nextCItem(str).toInt();
-            bool isPrintSectionBreaks = nextCItem(str).toInt() == 1;
-            bool isPageBreaks = nextCItem(str).toInt() == 1;
-            bool isDescending = nextCItem(str).toInt() == 1;
-            int sequence = nextCItem(str).toInt() == 1;
+            SortF cond;
+            cond.vid = nextCItem(str).toInt();
+            cond.isPrintSectionBreaks = nextCItem(str).toInt() == 1;
+            cond.isPageBreaks = nextCItem(str).toInt() == 1;
+            cond.isDescending = nextCItem(str).toInt() == 1;
+            cond.sequence = nextCItem(str).toInt() == 1;
+            sortCond.append(cond);
         }
-        int styleLoc = nextCItem(str).toInt();
-        QString styleName = nextCItem(str);
-        int printerOrient = nextCItem(str).toInt();
-        int pageBreak = nextCItem(str).toInt();
-        double leftMargin = nextCItem(str).toDouble();
-        double topMargin = nextCItem(str).toDouble();
-        double rightMargin = nextCItem(str).toDouble();
-        double bottomMargin = nextCItem(str).toDouble();
-        bool isPrintSummary = nextCItem(str).toInt() == 1;
-        bool isPrintDetail = nextCItem(str).toInt() == 1;
-        bool isPrintTotal = nextCItem(str).toInt() == 1;
-        double headerOffset = nextCItem(str).toDouble();
-        double footerOffset = nextCItem(str).toDouble();
-        QString header = nextCItem(str);
-        QString footer = nextCItem(str);
+        styleLoc = nextCItem(str).toInt();
+        styleName = nextCItem(str);
+        printerOrient = nextCItem(str).toInt();
+        pageBreak = nextCItem(str).toInt();
+        leftMargin = nextCItem(str).toDouble();
+        topMargin = nextCItem(str).toDouble();
+        rightMargin = nextCItem(str).toDouble();
+        bottomMargin = nextCItem(str).toDouble();
+        isPrintSummary = nextCItem(str).toInt() == 1;
+        isPrintDetail = nextCItem(str).toInt() == 1;
+        isPrintTotal = nextCItem(str).toInt() == 1;
+        headerOffset = nextCItem(str).toDouble();
+        footerOffset = nextCItem(str).toDouble();
+        header = nextCItem(str);
+        footer = nextCItem(str);
         int moduleLogic = nextCItem(str).toInt();
         int moduleCount = nextCItem(str).toInt();
         QStringList moduleNames;
@@ -205,200 +210,15 @@ bool TrkQueryDef::parseSavedString(QString str)
         keyCond->noteTitleSearch = nextCItem(str);
         keyCond->isKeyAnd = nextCItem(str).toInt() == 1;
         keyCond->isKeyCase = nextCItem(str).toInt() == 1;
-        keyCond->isKeyInNoteTitles = nextCItem(str).toInt() == 1;
-        keyCond->isKeyInDesc = nextCItem(str).toInt() == 1;
         keyCond->isKeyInRecTitles = nextCItem(str).toInt() == 1;
+        keyCond->isKeyInDesc = nextCItem(str).toInt() == 1;
+        keyCond->isKeyInNoteTitles = nextCItem(str).toInt() == 1;
         keyCond->isKeyInNoteText = nextCItem(str).toInt() == 1;
         keyCond->isKeyInNoteOnly = nextCItem(str).toInt() == 1;
 
-        int reserv = nextCItem(str).toInt();
+        QString flag = nextCItem(str);
 
-        int fcount = nextCItem(str).toInt();
-        while(!str.isEmpty() && fcount--)
-        {
-            int vid;
-            int internalId = nextCItem(str).toInt();
-            QString condStr = nextCItem(str);
-            int relOp = nextCItem(str).toInt();
-            bool isOr = relOp != 1;
-            int flags = nextCItem(str).toInt();
-            bool isNot = (flags & 1);
-            bool openBracket = (flags & 2);
-            bool closeBracket = (flags & 4);
-            TQCond *cond = 0;
-            if(internalId == 0)
-            {
-                TrkChangeCond *chcond = new TrkChangeCond(this);
-                cond = chcond;
-                chcond->parseString(condStr);
-                vid = chcond->vid();
-            }
-            else
-            {
-                vid = recDef->fieldVidByInternalId(internalId);
-                int ftype = recDef->fieldNativeType(vid);
-                switch(ftype)
-                {
-                case TRK_FIELD_TYPE_CHOICE:
-                {
-                    QString table = recDef->fieldChoiceTable(vid);
-                    TQChoiceList list = recDef->choiceTable(table);
-
-                    TQChoiceCond *ccond = new TQChoiceCond(this);
-                    cond = ccond;
-                    int op = nextCItem(condStr).toInt();
-                    switch(op)  // 1 - null, 2 - any, 3 - selected values
-                    {
-                    case 1:
-                        ccond->op = TQChoiceCond::Null;
-                        break;
-                    case 2:
-                        ccond->op = TQChoiceCond::Any;
-                        break;
-                    case 3:
-                        ccond->op = TQChoiceCond::Selected;
-                        for(int vcount = nextCItem(condStr).toInt();vcount>0;vcount--)
-                        {
-                            QString chValue;
-                            int chId = nextCItem(condStr).toInt();
-                            foreach(const TQChoiceItem &c, list)
-                            {
-                                if(c.id == chId)
-                                    chValue = c.displayText;
-                            }
-                            if(!chValue.isEmpty())
-                                ccond->values.append(chValue);
-                            else
-                                ccond->values.append(chValue);
-                        }
-                        break;
-                    default:
-                        ccond->op = TQChoiceCond::Any;
-                    }
-                    break;
-                }
-                case TRK_FIELD_TYPE_ELAPSED_TIME:
-                case TRK_FIELD_TYPE_NUMBER:
-                {
-                    TQNumberCond *ncond = new TQNumberCond(this);
-                    cond = ncond;
-                    int op = nextCItem(condStr).toInt(); // 1 = equals, 2 = between, 3 = greater than, 4 = less than
-                    ncond->op = op == 1 ? TQNumberCond::Equals :
-                                          op == 2 ? TQNumberCond::Between :
-                                                    op == 3 ? TQNumberCond::GreaterThan :
-                                                              op == 4 ? TQNumberCond::LessThan :
-                                                                        0;
-                    ncond->value1 = nextCItem(condStr).toInt();
-                    if(ncond->op == 2)
-                    {
-                        ncond->value2 = nextCItem(condStr);
-                    }
-                    break;
-                }
-                case TRK_FIELD_TYPE_OWNER:
-                case TRK_FIELD_TYPE_SUBMITTER:
-                case TRK_FIELD_TYPE_USER:
-                {
-                    TQUserCond *ucond = new TQUserCond(this);
-                    cond = ucond;
-                    int usersCount = nextCItem(condStr).toInt();
-                    bool waitFlags = true;
-                    bool specialUser = false;
-                    for(int i=0;i<usersCount; i++)
-                    {
-                        uint id = nextCItem(condStr).toUInt();
-                        if(!i && waitFlags)
-                        {
-                            waitFlags = false;
-                            if(id & 0x80000000)
-                            {
-                                i--;
-                                ucond->isGroups = id & 0x1;
-                                ucond->isActiveIncluded = id & 0x2;
-                                ucond->isDeletedIncluded = id & 0x4;
-                                continue;
-                            }
-                            else
-                            {
-                                ucond->isGroups = false;
-                                ucond->isActiveIncluded = true;
-                                ucond->isDeletedIncluded = false;
-                            }
-                        }
-                        if(specialUser)
-                        {
-                            ucond->isNullIncluded = id & 0x1;
-                            ucond->isCurrentIncluded = id & 0x2;
-                            specialUser = false;
-                            continue;
-                        }
-                        if(!id)
-                        {
-                            specialUser = true;
-                            i--;
-                        }
-                        ucond->ids.append(id);
-                    }
-                    break;
-                }
-                case TRK_FIELD_TYPE_DATE:
-                {
-                    TQDateCond *dcond = new TQDateCond(this);
-                    cond = dcond;
-                    dcond->isDaysValue = false;
-                    int op = nextCItem(condStr).toInt();
-                    if(op > 4)
-                    {
-                        dcond->isDaysValue = true;
-                        if(op == 5)
-                            dcond->op = 4;
-                        else if(op == 6)
-                            dcond->op = 3;
-                        else
-                            dcond->op = 2;
-                    }
-                    else
-                        dcond->op = op;
-                    dcond->flags1 = nextCItem(condStr).toInt();
-                    QString v = nextCItem(condStr);
-                    if(dcond->isDaysValue)
-                        dcond->days1 = v.toInt();
-                    else
-                        dcond->value1 = QDateTime::fromTime_t(v.toUInt());
-                    if(dcond->op == 2) // between
-                    {
-                        dcond->flags2 = nextCItem(condStr).toInt();
-                        if(dcond->isDaysValue)
-                            dcond->days2 = v.toInt();
-                        else
-                            dcond->value2 = QDateTime::fromTime_t(v.toUInt());
-                    }
-                    break;
-                }
-                case TRK_FIELD_TYPE_STRING:
-                {
-                    TQStringCond *scond = new TQStringCond(this);
-                    cond = scond;
-                    scond->isCaseSensitive = nextCItem(condStr).toInt() != 0;
-                    scond->value = nextCItem(condStr);
-                    break;
-                }
-                default:
-                    return false;
-                }
-            }
-            if(cond)
-            {
-                cond->setVid(vid);
-                cond->setIsOr(isOr);
-                cond->setIsNot(isNot);
-                cond->setIsOpenBracket(openBracket);
-                cond->setIsCloseBracket(closeBracket);
-                nestedCond.append(cond);
-            }
-            else
-                return false;
-        }
+        parseFields(str);
 
         if(keyCond->keys.count())
             nestedCond.append(keyCond);
@@ -416,6 +236,686 @@ bool TrkQueryDef::parseSavedString(QString str)
     }
     return true;
 }
+
+QString TrkQueryDef::makeSaveString()
+{
+/*
+1,  -- 0 or 1 (1 if there are any module search strings, otherwise 0)
+1,  -- 0 or 1 (1 if there are any keyword search strings, otherwise 0)
+(fields conditions),
+0,  -- 0 or 1 (0 = use sort option stored with query, 1 = use sorting options from the query window)
+1,  -- 0 or 1 (0 = use style sheet stored with query, 1 = use style sheet from query window)
+1,  -- 0 or 1 (0 = use print options stored with query, 1 = use print options from query window)
+0,  -- 0 or 1 (0 = output to screen, 1 = output to printer)
+(sort)
+(style)
+(print)
+(module search)
+(keyword search)
+2,  -- ? record type ?
+(fields conditions),
+
+ */
+
+    QString res;
+    TrkModuleCond * mcond = 0;
+    TrkKeywordCond * kcond = 0;
+    TrkChangeCond *ccond = 0;
+    foreach(TQCond *cond, nestedCond)
+    {
+        if(!mcond)
+            mcond =qobject_cast<TrkModuleCond *>(cond);
+        if(!kcond)
+            kcond =qobject_cast<TrkKeywordCond *>(cond);
+        if(!ccond)
+            ccond =qobject_cast<TrkChangeCond *>(cond);
+    }
+    addCItem(res, QString(mcond ? "1": "0"));
+    addCItem(res, QString(kcond ? "1": "0"));
+    if(ccond)
+        res += ",0";
+    else
+        res += "," + makeFieldsString();
+    addCItem(res, useQuerySort ? "0" : "1");
+    addCItem(res, useQueryStyle ? "0" : "1");
+    addCItem(res, useQueryPrint ? "0" : "1");
+    addCItem(res, outToPrinter ? "1" : "0");
+//    if(useQuerySort)
+        res += "," + makeSortString();
+//    if(useQueryStyle)
+        res += "," + makeStyleString();
+//    if(useQueryPrint)
+        res += "," + makePrintString();
+    res += "," + makeModuleString();
+    res += "," + makeKeywordString();
+    if(ccond)
+        res += ",2," + makeFieldsString();
+    else
+        res +=",";
+//    addCItem(res, QString::number(recordType));
+    return res;
+}
+
+
+QString TrkQueryDef::makeFieldsString()
+{
+    QString res;
+    int fcount = 0;
+    TrkModuleCond * mcond = 0;
+    TrkKeywordCond * kcond = 0;
+    foreach(TQCond *cond, nestedCond)
+    {
+        mcond =qobject_cast<TrkModuleCond *>(cond);
+        if(mcond)
+            continue;
+        kcond =qobject_cast<TrkKeywordCond *>(cond);
+        if(kcond)
+            continue;
+        fcount++;
+    }
+    addCItem(res, QString::number(fcount));
+    foreach(TQCond *cond, nestedCond)
+    {
+        mcond =qobject_cast<TrkModuleCond *>(cond);
+        if(mcond)
+            continue;
+        kcond =qobject_cast<TrkKeywordCond *>(cond);
+        if(kcond)
+            continue;
+        QString fc;
+        int internalId;
+        if(cond->vid())
+            internalId = recDef->fieldInternalIdByVid(cond->vid());
+        TQNumberCond *ncond = qobject_cast<TQNumberCond *>(cond);
+        if(ncond)
+        {
+            addCItem(res,QString::number(internalId));
+            addCItem(fc,QString::number(ncond->op));
+            addCItem(fc,ncond->value1.toString());
+            if(ncond->op == TQNumberCond::Between)
+                addCItem(fc,ncond->value2.toString());
+        }
+        TQDateCond *dcond = qobject_cast<TQDateCond *>(cond);
+        if(dcond)
+        {
+            addCItem(res,QString::number(internalId));
+            // op:
+            // date: 1 = equals, 2 = between, 3 = greater than, 4 = less than.
+            // days ago: 7 = between, 6 = greater than, 5 = less than
+            // datetime: 11 = before, 10 = after, 9 = between, 8 equals
+            switch(dcond->op)
+            {
+            case TQDateCond::Equals:
+                addCItem(fc, "8");
+                break;
+            case TQDateCond::Between:
+                addCItem(fc, dcond->isDaysValue ? "7" : "9");
+                break;
+            case TQDateCond::GreaterThan:
+                addCItem(fc, dcond->isDaysValue ? "6" : "10");
+                break;
+            case TQDateCond::LessThan:
+                addCItem(fc, dcond->isDaysValue ? "5" : "11");
+                break;
+            default:
+                addCItem(fc, "1");
+            }
+            // 0 = use the next number as the date value; 1 = use current date/time as the date value; 2 = <<Unassigned>>.
+            int flags;
+            if(!dcond->isDaysValue && dcond->isCurrentDate1)
+                flags = 1;
+            else if(!dcond->isDaysValue && dcond->value1.isNull())
+                flags = 2;
+            else
+                flags = 0;
+            addCItem(fc, QString::number(flags));
+            if(flags == 0)
+                if(dcond->isDaysValue)
+                    addCItem(fc, QString::number(dcond->days1));
+                else
+                    addCItem(fc, QString::number(dcond->value1.toTime_t()));
+//            else
+//                addCItem(fc, "0");
+
+            if(dcond->op == TQDateCond::Between)
+            {
+                int flags;
+                if(!dcond->isDaysValue && dcond->isCurrentDate2)
+                    flags = 1;
+                else if(!dcond->isDaysValue && dcond->value2.isNull())
+                    flags = 2;
+                else
+                    flags = 0;
+                addCItem(fc, QString::number(flags));
+                if(flags == 0)
+                    if(dcond->isDaysValue)
+                        addCItem(fc, QString::number(dcond->days2));
+                    else
+                        addCItem(fc, QString::number(dcond->value2.toTime_t()));
+//                else
+//                    addCItem(fc, "0");
+            }
+        }
+        TQUserCond *ucond = qobject_cast<TQUserCond *>(cond);
+        if(ucond)
+        {
+            addCItem(res,QString::number(internalId));
+            /*
+            count, [flag] [id, id ...]
+            count is the number of user ID that follows.
+            The optional flag is distinguished by having its high bit (0x80000000) set.
+            If the low bit (0x1) is set, then any following IDs represent groups rather than users.
+            If the next bit (0x2) is set, then active users will be included in the target set.
+            If the following bit (0x4) is set, then deleted users will be included in the target set.
+            If no flag is given, then any IDs are assumed to be user IDs
+                and only active users will be included in the target set.
+            Membership in the target set is determined for user IDs
+                when the query is composed and for group IDs when the query is run.
+
+            If a user ID = 0, then the next number will be either 1, 2, or 3.
+                1 means <<Unassigned>>, 2 means <<Current Login User>>, 3 means both.
+            For instance, if the condition is ...
+                2, 14, 0, 1 it means “select where that user field = 14 or 0.”
+                2, 14, 0, 2 and the current login user has a user ID of 3, it means “select where that user field = 14 or 3.”
+            */
+            int idcount = ucond->ids.count();
+            if(ucond->isNullIncluded || ucond->isCurrentIncluded)
+                idcount++;
+            addCItem(fc, QString::number(idcount));
+            if(ucond->isGroups || ucond->isDeletedIncluded)
+                addCItem(fc, QString::number(
+                             0x80000000
+                             | (ucond->isGroups ? 0x1 : 0)
+                             | (ucond->isActiveIncluded ? 0x2 : 0)
+                             | (ucond->isDeletedIncluded ? 0x4 : 0)
+                             )
+                         );
+            foreach(uint id, ucond->ids)
+            {
+                addCItem(fc, QString::number(id));
+            }
+            if(ucond->isNullIncluded && ucond->isCurrentIncluded)
+            {
+                addCItem(fc, "0");
+                addCItem(fc, "3");
+            }
+            else if(ucond->isNullIncluded)
+            {
+                addCItem(fc, "0");
+                addCItem(fc, "1");
+            }
+            else if(ucond->isCurrentIncluded)
+            {
+                addCItem(fc, "0");
+                addCItem(fc, "2");
+            }
+        }
+        TQChoiceCond *ccond = qobject_cast<TQChoiceCond *>(cond);
+        if(ccond)
+        {
+            addCItem(res,QString::number(internalId));
+            /*
+            Condition String for a choice field:
+            op, [count, [ choice ID, ... ] ]
+            op: 1 = None, 2 = All, 3 = selected choice ID.
+            If op = 3, then count is the number of choices, and then choice ids will follow that.
+            */
+            switch(ccond->op)
+            {
+            case TQChoiceCond::Null:
+                addCItem(fc, "1");
+                break;
+            case TQChoiceCond::Any:
+                addCItem(fc, "2");
+                break;
+            case TQChoiceCond::Selected:
+                addCItem(fc, "3");
+                addCItem(fc, QString::number(ccond->values.count()));
+                foreach(const TQChoiceItem &item, ccond->values)
+                    addCItem(fc, QString::number(item.id));
+                break;
+            default:
+                addCItem(fc, "2");
+            }
+        }
+        TQStringCond *scond = qobject_cast<TQStringCond *>(cond);
+        if(scond)
+        {
+            addCItem(res,QString::number(internalId));
+            /*
+            Condition String for a String field:
+            case, string
+            case: 1 = case sensitive, 0 = case insensitive.
+            string: can contain wild cards:
+            -    ? is match any character,
+            -    * is match any sub-strings.
+            -    A back slash (\) preceding any character is the character itself.
+            */
+            addCItem(fc, scond->isCaseSensitive ? "1" : "0");
+            addCItem(fc, scond->value);
+        }
+        TrkChangeCond *chcond = qobject_cast<TrkChangeCond *>(cond);
+        if(chcond)
+        {
+            addCItem(res, "0");  // special field vid
+            fc = chcond->makeString();
+        }
+        addCItem(res,fc);
+        addCItem(res,cond->isOr() ? "2" : "1");
+        addCItem(res,QString::number(cond->flags()));
+    }
+    return res;
+}
+
+QString TrkQueryDef::makeSortString()
+{
+    /*
+1,  -- number of sort fields,
+    -- for each sort field:
+25, -- field ID
+1,  -- 0 or 1 (1 = print section breaks)
+1,  -- 0 or 1 (1 = page break after each sort section)
+0,  -- 0 or 1 (1 = descending)
+2,  -- 0, 1, or 2 (sequence)
+    -- For choice field: 0 = sort by choice label; 1 = sort by weight; 2 = sort by choice order.
+    -- For user field: 0 = sort by full name; 1 = sort by login name.
+    -- For date field: 0 = sort by date and time; 1 = sort by date only.
+    -- For time field: 0 = sort by time; 1 = sort by hour only.
+    -- For other fields, 0 = default (no options).
+     */
+    QString res;
+    addCItem(res, QString::number(sortCond.count()));
+    foreach(const SortF &c, sortCond)
+    {
+        addCItem(res, QString::number(c.vid));
+        addCItem(res, c.isPrintSectionBreaks ? "1" : "0");
+        addCItem(res, c.isPageBreaks ? "1" : "0");
+        addCItem(res, c.isDescending ? "1" : "0");
+        addCItem(res, QString::number(c.sequence));
+    }
+
+    return res;
+}
+
+QString TrkQueryDef::makeStyleString()
+{
+/*
+2,         -- 0, 1, 2 (style sheet locations, 0 = personal style sheet, 1 = project style sheet, 2 = system style sheet)
+Standard,  -- style sheet name
+ */
+    QString res;
+    addCItem(res, QString::number(styleLoc));
+    addCItem(res, styleName);
+    return res;
+}
+
+QString TrkQueryDef::makePrintString()
+{
+/*
+0, -- 0, 1 or 2 (print orientation: 0 = use printer setup, 1 = portrait, 2 = landscape).
+2, -- 0, 1, or 2 (page break: 0 = page break between records; 1 = do not page break; 2 = fit whole records on page).
+0.500000,0.500000,0.500000,0.500000, -- left, top, right, bottom margins (these 4 numbers are in double)
+0, -- 0 or 1 (print summary, detail and grand total)
+0,1,
+0.250000,0.250000, -- header, footer offset (these 2 numbers are in double)
+,"$project,- $page -,$date", -- header, footer strings (can use macros such as $project, $login, etc. $1, $2, $3 and $4 are sort fields)
+ */
+    QString res;
+    addCItem(res, QString::number(printerOrient));
+    addCItem(res, QString::number(pageBreak));
+    addCItem(res, QString::number(leftMargin));
+    addCItem(res, QString::number(topMargin));
+    addCItem(res, QString::number(rightMargin));
+    addCItem(res, QString::number(bottomMargin));
+    addCItem(res, isPrintSummary ? "1" : "0");
+    addCItem(res, isPrintDetail ? "1" : "0");
+    addCItem(res, isPrintTotal ? "1" : "0");
+    addCItem(res, QString::number(headerOffset));
+    addCItem(res, QString::number(footerOffset));
+    addCItem(res, header);
+    addCItem(res, footer);
+    return res; //"0,2,0.500000,0.500000,0.500000,0.500000,0,0,1,0.250000,0.250000,,\"$project,- $page -,$date\"";
+}
+
+QString TrkQueryDef::makeModuleString()
+{
+/*
+1,    -- 0, 1, 2 (module search logic. 0 = records that have any modules, 1 = OR, 2 = AND)
+1,    -- number of modules (if module search logic = 1 or 2)
+C:\Users\ВС\Documents\Log.txt.zip,  -- for each module, the module names.
+*/
+
+    QString res;
+    TrkModuleCond * mcond = 0;
+    foreach(TQCond *cond, nestedCond)
+    {
+        mcond =qobject_cast<TrkModuleCond *>(cond);
+        if(mcond)
+            break;
+    }
+    if(!mcond)
+        return "1,0";
+    addCItem(res, QString::number((int)mcond->moduleOp));
+    if(mcond->moduleOp == TrkModuleCond::Or || mcond->moduleOp == TrkModuleCond::And)
+        foreach(QString module, mcond->moduleNames)
+            addCItem(res, module);
+    return res;
+}
+
+QString TrkQueryDef::makeKeywordString()
+{
+/*
+1,    -- number of keywords.
+abs,  -- for each keyword, the keyword to search for.
+,     -- note title to search in.
+0,    -- 0 or 1 (keyword search logic: 0 = OR, 1 = AND)
+0,    -- 0 or 1 (0 = keyword search is not case sensitive, 1 = case sensitive)
+0,    -- 0 or 1 (0 = do not search in record titles)
+1,    -- 0 or 1 (0 = do not search in record descriptions)
+1,    -- 0 or 1 (0 = do not search in note titles)
+1,    -- 0 or 1 (0 = do not search in note descriptions)
+0,    -- 0 or 1 (1 = search only in the note title specified in "note title to search in" string)
+*/
+    QString res;
+    TrkKeywordCond * kcond = 0;
+    foreach(TQCond *cond, nestedCond)
+    {
+        kcond =qobject_cast<TrkKeywordCond *>(cond);
+        if(kcond)
+            break;
+    }
+    if(!kcond)
+        return "0,,0,0,1,1,1,1,0";
+    addCItem(res, QString::number(kcond->keys.count()));
+    foreach(QString key, kcond->keys)
+        addCItem(res, key);
+    addCItem(res, kcond->noteTitleSearch);
+    addCItem(res, kcond->isKeyAnd ? "1" : "0");
+    addCItem(res, kcond->isKeyCase ? "1" : "0");
+    addCItem(res, kcond->isKeyInRecTitles ? "1" : "0");
+    addCItem(res, kcond->isKeyInDesc ? "1" : "0");
+    addCItem(res, kcond->isKeyInNoteTitles ? "1" : "0");
+    addCItem(res, kcond->isKeyInNoteText ? "1" : "0");
+    addCItem(res, kcond->isKeyInNoteOnly ? "1" : "0");
+    return res;
+}
+
+bool TrkQueryDef::parseFields(QString &str)
+{
+    int fcount = nextCItem(str).toInt();
+    while(!str.isEmpty() && fcount--)
+    {
+        int vid;
+        int internalId = nextCItem(str).toInt();
+        QString condStr = nextCItem(str);
+        int relOp = nextCItem(str).toInt();
+        bool isOr = relOp != 1;
+        int flags = nextCItem(str).toInt();
+        bool isNot = (flags & 1);
+        bool openBracket = (flags & 2);
+        bool closeBracket = (flags & 4);
+        TQCond *cond = 0;
+        if(internalId == 0)
+        {
+            TrkChangeCond *chcond = new TrkChangeCond(this);
+            cond = chcond;
+            chcond->parseString(condStr);
+            vid = chcond->vid();
+        }
+        else
+        {
+            vid = recDef->fieldVidByInternalId(internalId);
+            int ftype = recDef->fieldNativeType(vid);
+            switch(ftype)
+            {
+            case TRK_FIELD_TYPE_CHOICE:
+            {
+                QString table = recDef->fieldChoiceTable(vid);
+                TQChoiceList list = recDef->choiceTable(table);
+
+                TQChoiceCond *ccond = new TQChoiceCond(this);
+                cond = ccond;
+                int op = nextCItem(condStr).toInt();
+                switch(op)  // 1 - null, 2 - any, 3 - selected values
+                {
+                case 1:
+                    ccond->op = TQChoiceCond::Null;
+                    break;
+                case 2:
+                    ccond->op = TQChoiceCond::Any;
+                    break;
+                case 3:
+                    ccond->op = TQChoiceCond::Selected;
+                    for(int vcount = nextCItem(condStr).toInt();vcount>0;vcount--)
+                    {
+//                        QString chValue;
+                        int chId = nextCItem(condStr).toInt();
+                        foreach(const TQChoiceItem &c, list)
+                        {
+                            if(c.id == chId)
+                            {
+                                ccond->values.append(c);
+                                break;
+                            }
+//                                chValue = c.displayText;
+                        }
+//                        if(!chValue.isEmpty())
+//                            ccond->values.append(chValue);
+//                        else
+//                            ccond->values.append(chValue);
+                    }
+                    break;
+                default:
+                    ccond->op = TQChoiceCond::Any;
+                }
+                break;
+            }
+            case TRK_FIELD_TYPE_ELAPSED_TIME:
+            case TRK_FIELD_TYPE_NUMBER:
+            {
+                TQNumberCond *ncond = new TQNumberCond(this);
+                cond = ncond;
+                int op = nextCItem(condStr).toInt(); // 1 = equals, 2 = between, 3 = greater than, 4 = less than
+                ncond->op = op == 1 ? TQNumberCond::Equals :
+                                      op == 2 ? TQNumberCond::Between :
+                                                op == 3 ? TQNumberCond::GreaterThan :
+                                                          op == 4 ? TQNumberCond::LessThan :
+                                                                    0;
+                ncond->value1 = nextCItem(condStr).toInt();
+                if(ncond->op == 2)
+                {
+                    ncond->value2 = nextCItem(condStr);
+                }
+                break;
+            }
+            case TRK_FIELD_TYPE_OWNER:
+            case TRK_FIELD_TYPE_SUBMITTER:
+            case TRK_FIELD_TYPE_USER:
+            {
+                TQUserCond *ucond = new TQUserCond(this);
+                cond = ucond;
+                int usersCount = nextCItem(condStr).toInt();
+                bool waitFlags = true;
+                bool specialUser = false;
+                for(int i=0;i<usersCount; i++)
+                {
+                    uint id = nextCItem(condStr).toUInt();
+                    if(!i && waitFlags)
+                    {
+                        waitFlags = false;
+                        if(id & 0x80000000)
+                        {
+                            i--;
+                            ucond->isGroups = id & 0x1;
+                            ucond->isActiveIncluded = id & 0x2;
+                            ucond->isDeletedIncluded = id & 0x4;
+                            continue;
+                        }
+                        else
+                        {
+                            ucond->isGroups = false;
+                            ucond->isActiveIncluded = true;
+                            ucond->isDeletedIncluded = false;
+                        }
+                    }
+                    if(specialUser)
+                    {
+                        ucond->isNullIncluded = id & 0x1;
+                        ucond->isCurrentIncluded = id & 0x2;
+                        specialUser = false;
+                        continue;
+                    }
+                    if(!id)
+                    {
+                        specialUser = true;
+                        i--;
+                    }
+                    ucond->ids.append(id);
+                }
+                break;
+            }
+            case TRK_FIELD_TYPE_DATE:
+            {
+                TrkDateCond *dcond = new TrkDateCond(this);
+                cond = dcond;
+                dcond->isDaysValue = false;
+                int op = nextCItem(condStr).toInt();
+                // op = 0 -
+                if(op > 7)
+                {
+                    dcond->isDaysValue = false;
+                    op = op - 7;
+                }
+                else if(op > 4)
+                {
+                    dcond->isDaysValue = true;
+                    op = 9 - op;
+                }
+                // op:
+                // date: 1 = equals, 2 = between, 3 = greater than, 4 = less than.
+                // days ago: 7 = between, 6 = greater than, 5 = less than
+                // datetime: 11 = before, 10 = after, 9 = between, 8 equals
+
+                switch(op)
+                {
+                case 1: ////  1 = equals, 2 = between, 3 = greater than, 4 = less than.
+                    //Equals, Between, GreaterThan, LessThan
+                    dcond->op = TQDateCond::Equals;
+                    break;
+                case 2:
+                    dcond->op = TQDateCond::Between;
+                    break;
+                case 3:
+                    dcond->op = TQDateCond::GreaterThan;
+                    break;
+                case 4:
+                    dcond->op = TQDateCond::LessThan;
+                    break;
+                default:
+                    dcond->op = TQDateCond::Equals;
+                }
+                QString v;
+                int flags;
+                flags = nextCItem(condStr).toInt(); // 0 = use the next number as the date value; 1 = use current date/time as the date value; 2 = <<Unassigned>>.
+                dcond->isCurrentDate1 = false;
+                switch(flags)
+                {
+                case 0:
+                    v = nextCItem(condStr);
+                    if(dcond->isDaysValue)
+                        dcond->days1 = v.toInt();
+                    else
+                        dcond->value1 = QDateTime::fromTime_t(v.toUInt());
+                    break;
+                case 1:
+                    dcond->isCurrentDate1 = true;
+                case 2:
+                    dcond->days1 = 0;
+                    dcond->value1 = QDateTime();
+                    break;
+                }
+                if(dcond->op == TQDateCond::Between) // between
+                {
+                    flags = nextCItem(condStr).toInt(); // 0 = use the next number as the date value; 1 = use current date/time as the date value; 2 = <<Unassigned>>.
+                    dcond->isCurrentDate2 = false;
+                    switch(flags)
+                    {
+                    case 0:
+                        v = nextCItem(condStr);
+                        if(dcond->isDaysValue)
+                            dcond->days2 = v.toInt();
+                        else
+                            dcond->value2 = QDateTime::fromTime_t(v.toUInt());
+                        break;
+                    case 1:
+                        dcond->isCurrentDate2 = true;
+                    case 2:
+                        dcond->days2 = 0;
+                        dcond->value2 = QDateTime();
+                        break;
+                    }
+                }
+                break;
+            }
+            case TRK_FIELD_TYPE_STRING:
+            {
+                TQStringCond *scond = new TQStringCond(this);
+                cond = scond;
+                scond->isCaseSensitive = nextCItem(condStr).toInt() != 0;
+                scond->value = nextCItem(condStr);
+                break;
+            }
+            default:
+                return false;
+            }
+        }
+        if(cond)
+        {
+            cond->setVid(vid);
+            cond->setIsOr(isOr);
+            cond->setIsNot(isNot);
+            cond->setIsOpenBracket(openBracket);
+            cond->setIsCloseBracket(closeBracket);
+            nestedCond.append(cond);
+        }
+        else
+            return false;
+    }
+    return true;
+}
+
+QString TrkQueryDef::title() const
+{
+    return qryTitle;
+}
+
+void TrkQueryDef::setTitle(const QString &title)
+{
+    qryTitle = title;
+}
+
+QString TrkQueryDef::comment() const
+{
+    return qryComment;
+}
+
+void TrkQueryDef::setComment(const QString &comment)
+{
+    qryComment = comment;
+}
+
+TrkRecordTypeDef *TrkQueryDef::trkRecordDef()
+{
+    if(!this || !recDef)
+        return 0;
+    return recDef;
+}
+
+TQAbstractRecordTypeDef *TrkQueryDef::recordDef()
+{
+    return trkRecordDef();
+}
+
 
 QString TrkQueryDef::nextCItem(QString &str)
 {
@@ -465,6 +965,20 @@ QString TrkQueryDef::nextCItem(QString &str)
     }
 }
 
+QString & TrkQueryDef::addCItem(QString &list, const QString &item, const QString &separator)
+{
+    QString res = item;
+    if(res.contains(QRegExp("['\",]")))
+    {
+        res.replace(QChar('"'), "\"\"").prepend(QChar('"')).append(QChar('"'));
+    }
+    if(list.isEmpty())
+        list = res;
+    else
+        list += separator + res;
+    return list;
+}
+
 /*
 QList<QAction *> TrkQueryDef::actionsAddCond()
 {
@@ -492,12 +1006,32 @@ void TrkQueryDef::miscActionTriggered(const QString &actionText)
     switch(index)
     {
     case 0:
+    {
         TrkKeywordCond *kcond = new TrkKeywordCond(this);
         if(kcond->editProperties())
             appendCondition(kcond);
         else
             delete kcond;
-        return;
+        break;
+    }
+    case 1:
+    {
+        TrkChangeCond *chcond = new TrkChangeCond(this);
+        if(chcond->editProperties())
+            appendCondition(chcond);
+        else
+            delete chcond;
+        break;
+    }
+    case 2:
+    {
+        TrkModuleCond *mcond = new TrkModuleCond(this);
+        if(mcond->editProperties())
+            appendCondition(mcond);
+        else
+            delete mcond;
+        break;
+    }
     }
 }
 
@@ -522,6 +1056,10 @@ TrkKeywordCond::TrkKeywordCond(TrkQueryDef *parent)
     isKeyInRecTitles = true;
     isKeyInNoteText = true;
     isKeyInNoteOnly = false;
+    setMask(TQCond::OrFlag
+            | TQCond::NotFlag
+            | TQCond::OpenFlag
+            | TQCond::CloseFlag);
 }
 
 TQCond &TrkKeywordCond::operator =(const TQCond &src)
@@ -545,7 +1083,17 @@ TQCond &TrkKeywordCond::operator =(const TQCond &src)
 
 QString TrkKeywordCond::condSubString() const
 {
-    return tr("<Keywords>");
+    QString templ = tr("Поиск текста \"%1\" %2%3%4%5%6%7");
+    QString sop = isKeyAnd ? tr(" И ") : tr(" ИЛИ ");
+    QString scase = isKeyCase ? tr("с учетом регистра") : tr("без учета регистра"); //2
+    QString sinrt = isKeyInRecTitles ? tr(", в заголовке") : ""; //3
+    QString sind = isKeyInDesc ? tr(", в описании") : ""; //4
+    QString sinnt = isKeyInNoteTitles ? tr(", в заголовках нот") : ""; //3
+    QString sinn = isKeyInNoteText ? tr(", во всех нотах") : ""; //6
+    QString sinn1 = isKeyInNoteOnly ? tr(", только в ноте '%1'").arg(noteTitleSearch) : ""; //7
+    QString res = templ.arg(keys.join(sop),scase,sinrt,sind,sinnt,sinn,sinn1);
+
+    return res;
 }
 
 bool TrkKeywordCond::editProperties()
@@ -617,6 +1165,21 @@ void TrkModuleCond::setIsCloseBracket(bool value)
 TrkChangeCond::TrkChangeCond(TrkQueryDef *parent)
     :TQCond(parent), qDef(parent)
 {
+    changeObject = FieldChange;
+    changeDate = AnyDate;
+    dateMode = Date;
+    changeType = AnyChange;
+    fileName = "";
+    authorId = 0;
+//    choiceIds1;
+//    choiceIds2;
+    date1 = QDateTime(QDate::currentDate().addDays(-1));
+    date2 = QDateTime(QDate::currentDate());
+    days1 = 1;
+    days2 = 0;
+//    oldValues;
+//    newValues;
+//    noteTitles;
 }
 
 TQCond &TrkChangeCond::operator =(const TQCond &src)
@@ -637,8 +1200,8 @@ TQCond &TrkChangeCond::operator =(const TQCond &src)
         date2 = csrc->date2;
         days1 = csrc->days1;
         days2 = csrc->days2;
-        oldValues = csrc->oldValues;
-        newValues = csrc->newValues;
+//        oldValues = csrc->oldValues;
+//        newValues = csrc->newValues;
         noteTitles = csrc->noteTitles;
     }
     return *this;
@@ -678,7 +1241,7 @@ QString TrkChangeCond::condSubString() const
         ch = tr("Присвоение метки");
         break;
     }
-    QStringList oldText, newText;
+//    QStringList oldText, newText;
     switch(changeObject)
     {
     case FieldChange:
@@ -687,23 +1250,23 @@ QString TrkChangeCond::condSubString() const
             s = tr("Изменение поля %1").arg(fname);
         else
             s = tr("Изменение любого поля");
-        QString chTableName = queryDef->recordDef()->fieldChoiceTable(vid());
-        TQChoiceList chTable = queryDef->recordDef()->choiceTable(chTableName);
+        TQChoiceList chTable = choiceTable();
         QStringList oList, nList;
+        QString emp(tr("<пусто>"));
+        if(choiceIds1.contains(0))
+            oList.append(emp);
+        if(choiceIds2.contains(0))
+            nList.append(emp);
         foreach(const TQChoiceItem &ch, chTable)
         {
-            foreach(const QString &vs, oldValues)
+            foreach(int id, choiceIds1)
             {
-                bool ok;
-                int id = vs.toInt(&ok);
-                if(ok && ch.id == id)
+                if(ch.id == id)
                     oList.append(ch.displayText);
             }
-            foreach(const QString &vs, newValues)
+            foreach(int id, choiceIds2)
             {
-                bool ok;
-                int id = vs.toInt(&ok);
-                if(ok && ch.id == id)
+                if(ch.id == id)
                     nList.append(ch.displayText);
             }
         }
@@ -761,7 +1324,7 @@ QString TrkChangeCond::condSubString() const
         break;
     }
 
-    if(authorId)
+    if(authorId > 0)
     {
         QString user = queryDef->project()->userFullName(authorId);
         if(user.isEmpty())
@@ -807,7 +1370,7 @@ bool TrkChangeCond::editProperties()
 26     -- id поля или -1 для record и note
 5      -- days2 after  если days1=days2=0, то op == any
 4      -- id автора изменений или 0-any
-0
+0      -- anydate (?)
 End
 
  */
@@ -818,9 +1381,38 @@ bool TrkChangeCond::parseString(QString s)
     QString key = lines.takeFirst();
     int tableClass = lines.takeFirst().toInt();
     QString res1 = lines.takeFirst();
-    dateMode = (DateModeEnum)lines.takeFirst().toInt();
-    oldValues = lines.takeFirst().split("\t");
-    newValues = lines.takeFirst().split("\t");
+    int dm = (DateModeEnum)lines.takeFirst().toInt();
+    switch(dm)
+    {
+    case 0:
+        dateMode = Days;
+        break;
+    case 1:
+        dateMode = Date;
+        break;
+    case 2:
+        dateMode = DateTime;
+        break;
+    default:
+        dateMode = Days;
+    }
+
+    choiceIds1.clear();
+    foreach(QString s, lines.takeFirst().split("\t"))
+    {
+        bool ok;
+        int id = s.toInt(&ok);
+        if(ok)
+            choiceIds1.append(id);
+    }
+    choiceIds2.clear();
+    foreach(QString s, lines.takeFirst().split("\t"))
+    {
+        bool ok;
+        int id = s.toInt(&ok);
+        if(ok)
+            choiceIds2.append(id);
+    }
     changeObject = (ChangeObjectEnum)lines.takeFirst().toInt();
     QString res2 = lines.takeFirst();
     bool isNot = lines.takeFirst().toInt();
@@ -842,8 +1434,9 @@ bool TrkChangeCond::parseString(QString s)
 
 //    const int base = 25569; // 01.01.1970
     QString l = lines.takeFirst();
-    qint64 secs;
+    qint64 secs, oldSecs;
     secs = l.toLongLong();
+    oldSecs = date1.toTime_t();
     date1.setTime_t(secs);
     l = lines.takeFirst();
     secs = l.toLongLong();
@@ -874,13 +1467,219 @@ bool TrkChangeCond::parseString(QString s)
 
     days2 = lines.takeFirst().toInt();
     authorId = lines.takeFirst().toInt();
-    QString res3 = lines.takeFirst();
+    int any = lines.takeFirst().toInt();
 
-    if(dateMode == Days)
-    {
-        if(days1 == 0 && days2)
-            changeDate = AnyDate;
-    }
+    if(any) //(dateMode == Days && changeDate == AfterDate && !days1 && !days2)
+        changeDate = AnyDate;
     return true;
 }
 
+QString TrkChangeCond::makeString()
+{
+    QString res;
+    addLine(res, "AgingStartVersion2");
+    switch(changeObject)
+    {
+    case FieldChange:
+    case RecordChange:
+        addLine(res, "1");
+        break;
+    case NoteChange:
+        addLine(res, "2");
+        break;
+    case FileChange:
+        addLine(res, "3");
+        break;
+    case ModuleChange:
+        addLine(res, "4");
+        break;
+    }
+    addLine(res, "0");
+    addLine(res, dateMode == Days ?
+                "0" :
+                dateMode == Date ?
+                    "1" :
+                    "2");
+    if(changeObject == FieldChange)
+    {
+        QString sc;
+        foreach(int id, choiceIds1)
+            TrkQueryDef::addCItem(sc, QString::number(id), "\t");
+        addLine(res, sc);
+        sc.clear();
+        foreach(int id, choiceIds2)
+            TrkQueryDef::addCItem(sc, QString::number(id), "\t");
+        addLine(res, sc);
+    }
+    else
+    {
+        addLine(res, "");
+        addLine(res, "");
+    }
+    switch(changeObject)
+    {
+    case FieldChange:
+        addLine(res, "1");
+        break;
+    case RecordChange:
+        addLine(res, "2");
+        break;
+    case FileChange:
+        addLine(res, "3");
+        break;
+    case NoteChange:
+        addLine(res, "4");
+        break;
+    case ModuleChange:
+        addLine(res, "5");
+        break;
+    }
+    addLine(res, "1");
+    // 0        -- 1-not
+    addLine(res, changeDate == NotBetweenDates ? "1" : "0");
+    // 1        -- ор 0-between, 1-after, 2-before
+    switch(changeDate)
+    {
+    case NotBetweenDates:
+    case BetweenDates:
+        addLine(res, "0");
+        break;
+    case AnyDate:
+    case AfterDate:
+        addLine(res, "1");
+        break;
+    case BeforeDate:
+        addLine(res, "2");
+        break;
+    default:
+        addLine(res, "0");
+    }
+    addLine(res, QString::number(date1.toTime_t()));
+    addLine(res, QString::number(date2.toTime_t()));
+    //     12     -- days1 before
+    if(dateMode == Days && changeDate != AnyDate)
+        addLine(res,QString::number(days1));
+    else
+        addLine(res, "0");
+
+    //  0      -- вид изменений 0-any , 1-добавление, 2-изменение, 3-удаление / 4-checked in, 5-checked out, 6-assigned version label, 2-modified, 1-added, 0-any, 3-removed
+    switch(changeType)
+    {
+    case AnyChange:
+        addLine(res, "0");
+        break;
+    case AddChange:
+        addLine(res, "1");
+        break;
+    case ModifyChange:
+        addLine(res, "2");
+        break;
+    case DeleteChange:
+        addLine(res, "3");
+        break;
+    case CheckedIn:
+        addLine(res, "4");
+        break;
+    case CheckedOut:
+        addLine(res, "5");
+        break;
+    case AssignLabelChange:
+        addLine(res, "6");
+        break;
+    default:
+        addLine(res, "0");
+    }
+
+    //       -- заголовок ноты или маска файла
+    if(changeObject == FileChange || changeObject == ModuleChange)
+        addLine(res, fileName);
+    else if(changeObject == NoteChange)
+        addLine(res, noteTitles.join("\t"));
+    else
+        addLine(res, "");
+    //    26     -- id поля или -1 для record и note
+    if(changeObject == FieldChange)
+    {
+        if(qDef && qDef->trkRecordDef())
+        {
+            int id = qDef->trkRecordDef()->fieldInternalIdByVid(vid());
+            addLine(res, QString::number(id));
+        }
+        else
+            addLine(res, "0");
+    }
+    else
+        addLine(res, "-1");
+
+    //  5      -- days2 after  если days1=days2=0, то op == any
+    if(dateMode == Days && changeDate != AnyDate)
+        addLine(res,QString::number(days2));
+    else
+        addLine(res, "0");
+    //  4      -- id автора изменений или 0-any
+    addLine(res, QString::number(authorId));
+    // 1 - any date
+    if(changeDate == AnyDate)
+        addLine(res, "1");
+    else
+        addLine(res, "0");
+    addLine(res, "End");
+    return res;
+}
+
+QString &TrkChangeCond::addLine(QString &result, const QString &line)
+{
+    result += line + "\n";
+    return result;
+}
+
+TQChoiceList TrkChangeCond::choiceTable() const
+{
+    int id = vid();
+    if(id <= 0 || !queryDef)
+        return TQChoiceList();
+    TQAbstractRecordTypeDef *rDef = queryDef->recordDef();
+    if(!rDef)
+        return TQChoiceList();
+    QString chTableName = rDef->fieldChoiceTable(id);
+    if(chTableName.isEmpty())
+        return TQChoiceList();
+    return rDef->choiceTable(chTableName);
+}
+
+void TrkChangeCond::setVid(int value)
+{
+    if(vid() == value)
+        return;
+    TQCond::setVid(value);
+    choiceIds1.clear();
+    choiceIds2.clear();
+}
+
+
+TrkDateCond::TrkDateCond(TrkQueryDef *parent)
+    : TQDateCond(parent)
+{
+
+}
+
+TQCond &TrkDateCond::operator =(const TQCond &src)
+{
+    return TQDateCond::operator =(src);
+}
+
+bool TrkDateCond::editProperties()
+{
+#ifdef CLIENT_APP
+    TrkDateCondDialog dlg;
+    dlg.setCondition(*this);
+    if(dlg.exec())
+    {
+        this->operator =(dlg.condition());
+        return true;
+    }
+    return false;
+#else
+    return false;
+#endif
+}

@@ -293,6 +293,14 @@ TQQueryDef *TQBaseProject::queryDefinition(const QString &queryName, int rectype
     return 0;
 }
 
+bool TQBaseProject::saveQueryDefinition(TQQueryDef *queryDefinition, const QString &queryName, int rectype)
+{
+    Q_UNUSED(queryDefinition)
+    Q_UNUSED(queryName)
+    Q_UNUSED(rectype)
+    return false;
+}
+
 QStringList TQBaseProject::userNames()
 {
     QStringList names;
@@ -318,6 +326,14 @@ QString TQBaseProject::userLogin(int userId)
         if(user.id == userId)
             return user.login;
     return QString();
+}
+
+int TQBaseProject::userId(const QString &login)
+{
+    QMap<QString, TQUser> list = userList();
+    if(list.contains(login))
+        return list[login].id;
+    return -1;
 }
 
 //========================= TQRecord ==================================

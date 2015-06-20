@@ -57,6 +57,8 @@ protected:
     QRadioButton *rbNull, *rbAny, *rbSelected;
     QListWidget *vList;
     QMutex mutex;
+
+    TQChoiceList choices;
 public:
     explicit TQChoiceCondDialog(QWidget *parent = 0);
     void setCondition(const TQCond &condition);

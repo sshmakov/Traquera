@@ -189,7 +189,8 @@ void ModifyPanel::fillValues(const QObjectList &records)
         if(row.isChanged)
             continue;
         row.displayValue = "";
-        for(int i=0; i<records.count(); i++)
+        int i;
+        for(i=0; i<records.count() && i < 20; i++)
         {
             const TQRecord *rec = qobject_cast<const TQRecord *>(records[i]);
             if(!rec)
@@ -214,6 +215,12 @@ void ModifyPanel::fillValues(const QObjectList &records)
                 }
                 //row.isEditable = row.isEditable && !rec->isFieldReadOnly(row.fieldName);
             }
+        }
+        if(i<records.count())
+        {
+            row.isDifferent = true;
+            row.displayValue = "...";
+            row.fieldValue = QVariant();
         }
         rows[r] = row;
         QTableWidgetItem *item = ui->fieldsTableWidget->item(r,1);
@@ -359,7 +366,12 @@ void ModifyPanel::resetAll()
             frow.isChanged = false;
             QTableWidgetItem  *item = tableWidget()->item(row,1);
             //item->setData(Qt::EditRole, frow.fieldValue);
-            frow.displayValue = frow.fieldValue.toString();
+            bool ok;
+            TQAbstractFieldType fdef = rdef->getFieldType(frow.fieldName, &ok);
+            if(ok)
+                frow.displayValue = fdef.valueToDisplay(frow.fieldValue);
+            else
+                frow.displayValue = frow.fieldValue.toString();
             if(frow.isDifferent)
                 frow.displayValue = "...";
             if(frow.fieldValue.isNull())
@@ -450,3 +462,5 @@ void ModifyPanel::on_actionClearField_triggered()
         clearField(field);
 
 }
+
+

@@ -181,11 +181,13 @@ public:
     virtual QHash<int,QString> baseRecordFields(int rectype) = 0;
     virtual bool isSystemModel(QAbstractItemModel *model) const = 0;
     virtual TQQueryDef *queryDefinition(const QString &queryName, int rectype) = 0;
+    virtual bool saveQueryDefinition(TQQueryDef *queryDefinition, const QString &queryName, int rectype) = 0;
     virtual QStringList userNames() = 0;
     virtual QMap<QString, TQUser> userList() = 0;
     virtual QString userFullName(const QString &login) = 0;
     virtual QString userFullName(int userId) = 0;
     virtual QString userLogin(int userId) = 0;
+    virtual int userId(const QString &login) = 0;
 signals:
     void openedModel(const QAbstractItemModel *model);
     void recordChanged(int id);
@@ -238,10 +240,12 @@ public:
     virtual QList<TQToolFile> attachedFiles(TQRecord *record);
     virtual bool saveFileFromRecord(TQRecord *record, int fileIndex, const QString &dest);
     virtual TQQueryDef *queryDefinition(const QString &queryName, int rectype);
+    virtual bool saveQueryDefinition(TQQueryDef *queryDefinition, const QString &queryName, int rectype);
     virtual QStringList userNames();
     virtual QMap<QString, TQUser> userList();
     virtual QString userFullName(int userId);
     virtual QString userLogin(int userId);
+    virtual int userId(const QString &login);
 };
 
 

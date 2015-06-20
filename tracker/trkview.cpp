@@ -685,6 +685,7 @@ bool TrkToolProject::readDefs()
                     else
                         id->defaultValue = "";
                 }
+
                 //id.p_choiceList->clear();
                 /*
                 if((
@@ -1113,14 +1114,22 @@ TQQueryDef *TrkToolProject::queryDefinition(const QString &queryName, int rectyp
     {
         QSqlQuery query2(sqlDb);
         QVariant vQueryName(queryName);
-        query2.prepare("select qryCont from "+dbName+"..trkqry where qryName = ? and qryTypeId in (?, ?)");
+        query2.prepare("select qryId,qryCont,qryName,qryTitle,qryComment from "+dbName+"..trkqry where qryName = ? and qryTypeId in (?, ?)");
         query2.bindValue(0, vQueryName);
         query2.bindValue(1, rectype);
         query2.bindValue(2, rectype+2);
         if(query2.exec())
         {
             if(query2.next())
-                str = query2.value(0).toString();
+            {
+                str = query2.value(1).toString();
+                TrkQueryDef *resultDef = new TrkQueryDef(this, recDef);
+                resultDef->setName(query2.value(2).toString());
+                resultDef->setTitle(query2.value(3).toString());
+                resultDef->setComment(query2.value(4).toString());
+                resultDef->parseSavedString(str);
+                return resultDef;
+            }
         }
         else
         {
@@ -1128,11 +1137,7 @@ TQQueryDef *TrkToolProject::queryDefinition(const QString &queryName, int rectyp
             return 0;
         }
     }
-    if(str.isEmpty())
-        return 0;
-    TrkQueryDef *resultDef = new TrkQueryDef(this, recDef);
-    resultDef->parseSavedString(str);
-    return resultDef;
+    return 0;
     /*
     TrkCond res;
     while(!str.isEmpty())
@@ -1155,6 +1160,25 @@ TQQueryDef *TrkToolProject::queryDefinition(const QString &queryName, int rectyp
     }
     return QString();
     */
+}
+
+bool TrkToolProject::saveQueryDefinition(TQQueryDef *queryDefinition, const QString &queryName, int rectype)
+{
+    TrkQueryDef *def = qobject_cast<TrkQueryDef *>(queryDefinition);
+    if(!def)
+        return false;
+    QString saveString = def->makeSaveString();
+//    return !saveString.isEmpty();
+
+    return isTrkOK(TrkSaveQuery(handle,
+                                queryName.toLocal8Bit().constData(),
+                                def->comment().toLocal8Bit().constData(),
+                                saveString.toLocal8Bit().constData(),
+                                def->title().toLocal8Bit().constData(),
+                                rectype
+                                )
+                   );
+
 }
 
 QStringList TrkToolProject::userNames()
@@ -1182,6 +1206,14 @@ QString TrkToolProject::userLogin(int userId)
         if(user.id == userId)
             return user.login;
     return QString();
+}
+
+int TrkToolProject::userId(const QString &login)
+{
+    QMap<QString, TQUser> list = userList();
+    if(list.contains(login))
+        return list[login].id;
+    return -1;
 }
 
 void TrkToolProject::readProjectDatabaseName()
@@ -3654,7 +3686,11 @@ QVariant TrkRecordTypeDef::fieldMinValue(int vid) const
     const TrkFieldDef *fDef = fieldDefs.value(vid,0);
     if(!fDef)
         return QVariant();
-    return fDef->minValue;
+    if(fDef->nativeType == TRK_FIELD_TYPE_DATE)
+        return QVariant(QDateTime::fromTime_t(0));
+    else if(fDef->nativeType == TRK_FIELD_TYPE_NUMBER)
+        return fDef->minValue;
+    return QVariant();
 }
 
 QVariant TrkRecordTypeDef::fieldMaxValue(int vid) const
@@ -3682,10 +3718,10 @@ QString TrkRecordTypeDef::dateTimeFormat() const
 
 QStringList TrkRecordTypeDef::noteTitleList() const
 {
-    return project()->noteTitleList();
+    return ((TrkToolProject *)project())->noteTitleList();
 }
 
-TrkToolProject *TrkRecordTypeDef::project() const
+TQAbstractProject *TrkRecordTypeDef::project() const
 {
     return prj;
 }

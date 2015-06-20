@@ -1335,7 +1335,7 @@ void MainWindow::openCurItem(bool reuse)
         QModelIndex index = treeView->currentIndex();
         if(selectedTreeItem.isQuerySelected)
         {
-            openQuery(selectedTreeItem.prj, selectedTreeItem.queryName, reuse);
+            openQuery(selectedTreeItem.prj, selectedTreeItem.queryName, selectedTreeItem.recordType, reuse);
             return;
         }
         if(selectedTreeItem.isFolderSelected)
@@ -1951,6 +1951,9 @@ void MainWindow::on_actionEditQuery_triggered()
     {
         TQQueryWidget dlg;
         dlg.setQueryDefinition(selectedTreeItem.prj->queryDefinition(selectedTreeItem.queryName, selectedTreeItem.recordType));
-        dlg.exec();
+        if(dlg.exec() == QDialog::Accepted)
+        {
+            selectedTreeItem.prj->saveQueryDefinition(dlg.queryDefinition(), selectedTreeItem.queryName, selectedTreeItem.recordType);
+        }
     }
 }

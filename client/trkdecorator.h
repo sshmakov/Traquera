@@ -6,6 +6,7 @@
 #include <QComboBox>
 #include <QLineEdit>
 #include <QStringList>
+#include <QDateTimeEdit>
 //#include "trkview.h"
 #include "tqbase.h"
 #include <QTableView>
@@ -132,5 +133,18 @@ protected slots:
     void onEditTextChanged(const QString &text);
 };
 
+class TrkDateTimeEdit: public QDateTimeEdit, public TrkFieldEdit
+{
+    Q_OBJECT
+    Q_INTERFACES(TrkFieldEdit)
+public:
+    explicit TrkDateTimeEdit(QWidget *parent, const QString &fieldName);
+    virtual void clearValue();
+    virtual void setValue(const QVariant &value);
+    virtual QVariant value() const;
+    virtual void setReadOnly(bool readOnly);
+protected slots:
+    void onDateTimeChanged(const QDateTime &value);
+};
 
 #endif // TRKDECORATOR_H

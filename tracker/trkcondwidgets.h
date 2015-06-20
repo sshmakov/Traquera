@@ -18,6 +18,7 @@ protected:
 public:
     explicit TrkKeywordCondDialog(QWidget *parent = 0);
     void setCondition(const TQCond &condition);
+    void resetControls();
     TQCond &condition();
 protected:
     QString andOr(bool value);
@@ -35,6 +36,7 @@ public slots:
 
 namespace Ui {
 class TrkChangeCondDialog;
+class TrkDateCondDialog;
 }
 
 class TrkChangeCondDialog : public QDialog
@@ -47,6 +49,7 @@ protected:
     QList<QWidget *> dateEdits;
     QMutex mutex;
     int locks;
+    QString dummyAnyField;
 public:
     explicit TrkChangeCondDialog(QWidget *parent = 0);
     void setCondition(const TQCond &condition);
@@ -58,12 +61,22 @@ protected slots:
     void updateFieldValues();
     void rbObjectToggled(bool value);
     void btnAddNoteClicked();
-    void fieldSelected(const QString &field);
+    void fieldIndexSelected(int index);
+    void grDateTimeToggled(bool value);
     void rbDaysToggled(bool value);
     void rbBetweenToggled(bool value);
+    void sbDays1Changed(int days);
+    void sbDays2Changed(int days);
+    void deDate1Changed(QDateTime date);
+    void deDate2Changed(QDateTime date);
+    void valuesSelected();
+    void grAuthorToggled(bool value);
+    void coAuthorChanged(int index);
 private:
     void deleteDateEdits(QLayout *lay);
+    void setEnableDateEdits(QLayout *lay, bool value);
     void setDateMode(TrkChangeCond::DateModeEnum mode);
+    void setBetweenMode(TrkChangeCond::ChangeDateEnum mode);
 protected:
     bool isInteractive();
     void lockChanges();
@@ -73,6 +86,31 @@ signals:
 
 protected:
     Ui::TrkChangeCondDialog *ui;
+};
+
+
+class TrkDateCondDialog: public QDialog
+{
+    Q_OBJECT
+protected:
+    TQDateCond cond;
+public:
+    explicit TrkDateCondDialog(QWidget *parent = 0);
+    void setCondition(const TQCond &condition);
+    TQCond &condition();
+protected slots:
+    void sectionToggled(bool value);
+    void rbToggled(bool value);
+    void sbDaysChanged(int value);
+    void dteChanged(const QDateTime &value);
+protected:
+    int locks;
+    bool isInteractive();
+    void lockChanges();
+    void unlockChanges();
+    void setDaysMode(bool value);
+protected:
+    Ui::TrkDateCondDialog *ui;
 };
 
 #endif // TRKCONDWIDGETS_H

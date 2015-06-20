@@ -307,7 +307,7 @@ public:
     virtual QString dateTimeFormat() const;
     QStringList noteTitleList() const;
 
-    TrkToolProject *project() const;
+    TQAbstractProject *project() const;
     int fieldVidByInternalId(int id) const;
     int fieldInternalIdByVid(int vid) const;
 
@@ -484,10 +484,12 @@ public:
     virtual TQRecord *recordOfIndex(const QModelIndex &index);
     virtual bool isSystemModel(QAbstractItemModel *model) const;
     virtual TQQueryDef * queryDefinition(const QString &queryName, int rectype);
+    virtual bool saveQueryDefinition(TQQueryDef *queryDefinition, const QString &queryName, int rectype);
     virtual QStringList userNames();
     virtual QMap<QString, TQUser> userList();
     virtual QString userFullName(int userId);
     virtual QString userLogin(int userId);
+    virtual int userId(const QString &login);
 
 protected:
     void readProjectDatabaseName();

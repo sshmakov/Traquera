@@ -1,13 +1,12 @@
+#include <QtGui>
 #include <QStringList>
-#include <QLineEdit>
-#include <QComboBox>
 #include <QDomElement>
 #include <QXmlSimpleReader>
-#include <QTabWidget>
-#include <QGridLayout>
-#include <QFormLayout>
-#include <QHeaderView>
-#include <QScrollArea>
+//#include <QTabWidget>
+//#include <QGridLayout>
+//#include <QFormLayout>
+//#include <QHeaderView>
+//#include <QScrollArea>
 //#include "trkview.h"
 #include "trkdecorator.h"
 #include "settings.h"
@@ -79,6 +78,8 @@ void TrkDecorator::fillEditPanels(QTabWidget *tabs, const TQAbstractRecordTypeDe
                         }
                         w = c;
                     }
+                    else if(fdef.simpleType() == TQ::TQ_FIELD_TYPE_DATE)
+                        w = new TrkDateTimeEdit(tabs, fname);
                     else
                         w = new TrkStringEdit(tabs, fname);
                     f.edit = w;
@@ -514,4 +515,38 @@ void EditDefList::recordDestroyed()
 EditDefList::~EditDefList()
 {
     connectToRecord(0);
+}
+
+//============================ TrkDateTimeEdit ================================
+TrkDateTimeEdit::TrkDateTimeEdit(QWidget *parent, const QString &fieldName)
+    : QDateTimeEdit(parent), TrkFieldEdit(fieldName)
+{
+    setCalendarPopup(true);
+    setDisplayFormat(tr("dd.MM.yyyy hh:mm:ss"));
+}
+
+void TrkDateTimeEdit::clearValue()
+{
+    clear();
+}
+
+void TrkDateTimeEdit::setValue(const QVariant &value)
+{
+    QDateTime dt = value.toDateTime();
+    setDateTime(dt);
+}
+
+QVariant TrkDateTimeEdit::value() const
+{
+    return QVariant(dateTime());
+}
+
+void TrkDateTimeEdit::setReadOnly(bool readOnly)
+{
+    Q_UNUSED(readOnly)
+}
+
+void TrkDateTimeEdit::onDateTimeChanged(const QDateTime &value)
+{
+    valueChanged(field, QVariant(value));
 }
