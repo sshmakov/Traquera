@@ -19,6 +19,7 @@ void TTFolderModel::setDatabaseTable(const QSqlDatabase &database, const QString
     tableName = table;
     this->projectId = projectName;
     refreshAll();
+    folderIcon = QIcon(":/images/folder.png");
 }
 
 void TTFolderModel::refreshAll()
@@ -66,21 +67,28 @@ void TTFolderModel::refreshAll()
 
 QVariant TTFolderModel::data(const QModelIndex &index, int role) const
 {
-    if(!index.isValid() || role != Qt::DisplayRole)
+    if(!index.isValid())
         return QVariant();
     int id = index.internalId();
     if(!folders.contains(id))
         return QVariant();
-    switch(index.column())
+    switch(role)
     {
-    case 0:
-        return folders[id].title;
-    case 1:
-        return folders[id].id;
-    case 2:
-        return folders[id].parentId;
-    case 3:
-        return folders[id].folderRecords();
+    case Qt::DisplayRole:
+        switch(index.column())
+        {
+        case 0:
+            return folders[id].title;
+        case 1:
+            return folders[id].id;
+        case 2:
+            return folders[id].parentId;
+        case 3:
+            return folders[id].folderRecords();
+        }
+    case Qt::DecorationRole:
+        if(index.column() == 0)
+            return folderIcon;
     }
     return QVariant();
 }
@@ -569,7 +577,7 @@ bool TTFolder::setRecords(const QString &records)
 
 TrkQryFilter::TrkQryFilter(QObject *parent)
     : QSortFilterProxyModel(parent),
-      filter(All)
+      filter(All), queryIcon(":/images/query.png")
 {
 }
 
@@ -595,6 +603,13 @@ void TrkQryFilter::setSourceQueryModel(QAbstractItemModel *sourceModel, TrkQryFi
         break;
     }
     sort(0);
+}
+
+QVariant TrkQryFilter::data(const QModelIndex &index, int role) const
+{
+    if(index.isValid() && index.column()==0 && role==Qt::DecorationRole)
+        return queryIcon;
+    return QSortFilterProxyModel::data(index, role);
 }
 
 #endif

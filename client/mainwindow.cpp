@@ -366,13 +366,15 @@ void MainWindow::saveIdsToList(const QString &list)
 
 void MainWindow::idEntered()
 {
+    if(!activePrj)
+        return;
     QString s = openIdEdit->currentText().trimmed();
     if(s.isEmpty())
         return;
     bool ok;
     s.left(1).toInt(&ok);
     if(ok)
-        openQueryById(s);
+        openQueryById(s, activePrj->defaultRecType(), true);
     else
         findTrkRecords(s);
     saveIdsToList(s);
@@ -380,13 +382,15 @@ void MainWindow::idEntered()
 
 void MainWindow::idEnteredNewPage()
 {
+    if(!activePrj)
+        return;
     QString s = openIdEdit->currentText().trimmed();
     if(s.isEmpty())
         return;
     bool ok;
     s.left(1).toInt(&ok);
     if(ok)
-        openQueryById(s,false);
+        openQueryById(s, activePrj->defaultRecType(),false);
     else
         findTrkRecords(s,false);
     saveIdsToList(s);
@@ -788,13 +792,8 @@ QString minTitle(const QString &title)
     return title;
 }
 
-void MainWindow::openQuery(TQAbstractProject *project, const QString &queryName, int recordType, bool reusePage)
+QueryPage *MainWindow::openQuery(TQAbstractProject *project, const QString &queryName, int recordType, bool reusePage)
 {
-//    if(!index.isValid() || !index.model())
-//		return;
-	//int id = index.data(Qt::UserRole).toInt();
-//	QString title = index.data(Qt::DisplayRole).toString().trimmed();
-
     QString title = queryName;
 
     QueryPage *page=NULL; // = qobject_cast<QueryPage *>(w);
@@ -808,24 +807,8 @@ void MainWindow::openQuery(TQAbstractProject *project, const QString &queryName,
     else
         page = createNewPage(minTitle(title));
 
-	//QAbstractItemModel *model = trkproject->openQueryModel(title);
     page->openQuery(project, title, recordType);
-	//page->setQueryModel(model);
-	//page->setQuery(id, trkdb);
-	// page->setPlanModel(&planModel);
-	/*
-	QString s = trkdb->getQueryById(id);
-	page->setQuery(s,trkdb->db);
-	*/
-	/*
-
-		QMessageBox::critical(0, "Select",
-		s, QMessageBox::Ok);
-	QSqlQueryModel *m = new QSqlQueryModel(this);
-	trkmodels.append(m);
-	m->setQuery(s,trkdb.db);  
-	ui.queryView->setModel(m);
-    */
+    return page;
 }
 
 /*
@@ -988,6 +971,7 @@ void MainWindow::readSelectedTreeItem()
     selectedTreeItem.isQuerySelected = false;
     selectedTreeItem.queryIndex = QModelIndex();
     selectedTreeItem.queryName = QString();
+    selectedTreeItem.icon = QIcon();
 
     QModelIndex curIndex = treeView->currentIndex();
     if(!curIndex.isValid())
@@ -1022,6 +1006,7 @@ void MainWindow::readSelectedTreeItem()
             return;
         }
         selectedTreeItem.isFolderSelected = true;
+        selectedTreeItem.icon = QIcon(":/images/folder.png");
         return;
     }
     selectedTreeItem.qryModel = qobject_cast<TrkQryFilter*>(model);
@@ -1035,6 +1020,7 @@ void MainWindow::readSelectedTreeItem()
         }
         selectedTreeItem.isQuerySelected = true;
         selectedTreeItem.queryName = index.data(Qt::DisplayRole).toString();
+        selectedTreeItem.icon = QIcon(":/images/query.png");
         return;
     }
     /*
@@ -1333,14 +1319,14 @@ void MainWindow::openCurItem(bool reuse)
     {
         readSelectedTreeItem();
         QModelIndex index = treeView->currentIndex();
+        QueryPage *page = 0;
         if(selectedTreeItem.isQuerySelected)
         {
-            openQuery(selectedTreeItem.prj, selectedTreeItem.queryName, selectedTreeItem.recordType, reuse);
-            return;
+            page = openQuery(selectedTreeItem.prj, selectedTreeItem.queryName, selectedTreeItem.recordType, reuse);
         }
-        if(selectedTreeItem.isFolderSelected)
+        else if(selectedTreeItem.isFolderSelected)
         {
-            QueryPage *page = curQueryPage(); // = qobject_cast<QueryPage *>(w);
+            page = curQueryPage(); // = qobject_cast<QueryPage *>(w);
             QString folderName = selectedTreeItem.folderIndex.sibling(index.row(),0).data().toString();
 //            int folderId = index.sibling(index.row(),1).data().toInt();
             if(folderName.isEmpty())
@@ -1349,7 +1335,14 @@ void MainWindow::openCurItem(bool reuse)
                 page = createNewPage(folderName);
             page->openFolder(selectedTreeItem.prj, selectedTreeItem.folderModel->folder(selectedTreeItem.folderIndex), selectedTreeItem.recordType);
             tabWidget->setTabText(tabWidget->currentIndex(),folderName);
+        }
+        else
             return;
+        if(page && !selectedTreeItem.icon.isNull())
+        {
+            int i = tabWidget->indexOf(page);
+            if(i>=0)
+                tabWidget->setTabIcon(i,selectedTreeItem.icon);
         }
         /*
         QModelIndex index = treeView->currentIndex();

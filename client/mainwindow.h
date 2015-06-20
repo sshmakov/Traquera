@@ -96,10 +96,11 @@ private:
         QModelIndex queryIndex;
         QString queryName;
         int recordType;
+        QIcon icon;
     } selectedTreeItem;
 public slots:
     void readQueries(TQAbstractProject *prj);
-    void openQuery(TQAbstractProject *project, const QString &queryName, int recordType, bool reusePage);
+    QueryPage *openQuery(TQAbstractProject *project, const QString &queryName, int recordType, bool reusePage);
 //    void showCurrentPlan();
 //    void showPlan(bool linked = false);
     void showPlan(const QModelIndex &index);

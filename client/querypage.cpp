@@ -51,6 +51,7 @@ QueryPage::QueryPage(QWidget *parent)
     qryFilterModel = new QSortFilterProxyModel(this);
     qryFilterModel->setFilterKeyColumn(-1);
     qryFilterModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
+    qryFilterModel->setSortRole(Qt::EditRole);
     detailsTimer = new QTimer(this);
     detailsTimer->setInterval(0);
     detailsTimer->setSingleShot(true);

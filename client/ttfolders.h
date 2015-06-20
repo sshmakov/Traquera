@@ -31,6 +31,7 @@ private:
     QString projectId;
     QHash<int, TTFolder> folders; // by Id
     //QList<int> rows; // sort ordered Id for top folders
+    QIcon folderIcon;
     mutable QMutex mutex;
 public:
     explicit TTFolderModel(QObject *parent = 0);
@@ -73,10 +74,13 @@ public slots:
 class TrkQryFilter: public QSortFilterProxyModel
 {
     Q_OBJECT
+protected:
+    QIcon queryIcon;
 public:
     enum Filter {All, UserOnly, PublicOnly} filter;
     TrkQryFilter(QObject *parent=0);
     void setSourceQueryModel(QAbstractItemModel *sourceModel, Filter filter);
+    virtual QVariant data(const QModelIndex &index, int role) const;
 private:
     Filter curFilter;
 };
