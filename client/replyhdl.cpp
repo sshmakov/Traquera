@@ -584,6 +584,11 @@ QStringList TQServiceRecordDef::noteTitleList() const
     return m_noteTitles;
 }
 
+TQAbstractProject *TQServiceRecordDef::project() const
+{
+    return m_prj;
+}
+
 const TQServiceRecordDef::FieldProps *TQServiceRecordDef::props(int vid) const
 {
     if(!m_props.contains(vid))

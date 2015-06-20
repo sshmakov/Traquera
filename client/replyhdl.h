@@ -113,6 +113,7 @@ public:
     virtual QString fieldChoiceTable(int vid) const;
     virtual QString dateTimeFormat() const;
     virtual QStringList noteTitleList() const;
+    TQAbstractProject *project() const;
 protected:
     const FieldProps *props(int vid) const;
     QVariant stringToVar(const QString &value, int simpleType) const;
