@@ -72,6 +72,7 @@ protected slots:
     void valuesSelected();
     void grAuthorToggled(bool value);
     void coAuthorChanged(int index);
+    void noteTitlesSelected();
 private:
     void deleteDateEdits(QLayout *lay);
     void setEnableDateEdits(QLayout *lay, bool value);

@@ -232,6 +232,8 @@ TrkChangeCondDialog::TrkChangeCondDialog(QWidget *parent)
     connect(ui->grAuthor,SIGNAL(toggled(bool)),SLOT(grAuthorToggled(bool)));
     connect(ui->coAuthor,SIGNAL(currentIndexChanged(int)),SLOT(coAuthorChanged(int)));
 
+    connect(ui->lwNoteTitles,SIGNAL(itemSelectionChanged()),SLOT(noteTitlesSelected()));
+
     noteChangeTypes = tr("Любое изменение,0;Нота добавлена,1;Нота изменена,2;Нота удалена,3");
     fileChangeTypes = tr("Любое изменение,0;Файл добавлен,1;Файл удален,3");
     moduleChangeTypes = tr("Любое изменение,0;Модуль добавлен,1;Модуль изменен,2;Модуль удален,3;"
@@ -606,6 +608,19 @@ void TrkChangeCondDialog::coAuthorChanged(int index)
         int id = ui->coAuthor->itemData(index).toInt();
         cond.authorId = id;
     }
+}
+
+void TrkChangeCondDialog::noteTitlesSelected()
+{
+    if(!isInteractive())
+        return;
+    QStringList list;
+    foreach(QListWidgetItem *item, ui->lwNoteTitles->selectedItems())
+    {
+        QString title = item->text();
+        list.append(title);
+    }
+    cond.noteTitles = list;
 }
 
 void TrkChangeCondDialog::deleteDateEdits(QLayout *lay)
