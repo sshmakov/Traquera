@@ -293,6 +293,12 @@ TQQueryDef *TQBaseProject::queryDefinition(const QString &queryName, int rectype
     return 0;
 }
 
+TQQueryDef *TQBaseProject::createQueryDefinition(int rectype)
+{
+    Q_UNUSED(rectype)
+    return 0;
+}
+
 bool TQBaseProject::saveQueryDefinition(TQQueryDef *queryDefinition, const QString &queryName, int rectype)
 {
     Q_UNUSED(queryDefinition)

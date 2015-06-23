@@ -186,8 +186,7 @@ signals:
 
 public slots:
     void trustChanged(int State);
-    void idEntered();
-    void idEnteredNewPage();
+    void idEntered(int flag);
     void slotAppendRecordsId();
     void slotRemoveRecordsId();
     void applyChanges();
@@ -230,6 +229,7 @@ private slots:
     void on_btnService_clicked();
     void on_actionClose_Project_triggered();
     void on_actionEditQuery_triggered();
+    void on_actionNewQuery_triggered();
 };
 
 #endif

@@ -592,7 +592,15 @@
   </action>
   <action name="actionEditQuery">
    <property name="text">
-    <string>Изменить запрос...</string>
+    <string>Изменить выборку...</string>
+   </property>
+   <property name="toolTip">
+    <string>Изменить выборку</string>
+   </property>
+  </action>
+  <action name="actionNewQuery">
+   <property name="text">
+    <string>Новая выборка...</string>
    </property>
   </action>
  </widget>

@@ -181,6 +181,7 @@ public:
     virtual QHash<int,QString> baseRecordFields(int rectype) = 0;
     virtual bool isSystemModel(QAbstractItemModel *model) const = 0;
     virtual TQQueryDef *queryDefinition(const QString &queryName, int rectype) = 0;
+    virtual TQQueryDef *createQueryDefinition(int rectype) = 0;
     virtual bool saveQueryDefinition(TQQueryDef *queryDefinition, const QString &queryName, int rectype) = 0;
     virtual QStringList userNames() = 0;
     virtual QMap<QString, TQUser> userList() = 0;
@@ -240,6 +241,7 @@ public:
     virtual QList<TQToolFile> attachedFiles(TQRecord *record);
     virtual bool saveFileFromRecord(TQRecord *record, int fileIndex, const QString &dest);
     virtual TQQueryDef *queryDefinition(const QString &queryName, int rectype);
+    virtual TQQueryDef *createQueryDefinition(int rectype);
     virtual bool saveQueryDefinition(TQQueryDef *queryDefinition, const QString &queryName, int rectype);
     virtual QStringList userNames();
     virtual QMap<QString, TQUser> userList();

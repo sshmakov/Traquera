@@ -43,7 +43,7 @@ extern int uniqueAlbumId;
 extern int uniqueArtistId;
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
+    : QMainWindow(parent), activePrj(0)
 {
     //qRegisterMetaType<MainWindow>("QMainWindow");
     setupUi(this);
@@ -274,11 +274,19 @@ void MainWindow::setupToolbar()
     tb->setText(tr("Открыть"));
     tb->setPopupMode(QToolButton::MenuButtonPopup);
     toolBar_2->addWidget(tb);
-    connect(tb,SIGNAL(clicked()),this,SLOT(idEntered()));
+    QSignalMapper *map = new QSignalMapper(this);
+    connect(map,SIGNAL(mapped(int)),SLOT(idEntered(int)));
+
+    map->setMapping(tb, (int)true);
+    connect(tb,SIGNAL(clicked()),map,SLOT(map()));
+
     // К кнопке добавляем popup-меню
     QMenu *tbMenu =new QMenu(tb);
     QAction *a = new QAction(tr("Открыть в новой вкладке"),tb);
-    connect(a,SIGNAL(triggered()),this,SLOT(idEnteredNewPage()));
+
+    map->setMapping(a, (int)false);
+    connect(a,SIGNAL(triggered()),map,SLOT(map()));
+
     tbMenu->addAction(a);
     a = new QAction(tr("Добавить"),tb);
     connect(a,SIGNAL(triggered()),this,SLOT(slotAppendRecordsId()));
@@ -295,7 +303,9 @@ void MainWindow::setupToolbar()
     tb->setMenu(tbMenu);
     QShortcut *enter;
     enter = new QShortcut(QKeySequence(QKeySequence::InsertParagraphSeparator),openIdEdit,0,0,Qt::WidgetShortcut);
-    connect(enter,SIGNAL(activated()),this,SLOT(idEntered()));
+
+    map->setMapping(enter, (int)true);
+    connect(enter,SIGNAL(activated()),map,SLOT(map()));
 
     /*
     enter = new QShortcut(QKeySequence(Qt::Key_Return),openIdEdit,0,0,Qt::WidgetShortcut);
@@ -364,35 +374,22 @@ void MainWindow::saveIdsToList(const QString &list)
     openIdEdit->clearEditText();
 }
 
-void MainWindow::idEntered()
+void MainWindow::idEntered(int flag)
 {
-    if(!activePrj)
+    bool reusePage = flag!=0;
+    TQAbstractProject *prj = currentProject();
+    if(!prj)
         return;
     QString s = openIdEdit->currentText().trimmed();
     if(s.isEmpty())
         return;
     bool ok;
     s.left(1).toInt(&ok);
+    int rectype = prj->defaultRecType();
     if(ok)
-        openQueryById(s, activePrj->defaultRecType(), true);
+        openQueryById(s, rectype, reusePage);
     else
-        findTrkRecords(s);
-    saveIdsToList(s);
-}
-
-void MainWindow::idEnteredNewPage()
-{
-    if(!activePrj)
-        return;
-    QString s = openIdEdit->currentText().trimmed();
-    if(s.isEmpty())
-        return;
-    bool ok;
-    s.left(1).toInt(&ok);
-    if(ok)
-        openQueryById(s, activePrj->defaultRecType(),false);
-    else
-        findTrkRecords(s,false);
+        findTrkRecords(s, reusePage);
     saveIdsToList(s);
 }
 
@@ -735,6 +732,7 @@ void MainWindow::connectTrackerParams(const ConnectParams &params)
             //        journal->setProject(prj);
             readQueries(prj);
             //connectButton->setDisabled(true);
+            setCurrentProject(prj);
         }
         else
             delete prj;
@@ -1129,7 +1127,11 @@ void MainWindow::readModifications()
 
 TQAbstractProject *MainWindow::currentProject() const
 {
-    return activePrj;
+    if(activePrj)
+        return activePrj;
+    if(projects.size())
+        return projects[0];
+    return 0;
 }
 
 void MainWindow::setCurrentProject(TQAbstractProject *prj)
@@ -1557,6 +1559,8 @@ void MainWindow::on_treeView_customContextMenuRequested(const QPoint &pos)
         }
         menu.addSeparator();
     }
+    if(selectedTreeItem.isQryGroupSelected)
+        menu.addAction(actionNewQuery);
     if(selectedTreeItem.isFolderSelected)
     {
         menu.addAction(actionAddToFolder);
@@ -1763,7 +1767,7 @@ void MainWindow::on_actionRenameFolder_triggered()
 
 void MainWindow::on_actionOpenIds_triggered()
 {
-    idEntered();
+    idEntered(true);
 }
 
 void MainWindow::on_dockProps_visibilityChanged(bool visible)
@@ -1949,4 +1953,18 @@ void MainWindow::on_actionEditQuery_triggered()
             selectedTreeItem.prj->saveQueryDefinition(dlg.queryDefinition(), selectedTreeItem.queryName, selectedTreeItem.recordType);
         }
     }
+}
+
+void MainWindow::on_actionNewQuery_triggered()
+{
+    TQQueryWidget dlg;
+    TQQueryDef *qDef = selectedTreeItem.prj->createQueryDefinition(selectedTreeItem.recordType);
+    if(!qDef)
+        return;
+    dlg.setQueryDefinition(qDef);
+    if(dlg.exec() == QDialog::Accepted)
+    {
+        //5selectedTreeItem.prj->saveQueryDefinition(dlg.queryDefinition(), selectedTreeItem.queryName, selectedTreeItem.recordType);
+    }
+
 }

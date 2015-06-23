@@ -746,17 +746,16 @@ bool TrkToolProject::readDefs()
 
 void TrkToolProject::readUserList()
 {
+    QMap<QString, QString> loginByName;
     m_userList.clear();
+    int index;
     if(isTrkOK(TrkInitUserList(handle)))
     {
         char userName[1024];
-        TRK_UINT id = 0;
-        TRK_UINT deleted = 0;
-        while(TRK_SUCCESS == TrkGetNextUserInternal(handle, sizeof(userName), userName, &id, &deleted))
+        index=0;
+        while(TRK_SUCCESS == TrkGetNextUser(handle, sizeof(userName), userName)) //logins
         {
             TQUser item;
-            item.id = id;
-            item.isDeleted = deleted;
             item.login = QString::fromLocal8Bit(userName);
             char fullName[1024];
             if(TRK_SUCCESS == TrkGetUserFullName(handle, userName, sizeof(fullName), fullName))
@@ -765,6 +764,26 @@ void TrkToolProject::readUserList()
                 item.fullName = item.login;
             item.displayName = item.fullName;
             m_userList.insert(item.login,item);
+            loginByName.insert(item.fullName, item.login);
+        }
+    }
+    if(isTrkOK(TrkInitUserList(handle)))
+    {
+        char userName[1024];
+        TRK_UINT id = 0;
+        TRK_UINT deleted = 0;
+        index = 0;
+        while(TRK_SUCCESS == TrkGetNextUserInternal(handle, sizeof(userName), userName, &id, &deleted)) //fullname + id +
+        {
+            if(loginByName.contains(userName))
+            {
+                QString login = loginByName.value(userName);
+                TQUser item = m_userList.value(login);
+                item.id = id;
+                item.isDeleted = deleted;
+                m_userList.insert(item.login,item);
+            }
+            index++;
         }
     }
 }
@@ -1160,6 +1179,15 @@ TQQueryDef *TrkToolProject::queryDefinition(const QString &queryName, int rectyp
     }
     return QString();
     */
+}
+
+TQQueryDef *TrkToolProject::createQueryDefinition(int rectype)
+{
+    TrkRecordTypeDef *rDef = (TrkRecordTypeDef *)recordTypeDef(rectype);
+    if(!rDef)
+        return 0;
+    TrkQueryDef *qDef = new TrkQueryDef(this, rDef);
+    return qDef;
 }
 
 bool TrkToolProject::saveQueryDefinition(TQQueryDef *queryDefinition, const QString &queryName, int rectype)
@@ -3530,7 +3558,8 @@ TQChoiceList TrkRecordTypeDef::choiceTable(const QString &tableName) const
         {
             TQChoiceItem item;
             item.id = i.value().id;
-            item.fieldValue = i.key();
+            QString login = i.key();
+            item.fieldValue = login;
             item.displayText = i.value().displayName;
             item.order = ++order;
             item.weight = 1;

@@ -484,6 +484,7 @@ public:
     virtual TQRecord *recordOfIndex(const QModelIndex &index);
     virtual bool isSystemModel(QAbstractItemModel *model) const;
     virtual TQQueryDef * queryDefinition(const QString &queryName, int rectype);
+    virtual TQQueryDef *createQueryDefinition(int rectype);
     virtual bool saveQueryDefinition(TQQueryDef *queryDefinition, const QString &queryName, int rectype);
     virtual QStringList userNames();
     virtual QMap<QString, TQUser> userList();

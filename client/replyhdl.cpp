@@ -143,32 +143,6 @@ TQRecordDefReplyHandler::~TQRecordDefReplyHandler()
         delete def;
 }
 
-/*
-    TQAbstractRecordTypeDef* def = recordTypeDef(recType);
-    if(!def)
-        return QDomDocument();
-    QDomDocument doc;
-    QDomElement root = doc.createElement("RecordDef");
-    root.setAttribute("recordType", recType);
-    QDomElement fields = doc.createElement("Fields");
-    foreach(int vid, def->fieldVids())
-    {
-        QDomElement f = doc.createElement("Field");
-        f.setAttribute("name",def->fieldName(vid));
-        f.setAttribute("type",def->fieldNativeType(vid));
-        f.setAttribute("simpleType",def->fieldSimpleType(vid));
-        f.setAttribute("minValue",def->fieldMinValue(vid).toString());
-        f.setAttribute("maxValue",def->fieldMaxValue(vid).toString());
-        if(def->hasChoiceList(vid))
-        {
-            f.setAttribute("choices",def->fieldChoiceTable(vid));
-        }
-        fields.appendChild(f);
-    }
-    root.appendChild(root);
-    return doc;
-*/
-
 static inline int aInt(const QXmlAttributes &atts, const QString &name, int defValue = 0)
 {
     QString val = atts.value(name);
