@@ -734,15 +734,23 @@ bool PlansPlugin::loadSettings()
         settings->beginGroup("Plans");
         {
             QStringList keys=settings->childKeys();
+            QMap<QString, QString> map;
             for(int i=0; i<keys.count(); i++)
             {
                 const QString &key = keys[i];
                 if(!key.contains(".RO"))
                 {
                     QString prj = settings->value(key).toString();
-                    bool readOnly = settings->value(key+".RO",false).toBool();
-                    planFiles->addPlan(prj, readOnly);
+                    map.insert(prj, key);
                 }
+            }
+            QMap<QString, QString>::iterator i;
+            for(i = map.begin(); i != map.end(); i++)
+            {
+                QString prj = i.key();
+                QString key = i.value();
+                bool readOnly = settings->value(key+".RO",false).toBool();
+                planFiles->addPlan(prj, readOnly);
             }
         }
         settings->endGroup();

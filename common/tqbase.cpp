@@ -783,7 +783,7 @@ bool TQRecord::isSelected() const
 void TQRecord::setSelected(bool value)
 {
     if(!isValid())
-        return
+        return;
     project()->setSelectedId(recordId(), value, recordType());
     emit changed(recordId());
 }
