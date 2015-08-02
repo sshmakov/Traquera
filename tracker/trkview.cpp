@@ -1244,6 +1244,25 @@ int TrkToolProject::userId(const QString &login)
     return -1;
 }
 
+TQGroupList TrkToolProject::userGroups()
+{
+    TQGroupList groups;
+    if(isTrkOK(TrkInitGroupList(handle)))
+    {
+        char buf[1024];
+        TRK_UINT id, order;
+        while(isTrkOK(TrkGetNextGroup(handle,sizeof(buf),buf, &id, &order)))
+        {
+            TQGroup gr;
+            gr.name = QString::fromLocal8Bit(buf);
+            gr.id = id;
+            groups.append(gr);
+        }
+    }
+//    groups.sort();
+    return groups;
+}
+
 void TrkToolProject::readProjectDatabaseName()
 {
     dbName.clear();
@@ -2043,9 +2062,10 @@ bool TrkToolProject::doSaveNotes(TrkToolRecord *record, TRK_RECORD_HANDLE recHan
         return false;
     if(record->mode() == TrkToolRecord::Edit && !isTrkOK(TrkInitNoteList(*noteHandle)))
         return false;
-    for(int i=0; i<record->notesList.count(); ++i)
+    TQNotesCol notes = record->notesList;
+    for(int i=0; i<notes.count();)
     {
-        TQNote note = record->notesList[i];
+        TQNote &note = record->notesList[i];
         if(note.isAdded)
         {
             if(!isTrkOK(TrkAddNewNote(*noteHandle)))
@@ -2054,6 +2074,7 @@ bool TrkToolProject::doSaveNotes(TrkToolRecord *record, TRK_RECORD_HANDLE recHan
                 return false;
             if(!isTrkOK(Do_TrkSetNoteData(*noteHandle, stringToLocal8Bit(note.text))))
                 return false;
+            note.isAdded = false;
         }
         else if(record->mode() == TrkToolRecord::Edit)
         {
@@ -2065,12 +2086,19 @@ bool TrkToolProject::doSaveNotes(TrkToolRecord *record, TRK_RECORD_HANDLE recHan
                     return false;
                 if(!isTrkOK(Do_TrkSetNoteData(*noteHandle, stringToLocal8Bit(note.text))))
                     return false;
+                note.isChanged = false;
             }
             else if(note.isDeleted)
+            {
                 if(!isTrkOK(TrkDeleteNote(*noteHandle)))
                     return false;
+                notes.removeAt(i);
+                continue;
+            }
         }
+        i++;
     }
+    record->notesList = notes;
     return true;
 }
 
@@ -2571,7 +2599,7 @@ void TrkToolRecord::releaseBuffer()
     }
 }
 
-void TrkToolRecord::somethingChanged()
+void TrkToolRecord::somethingChanged() const
 {
     emit changed(recordId());
 }
@@ -3117,11 +3145,11 @@ void TrkToolRecord::removeLink(const QObject *receiver)
 }
 */
 
-TQNotesCol TrkToolRecord::notes()
+TQNotesCol TrkToolRecord::notes() const
 {
     if(!textsReaded)
     {
-        prj->readRecordTexts(this);
+        prj->readRecordTexts(const_cast<TrkToolRecord*>(this));
         somethingChanged();
     }
     return notesList;
@@ -3552,15 +3580,21 @@ TQChoiceList TrkRecordTypeDef::choiceTable(const QString &tableName) const
 //        if(!userChoices.isEmpty())
 //            return userChoices;
         TQChoiceList res;
+        QMultiMap<QString, QString> nameToLogin;
+        foreach(const TQUser &item, prj->m_userList)
+            nameToLogin.insert(item.displayName, item.login);
         int order = 0;
-        QMap<QString, TQUser>::const_iterator i;
-        for (i = prj->m_userList.constBegin(); i != prj->m_userList.constEnd(); ++i)
+        foreach(QString login, nameToLogin)
         {
+//        QMap<QString, TQUser>::const_iterator i;
+//        for (i = prj->m_userList.constBegin(); i != prj->m_userList.constEnd(); ++i)
+//        {
+            const TQUser &u = prj->m_userList[login];
             TQChoiceItem item;
-            item.id = i.value().id;
-            QString login = i.key();
+            item.id = u.id;
+//            QString login = i.key();
             item.fieldValue = login;
-            item.displayText = i.value().displayName;
+            item.displayText = u.displayName;
             item.order = ++order;
             item.weight = 1;
             res.append(item);

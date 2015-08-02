@@ -428,7 +428,7 @@ protected:
     QHash<int, TrkToolQryModel *> theQueryModel;
     QHash<TRK_RECORD_TYPE, TQSelectedSet> selected;
     QHash<TRK_RECORD_TYPE, TrkToolModel*> selectedModels;
-    QMap<QString, TQUser> m_userList;
+    QMap<QString, TQUser> m_userList; // by login
     QString user;
     QStringList noteTitles;
 protected: // Work with record handlers
@@ -491,6 +491,7 @@ public:
     virtual QString userFullName(int userId);
     virtual QString userLogin(int userId);
     virtual int userId(const QString &login);
+    virtual TQGroupList userGroups();
 
 protected:
     void readProjectDatabaseName();
@@ -717,7 +718,7 @@ public:
     Q_INVOKABLE QString noteText(int index);
 //    void addLink();
 //    void removeLink(const QObject *receiver=0);
-    TQNotesCol notes();
+    TQNotesCol notes() const;
     QList<TQToolFile> fileList();
     bool saveFile(int fileIndex, const QString &dest);
     TrkToolProject *project() const
@@ -729,7 +730,7 @@ public:
     Q_INVOKABLE void releaseBuffer();
 //    TRK_RECORD_TYPE recordType() const { return rectype; }
 protected slots:
-    void somethingChanged();
+    void somethingChanged() const;
     void valuesReloaded();
 /*
 signals:

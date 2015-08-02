@@ -70,6 +70,8 @@ protected:
     QHash<int,NoteValue> newText;
     int noteInEdit;
     QTabBar *tabBar;
+    int titleVid;
+    QString titleFieldName;
 
     void initWidgets();
     virtual void closeEvent(QCloseEvent *event);
@@ -87,6 +89,7 @@ protected slots:
     void refreshValues();
     bool addNewNote(const QString &title, const QString &text);
     void postCurValue();
+    void titleChanged(const QString &value);
 
 private slots:
     void on_actionEditRecord_triggered();
@@ -95,8 +98,8 @@ private slots:
     void on_actionClose_triggered();
     void on_addNoteButton_clicked();
     void on_actionSaveExit_triggered();
-
     void on_newNoteButton_clicked();
+    void on_cancelNoteButton_clicked();
 
 public slots:
     void populateJavaScriptWindowObject();

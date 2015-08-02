@@ -66,6 +66,14 @@ struct TQUser
 
 typedef QList<TQUser> TQUserList;
 
+struct TQGroup
+{
+    int id;
+    QString name;
+};
+
+typedef QList<TQGroup> TQGroupList;
+
 /*
 class TQQueryFilter: public QSortFilterProxyModel
 {
@@ -189,6 +197,7 @@ public:
     virtual QString userFullName(int userId) = 0;
     virtual QString userLogin(int userId) = 0;
     virtual int userId(const QString &login) = 0;
+    virtual TQGroupList userGroups() = 0;
 signals:
     void openedModel(const QAbstractItemModel *model);
     void recordChanged(int id);
@@ -248,6 +257,7 @@ public:
     virtual QString userFullName(int userId);
     virtual QString userLogin(int userId);
     virtual int userId(const QString &login);
+    virtual TQGroupList userGroups();
 };
 
 
@@ -345,8 +355,8 @@ public: //protected: // Project specific data
     Q_INVOKABLE virtual void setSelected(bool value);
     Q_INVOKABLE virtual void refresh();
 signals:
-    void changedState(int newMode) ;
-    void changed(int recId) ;
+    void changedState(int newMode) const;
+    void changed(int recId) const;
 
 //    virtual void setRecordId(int id) { values[VID_Id] = QVariant::fromValue(id); }
 //    TQRecord(const TQRecord& src);

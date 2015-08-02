@@ -770,7 +770,8 @@ bool TrkQueryDef::parseFields(QString &str)
                         specialUser = true;
                         i--;
                     }
-                    ucond->ids.append(id);
+                    else
+                        ucond->ids.append(id);
                 }
                 break;
             }

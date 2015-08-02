@@ -104,6 +104,15 @@ void TTRecordWindow::showNoteEditor(bool show)
 void TTRecordWindow::setTypeDef(const TQAbstractRecordTypeDef *recDef)
 {
     props->setRecordDef(recDef);
+    titleVid = recDef->roleVid(TQAbstractRecordTypeDef::TitleField);
+    if(titleVid)
+        titleFieldName = recDef->fieldName(titleVid);
+    else
+        titleFieldName.clear();
+    if(titleFieldName.isEmpty())
+        ui->labelRecordTitle->setText(tr("Тема:"));
+    else
+        ui->labelRecordTitle->setText(titleFieldName+":");
 }
 
 TQRecord *TTRecordWindow::getRecord()
@@ -202,7 +211,10 @@ void TTRecordWindow::refreshState()
 void TTRecordWindow::valueChanged()
 {
     if(enableModify())
+    {
         setChanged(true);
+        ui->recordTitleEdit->setText(props->fieldValue(titleFieldName).toString());
+    }
     else
         props->resetAll();
 }
@@ -264,7 +276,13 @@ static QString xmlToHTML(const QDomDocument &xml, const QString &xqCodeFile)
 void TTRecordWindow::refreshValues()
 {
     //a_record->refresh();
+    ui->recordTitleEdit->blockSignals(true);
     props->fillValues(QObjectList() << a_record);
+    if(titleVid)
+        ui->recordTitleEdit->setText(a_record->value(titleVid).toString());
+    else
+        ui->recordTitleEdit->clear();
+    ui->recordTitleEdit->blockSignals(false);
     QString html = xmlToHTML(a_record->toXML(),"data/edit.xq");
     ui->webView->setHtml(html);
     ui->titleBox->clear();
@@ -310,6 +328,18 @@ bool TTRecordWindow::addNewNote(const QString &title, const QString &text)
 
 void TTRecordWindow::postCurValue()
 {
+}
+
+void TTRecordWindow::titleChanged(const QString &value)
+{
+    if(titleFieldName.isEmpty())
+        return;
+    if(enableModify())
+    {
+        props->blockSignals(true);
+        props->setFieldValue(titleFieldName, value);
+        props->blockSignals(false);
+    }
 }
 
 void TTRecordWindow::cancel()
@@ -553,6 +583,7 @@ void TTRecordWindow::initWidgets()
     props = new ModifyPanel(this);
     props->setButtonsVisible(false);
     connect(props,SIGNAL(dataChanged()),SLOT(valueChanged()));
+    connect(ui->recordTitleEdit,SIGNAL(textChanged(QString)),SLOT(titleChanged(QString)));
     ui->dockWidget->setWidget(props);
     ui->dockWidget->setWindowTitle(tr("Свойства"));
     setAttribute(Qt::WA_DeleteOnClose,true);
@@ -591,4 +622,9 @@ void TTRecordWindow::initWidgets()
 //    QBoxLayout *lay = qobject_cast<QBoxLayout *>(ui->tabPlaceWidget->layout());
 //    lay->insertWidget(0,tabBar);
     ui->tabWidget->setCurrentIndex(0);
+}
+
+void TTRecordWindow::on_cancelNoteButton_clicked()
+{
+    endEditNote(false);
 }

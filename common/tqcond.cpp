@@ -349,19 +349,39 @@ QString TQUserCond::condSubString() const
         pre += "<Текущий>";
         first = false;
     }
-    foreach(uint id, ids)
-    {
-        if(!first)
-            pre += ", ";
-        else
-            first = false;
-        QString name = queryDef->recordDef()->project()->userFullName(id);
-        pre += name;
-    }
     if(isGroups)
+    {
+        TQGroupList groups =  queryDef->recordDef()->project()->userGroups();
+        QHash<int, QString> hash;
+        foreach(const TQGroup &gr, groups)
+        {
+            hash.insert(gr.id, gr.name);
+        }
+
+        foreach(uint id, ids)
+        {
+            if(!first)
+                pre += ", ";
+            else
+                first = false;
+            QString name = hash.value(id);
+            pre += name;
+        }
         pre = tr("%1 в группах (%2)").arg(fieldName()).arg(pre);
+    }
     else
+    {
+        foreach(uint id, ids)
+        {
+            if(!first)
+                pre += ", ";
+            else
+                first = false;
+            QString name = queryDef->recordDef()->project()->userFullName(id);
+            pre += name;
+        }
         pre = tr("%1 в (%2)").arg(fieldName()).arg(pre);
+    }
     if(isActiveIncluded && isDeletedIncluded)
         pre += tr("");
     else if(isActiveIncluded)

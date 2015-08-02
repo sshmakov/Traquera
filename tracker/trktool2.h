@@ -137,6 +137,31 @@ TRKAPI TrkGetNextUserInternal( //@20
                                TRK_UINT	FAR *order				// Input
 );
 
+TRKAPI TrkInitGroupUserList( //@12
+                             TRK_HANDLE	trkHandle,				// Input
+                             TRK_UINT	res1,				// Input
+                             TRK_UINT	res2				// Input
+                             );
+
+TRKAPI TrkGetNextGroupUser( //@12
+                             TRK_HANDLE	trkHandle,				// Input
+                             TRK_UINT	bufferSize,				// Input
+                             TRK_STR	group			// Output
+);
+
+TRKAPI TrkInitGroupList( //@4
+                         TRK_HANDLE	trkHandle				// Input
+                         );
+
+TRKAPI TrkGetNextGroup( //@20
+                        TRK_HANDLE	trkHandle,				// Input
+                        TRK_UINT	bufferSize,				// Input
+                        TRK_STR	group,			// Output
+                        TRK_UINT	FAR *id,				// Input
+                        TRK_UINT	FAR *order				// Input
+                        );
+
+
 /*
 qryId
  int

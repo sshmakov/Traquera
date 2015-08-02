@@ -19,23 +19,20 @@
      <widget class="QWidget" name="tabPlaceWidget" native="true">
       <layout class="QHBoxLayout" name="horizontalLayout_3">
        <property name="spacing">
-        <number>0</number>
+        <number>3</number>
        </property>
        <property name="margin">
         <number>0</number>
        </property>
        <item>
-        <spacer name="horizontalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+        <widget class="QLabel" name="labelRecordTitle">
+         <property name="text">
+          <string>TitleLabel</string>
          </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>476</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="recordTitleEdit"/>
        </item>
       </layout>
      </widget>
@@ -103,7 +100,7 @@
             </widget>
            </item>
            <item row="1" column="3">
-            <widget class="QPushButton" name="pushButton">
+            <widget class="QPushButton" name="cancelNoteButton">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
                <horstretch>0</horstretch>
