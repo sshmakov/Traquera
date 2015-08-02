@@ -168,7 +168,7 @@ bool TQServiceProject::sendRequest(const QString &action, const QString &query, 
     return serviceDb->sendRequest(dbmsType, action, sess.arg(sessionID,projectID,query), handler);
 }
 
-TrkToolModel *TQServiceProject::openQueryModel(const QString &queryName, int recType, bool emitEvent)
+TQRecModel *TQServiceProject::openQueryModel(const QString &queryName, int recType, bool emitEvent)
 {
     TQRecordsetReply handler;
     if(sendRequest("Query",
@@ -177,7 +177,7 @@ TrkToolModel *TQServiceProject::openQueryModel(const QString &queryName, int rec
                    .arg(recType),
                    &handler))
     {
-        TrkToolModel *model = new TrkToolModel(this, recType, this);
+        TQRecModel *model = new TQRecModel(this, recType, this);
         foreach(QString s, handler.idList)
         {
             bool ok;
@@ -194,14 +194,14 @@ TrkToolModel *TQServiceProject::openQueryModel(const QString &queryName, int rec
     return 0;
 }
 
-TrkToolModel *TQServiceProject::openIdsModel(const IntList &ids, int recType, bool emitEvent)
+TQRecModel *TQServiceProject::openIdsModel(const IntList &ids, int recType, bool emitEvent)
 {
     TQRecordsetReply handler;
     if(sendRequest("Query",
                    QString("<GetRecords ids='$1'/>").arg(intListToString(ids)),
                    &handler))
     {
-        TrkToolModel *model = new TrkToolModel(this, recType, this);
+        TQRecModel *model = new TQRecModel(this, recType, this);
         foreach(QString s, handler.idList)
         {
             bool ok;

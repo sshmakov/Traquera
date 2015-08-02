@@ -931,12 +931,12 @@ int TrkToolProject::fieldNativeType(const QString &name, int recType)
     return fType;
 }
 
-TrkToolModel *TrkToolProject::selectedModel(int recType)
+TQRecModel *TrkToolProject::selectedModel(int recType)
 {
     if(!selectedModels.contains(recType))
     {
         QList<int> ids = selected[recType].toList();
-        TrkToolModel *model = (TrkToolModel *)openIdsModel(ids,recType,false);
+        TQRecModel *model = (TQRecModel *)openIdsModel(ids,recType,false);
         selectedModels.insert(recType,model);
         return model;
     }
@@ -1089,7 +1089,7 @@ QDomDocument TrkToolProject::recordTypeDefDoc(int rectype)
 
 TQRecord *TrkToolProject::recordOfIndex(const QModelIndex &index)
 {
-    const TrkToolModel *model = qobject_cast<const TrkToolModel *>(index.model());
+    const TQRecModel *model = qobject_cast<const TQRecModel *>(index.model());
     if(!model)
         return 0;
     return model->at(index.row());
@@ -1097,7 +1097,7 @@ TQRecord *TrkToolProject::recordOfIndex(const QModelIndex &index)
 
 bool TrkToolProject::isSystemModel(QAbstractItemModel *model) const
 {
-    foreach(const TrkToolModel *m, selectedModels)
+    foreach(const TQRecModel *m, selectedModels)
     {
         if(m == model)
             return true;
@@ -1278,7 +1278,7 @@ void TrkToolProject::readProjectDatabaseName()
     }
 }
 
-bool TrkToolProject::fillModel(TrkToolModel *model, const QString &queryName,
+bool TrkToolProject::fillModel(TQRecModel *model, const QString &queryName,
                                int type, qint64 afterTransId)
 {
     QList<int> list = getQueryIds(queryName, type, afterTransId);
@@ -1362,9 +1362,9 @@ QAbstractItemModel *TrkToolProject::createProxyQueryModel(int filter, QObject *p
     */
 #endif
 
-TrkToolModel *TrkToolProject::openQueryModel(const QString &name, int type, bool emitEvent)
+TQRecModel *TrkToolProject::openQueryModel(const QString &name, int type, bool emitEvent)
 {
-	TrkToolModel *model = new TrkToolModel(this, type, this);
+    TQRecModel *model = new TQRecModel(this, type, this);
     fillModel(model, name, type);
 //	model->openQuery(name);
     if(emitEvent)
@@ -1406,7 +1406,7 @@ TrkToolModel *TrkToolProject::openRecentModel(int afterTransId, const QString &n
 
 QAbstractItemModel *TrkToolProject::openIdsModel(const QList<int> &ids, int type, bool emitEvent)
 {
-	TrkToolModel *model = new TrkToolModel(this, type, this);
+    TQRecModel *model = new TQRecModel(this, type, this);
     //beginResetModel();
     QList <int> unique = uniqueIntList(ids);
     model->prevTransId=0;
@@ -3191,7 +3191,7 @@ void TrkHistory::setProject(TQAbstractProject *project)
 //            prj->disconnect(this);
         prj = project;
         if(prj)
-            connect(prj,SIGNAL(openedModel(const TrkToolModel*)),this,SLOT(openedModel(const TrkToolModel*)));
+            connect(prj,SIGNAL(openedModel(const TQRecModel*)),this,SLOT(openedModel(const TQRecModel*)));
     }
 }
 
@@ -3223,7 +3223,7 @@ QVariant TrkHistory::displayColData(const TrkHistoryItem &rec, int col) const
     return QVariant();
 }
 
-void TrkHistory::openedModel(const TrkToolModel *model)
+void TrkHistory::openedModel(const TQRecModel *model)
 {
     TrkHistoryItem item;
     bool isNew=true;

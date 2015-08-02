@@ -188,7 +188,7 @@ void TQBaseProject::clearSelected(int recType)
     selected.remove(recType);
 }
 
-TrkToolModel *TQBaseProject::selectedModel(int recType)
+TQRecModel *TQBaseProject::selectedModel(int recType)
 {
     return selectedModels[recType];
 }

@@ -5,7 +5,7 @@
 #include "tqbase.h"
 
 class TQAbstractProject;
-class TrkToolModel;
+class TQRecModel;
 
 template <class R>
 class BaseRecModel: public QAbstractItemModel
@@ -193,12 +193,12 @@ public:
 protected:
     virtual QVariant displayColData(const TrkHistoryItem & rec, int col) const;
 public slots:
-    void openedModel(const TrkToolModel *model);
+    void openedModel(const TQRecModel *model);
 };
 
 typedef TQRecord * PTQRecord;
 
-class TrkToolModel: public BaseRecModel<PTQRecord> //QAbstractItemModel
+class TQRecModel: public BaseRecModel<PTQRecord> //QAbstractItemModel
 {
     Q_OBJECT
     Q_PROPERTY(QString queryName READ getQueryName)
@@ -217,8 +217,8 @@ protected:
     QString queryName;
     bool isQuery;
 public:
-    TrkToolModel(TQAbstractProject *project, int type, QObject *parent = 0);
-    virtual ~TrkToolModel();
+    TQRecModel(TQAbstractProject *project, int type, QObject *parent = 0);
+    virtual ~TQRecModel();
 
     TQAbstractProject *project() const
     {

@@ -5,7 +5,7 @@
 
 // ============= TrkToolModel ===============
 
-TrkToolModel::TrkToolModel(TQAbstractProject *project, int type, QObject *parent)
+TQRecModel::TQRecModel(TQAbstractProject *project, int type, QObject *parent)
     :
     prj(project),
     rectype(type),
@@ -25,7 +25,7 @@ TrkToolModel::TrkToolModel(TQAbstractProject *project, int type, QObject *parent
     connect(project,SIGNAL(recordChanged(int)),this,SLOT(recordChanged(int)));
 }
 
-TrkToolModel::~TrkToolModel()
+TQRecModel::~TQRecModel()
 {
     clear();
 }
@@ -61,7 +61,7 @@ bool TrkToolModel::openIds(const QList<int> &ids)
 }
 */
 
-void TrkToolModel::appendRecordId(int id)
+void TQRecModel::appendRecordId(int id)
 {
     if(rowOfRecordId(id)!=-1)
         return;
@@ -76,7 +76,7 @@ void TrkToolModel::appendRecordId(int id)
     }
 }
 
-void TrkToolModel::removeRecordId(int id)
+void TQRecModel::removeRecordId(int id)
 {
     int r = rowOfRecordId(id);
     if(r==-1)
@@ -89,7 +89,7 @@ void TrkToolModel::removeRecordId(int id)
     addedIds.remove(id);
 }
 
-QVariant TrkToolModel::data(const QModelIndex & index, int role) const
+QVariant TQRecModel::data(const QModelIndex & index, int role) const
 {
     if(!index.isValid())
         return QVariant();
@@ -111,7 +111,7 @@ QVariant TrkToolModel::data(const QModelIndex & index, int role) const
     return BaseRecModel::data(index, role);
 }
 
-bool TrkToolModel::setData(const QModelIndex & index, const QVariant & value, int role)
+bool TQRecModel::setData(const QModelIndex & index, const QVariant & value, int role)
 {
     if(role == Qt::CheckStateRole && index.isValid() /*&& index.column()==idCol*/)
     {
@@ -128,14 +128,14 @@ bool TrkToolModel::setData(const QModelIndex & index, const QVariant & value, in
     return BaseRecModel::setData(index, value, role);
 }
 
-const TQAbstractRecordTypeDef *TrkToolModel::typeDef()
+const TQAbstractRecordTypeDef *TQRecModel::typeDef()
 {
     if(!prj)
         return 0;
     return prj->recordTypeDef(rectype);
 }
 
-void TrkToolModel::clearRecords()
+void TQRecModel::clearRecords()
 {
     TQRecord *rec;
     foreach(rec, records)
@@ -145,19 +145,19 @@ void TrkToolModel::clearRecords()
     BaseRecModel::clearRecords();
 }
 
-QVariant TrkToolModel::displayColData(const PTQRecord &rec, int col) const
+QVariant TQRecModel::displayColData(const PTQRecord &rec, int col) const
 {
     int vid = vids[col];
     return rec->value(vid,Qt::DisplayRole);
 }
 
-QVariant TrkToolModel::editColData(const PTQRecord &rec, int col) const
+QVariant TQRecModel::editColData(const PTQRecord &rec, int col) const
 {
     int vid = vids[col];
     return rec->value(vid,Qt::EditRole);
 }
 
-bool TrkToolModel::setEditColData(const PTQRecord &rec, int col, const QVariant & value)
+bool TQRecModel::setEditColData(const PTQRecord &rec, int col, const QVariant & value)
 {
     int vid = vids[col];
     if(vid)
@@ -168,7 +168,7 @@ bool TrkToolModel::setEditColData(const PTQRecord &rec, int col, const QVariant 
     return false;
 }
 
-void TrkToolModel::recordChanged(int id)
+void TQRecModel::recordChanged(int id)
 {
     int row = rowOfRecordId(id);
     if(row<0)
@@ -176,7 +176,7 @@ void TrkToolModel::recordChanged(int id)
     emit dataChanged(index(row,0),index(row,columnCount()-1));
 }
 
-QDomDocument TrkToolModel::recordXml(int row) const
+QDomDocument TQRecModel::recordXml(int row) const
 {
     TQRecord * rec = at(row);
     if(!rec)
@@ -185,7 +185,7 @@ QDomDocument TrkToolModel::recordXml(int row) const
     return rec->toXML();
 }
 
-void TrkToolModel::refreshQuery()
+void TQRecModel::refreshQuery()
 {
     beginResetModel();
     prj->refreshModel(this);
@@ -207,7 +207,7 @@ void TrkToolModel::refreshQuery()
     endResetModel();
 }
 
-int TrkToolModel::rowId(int row) const
+int TQRecModel::rowId(int row) const
 {
     //int col=vids.indexOf(VID_Id);
     if(idCol == -1)
@@ -215,7 +215,7 @@ int TrkToolModel::rowId(int row) const
     return index(row,idCol).data().toUInt();
 }
 
-int TrkToolModel::rowOfRecordId(int id) const
+int TQRecModel::rowOfRecordId(int id) const
 {
     for(int r=0; r<rowCount(); ++r)
         if(rowId(r) == id)
@@ -223,7 +223,7 @@ int TrkToolModel::rowOfRecordId(int id) const
     return -1;
 }
 
-Qt::ItemFlags TrkToolModel::flags ( const QModelIndex & index ) const
+Qt::ItemFlags TQRecModel::flags ( const QModelIndex & index ) const
 {
     Qt::ItemFlags res = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
     const TQRecord *rec = at(index.row());
@@ -234,12 +234,12 @@ Qt::ItemFlags TrkToolModel::flags ( const QModelIndex & index ) const
     return res | Qt::ItemIsEditable;
 }
 
-QString TrkToolModel::getQueryName() const
+QString TQRecModel::getQueryName() const
 {
     return queryName;
 }
 
-QList<int> TrkToolModel::getIdList() const
+QList<int> TQRecModel::getIdList() const
 {
     QList<int> res;
     foreach(PTQRecord rec, records)
@@ -250,7 +250,7 @@ QList<int> TrkToolModel::getIdList() const
     return res;
 }
 
-bool TrkToolModel::isSystemModel()
+bool TQRecModel::isSystemModel()
 {
     return prj->isSystemModel(this);
 }

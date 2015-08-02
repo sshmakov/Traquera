@@ -52,7 +52,7 @@ public slots:
 #endif
 
 class TrkToolProject;
-class TrkToolModel;
+class TQRecModel;
 
 
 /*
@@ -365,7 +365,6 @@ protected:
 };
 
 class QSqlDatabase;
-class TrkToolProject;
 
 class TrkToolDB: public TQAbstractDB
 {
@@ -397,7 +396,6 @@ protected:
 
 
 class TrkToolRecord;
-class TrkToolModel;
 
 class TrkRecHandler {
 public:
@@ -427,7 +425,7 @@ protected:
     //QHash<TRK_RECORD_TYPE, NameVid> nameVids;
     QHash<int, TrkToolQryModel *> theQueryModel;
     QHash<TRK_RECORD_TYPE, TQSelectedSet> selected;
-    QHash<TRK_RECORD_TYPE, TrkToolModel*> selectedModels;
+    QHash<TRK_RECORD_TYPE, TQRecModel*> selectedModels;
     QMap<QString, TQUser> m_userList; // by login
     QString user;
     QStringList noteTitles;
@@ -455,7 +453,7 @@ public:
 #ifdef CLIENT_APP
     //QAbstractItemModel *createProxyQueryModel(int filter, QObject *parent=0, int type);
 #endif
-    TrkToolModel *openQueryModel(const QString &name, int type, bool emitEvent = true);
+    TQRecModel *openQueryModel(const QString &name, int type, bool emitEvent = true);
     QList<int> getQueryIds(const QString &name, int type,
                            qint64 afterTransId = 0);
     //TrkToolModel *openRecentModel(int afterTransId, const QString &name, TRK_RECORD_TYPE type = TRK_SCR_TYPE);
@@ -473,7 +471,7 @@ public:
     virtual void clearSelected(int recType);
     void initQueryModel(int type = TRK_SCR_TYPE);
     virtual int fieldNativeType(const QString &name, int recType);
-    virtual TrkToolModel *selectedModel(int recType);
+    virtual TQRecModel *selectedModel(int recType);
     virtual bool canFieldSubmit(int vid, int recType);
     virtual bool canFieldUpdate(int vid, int recType);
     virtual QString userFullName(const QString &login);
@@ -496,7 +494,7 @@ public:
 protected:
     void readProjectDatabaseName();
     /* Model manipulations */
-    bool fillModel(TrkToolModel *model, const QString &queryName, int type,
+    bool fillModel(TQRecModel *model, const QString &queryName, int type,
                    qint64 afterTransId = 0);
     /* Record manipulations */
     bool readRecordWhole(TQRecord *record);
@@ -548,7 +546,7 @@ protected:
     bool readNoteRec(TRK_NOTE_HANDLE noteHandle, TQNote *note) const;
 
     friend class TrkToolDB;
-    friend class TrkToolModel;
+    friend class TQRecModel;
     friend class TrkToolRecord;
     friend class TrkRecordTypeDef;
     friend class TrkScopeRecHandle;
@@ -570,7 +568,7 @@ public:
 	void clear();
 	void readQuery(QSqlQuery * query);
 
-    friend class TrkToolModel;
+    friend class TQRecModel;
     friend class TrkToolRecord;
 
 };

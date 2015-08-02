@@ -53,8 +53,8 @@ public:
     virtual int defaultRecType() const;
     bool sendRequest(const QString &action, const QString &query, QXmlContentHandler *handler);
 
-    TrkToolModel *openQueryModel(const QString &queryName, int recType, bool emitEvent = true);
-    TrkToolModel *openIdsModel(const IntList &ids, int recType, bool emitEvent = true);
+    TQRecModel *openQueryModel(const QString &queryName, int recType, bool emitEvent = true);
+    TQRecModel *openIdsModel(const IntList &ids, int recType, bool emitEvent = true);
     QList<int> getQueryIds(const QString &name, int type, qint64 afterTransId = 0);
 
     void refreshModel(QAbstractItemModel *model);

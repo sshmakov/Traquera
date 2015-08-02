@@ -221,7 +221,7 @@ void QueryPage::setQueryById(const QString& numbers, TrkDb *trkdb)
 }
 */
 
-void QueryPage::setQueryModel(TQAbstractProject *prj, TrkToolModel *model)
+void QueryPage::setQueryModel(TQAbstractProject *prj, TQRecModel *model)
 {
     if(tmodel)
     {
@@ -553,7 +553,7 @@ static QString escape(const QString& s)
 
 QString QueryPage::makeRecordPage(const QModelIndex &qryIndex, const QString& xqCodeFile)
 {
-	const TrkToolModel *model = qobject_cast<const TrkToolModel *>(qryIndex.model());
+	const TQRecModel *model = qobject_cast<const TQRecModel *>(qryIndex.model());
 	if(!model)
 		return "";
 	QDomDocument xml = model->recordXml(qryIndex.row());
@@ -1006,7 +1006,7 @@ void QueryPage::recordOpen(const QModelIndex & index)
 void QueryPage::openQuery(TQAbstractProject *prj, const QString &queryName, int recType)
 {
     itIsFolder = false;
-    TrkToolModel *newmodel = prj->openQueryModel(queryName, recType);
+    TQRecModel *newmodel = prj->openQueryModel(queryName, recType);
 	if(!newmodel)
 		return;
     setQueryModel(prj,newmodel);
@@ -1029,7 +1029,7 @@ void QueryPage::openIds(TQAbstractProject *prj, const QString &ids, const QStrin
 {
     itIsFolder = false;
     QList<int> idlist = toIntList(ids);
-    TrkToolModel *newmodel = qobject_cast<TrkToolModel *>(prj->openIdsModel(idlist, recType));
+    TQRecModel *newmodel = qobject_cast<TQRecModel *>(prj->openIdsModel(idlist, recType));
 	if(!newmodel)
 		return;
     setQueryModel(prj, newmodel);
@@ -1060,7 +1060,7 @@ void QueryPage::openIds(TQAbstractProject *prj, const QString &ids, const QStrin
 void QueryPage::openIds(TQAbstractProject *prj, const QList<int> &idlist, const QString &title, int recType)
 {
     itIsFolder = false;
-    TrkToolModel *newmodel = qobject_cast<TrkToolModel *>(prj->openIdsModel(idlist, recType));
+    TQRecModel *newmodel = qobject_cast<TQRecModel *>(prj->openIdsModel(idlist, recType));
     if(!newmodel)
         return;
     setQueryModel(prj, newmodel);
@@ -1078,7 +1078,7 @@ void QueryPage::openIds(TQAbstractProject *prj, const QList<int> &idlist, const 
 
 void QueryPage::openModel(TQAbstractProject *prj, QAbstractItemModel *newModel)
 {
-    setQueryModel(prj, qobject_cast<TrkToolModel *>(newModel));
+    setQueryModel(prj, qobject_cast<TQRecModel *>(newModel));
     emit openingModel(newModel);
     emit modelChanged(newModel);
 }
@@ -1088,7 +1088,7 @@ void QueryPage::openFolder(TQAbstractProject *prj, const TTFolder &afolder, int 
     QList<int> idlist = afolder.folderContent();
     itIsFolder = true;
     folder = afolder;
-    TrkToolModel *newmodel = qobject_cast<TrkToolModel *>(prj->openIdsModel(idlist, recType, false));
+    TQRecModel *newmodel = qobject_cast<TQRecModel *>(prj->openIdsModel(idlist, recType, false));
     if(!newmodel)
         return;
     setQueryModel(prj, newmodel);
@@ -1188,7 +1188,7 @@ TQRecord *QueryPage::recordOnIndex(const QModelIndex &index)
         f = proxy->mapToSource(f);
         model = f.model();
     }
-    const TrkToolModel *trkmodel = qobject_cast<const TrkToolModel *>(model);
+    const TQRecModel *trkmodel = qobject_cast<const TQRecModel *>(model);
     if(!trkmodel)
         return 0;
     return trkmodel->at(f.row());
@@ -1284,7 +1284,7 @@ TQRecord *QueryPage::currentRecord()
         cur = proxy->mapToSource(cur);
         model = cur.model();
     }
-    const TrkToolModel *trkmodel = qobject_cast<const TrkToolModel *>(model);
+    const TQRecModel *trkmodel = qobject_cast<const TQRecModel *>(model);
     if(!trkmodel)
         return NULL;
     return trkmodel->at(cur.row());

@@ -55,7 +55,7 @@ protected:
 public:
 	//TrkModel trkmodel;
     TQAbstractProject *modelProject;
-    TrkToolModel *tmodel;
+    TQRecModel *tmodel;
     //QAbstractItemModel *tmodel;
     QueryPage(QWidget *parent = 0);
     ~QueryPage();
@@ -96,7 +96,7 @@ protected:
 	void loadDefinition();
 	void openHistoryItem(int pos);
     //void setQueryModel(TQAbstractProject *prj, TrkToolModel *model);
-    void setQueryModel(TQAbstractProject *prj, TrkToolModel *model);
+    void setQueryModel(TQAbstractProject *prj, TQRecModel *model);
     QModelIndex mapIndexToModel(const QModelIndex &index) const;
     QTimer *detailsTimer;
     QTimer *previewTimer;

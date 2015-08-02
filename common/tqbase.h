@@ -25,7 +25,7 @@ public:
 
 
 //need delete
-class TrkToolModel;
+class TQRecModel;
 // --
 
 class TQAbstractProject;
@@ -156,14 +156,14 @@ public:
     virtual void clearSelected(int recType) = 0;
     virtual void initQueryModel(int recType) = 0;
     virtual int fieldNativeType(const QString &name, int recType) = 0;
-    virtual TrkToolModel *selectedModel(int recType) = 0;
+    virtual TQRecModel *selectedModel(int recType) = 0;
     virtual bool canFieldSubmit(int vid, int recType) = 0;
     virtual bool canFieldUpdate(int vid, int recType) = 0;
     virtual TQRecord *createRecordById(int id, int rectype) = 0;
     virtual TQRecord *newRecord(int rectype) = 0;
     virtual TQAbstractRecordTypeDef *recordTypeDef(int rectype) = 0;
     virtual QDomDocument recordTypeDefDoc(int rectype) = 0;
-    virtual TrkToolModel *openQueryModel(const QString &queryName, int recType, bool emitEvent = true) = 0;
+    virtual TQRecModel *openQueryModel(const QString &queryName, int recType, bool emitEvent = true) = 0;
     virtual QAbstractItemModel *openIdsModel(const IntList &ids, int recType, bool emitEvent = true) = 0;
     virtual void refreshModel(QAbstractItemModel *model) = 0;
     virtual QAbstractItemModel *queryModel(int type) = 0;
@@ -220,7 +220,7 @@ protected:
     //QHash<TRK_RECORD_TYPE, NameVid> nameVids;
     //TrkToolQryModel theQueryModel;
     QHash<int, TQSelectedSet> selected;
-    QHash<int, TrkToolModel*> selectedModels;
+    QHash<int, TQRecModel*> selectedModels;
     QMap<QString, TQUser> m_userList;
     QString user;
     QStringList noteTitles;
@@ -237,7 +237,7 @@ public:
     virtual bool isSelectedId(int id, int recType) const;
     virtual void setSelectedId(int id, bool value, int recType);
     virtual void clearSelected(int recType);
-    virtual TrkToolModel *selectedModel(int recType);
+    virtual TQRecModel *selectedModel(int recType);
     virtual bool canFieldSubmit(int vid, int recType);
     virtual bool canFieldUpdate(int vid, int recType);
     virtual QString userFullName(const QString &login);

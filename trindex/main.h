@@ -11,7 +11,7 @@ class TQAbstractProject;
 class TrkToolDB;
 class TrkToolProject;
 class TrkToolRecord;
-class TrkToolModel;
+class TQRecModel;
 
 class MainClass: public QObject
 {
@@ -19,7 +19,7 @@ class MainClass: public QObject
 protected:
     TQAbstractDB *db;
     TQAbstractProject *prj;
-    TrkToolModel *model;
+    TQRecModel *model;
     QList<int> list;
     int rowCount;
     int row;
