@@ -77,7 +77,8 @@ HEADERS += \
     ../common/tqcond.h \
     ../tracker/trkcond.h \
     ../common/tqcondwidgets.h \
-    ../tracker/trkcondwidgets.h
+    ../tracker/trkcondwidgets.h \
+    tqproxyrecmodel.h
 
 #    plans.h planproxy.h \
 #    planfiles.h \
@@ -122,7 +123,8 @@ SOURCES += database.cpp main.cpp mainwindow.cpp querypage.cpp \
     ../common/tqcond.cpp \
     ../tracker/trkcond.cpp \
     ../common/tqcondwidgets.cpp \
-    ../tracker/trkcondwidgets.cpp
+    ../tracker/trkcondwidgets.cpp \
+    tqproxyrecmodel.cpp
 
 #    planfilesform.cpp \
 #    project.cpp projectpage.cpp plans.cpp planproxy.cpp planfiles.cpp \

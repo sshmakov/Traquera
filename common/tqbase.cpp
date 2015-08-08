@@ -544,7 +544,10 @@ int TQRecord::addNote(const QString &noteTitle, const QString &noteText)
 
 QList<TQToolFile> TQRecord::fileList()
 {
-    return QList<TQToolFile>();
+    TQAbstractProject *p = project();
+    if(!p)
+        return QList<TQToolFile>();
+    return p->attachedFiles(this);
 }
 
 bool TQRecord::saveFile(int fileIndex, const QString &dest)
@@ -552,6 +555,11 @@ bool TQRecord::saveFile(int fileIndex, const QString &dest)
     Q_UNUSED(fileIndex)
     Q_UNUSED(dest)
     return false;
+}
+
+bool TQRecord::hasFiles()
+{
+    return fileList().count() != 0;
 }
 
 TQAbstractProject *TQRecord::project() const

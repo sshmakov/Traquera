@@ -223,8 +223,15 @@ int TQRecModel::rowOfRecordId(int id) const
     return -1;
 }
 
+TQRecord *TQRecModel::recordInRow(int row) const
+{
+    return at(row);
+}
+
 Qt::ItemFlags TQRecModel::flags ( const QModelIndex & index ) const
 {
+    if(!index.isValid())
+        return Qt::NoItemFlags;
     Qt::ItemFlags res = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
     const TQRecord *rec = at(index.row());
     if(!index.column())

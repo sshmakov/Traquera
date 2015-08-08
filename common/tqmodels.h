@@ -230,7 +230,8 @@ public:
     QDomDocument recordXml(int row) const;
     int rowId(int row) const;
     int rowOfRecordId(int id) const;
-    bool saveRecord(TQRecord *record);
+    TQRecord *recordInRow(int row) const;
+//    bool saveRecord(TQRecord *record);
     virtual Qt::ItemFlags flags ( const QModelIndex & index ) const;
     virtual QVariant data(const QModelIndex & index, int role = Qt::DisplayRole ) const;
     virtual bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole);
@@ -261,6 +262,5 @@ protected slots:
     friend class TrkHistory;
     friend class TrkToolProject;
 };
-
 
 #endif // TQMODELS_H

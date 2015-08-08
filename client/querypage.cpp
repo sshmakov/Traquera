@@ -35,6 +35,7 @@
 #include "preview.h"
 #include "cliputil.h"
 #include "tqcolsdialog.h"
+#include "tqproxyrecmodel.h"
 //#include <Shlwapi.h>
 
 QueryPage::QueryPage(QWidget *parent)
@@ -48,7 +49,9 @@ QueryPage::QueryPage(QWidget *parent)
 {
     setupUi(this);
     initWidgets();
+    proxy = new TQProxyRecModel(this);
     qryFilterModel = new QSortFilterProxyModel(this);
+    qryFilterModel->setSourceModel(proxy);
     qryFilterModel->setFilterKeyColumn(-1);
     qryFilterModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
     qryFilterModel->setSortRole(Qt::EditRole);
@@ -234,10 +237,10 @@ void QueryPage::setQueryModel(TQAbstractProject *prj, TQRecModel *model)
     modelProject = prj;
     if(!tmodel->isSystemModel())
         tmodel->setParent(this);
-    qryFilterModel->setSourceModel(tmodel);
+    proxy->setSourceModel(tmodel);
+//    qryFilterModel->setSourceModel(tmodel);
     if(!isDefLoaded)
         loadDefinition();
-    //queryView->setModel(model);
 #ifdef DECORATOR
     fieldEdits.clear();
     decorator->fillEditPanels(this->tabPanels, tmodel->typeDef(),fieldEdits);

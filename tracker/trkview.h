@@ -18,7 +18,6 @@
 #define TT_DATETIME_FORMAT "dd.MM.yyyy H:mm:ss"
 
 class TrkDb;
-//class TrkModel;
 
 #ifndef CONSOLE_APP
 class TrkView: public QTableView 
@@ -52,7 +51,7 @@ public slots:
 #endif
 
 class TrkToolProject;
-class TQRecModel;
+//class TQRecModel;
 
 
 /*

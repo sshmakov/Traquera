@@ -193,7 +193,7 @@ void ModifyPanel::fillValues(const QObjectList &records)
         for(i=0; i<records.count() && i < 20; i++)
         {
             const TQRecord *rec = qobject_cast<const TQRecord *>(records[i]);
-            if(!rec)
+            if(!rec || !rec->isValid())
                 continue;
             if(!i)
             {

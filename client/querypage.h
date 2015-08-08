@@ -30,6 +30,8 @@ struct TrkHistoryItem
 };
 */
 
+class TQProxyRecModel;
+
 class QueryPage : public QWidget, public Ui::queryForm
 {
     Q_OBJECT
@@ -39,6 +41,7 @@ protected:
 	bool isDefLoaded;
 //	PlanModel *planModel;
 //    PlanProxyModel planViewModel;
+    TQProxyRecModel *proxy;
     QSortFilterProxyModel *qryFilterModel;
 	QString linkField;
 //    TrkHistory history;

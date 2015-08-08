@@ -1857,6 +1857,7 @@ bool TrkToolProject::cancelRecord(TQRecord *record)
 QList<TQToolFile> TrkToolProject::attachedFiles(TQRecord *record)
 {
     QList<TQToolFile> res;
+//    return res;
     TrkToolRecord *trec = qobject_cast<TrkToolRecord *>(record);
     if(!trec)
         return QList<TQToolFile>();

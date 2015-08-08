@@ -333,6 +333,7 @@ public: //protected: // Project specific data
 
     virtual QList<TQToolFile> fileList();
     Q_INVOKABLE virtual bool saveFile(int fileIndex, const QString &dest);
+    Q_INVOKABLE virtual bool hasFiles();
 
     virtual TQAbstractProject *project() const;
     virtual const TQAbstractRecordTypeDef *typeDef() const;
