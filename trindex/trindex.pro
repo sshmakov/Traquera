@@ -35,12 +35,15 @@ HEADERS += \
     ../common/tqbase.h \
     ../common/tqmodels.h \
     ../common/tqcond.h \
-    ../tracker/trkcond.h
+    ../tracker/trkcond.h \
+    ../common/tqplugin_global.h
 
 DEFINES += CONSOLE_APP
 INCLUDEPATH += $$PWD/../trktool/lib ../common ../tracker
 DEPENDPATH += $$PWD/../trktool/lib
 win32: LIBS += -L$$PWD/../trktool/lib -ltrktooln -lshell32 -lshlwapi -lodbc32
+
+DEFINES += TQ_PLUGIN_API
 
 OTHER_FILES += \
     verifyn.dll \

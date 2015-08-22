@@ -145,8 +145,8 @@ public:
     {
         return nullable;
     }
-    bool canSubmit();
-    bool canUpdate();
+//    bool canSubmit();
+//    bool canUpdate();
     QString valueToDisplay(const QVariant &value) const;
     QVariant displayToValue(const QString &text) const;
     TrkRecordTypeDef *recordDef() const;

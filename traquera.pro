@@ -6,7 +6,7 @@ TEMPLATE = subdirs
 
 # Directories
 SUBDIRS += msplans client trindex \
-    tqservice
+    tqservice jira
 
 msplans.depends = client
 

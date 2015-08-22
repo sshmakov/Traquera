@@ -85,7 +85,7 @@ class TQQueryFilter: public QSortFilterProxyModel
 };
 */
 
-class TQAbstractDB: public QObject
+class TQPLUGIN_EXPORT TQAbstractDB: public QObject
 {
     Q_OBJECT
 private:
@@ -136,7 +136,7 @@ struct TQConditionLine {
 */
 
 
-class TQAbstractProject: public QObject
+class TQPLUGIN_EXPORT TQAbstractProject: public QObject
 {
     Q_OBJECT
 protected:
@@ -163,6 +163,7 @@ public:
     virtual TQRecord *newRecord(int rectype) = 0;
     virtual TQAbstractRecordTypeDef *recordTypeDef(int rectype) = 0;
     virtual QDomDocument recordTypeDefDoc(int rectype) = 0;
+
     virtual TQRecModel *openQueryModel(const QString &queryName, int recType, bool emitEvent = true) = 0;
     virtual QAbstractItemModel *openIdsModel(const IntList &ids, int recType, bool emitEvent = true) = 0;
     virtual void refreshModel(QAbstractItemModel *model) = 0;
@@ -170,7 +171,6 @@ public:
     virtual TQRecord *recordOfIndex(const QModelIndex &index) = 0;
     //virtual QAbstractItemModel *createProxyQueryModel(TQQueryFilter filter, QObject *parent=0, int type) = 0;
     virtual QList<int> getQueryIds(const QString &name, int type, qint64 afterTransId = 0) = 0;
-
     virtual bool readRecordWhole(TQRecord *record) = 0;
     virtual bool readRecordFields(TQRecord *record) = 0;
     virtual bool readRecordTexts(TQRecord *record) = 0;
@@ -207,7 +207,7 @@ signals:
 
 typedef QSet<int> TQSelectedSet;
 
-class TQBaseProject: public TQAbstractProject
+class TQPLUGIN_EXPORT TQBaseProject: public TQAbstractProject
 {
     Q_OBJECT
 protected:
@@ -258,10 +258,33 @@ public:
     virtual QString userLogin(int userId);
     virtual int userId(const QString &login);
     virtual TQGroupList userGroups();
+
+    // need redefine
+/*
+TQAbstractRecordTypeDef *recordTypeDef(int);
+TQRecModel *openQueryModel(const QString &,int,bool);
+QAbstractItemModel *openIdsModel(const IntList &,int,bool);
+void refreshModel(QAbstractItemModel *);
+TQRecord *recordOfIndex(const QModelIndex &);
+QList<int> getQueryIds(const QString &,int,qint64);
+bool readRecordWhole(TQRecord *);
+bool readRecordFields(TQRecord *);
+bool readRecordTexts(TQRecord *);
+bool readRecordBase(TQRecord *);
+QVariant getFieldValue(const TQRecord *,int,bool *);
+QVariant getFieldValue(const TQRecord *,const QString &,bool *);
+bool setFieldValue(TQRecord *,const QString &,const QVariant &);
+bool updateRecordBegin(TQRecord *);
+bool commitRecord(TQRecord *);
+bool cancelRecord(TQRecord *);
+QStringList historyList(TQRecord *);
+QHash<int,QString> baseRecordFields(int);
+bool isSystemModel(QAbstractItemModel *) const;
+*/
 };
 
 
-class TQRecord: public QObject
+class TQPLUGIN_EXPORT TQRecord: public QObject
 {
     Q_OBJECT
 public:
@@ -308,6 +331,7 @@ public: //protected: // Project specific data
     Q_INVOKABLE virtual bool isValid() const;
     Q_INVOKABLE virtual int recordType() const;
     Q_INVOKABLE virtual int recordId() const;
+    TQAbstractRecordTypeDef *recordDef() const;
 
     Q_INVOKABLE virtual int mode() const;
     Q_INVOKABLE virtual void setMode(int newMode);

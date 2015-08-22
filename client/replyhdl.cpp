@@ -478,7 +478,7 @@ QString TQServiceRecordDef::valueToDisplay(int vid, const QVariant &value) const
         return m_prj->userFullName(value.toString());
 
     }
-    return TQ::TQ_FIELD_TYPE_NONE;
+    return QString();
 }
 
 QVariant TQServiceRecordDef::displayToValue(int vid, const QString &text) const

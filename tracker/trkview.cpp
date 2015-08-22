@@ -3349,6 +3349,7 @@ QStringList TrkFieldDef::choiceStringList(bool isDisplayText) const
     return list;
 }
 
+/*
 bool TrkFieldDef::canSubmit()
 {
     return recDef->canFieldSubmit(vid);
@@ -3358,6 +3359,7 @@ bool TrkFieldDef::canUpdate()
 {
     return recDef->canFieldUpdate(vid);
 }
+*/
 
 QString TrkFieldDef::valueToDisplay(const QVariant &value) const
 {

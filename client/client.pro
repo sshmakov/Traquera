@@ -78,7 +78,8 @@ HEADERS += \
     ../tracker/trkcond.h \
     ../common/tqcondwidgets.h \
     ../tracker/trkcondwidgets.h \
-    tqproxyrecmodel.h
+    tqproxyrecmodel.h \
+    ../common/tqplugin_global.h
 
 #    plans.h planproxy.h \
 #    planfiles.h \
@@ -166,6 +167,7 @@ qtcAddDeployment()
 
 DEFINES -= CONSOLE_APP
 DEFINES += CLIENT_APP
+DEFINES += TQ_PLUGIN_API
 
 RC_FILE = traquera-win.rc
 

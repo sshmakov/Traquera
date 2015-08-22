@@ -1,11 +1,12 @@
 #ifndef TQPLUG_H
 #define TQPLUG_H
 
-#include "QtCore"
+#include <QtCore>
+#include "tqplugin_global.h"
 
 class TQ
 {
-  Q_ENUMS(TQFieldTypes)
+  Q_ENUMS(TQFieldTypes TQVids)
 public:
   enum TQFieldTypes {
       TQ_FIELD_TYPE_NONE			= 0,
@@ -19,6 +20,9 @@ public:
       TQ_FIELD_TYPE_ELAPSED_TIME = 8,
       //TQ_FIELD_TYPE_STATE		= 9,
       TQ_FIELD_TYPE_PERCENT     = 101
+  };
+  enum TQVids {
+      TQ_NO_VID = 0
   };
 };
 
@@ -46,7 +50,7 @@ public:
         :displayText(src.displayText), fieldValue(src.fieldValue), order(src.order), weight(src.weight), id(src.id)
     {}
     ~TQChoiceItem() {}
-    bool operator == (const TQChoiceItem &src)
+    bool operator == (const TQChoiceItem &src) const
     {
         return displayText == src.displayText
                 && fieldValue == src.fieldValue
@@ -90,7 +94,8 @@ public:
         StateField,
         SubmitDateTimeField,
         SubmitterField,
-        OwnerField
+        OwnerField,
+        IdFriendlyField
     };
 
     virtual QStringList fieldNames() const = 0;

@@ -392,6 +392,11 @@ int TQRecord::recordId() const
     return recId;
 }
 
+TQAbstractRecordTypeDef *TQRecord::recordDef() const
+{
+    return project()->recordTypeDef(recordType());
+}
+
 int TQRecord::mode() const
 {
     return recMode;
