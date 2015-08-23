@@ -39,6 +39,7 @@ void JiraPlugin::initPlugin(QObject *obj, const QString &modulePath)
             settings = s;
     }
     loadSettings();
+    TQAbstractDB::registerDbClass("jira",JiraDB::createJiraDB);
 }
 
 bool JiraPlugin::saveSettings()
@@ -76,7 +77,7 @@ TQAbstractProject *JiraDB::openProject(const QString &projectName, const QString
 
 QVariant JiraDB::sendRequest(const QString &verb, const QString &query, const QString &body)
 {
-    QString link(dbmsType() + "/rest/api/2/" + query);
+    QString link(dbmsType() + "rest/api/2/" + query);
     QUrl url(link);
 
     QNetworkRequest req;
@@ -84,13 +85,13 @@ QVariant JiraDB::sendRequest(const QString &verb, const QString &query, const QS
     req.setHeader(QNetworkRequest::ContentTypeHeader,"application/json");
     QScopedPointer<QNetworkReply> reply(man->get(req));
     QDateTime endTime = QDateTime::currentDateTime().addSecs(10);
-    while(!readyReplies->contains(reply.data()))
+    while(!readyReplies.contains(reply.data()))
     {
         qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
         if(QDateTime::currentDateTime() > endTime)
             return QVariant();
     }
-    readyReplies->removeAll(reply.data());
+    readyReplies.removeAll(reply.data());
     if(reply->error() != QNetworkReply::NoError)
     {
         qDebug(reply->errorString().toLocal8Bit().constData());
@@ -144,9 +145,14 @@ QVariant JiraDB::parseValue(const QVariant &source, const QString &path)
     return cur;
 }
 
+TQAbstractDB *JiraDB::createJiraDB(QObject *parent)
+{
+    return new JiraDB(parent);
+}
+
 void JiraDB::replyFinished(QNetworkReply *reply)
 {
-    readyReplies->append(reply);
+    readyReplies.append(reply);
 }
 
 // ======================== JiraProject ==================================

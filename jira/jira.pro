@@ -29,3 +29,5 @@ unix:!symbian {
     }
     INSTALLS += target
 }
+
+DESTDIR = ../plugins/jira

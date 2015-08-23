@@ -59,3 +59,5 @@ qtcAddDeployment()
 OTHER_FILES += \
     data/project.xml \
     data/scr2prj.xml
+
+DESTDIR=../plugins/msplans

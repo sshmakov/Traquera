@@ -18,8 +18,8 @@
             <viewer type="text" ext="pas" syntax="Pascal"/>
             <viewer type="text" ext="sql" syntax="SQL"/>
         </preview>
-        <plugins directory="plugins">
-            <plugin name="msplans" path="../msplans/debug/msplans.dll"/>
+        <plugins directory="../plugins">
+<!--            <plugin name="msplans" path="../msplans/debug/msplans.dll"/>-->
             <!-- <plugin name="msplans" path="./plugins/msplans/msplans.dll"/> -->
         </plugins>
 </init>

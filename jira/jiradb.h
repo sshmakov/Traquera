@@ -37,7 +37,7 @@ class /*JIRASHARED_EXPORT*/ JiraDB: public TQAbstractDB
     Q_OBJECT
 protected:
     QNetworkAccessManager *man;
-    QList<QObject *> *readyReplies;
+    QList<QObject *> readyReplies;
 public:
     JiraDB(QObject *parent = 0);
     virtual QStringList dbmsTypes();
@@ -49,6 +49,7 @@ public:
             );
     QVariant sendRequest(const QString &verb, const QString &query, const QString &body = QString());
     QVariant parseValue(const QVariant &source, const QString &path);
+    static TQAbstractDB *createJiraDB(QObject *parent);
 protected slots:
     void	replyFinished(QNetworkReply * reply);
 
