@@ -3,13 +3,14 @@
 
 #include <QObject>
 #include <QtCore>
+#include <tqplugin_global.h>
 #include <tqplug.h>
 
 class TQQueryCond;
 class TQQueryDef;
 class TQAbstractRecordTypeDef;
 
-class TQCond : public QObject
+class TQPLUGIN_SHARED TQCond : public QObject
 {
     Q_OBJECT
 protected:
@@ -90,7 +91,7 @@ public:
 };
 */
 
-class TQChoiceCond: public TQCond
+class TQPLUGIN_SHARED TQChoiceCond: public TQCond
 {
     Q_OBJECT
 public:
@@ -113,7 +114,7 @@ public:
 class QPushButton;
 class QAction;
 
-class TQNumberCond: public TQCond
+class TQPLUGIN_SHARED TQNumberCond: public TQCond
 {
     Q_OBJECT
 public:
@@ -132,7 +133,7 @@ public:
     bool editProperties();
 };
 
-class TQUserCond: public TQCond
+class TQPLUGIN_SHARED TQUserCond: public TQCond
 {
     Q_OBJECT
 public:
@@ -153,7 +154,7 @@ public:
     virtual bool editProperties();
 };
 
-class TQDateCond: public TQCond
+class TQPLUGIN_SHARED TQDateCond: public TQCond
 {
     Q_OBJECT
 public:
@@ -174,7 +175,7 @@ public:
     virtual QString condSubString() const;
 };
 
-class TQStringCond: public TQCond
+class TQPLUGIN_SHARED TQStringCond: public TQCond
 {
     Q_OBJECT
 public:
@@ -204,7 +205,7 @@ public:
 class TQAbstractProject;
 class TQAbstractRecordTypeDef;
 
-class TQQueryDef: public QObject
+class TQPLUGIN_SHARED TQQueryDef: public QObject
 {
     Q_OBJECT
 protected:

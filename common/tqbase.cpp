@@ -1,6 +1,6 @@
 #include "tqbase.h"
 
-static QHash<QString, TQAbstractProject *> projectList;
+QHash<QString, TQAbstractProject *> TQAbstractDB::projectList;
 
 TQAbstractDB::TQAbstractDB(QObject *parent)
     :QObject(parent)

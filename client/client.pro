@@ -65,21 +65,16 @@ HEADERS += \
     scrpluginfactory.h \
     previewfactory.h \
     highlighter.h \
-    ../common/tqplug.h \
     ../tracker/tqservicedb.h \
-    ../common/tqbase.h \
     replyhdl.h \
     projecttree.h \
     tqcolsdialog.h \
-    ../common/tqmodels.h \
     tqconnectwidget.h \
     tqqrywid.h \
-    ../common/tqcond.h \
     ../tracker/trkcond.h \
     ../common/tqcondwidgets.h \
     ../tracker/trkcondwidgets.h \
-    tqproxyrecmodel.h \
-    ../common/tqplugin_global.h
+    tqproxyrecmodel.h
 
 #    plans.h planproxy.h \
 #    planfiles.h \
@@ -114,14 +109,11 @@ SOURCES += database.cpp main.cpp mainwindow.cpp querypage.cpp \
     previewfactory.cpp \
     highlighter.cpp \
     ../tracker/tqservicedb.cpp \
-    ../common/tqbase.cpp \
     replyhdl.cpp \
     projecttree.cpp \
     tqcolsdialog.cpp \
-    ../common/tqmodels.cpp \
     tqconnectwidget.cpp \
     tqqrywid.cpp \
-    ../common/tqcond.cpp \
     ../tracker/trkcond.cpp \
     ../common/tqcondwidgets.cpp \
     ../tracker/trkcondwidgets.cpp \
@@ -134,8 +126,9 @@ SOURCES += database.cpp main.cpp mainwindow.cpp querypage.cpp \
 
 RESOURCES += resources/tracks.qrc
 
-win32: LIBS += -L$$PWD/../trktool/lib/ -ltrktooln -lshell32 -lshlwapi
+win32: LIBS += -L$$PWD/../trktool/lib/ -ltrktooln -lshell32 -lshlwapi -L../lib -ltqplugapi
 # win32: LIBS += -lodbc32
+
 
 INCLUDEPATH += $$PWD/../trktool
 DEPENDPATH += $$PWD/../trktool
@@ -167,7 +160,6 @@ qtcAddDeployment()
 
 DEFINES -= CONSOLE_APP
 DEFINES += CLIENT_APP
-DEFINES += TQ_PLUGIN_API
 
 RC_FILE = traquera-win.rc
 

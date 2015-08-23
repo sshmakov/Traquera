@@ -4,8 +4,10 @@
 #include <QtCore>
 #include <QtXml>
 //#include <QtGui>
-#include "tqplug.h"
-#include "tqcond.h"
+#include <tqplugin_global.h>
+#include <tqplug.h>
+#include <tqcond.h>
+
 
 class ConnectParams
 {
@@ -85,11 +87,12 @@ class TQQueryFilter: public QSortFilterProxyModel
 };
 */
 
-class TQPLUGIN_EXPORT TQAbstractDB: public QObject
+class TQPLUGIN_SHARED TQAbstractDB: public QObject
 {
     Q_OBJECT
 private:
     QString m_dbType, m_dbServer, m_dbUser, m_dbPass;
+    static QHash<QString, TQAbstractProject *> projectList;
 public:
     typedef TQAbstractDB *(*createDbFunc)(QObject *);
     TQAbstractDB(QObject *parent = 0);
@@ -136,7 +139,7 @@ struct TQConditionLine {
 */
 
 
-class TQPLUGIN_EXPORT TQAbstractProject: public QObject
+class TQPLUGIN_SHARED TQAbstractProject: public QObject
 {
     Q_OBJECT
 protected:
@@ -207,7 +210,7 @@ signals:
 
 typedef QSet<int> TQSelectedSet;
 
-class TQPLUGIN_EXPORT TQBaseProject: public TQAbstractProject
+class TQPLUGIN_SHARED TQBaseProject: public TQAbstractProject
 {
     Q_OBJECT
 protected:
@@ -284,7 +287,7 @@ bool isSystemModel(QAbstractItemModel *) const;
 };
 
 
-class TQPLUGIN_EXPORT TQRecord: public QObject
+class TQPLUGIN_SHARED TQRecord: public QObject
 {
     Q_OBJECT
 public:

@@ -4,9 +4,9 @@
 #include <QtCore/QtGlobal>
 
 #ifdef TQ_PLUGIN_API
-#  define TQPLUGIN_EXPORT Q_DECL_EXPORT
+#  define TQPLUGIN_SHARED Q_DECL_EXPORT
 #else
-#  define TQPLUGIN_EXPORT Q_DECL_IMPORT
+#  define TQPLUGIN_SHARED Q_DECL_IMPORT
 
 #endif
 

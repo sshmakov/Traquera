@@ -352,6 +352,39 @@ protected:
 
 */
 
+
+struct TrkHistoryItem
+{
+    QString projectName;
+    QString queryName;
+    bool isQuery;
+    QString foundIds;
+    int rectype;
+    QDateTime createDateTime;
+};
+
+class TrkHistory: public BaseRecModel<TrkHistoryItem>
+{
+    Q_OBJECT
+    //Q_PROPERTY(bool unique READ unique WRITE setUnique)
+protected:
+    TQAbstractProject *prj;
+    bool unique;
+public:
+    TrkHistory(QObject *parent = 0);
+    virtual ~TrkHistory();
+    void setProject(TQAbstractProject *project);
+    void setUnique(bool value);
+    //virtual Qt::ItemFlags flags ( const QModelIndex & index ) const;
+    //virtual QVariant data(const QModelIndex & index, int role = Qt::DisplayRole ) const;
+    void removeLast();
+protected:
+    virtual QVariant displayColData(const TrkHistoryItem & rec, int col) const;
+public slots:
+    void openedModel(const TQRecModel *model);
+};
+
+
 //struct TrkQuery
 class TrkToolQryModel: public BaseRecModel<TrkQuery>
 {

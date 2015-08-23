@@ -3258,6 +3258,7 @@ void TrkHistory::openedModel(const TQRecModel *model)
         records[i]=item;
 }
 
+
 // ======================= TrkToolQryModel ====================================
 
 TrkToolQryModel::TrkToolQryModel(QObject *parent)

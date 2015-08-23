@@ -2,6 +2,7 @@
 #define TQMODELS_H
 
 #include <QtCore>
+#include <tqplugin_global.h>
 #include "tqbase.h"
 
 class TQAbstractProject;
@@ -164,41 +165,9 @@ public:
     }
 };
 
-
-struct TrkHistoryItem
-{
-    QString projectName;
-    QString queryName;
-    bool isQuery;
-    QString foundIds;
-    int rectype;
-    QDateTime createDateTime;
-};
-
-class TrkHistory: public BaseRecModel<TrkHistoryItem>
-{
-    Q_OBJECT
-    //Q_PROPERTY(bool unique READ unique WRITE setUnique)
-protected:
-    TQAbstractProject *prj;
-    bool unique;
-public:
-    TrkHistory(QObject *parent = 0);
-    virtual ~TrkHistory();
-    void setProject(TQAbstractProject *project);
-    void setUnique(bool value);
-    //virtual Qt::ItemFlags flags ( const QModelIndex & index ) const;
-    //virtual QVariant data(const QModelIndex & index, int role = Qt::DisplayRole ) const;
-    void removeLast();
-protected:
-    virtual QVariant displayColData(const TrkHistoryItem & rec, int col) const;
-public slots:
-    void openedModel(const TQRecModel *model);
-};
-
 typedef TQRecord * PTQRecord;
 
-class TQRecModel: public BaseRecModel<PTQRecord> //QAbstractItemModel
+class TQPLUGIN_SHARED TQRecModel: public BaseRecModel<PTQRecord> //QAbstractItemModel
 {
     Q_OBJECT
     Q_PROPERTY(QString queryName READ getQueryName)

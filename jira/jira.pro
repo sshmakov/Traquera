@@ -19,7 +19,7 @@ HEADERS += jiradb.h\
     qt-json/json.h
 
 INCLUDEPATH += ../common
-
+win32:LIBS += -L../lib -ltqplugapi
 
 unix:!symbian {
     maemo5 {
