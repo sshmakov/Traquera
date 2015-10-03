@@ -1,7 +1,7 @@
 #include "tqmodels.h"
-#ifdef CLIENT_APP
-    #include <QtGui>
-#endif
+//#ifdef CLIENT_APP
+    #include <QFont>
+//#endif
 
 // ============= TrkToolModel ===============
 
@@ -61,32 +61,63 @@ bool TrkToolModel::openIds(const QList<int> &ids)
 }
 */
 
+void TQRecModel::appendRecordIds(const QList<int> &ids)
+{
+    QList<TQRecord *> records;
+    TQRecord *rec;
+    foreach(int id, ids)
+    {
+        if(rowOfRecordId(id)!=-1)
+            continue;
+        rec = prj->createRecordById(id, rectype);
+        if(rec)
+            records << rec;
+    }
+    if(!records.size())
+        return;
+    beginResetModel();
+//    emit layoutAboutToBeChanged();
+    foreach(rec, records)
+    {
+        append(rec);
+        addedIds.insert(rec->recordId());
+        deletedIds.remove(rec->recordId());
+        rec->addLink();
+    }
+//    emit layoutChanged();
+    endResetModel();
+
+}
+
+void TQRecModel::removeRecordIds(const QList<int> &ids)
+{
+    beginResetModel();
+//    emit layoutAboutToBeChanged();
+    foreach(int id, ids)
+    {
+        int r = rowOfRecordId(id);
+        if(r==-1)
+            continue;
+        beginRemoveRows(QModelIndex(),r,r);
+        TQRecord *rec = records.takeAt(r);
+        if(rec)
+            rec->removeLink(this);
+        addedIds.remove(id);
+        deletedIds.insert(id);
+        endRemoveRows();
+    }
+//    emit layoutChanged();
+    endResetModel();
+}
+
 void TQRecModel::appendRecordId(int id)
 {
-    if(rowOfRecordId(id)!=-1)
-        return;
-    TQRecord *rec = qobject_cast<TQRecord *>(prj->createRecordById(id, rectype));
-    if(rec)
-    {
-        emit layoutAboutToBeChanged();
-        append(rec);
-        addedIds.insert(id);
-        rec->addLink();
-        emit layoutChanged();
-    }
+    appendRecordIds(QList<int>() << id);
 }
 
 void TQRecModel::removeRecordId(int id)
 {
-    int r = rowOfRecordId(id);
-    if(r==-1)
-        return;
-    beginRemoveRows(QModelIndex(),r,r);
-    TQRecord *rec = records.takeAt(r);
-    if(rec)
-        rec->removeLink(this);
-    endRemoveRows();
-    addedIds.remove(id);
+    removeRecordIds(QList<int>() << id);
 }
 
 QVariant TQRecModel::data(const QModelIndex & index, int role) const
@@ -99,7 +130,7 @@ QVariant TQRecModel::data(const QModelIndex & index, int role) const
         Qt::CheckState state = isSel ? Qt::Checked : Qt::Unchecked;
         return QVariant::fromValue<int>(state);
     }
-#ifdef CLIENT_APP
+//#ifdef CLIENT_APP
     if(role == Qt::FontRole)
     {
         QFont font;
@@ -107,7 +138,7 @@ QVariant TQRecModel::data(const QModelIndex & index, int role) const
            font.setItalic(true);
         return font;
     }
-#endif
+//#endif
     return BaseRecModel::data(index, role);
 }
 
@@ -241,9 +272,14 @@ Qt::ItemFlags TQRecModel::flags ( const QModelIndex & index ) const
     return res | Qt::ItemIsEditable;
 }
 
-QString TQRecModel::getQueryName() const
+QString TQRecModel::queryName() const
 {
-    return queryName;
+    return query;
+}
+
+void TQRecModel::setQueryName(const QString &queryName)
+{
+    query = queryName;
 }
 
 QList<int> TQRecModel::getIdList() const
@@ -255,6 +291,16 @@ QList<int> TQRecModel::getIdList() const
         res << id;
     }
     return res;
+}
+
+QList<int> TQRecModel::addedIdList() const
+{
+    return addedIds.toList();
+}
+
+QList<int> TQRecModel::deletedIdList() const
+{
+    return deletedIds.toList();
 }
 
 bool TQRecModel::isSystemModel()

@@ -97,7 +97,9 @@ public:
     typedef TQAbstractDB *(*createDbFunc)(QObject *);
     TQAbstractDB(QObject *parent = 0);
     virtual QStringList dbmsTypes() = 0;
-    virtual QStringList projects(const QString &dbmsType) = 0;
+    virtual QStringList projects(const QString &dbmsType,
+                                 const QString &user = QString(),
+                                 const QString &pass = QString()) = 0;
     virtual TQAbstractProject *openProject(
             const QString &projectName,
             const QString &user = QString(),

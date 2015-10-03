@@ -33,7 +33,9 @@ FORMS += ui/tracksmain.ui ui/querypage.ui ui/trklogin.ui ui/filters.ui ui/scrwid
     tqconnectwidget.ui \
     tqqrywid.ui \
     ../tracker/trkchangedlg.ui \
-    ../tracker/trkdatesdlg.ui
+    ../tracker/trkdatesdlg.ui \
+    optionsform.ui \
+    proxyoptions.ui
 #    ui/planfilesform.ui \
 #    ui/projectpage.ui
 
@@ -74,7 +76,10 @@ HEADERS += \
     ../tracker/trkcond.h \
     ../common/tqcondwidgets.h \
     ../tracker/trkcondwidgets.h \
-    tqproxyrecmodel.h
+    tqproxyrecmodel.h \
+    optionsform.h \
+    proxyoptions.h \
+    tqhistory.h
 
 #    plans.h planproxy.h \
 #    planfiles.h \
@@ -117,7 +122,10 @@ SOURCES += database.cpp main.cpp mainwindow.cpp querypage.cpp \
     ../tracker/trkcond.cpp \
     ../common/tqcondwidgets.cpp \
     ../tracker/trkcondwidgets.cpp \
-    tqproxyrecmodel.cpp
+    tqproxyrecmodel.cpp \
+    optionsform.cpp \
+    proxyoptions.cpp \
+    tqhistory.cpp
 
 #    planfilesform.cpp \
 #    project.cpp projectpage.cpp plans.cpp planproxy.cpp planfiles.cpp \
@@ -165,3 +173,8 @@ RC_FILE = traquera-win.rc
 
 #INCLUDEPATH += /Projects/ImageMagick-6.8.7-Q16/include
 #LIBS += -L/Projects/ImageMagick-6.8.7-Q16/lib -lCORE_RL_Magick++_
+win32:INCLUDEPATH += C:/OpenSSL-Win32/include
+#win32:LIBS += -LC:/OpenSSL-Win32/lib -LC:/OpenSSL-Win32/bin -llibeay32 -lssleay32
+win32:LIBS += -LC:/OpenSSL-Win32/bin
+LIBS += -L../lib -ltqplugapi
+

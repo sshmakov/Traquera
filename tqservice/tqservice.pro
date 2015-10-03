@@ -15,19 +15,10 @@ DEF_FILE = tqservice.def
 
 DEFINES += TQSERVICE_LIBRARY
 
-SOURCES += tqservice.cpp \
-    ../common/ttutils.cpp \
-    ../tracker/trkview.cpp \
-    ../tracker/trkcond.cpp
+SOURCES += tqservice.cpp
 
 HEADERS += tqservice.h\
-        tqservice_global.h \
-    ../common/ttutils.h \
-    ../tracker/trkview.h \
-    ../tracker/trktool2.h \
-    ../tracker/trdefs.h \
-    ../tracker/tracker.h \
-    ../tracker/trkcond.h
+        tqservice_global.h
 
 DEFINES += CONSOLE_APP
 INCLUDEPATH += $$PWD/../trktool/lib ../common ../tracker

@@ -54,10 +54,13 @@ QVariant TQProxyRecModel::data(const QModelIndex &proxyIndex, int role) const
     }
     else
     {
+        return QAbstractProxyModel::data(proxyIndex, role);
+        /*
         QVariant v;
         QModelIndex sourceIndex = mapToSource(proxyIndex);
         v = sourceModel()->data(sourceIndex, role);
         return v;
+        */
     }
 //    recModel->index(proxy)
     return QVariant();
@@ -119,7 +122,133 @@ QModelIndex TQProxyRecModel::parent(const QModelIndex &child) const
 void TQProxyRecModel::setSourceModel(QAbstractItemModel *sourceModel)
 {
     beginResetModel();
+    if(recModel)
+    {
+        recModel->disconnect(this);
+    }
     recModel = qobject_cast<TQRecModel *>(sourceModel);
     QAbstractProxyModel::setSourceModel(sourceModel);
+    connect(sourceModel, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
+            this, SLOT(_q_sourceDataChanged(QModelIndex,QModelIndex)));
+
+    connect(sourceModel, SIGNAL(headerDataChanged(Qt::Orientation,int,int)),
+            this, SLOT(_q_sourceHeaderDataChanged(Qt::Orientation,int,int)));
+
+    connect(sourceModel, SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)),
+            this, SLOT(_q_sourceRowsAboutToBeInserted(QModelIndex,int,int)));
+
+    connect(sourceModel, SIGNAL(rowsInserted(QModelIndex,int,int)),
+            this, SLOT(_q_sourceRowsInserted(QModelIndex,int,int)));
+
+    connect(sourceModel, SIGNAL(columnsAboutToBeInserted(QModelIndex,int,int)),
+            this, SLOT(_q_sourceColumnsAboutToBeInserted(QModelIndex,int,int)));
+
+    connect(sourceModel, SIGNAL(columnsInserted(QModelIndex,int,int)),
+            this, SLOT(_q_sourceColumnsInserted(QModelIndex,int,int)));
+
+    connect(sourceModel, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
+            this, SLOT(_q_sourceRowsAboutToBeRemoved(QModelIndex,int,int)));
+
+    connect(sourceModel, SIGNAL(rowsRemoved(QModelIndex,int,int)),
+            this, SLOT(_q_sourceRowsRemoved(QModelIndex,int,int)));
+
+    connect(sourceModel, SIGNAL(columnsAboutToBeRemoved(QModelIndex,int,int)),
+            this, SLOT(_q_sourceColumnsAboutToBeRemoved(QModelIndex,int,int)));
+
+    connect(sourceModel, SIGNAL(columnsRemoved(QModelIndex,int,int)),
+            this, SLOT(_q_sourceColumnsRemoved(QModelIndex,int,int)));
+
+    connect(sourceModel, SIGNAL(layoutAboutToBeChanged()),
+            this, SLOT(_q_sourceLayoutAboutToBeChanged()));
+
+    connect(sourceModel, SIGNAL(layoutChanged()),
+            this, SLOT(_q_sourceLayoutChanged()));
+
+    connect(sourceModel, SIGNAL(modelAboutToBeReset()), this, SLOT(_q_sourceAboutToBeReset()));
+    connect(sourceModel, SIGNAL(modelReset()), this, SLOT(_q_sourceReset()));
+
+//    d->_q_clearMapping();
+    endResetModel();
+}
+
+void TQProxyRecModel::_q_sourceDataChanged(QModelIndex &topLeft, QModelIndex &bottomRight)
+{
+    emit dataChanged(topLeft, bottomRight);
+}
+
+void TQProxyRecModel::_q_sourceHeaderDataChanged(Qt::Orientation orientation, int first, int last)
+{
+    emit headerDataChanged(orientation, first, last);
+}
+
+void TQProxyRecModel::_q_sourceRowsAboutToBeInserted(QModelIndex &parent, int first, int last)
+{
+    first = mapFromSource(recModel->index(first,0,parent)).row();
+    last = mapFromSource(recModel->index(last,0,parent)).row();
+    QModelIndex par = mapFromSource(parent);
+    beginInsertRows(par, first, last);
+}
+
+void TQProxyRecModel::_q_sourceRowsInserted(QModelIndex &parent, int first, int last)
+{
+    endInsertRows();
+}
+
+void TQProxyRecModel::_q_sourceColumnsAboutToBeInserted(QModelIndex &parent, int first, int last)
+{
+    first = mapFromSource(recModel->index(first,0,parent)).column();
+    last = mapFromSource(recModel->index(last,0,parent)).column();
+    QModelIndex par = mapFromSource(parent);
+    beginInsertColumns(par, first, last);
+}
+
+void TQProxyRecModel::_q_sourceColumnsInserted(QModelIndex &parent, int first, int last)
+{
+    endInsertColumns();
+}
+
+void TQProxyRecModel::_q_sourceRowsAboutToBeRemoved(QModelIndex &parent, int first, int last)
+{
+    first = mapFromSource(recModel->index(first,0,parent)).row();
+    last = mapFromSource(recModel->index(last,0,parent)).row();
+    QModelIndex par = mapFromSource(parent);
+    beginRemoveRows(par, first,last);
+}
+
+void TQProxyRecModel::_q_sourceRowsRemoved(QModelIndex &parent, int first, int last)
+{
+    endRemoveRows();
+}
+
+void TQProxyRecModel::_q_sourceColumnsAboutToBeRemoved(QModelIndex &parent, int first, int last)
+{
+    first = mapFromSource(recModel->index(first,0,parent)).column();
+    last = mapFromSource(recModel->index(last,0,parent)).column();
+    QModelIndex par = mapFromSource(parent);
+    beginRemoveColumns(par, first, last);
+}
+
+void TQProxyRecModel::_q_sourceColumnsRemoved(QModelIndex &parent, int first, int last)
+{
+    endRemoveColumns();
+}
+
+void TQProxyRecModel::_q_sourceLayoutAboutToBeChanged()
+{
+    emit layoutAboutToBeChanged();
+}
+
+void TQProxyRecModel::_q_sourceLayoutChanged()
+{
+    emit layoutChanged();
+}
+
+void TQProxyRecModel::_q_sourceAboutToBeReset()
+{
+    beginResetModel();
+}
+
+void TQProxyRecModel::_q_sourceReset()
+{
     endResetModel();
 }

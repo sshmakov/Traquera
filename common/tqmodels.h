@@ -170,7 +170,7 @@ typedef TQRecord * PTQRecord;
 class TQPLUGIN_SHARED TQRecModel: public BaseRecModel<PTQRecord> //QAbstractItemModel
 {
     Q_OBJECT
-    Q_PROPERTY(QString queryName READ getQueryName)
+    Q_PROPERTY(QString query READ queryName WRITE setQueryName)
 protected:
     //QList<int> recIds;
     //TrkToolProject *prj;
@@ -183,8 +183,9 @@ protected:
     //TrkToolRecordSet rset;
     QList<int> vids;
     QSet<int> addedIds;
-    QString queryName;
-    bool isQuery;
+    QSet<int> deletedIds;
+    QString query;
+    bool isQueryType;
 public:
     TQRecModel(TQAbstractProject *project, int type, QObject *parent = 0);
     virtual ~TQRecModel();
@@ -206,17 +207,24 @@ public:
     virtual bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole);
     const TQAbstractRecordTypeDef *typeDef();
     virtual void clearRecords();
-    QString getQueryName() const;
+    QString queryName() const;
+    void setQueryName(const QString &queryName);
     QList<int> getIdList() const;
+    QList<int> addedIdList() const;
+    QList<int> deletedIdList() const;
     int idColumn() const { return idCol; }
     bool isSystemModel();
     int lastTransactionId() { return lastTransId; }
+    bool isQuery() const { return isQueryType; }
+    int recordType() const { return rectype; }
     /*
 public:
     bool openScrs(const QList<int> &ids);
     bool openScrs(const QStringList &lines);
     bool openScrs(const QString &line);
     void close();*/
+    void appendRecordIds(const QList<int> &ids);
+    void removeRecordIds(const QList<int> &ids);
     void appendRecordId(int id);
     void removeRecordId(int id);
     void refreshQuery();

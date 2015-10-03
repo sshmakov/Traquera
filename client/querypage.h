@@ -16,6 +16,7 @@
 #include "ttfolders.h"
 #include "preview.h"
 #include <tqmodels.h>
+#include "tqhistory.h"
 
 /*
 struct TrkHistoryItem 
@@ -44,7 +45,7 @@ protected:
     TQProxyRecModel *proxy;
     QSortFilterProxyModel *qryFilterModel;
 	QString linkField;
-//    TrkHistory history;
+    TQHistory history;
     //QList<TrkHistoryItem> history;
 	int curHistoryPos;
     QString filterString;
@@ -119,8 +120,10 @@ public slots:
 	void goForward();
     void newFilterString();
     void newFilterString(const QString &text);
-    void appendId(int id);
-    void removeId(int id);
+    void appendIds(const QList<int> &ids);
+    void removeIds(const QList<int> &ids);
+//    void appendId(int id);
+//    void removeId(int id);
     void setIdChecked(int id, bool checked);
     void refreshQuery();
     void openRecordId(int id);
@@ -143,6 +146,9 @@ signals:
     void selectionRecordsChanged();
     void openRecordsClicked(ScrSet set);
     void showTaskInPlanClicked(const QString &prjName, int taskNum);
+private:
+    void addHistoryPoint();
+    void updateHistoryPoint();
 private slots:
     void updateDetails();
     void on_actionAdd_Note_triggered();

@@ -24,7 +24,7 @@ QStringList TQServiceDB::dbmsTypes()
     return QStringList("http://localhost:8080/tq");
 }
 
-QStringList TQServiceDB::projects(const QString &dbmsType)
+QStringList TQServiceDB::projects(const QString &dbmsType, const QString &user, const QString &pass)
 {
     TQProjectListReplyHandler handler;
     QString query = "<GetProjects/>";

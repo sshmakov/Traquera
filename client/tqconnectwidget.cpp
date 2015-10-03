@@ -295,7 +295,7 @@ void TQConnectWidget::on_btnProjects_clicked()
     QScopedPointer<TQAbstractDB> db(TQAbstractDB::createDbClass(dbClass));
     db->setDbmsServer(dbServer);
     db->setDbmsUser(ui->sqlUserEdit->text().trimmed(), ui->sqlPassEdit->text().trimmed());
-    QStringList projects = db->projects(dbType);
+    QStringList projects = db->projects(dbType, ui->userEdit->text(), ui->passwordEdit->text());
     QScopedPointer<QMenu> menu(new QMenu());
     for(int i = 0; i< projects.count(); i++)
     {

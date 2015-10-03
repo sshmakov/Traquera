@@ -5,13 +5,14 @@
 #include <QObjectList>
 
 #include "ttrecwindow.h"
+#include "ttglobal.h"
 
 ScrPluginFactory::ScrPluginFactory(QWebView *webView, TTRecordWindow *parent) :
     QWebPluginFactory(parent)
 {
     editor = parent;
     web = webView;
-    manager = new QNetworkAccessManager(this);
+    manager = ttglobal()->networkManager();
     views = new QObjectList();
 }
 

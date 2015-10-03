@@ -427,7 +427,7 @@ QString TrkToolDB::dbmsServer() const
 //    return server;
 }
 
-QStringList TrkToolDB::projects(const QString &dbmsType)
+QStringList TrkToolDB::projects(const QString &dbmsType, const QString &user, const QString &pass)
 {
 	if(!projectList.contains(dbmsType) || projectList[dbmsType].isEmpty())
 	{
@@ -1288,6 +1288,7 @@ bool TrkToolProject::fillModel(TQRecModel *model, const QString &queryName,
         if(rec)
             model->append(rec);
     }
+    model->setQueryName(queryName);
     return true;
 
     /*
@@ -1416,8 +1417,8 @@ QAbstractItemModel *TrkToolProject::openIdsModel(const QList<int> &ids, int type
         if(rec)
             model->append(rec);
     }
-    model->queryName = intListToString(unique);
-    model->isQuery = false;
+    model->setQueryName(intListToString(unique));
+    model->isQueryType = false;
     //endResetModel();
 
 //	model->openIds(ids);
@@ -3228,7 +3229,7 @@ void TrkHistory::openedModel(const TQRecModel *model)
 {
     TrkHistoryItem item;
     bool isNew=true;
-    QString qName = model->getQueryName();
+    QString qName = model->queryName();
     int i;
     if(unique)
         for(i = 0; i < records.count(); i++)
@@ -3246,11 +3247,11 @@ void TrkHistory::openedModel(const TQRecModel *model)
     else
     {
         item.projectName = model->prj->projectName();
-        item.queryName = model->getQueryName();
+        item.queryName = model->queryName();
     }
     item.foundIds = intListToString(model->getIdList());
-    item.isQuery = model->isQuery;
-    item.rectype = model->rectype;
+    item.isQuery = model->isQuery();
+    item.rectype = model->recordType();
     item.createDateTime = QDateTime::currentDateTime();
     if(isNew)
         append(item);

@@ -38,9 +38,12 @@
 #include "projecttree.h"
 #include "tqconnectwidget.h"
 #include "tqqrywid.h"
+#include "optionsform.h"
+#include "proxyoptions.h"
 
 extern int uniqueAlbumId;
 extern int uniqueArtistId;
+
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), activePrj(0)
@@ -154,6 +157,8 @@ MainWindow::MainWindow(QWidget *parent)
     gridLayout->addWidget(connectWidget,0,0,-1,-1);
     connect(connectWidget,SIGNAL(connectClicked(ConnectParams)),SLOT(connectTrackerParams(ConnectParams)));
 
+    ttglobal()->registerOptionsWidget(tr("Сеть")+"/"+tr("Прокси"), ProxyOptions::proxyOptionsFunc);
+    ProxyOptions::loadSettings();
 }
 
 const QString MainWindowGeometry = "MainWindowGeometry";
@@ -400,8 +405,7 @@ void MainWindow::slotAppendRecordsId()
         return;
     QString s = openIdEdit->currentText().trimmed();
     QList<int> list = stringToIntList(s);
-    foreach(int id, list)
-        page->appendId(id);
+    page->appendIds(list);
     saveIdsToList(s);
 }
 
@@ -412,8 +416,7 @@ void MainWindow::slotRemoveRecordsId()
         return;
     QString s = openIdEdit->currentText().trimmed();
     QList<int> list = stringToIntList(s);
-    foreach(int id, list)
-        page->removeId(id);
+    page->removeIds(list);
     saveIdsToList(s);
 }
 
@@ -1967,4 +1970,14 @@ void MainWindow::on_actionNewQuery_triggered()
         //5selectedTreeItem.prj->saveQueryDefinition(dlg.queryDefinition(), selectedTreeItem.queryName, selectedTreeItem.recordType);
     }
 
+}
+
+void MainWindow::on_actionSettings_triggered()
+{
+    QScopedPointer<OptionsForm> form(new OptionsForm);
+    QMap<QString, GetOptionsWidgetFunc> regs = ttglobal()->optionsWidgets();
+    QMap<QString, GetOptionsWidgetFunc>::iterator i;
+    for(i = regs.begin(); i!=regs.end(); ++i)
+        form->registerWidget(i.key(), i.value());
+    form->exec();
 }

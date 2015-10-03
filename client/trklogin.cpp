@@ -6,6 +6,7 @@
 #include <ttglobal.h>
 #include <tqbase.h>
 #include <QtGui>
+#include <openssl/applink.c>
 
 TrkConnect::TrkConnect(QWidget *parent)
     : QDialog(parent)
@@ -157,7 +158,7 @@ void TrkConnect::showProjectsMenu()
     QScopedPointer<TQAbstractDB> db(TQAbstractDB::createDbClass(dbClass));
     db->setDbmsServer(dbServer);
     db->setDbmsUser(dbmsUser(),dbmsPass());
-    QStringList projects = db->projects(dbType);
+    QStringList projects = db->projects(dbType, userEdit->text(), passwordEdit->text());
     QMenu *menu=new QMenu();
     for(int i = 0; i< projects.count(); i++)
     {

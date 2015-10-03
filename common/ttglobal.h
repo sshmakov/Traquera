@@ -5,6 +5,7 @@
 #include <QSqlDatabase>
 #include <QSqlError>
 #include <QString>
+#include <tqplugui.h>
 
 class QMainWindow;
 class MainWindow;
@@ -13,6 +14,11 @@ class TQAbstractProject;
 class QSettings;
 class QTableView;
 class QMenu;
+class QWidget;
+class QNetworkAccessManager;
+
+class TTGlobalPrivate;
+class TQOAuth;
 
 class TTGlobal : public QObject
 {
@@ -22,14 +28,8 @@ class TTGlobal : public QObject
     Q_PROPERTY(QString clipboardText READ getClipboardText WRITE setClipboardText)
     Q_PROPERTY(QString currentProjectName READ currentProjectName)
 private:
+    TTGlobalPrivate *d;
     explicit TTGlobal(QObject *parent = 0);
-    QString initFileName;
-    QSqlDatabase userDb;
-    QString userDbType;
-    QString userDbPath;
-    QString userDbUser;
-    QString userDbPassword;
-    QSettings *settingsObj;
 public:
     MainWindow *mainWin;
     //TrkToolProject *currentProject;
@@ -43,6 +43,9 @@ public:
     Q_INVOKABLE void setClipboardText(const QString &text) const;
     Q_INVOKABLE QString currentProjectName();
     Q_INVOKABLE QObject *getRecord(int id, const QString &project = QString());
+    Q_INVOKABLE bool registerOptionsWidget(const QString &path, void *funcPtr);
+    Q_INVOKABLE QNetworkAccessManager *networkManager() const;
+    QMap<QString, GetOptionsWidgetFunc> optionsWidgets() const;
 protected:
     void readInitSettings();
     void upgradeUserDB();
@@ -56,12 +59,13 @@ public slots:
     int shellLocale(const QString &command, const QString &locale = QString());
 
     /* Events */
-protected:
-    QMultiHash <QString, QPair<QObject*,QString> > handlers;
 public:
     Q_INVOKABLE QString initFileValue(const QString &elementPath, const QString &attr = QString());
     Q_INVOKABLE bool registerEventHandler(const QString &event, QObject *obj, const QString &method);
     Q_INVOKABLE bool unregisterEventHandler(const QString &event, QObject *obj, const QString &method);
+    Q_INVOKABLE QObject *oauth();
+protected:
+    TQOAuth *m_oauth;
 public slots:
     void handleEvent(const QString &event,
                      QGenericReturnArgument ret,
@@ -72,10 +76,6 @@ public slots:
                      QGenericArgument val8 = QGenericArgument(), QGenericArgument val9 = QGenericArgument());
 
     /* Plugins */
-protected:
-    QObjectList plugins;
-    QString pluginDirectory;
-    QStringList anotherPlugins;
 public slots:
     void loadPlugins();
     bool loadSinglePlugin(const QString &path);
@@ -101,5 +101,7 @@ inline void Error(const QString& text)
 {
     ttglobal()->showError(text);
 }
+
+
 
 #endif // TTGLOBAL_H

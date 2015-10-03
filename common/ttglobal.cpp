@@ -4,6 +4,7 @@
 #include "mainwindow.h"
 #include "querypage.h"
 #include "ttrecwindow.h"
+#include "proxyoptions.h"
 #endif
 #include <QDomDocument>
 #include <QtSql>
@@ -13,18 +14,47 @@
 #include <QXmlInputSource>
 #include <Windows.h>
 #include <QMessageBox>
+#include <tqoauth.h>
+
 
 static TTGlobal *ttGlobal=0;
 
+class TTGlobalPrivate {
+public:
+    QString initFileName;
+    QSqlDatabase userDb;
+    QString userDbType;
+    QString userDbPath;
+    QString userDbUser;
+    QString userDbPassword;
+    QSettings *settingsObj;
+    QNetworkAccessManager netman;
+
+    QMultiHash <QString, QPair<QObject*,QString> > handlers;
+
+    QObjectList plugins;
+    QString pluginDirectory;
+    QStringList anotherPlugins;
+
+    QMap<QString, GetOptionsWidgetFunc> optionsRegs;
+
+    TTGlobalPrivate()
+        : userDb(), handlers(), plugins()
+    {
+    }
+};
+
 TTGlobal::TTGlobal(QObject *parent) :
     QObject(parent),
-    userDb(),
-    handlers(),
-    plugins()
+    d(new TTGlobalPrivate()),
+    m_oauth(0)
+//    userDb(),
+//    handlers(),
+//    plugins()
 {
-    settingsObj = new QSettings(COMPANY_NAME, PRODUCT_NAME);
+    d->settingsObj = new QSettings(COMPANY_NAME, PRODUCT_NAME);
     //ttGlobal = this;
-    initFileName = "data/init.xml";
+    d->initFileName = "data/init.xml";
     readInitSettings();
 }
 
@@ -38,21 +68,21 @@ TTGlobal *TTGlobal::global()
 
 QSqlDatabase TTGlobal::userDatabase()
 {
-    if(!userDb.isOpen())
+    if(!d->userDb.isOpen())
     {
-        userDb = QSqlDatabase::addDatabase(userDbType,"userDatabase");
-        userDb.setDatabaseName(userDbPath);
+        d->userDb = QSqlDatabase::addDatabase(d->userDbType,"userDatabase");
+        d->userDb.setDatabaseName(d->userDbPath);
         bool opened;
-        if(!userDbUser.isEmpty())
-            opened = userDb.open(userDbUser, userDbPassword);
+        if(!d->userDbUser.isEmpty())
+            opened = d->userDb.open(d->userDbUser, d->userDbPassword);
         else
-            opened = userDb.open();
+            opened = d->userDb.open();
         if(opened)
             upgradeUserDB();
         else
-            SQLError(userDb.lastError());
+            SQLError(d->userDb.lastError());
     }
-    return userDb;
+    return d->userDb;
 }
 
 QString TTGlobal::toOemString(const QString &s)
@@ -62,7 +92,7 @@ QString TTGlobal::toOemString(const QString &s)
 
 QSettings *TTGlobal::settings()
 {
-    return settingsObj;
+    return d->settingsObj;
 }
 
 QMainWindow *TTGlobal::mainWindow()
@@ -105,6 +135,23 @@ QObject *TTGlobal::getRecord(int id, const QString &project)
     return prj->createRecordById(id,prj->defaultRecType());
 }
 
+bool TTGlobal::registerOptionsWidget(const QString &path, void *funcPtr)
+{
+    GetOptionsWidgetFunc func= (GetOptionsWidgetFunc)funcPtr;
+    d->optionsRegs.insert(path, func);
+    return true;
+}
+
+QNetworkAccessManager *TTGlobal::networkManager() const
+{
+    return &d->netman;
+}
+
+QMap<QString, GetOptionsWidgetFunc> TTGlobal::optionsWidgets() const
+{
+    return d->optionsRegs;
+}
+
 void TTGlobal::showError(const QString &text)
 {
     if(mainWin)
@@ -113,7 +160,7 @@ void TTGlobal::showError(const QString &text)
 
 void TTGlobal::readInitSettings()
 {
-    QFile file(initFileName);
+    QFile file(d->initFileName);
     QXmlInputSource source(&file);
     QDomDocument dom;
     if(!dom.setContent(&source,false))
@@ -124,25 +171,25 @@ void TTGlobal::readInitSettings()
     QDomElement dbNode = doc.firstChildElement("userdb");
     if(!dbNode.isNull())
     {
-        userDbType = dbNode.attribute("type",userDbType);
-        userDbPath = dbNode.attribute("path",userDbPath);
-        userDbUser = dbNode.attribute("user",userDbUser);
-        userDbPassword = dbNode.attribute("password",userDbPassword);
+        d->userDbType = dbNode.attribute("type",d->userDbType);
+        d->userDbPath = dbNode.attribute("path",d->userDbPath);
+        d->userDbUser = dbNode.attribute("user",d->userDbUser);
+        d->userDbPassword = dbNode.attribute("password",d->userDbPassword);
     }
-    userDbType = settingsObj->value("UserDBType",userDbType).toString();
-    userDbPath = settingsObj->value("UserDBPath",userDbPath).toString();
-    userDbUser = settingsObj->value("UserDBUser",userDbUser).toString();
-    userDbPassword = settingsObj->value("UserDBPass",userDbPassword).toString();
+    d->userDbType = d->settingsObj->value("UserDBType",d->userDbType).toString();
+    d->userDbPath = d->settingsObj->value("UserDBPath",d->userDbPath).toString();
+    d->userDbUser = d->settingsObj->value("UserDBUser",d->userDbUser).toString();
+    d->userDbPassword = d->settingsObj->value("UserDBPass",d->userDbPassword).toString();
     QDomElement plugNode = doc.firstChildElement("plugins");
     if(!plugNode.isNull())
     {
-        pluginDirectory = plugNode.attribute("directory","plugins");
+        d->pluginDirectory = plugNode.attribute("directory","plugins");
         QDomElement p = plugNode.firstChildElement("plugin");
         while(!p.isNull())
         {
             QString path = p.attribute("path");
             if(!path.isEmpty())
-                anotherPlugins.append(path);
+                d->anotherPlugins.append(path);
             p = p.nextSiblingElement("plugin");
         }
     }
@@ -150,7 +197,7 @@ void TTGlobal::readInitSettings()
 
 void TTGlobal::upgradeUserDB()
 {
-    if(userDb.tables().contains("recordInFolder",Qt::CaseInsensitive))
+    if(d->userDb.tables().contains("recordInFolder",Qt::CaseInsensitive))
         executeBatchFile(":/sql/upgrade1.sql");
 }
 
@@ -165,7 +212,7 @@ bool TTGlobal::executeBatchFile(const QString &fileName)
     QTextStream in(&file);
     while (!in.atEnd()) {
         QString line = in.readLine();
-        QSqlQuery q(userDb);
+        QSqlQuery q(d->userDb);
         if(!q.exec(line))
         {
             SQLError(q.lastError());
@@ -210,7 +257,7 @@ int TTGlobal::shellLocale(const QString &command, const QString &locale)
 QString TTGlobal::initFileValue(const QString &elementPath, const QString &attr)
 {
     QStringList tree = elementPath.split('/');
-    QFile file(initFileName);
+    QFile file(d->initFileName);
     QXmlInputSource source(&file);
     QDomDocument dom;
     if(!dom.setContent(&source,false))
@@ -236,14 +283,21 @@ QString TTGlobal::initFileValue(const QString &elementPath, const QString &attr)
 
 bool TTGlobal::registerEventHandler(const QString &event, QObject *obj, const QString &method)
 {
-    handlers.insert(event, qMakePair(obj, method));
+    d->handlers.insert(event, qMakePair(obj, method));
     return true;
 }
 
 bool TTGlobal::unregisterEventHandler(const QString &event, QObject *obj, const QString &method)
 {
-    handlers.remove(event, qMakePair(obj, method));
+    d->handlers.remove(event, qMakePair(obj, method));
     return true;
+}
+
+QObject *TTGlobal::oauth()
+{
+    if(!m_oauth)
+        m_oauth = new TQOAuth(this);
+    return m_oauth;
 }
 
 void TTGlobal::handleEvent(const QString &event, QGenericReturnArgument ret, QGenericArgument val0, QGenericArgument val1,
@@ -251,7 +305,7 @@ void TTGlobal::handleEvent(const QString &event, QGenericReturnArgument ret, QGe
                            QGenericArgument val6, QGenericArgument val7, QGenericArgument val8, QGenericArgument val9)
 {
     QPair<QObject *,QString> pair;
-    foreach(pair, handlers.values(event))
+    foreach(pair, d->handlers.values(event))
     {
         QMetaObject::invokeMethod(pair.first,pair.second.toLocal8Bit().constData(),Qt::DirectConnection,
                                   ret, val0, val1, val2, val3, val4, val5, val6, val7, val8, val9);
@@ -260,7 +314,7 @@ void TTGlobal::handleEvent(const QString &event, QGenericReturnArgument ret, QGe
 
 void TTGlobal::loadPlugins()
 {
-    QDir dir(pluginDirectory);
+    QDir dir(d->pluginDirectory);
     foreach(QString sub, dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot))
     {
         QDir subDir(dir.filePath(sub));
@@ -272,7 +326,7 @@ void TTGlobal::loadPlugins()
             loadSinglePlugin(dll);
         }
     }
-    foreach(QString path, anotherPlugins)
+    foreach(QString path, d->anotherPlugins)
     {
         loadSinglePlugin(path);
     }
@@ -289,7 +343,7 @@ bool TTGlobal::loadSinglePlugin(const QString &path)
     p = loader.instance();
     if(!p)
         return false;
-    plugins.append(p);
+    d->plugins.append(p);
     connect(p,SIGNAL(error(QString,QString)),SLOT(pluginError(QString,QString)));
     QMetaObject::invokeMethod(p, "initPlugin", Q_ARG(QObject *,this), Q_ARG(QString, path));
 #ifdef CLIENT_APP
@@ -305,13 +359,13 @@ bool TTGlobal::loadSinglePlugin(const QString &path)
 
 void TTGlobal::appendContextMenu(QMenu *menu)
 {
-    foreach(QObject *plugin, plugins)
+    foreach(QObject *plugin, d->plugins)
         QMetaObject::invokeMethod(plugin, "appendContextMenu", Q_ARG(QMenu *,menu));
 }
 
 void TTGlobal::queryViewOpened(QWidget *widget, QTableView *view, const QString &recType)
 {
-    foreach(QObject *plugin, plugins)
+    foreach(QObject *plugin, d->plugins)
         QMetaObject::invokeMethod(plugin, "queryViewOpened",
                                   Q_ARG(QWidget *, widget),
                                   Q_ARG(QTableView *, view),
@@ -320,7 +374,7 @@ void TTGlobal::queryViewOpened(QWidget *widget, QTableView *view, const QString 
 
 void TTGlobal::recordOpened(QWidget *widget, const QString &recType)
 {
-    foreach(QObject *plugin, plugins)
+    foreach(QObject *plugin, d->plugins)
         QMetaObject::invokeMethod(plugin, "recordOpened",
                                   Q_ARG(QWidget *, widget),
                                   Q_ARG(const QString &, recType));

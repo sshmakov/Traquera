@@ -410,7 +410,9 @@ public:
     void setDbmsType(const QString &dbType);
     virtual QStringList dbmsTypes();
     virtual QString dbmsServer() const;
-    virtual QStringList projects(const QString &dbmsType);
+    virtual QStringList projects(const QString &dbmsType,
+                                 const QString &user = QString(),
+                                 const QString &pass = QString());
     virtual TQAbstractProject *openProject(
 		const QString &projectName,
         const QString &user = QString(),

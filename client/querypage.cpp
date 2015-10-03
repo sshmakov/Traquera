@@ -1015,6 +1015,7 @@ void QueryPage::openQuery(TQAbstractProject *prj, const QString &queryName, int 
     setQueryModel(prj,newmodel);
     emit openingModel(newmodel);
     emit modelChanged(newmodel);
+    addHistoryPoint();
     //TrkHistoryItem item;
     //item.isQuery = true;
     //item.projectName = prj->name;
@@ -1038,6 +1039,7 @@ void QueryPage::openIds(TQAbstractProject *prj, const QString &ids, const QStrin
     setQueryModel(prj, newmodel);
     emit openingModel(newmodel);
     emit modelChanged(newmodel);
+    addHistoryPoint();
 
     /*
 	TrkHistoryItem item;
@@ -1069,6 +1071,7 @@ void QueryPage::openIds(TQAbstractProject *prj, const QList<int> &idlist, const 
     setQueryModel(prj, newmodel);
     emit openingModel(newmodel);
     emit modelChanged(newmodel);
+    addHistoryPoint();
 //    curHistoryPos = history.rowCount()-1;
 
     QString newTitle;
@@ -1084,6 +1087,7 @@ void QueryPage::openModel(TQAbstractProject *prj, QAbstractItemModel *newModel)
     setQueryModel(prj, qobject_cast<TQRecModel *>(newModel));
     emit openingModel(newModel);
     emit modelChanged(newModel);
+    addHistoryPoint();
 }
 
 void QueryPage::openFolder(TQAbstractProject *prj, const TTFolder &afolder, int recType)
@@ -1097,9 +1101,9 @@ void QueryPage::openFolder(TQAbstractProject *prj, const TTFolder &afolder, int 
     setQueryModel(prj, newmodel);
     emit openingModel(newmodel);
     emit modelChanged(newmodel);
-//    curHistoryPos = history.rowCount()-1;
     QString ids = intListToString(idlist);
     emit changedQuery(prj->projectName(), ids);
+    addHistoryPoint();
 
 }
 
@@ -1113,19 +1117,21 @@ void QueryPage::openQuery(const QString &projectName, const QString &queryName, 
 
 void QueryPage::openHistoryItem(int pos)
 {
-    /*
+
     if(pos<0 || pos>=history.rowCount())
 		return;
-	const TrkHistoryItem &item = history[pos];
+    const TQHistoryItem &item = history[pos];
 	if(item.isQuery)
 	{
         TQAbstractProject *prj = TQAbstractDB::getProject(item.projectName);
-		if(!prj)
+        if(!prj)
 			return;
-        TrkToolModel *newmodel = prj->openQueryModel(item.queryName, item.rectype);
+        TQRecModel *newmodel = prj->openQueryModel(item.queryName, item.rectype);
 		if(!newmodel)
 			return;
         setQueryModel(prj, newmodel);
+        appendIds(stringToIntList(item.addedIds));
+        removeIds(stringToIntList(item.removedIds));
         emit changedQuery(item.projectName, item.queryName);
         curHistoryPos = pos;
 	}
@@ -1134,14 +1140,15 @@ void QueryPage::openHistoryItem(int pos)
         TQAbstractProject *prj = TQAbstractDB::getProject(item.projectName);
 		if(!prj)
 			return;
-        TrkToolModel *newmodel = qobject_cast<TrkToolModel *>(prj->openIdsModel(stringToIntList(item.queryName), item.rectype));
+        TQRecModel *newmodel = qobject_cast<TQRecModel *>(prj->openIdsModel(stringToIntList(item.queryName), item.rectype));
 		if(!newmodel)
 			return;
         setQueryModel(prj, newmodel);
+        appendIds(stringToIntList(item.addedIds));
+        removeIds(stringToIntList(item.removedIds));
         emit changedQuery(item.projectName, item.queryName);
         curHistoryPos = pos;
 	}
-    */
 }
 
 void QueryPage::goBack()
@@ -1367,15 +1374,27 @@ void QueryPage::newFilterString(const QString &text)
         qryFilterModel->setFilterFixedString(text);
 }
 
-void QueryPage::appendId(int id)
+void QueryPage::appendIds(const QList<int> &ids)
 {
-    tmodel->appendRecordId(id);
+    tmodel->appendRecordIds(ids);
+    updateHistoryPoint();
 }
 
-void QueryPage::removeId(int id)
+void QueryPage::removeIds(const QList<int> &ids)
 {
-    tmodel->removeRecordId(id);
+    tmodel->removeRecordIds(ids);
+    updateHistoryPoint();
 }
+
+//void QueryPage::appendId(int id)
+//{
+//    tmodel->appendRecordId(id);
+//}
+
+//void QueryPage::removeId(int id)
+//{
+//    tmodel->removeRecordId(id);
+//}
 
 void QueryPage::setIdChecked(int id, bool checked)
 {
@@ -1641,8 +1660,14 @@ void QueryPage::on_actionCopyMarkedRecords_triggered()
 
 void QueryPage::on_actionDeleteMarked_triggered()
 {
-    foreach(QObject *rec, markedRecords())
-        tmodel->removeRecordId(((TQRecord *)rec)->recordId());
+    QList<int> ids;
+    foreach(QObject *obj, markedRecords())
+    {
+        TQRecord *rec = qobject_cast<TQRecord*>(obj);
+        if(rec)
+            ids << rec->recordId();
+    }
+    removeIds(ids);
 }
 
 void QueryPage::on_actionSelectMarked_triggered()
@@ -1652,8 +1677,14 @@ void QueryPage::on_actionSelectMarked_triggered()
 
 void QueryPage::on_actionDeleteFromList_triggered()
 {
-    foreach(QObject *rec, selectedRecords())
-        tmodel->removeRecordId(((TQRecord *)rec)->recordId());
+    QList<int> ids;
+    foreach(QObject *obj, selectedRecords())
+    {
+        TQRecord *rec = qobject_cast<TQRecord*>(obj);
+        if(rec)
+            ids << rec->recordId();
+    }
+    removeIds(ids);
 }
 
 void QueryPage::on_queryView_customContextMenuRequested(const QPoint &pos)
@@ -1694,12 +1725,16 @@ void QueryPage::on_actionDeleteFromFolder_triggered()
 {
     if(!itIsFolder)
         return;
-    foreach(QObject *rec, selectedRecords())
+    QList<int> ids;
+    foreach(QObject *obj, selectedRecords())
     {
-        int recId = ((TQRecord *)rec)->recordId();
-        folder.deleteRecordId(recId);
-        tmodel->removeRecordId(recId);
+        TQRecord *rec = qobject_cast<TQRecord*>(obj);
+        if(rec)
+            ids << rec->recordId();
     }
+    removeIds(ids);
+    foreach(int id, ids)
+        folder.deleteRecordId(id);
 }
 
 void QueryPage::slotFilesTable_doubleClicked(const QModelIndex &index)
@@ -1812,3 +1847,43 @@ void QueryPage::slotCheckNoPlannedIds()
 }
 */
 
+
+void QueryPage::addHistoryPoint()
+{
+    TQHistoryItem item;
+    item.projectName = modelProject->projectName();
+    if(tmodel)
+    {
+        item.isQuery = tmodel->isQuery();
+        item.queryName = tmodel->queryName();
+        item.rectype = tmodel->recordType();
+        item.foundIds = intListToString(tmodel->getIdList());
+        item.addedIds = intListToString(tmodel->addedIdList());
+        item.removedIds = intListToString(tmodel->deletedIdList());
+    }
+    history.append(item);
+    curHistoryPos = history.rowCount()-1;
+}
+
+void QueryPage::updateHistoryPoint()
+{
+    if(!history.rowCount())
+        addHistoryPoint();
+    else
+    {
+        int r = history.rowCount()-1;
+        TQHistoryItem item = history.at(r);
+        item.projectName = modelProject->projectName();
+        if(tmodel)
+        {
+//            item.isQuery = tmodel->isQuery();
+//            item.queryName = tmodel->queryName();
+//            item.rectype = tmodel->recordType();
+//            item.foundIds = intListToString(tmodel->getIdList());
+            item.addedIds = intListToString(tmodel->addedIdList());
+            item.removedIds = intListToString(tmodel->deletedIdList());
+        }
+        history.removeRow(r);
+        history.append(item);
+    }
+}

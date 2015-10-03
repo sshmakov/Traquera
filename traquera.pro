@@ -5,11 +5,15 @@
 TEMPLATE = subdirs
 
 # Directories
-SUBDIRS += msplans client trindex \
-    tqservice jira \
-    tqplugapi
+SUBDIRS += \
+    tqplugapi \
+    msplans  trindex \
+    tqservice  \
+    jira \
+    client
 
 msplans.depends = client
+client.depends = tqplugapi
 
 CONFIG += ordered
 

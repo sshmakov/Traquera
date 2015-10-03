@@ -22,6 +22,7 @@ public:
     QString pluginModule;
     QDir pluginDir;
     QDir dataDir;
+    QStringList servers;
 
     JiraPlugin(QObject *parent = 0);
     Q_INVOKABLE void initPlugin(QObject *obj, const QString &modulePath);
@@ -29,29 +30,59 @@ public:
     //Q_INVOKABLE void setSettings(QSettings *settings);
     Q_INVOKABLE bool saveSettings();
     Q_INVOKABLE bool loadSettings();
+    static JiraPlugin *plugin();
 };
 
 class QNetworkAccessManager;
+
+struct JiraProjectInfo
+{
+    QString self; //"http://www.example.com/jira/rest/api/2/project/EX",
+    int id; //: "10000",
+    QString key; // "key": "EX",
+    QString name; //"name": "Example",
+//    "avatarUrls": {
+//        "16x16": "http://www.example.com/jira/secure/projectavatar?size=small&pid=10000",
+//        "48x48": "http://www.example.com/jira/secure/projectavatar?size=large&pid=10000"
+//    }
+
+};
+
+typedef QList<JiraProjectInfo> JiraPrjInfoList;
+
+class WebForm;
+class TQOAuth;
+
 class /*JIRASHARED_EXPORT*/ JiraDB: public TQAbstractDB
 {
     Q_OBJECT
 protected:
-    QNetworkAccessManager *man;
-    QList<QObject *> readyReplies;
+//    QNetworkAccessManager *man;
+//    QList<QObject *> readyReplies;
+    QMap<QString, JiraPrjInfoList> projectInfo; // by dbmsType
+    WebForm *webForm;
+    TQOAuth *oa;
 public:
     JiraDB(QObject *parent = 0);
     virtual QStringList dbmsTypes();
-    virtual QStringList projects(const QString &dbmsType);
+    virtual QStringList projects(const QString &dbmsType,
+                                 const QString &user = QString(),
+                                 const QString &pass = QString());
     virtual TQAbstractProject *openProject(
             const QString &projectName,
             const QString &user = QString(),
             const QString &pass = QString()
             );
-    QVariant sendRequest(const QString &verb, const QString &query, const QString &body = QString());
+
+    QVariant sendRequest(const QString &dbmsType, const QString &method, const QString &query, const QString &body = QString());
     QVariant parseValue(const QVariant &source, const QString &path);
     static TQAbstractDB *createJiraDB(QObject *parent);
+protected:
+    JiraPrjInfoList getProjectList(const QString& dbmsType);
 protected slots:
-    void	replyFinished(QNetworkReply * reply);
+//    void	replyFinished(QNetworkReply * reply);
+    void callbackClicked();
+private:
 
 };
 
@@ -62,12 +93,15 @@ class JiraProject: public TQBaseProject
     Q_OBJECT
 protected:
     JiraDB *db;
+    QString dbmsType;
     QHash<int,JiraRecTypeDef *> recordDefs;
     QString projectKey;
     int projectId;
     QMap<QString, QString> favSearch;
+    QString token;
 public:
     JiraProject(TQAbstractDB *db);
+    void loadDefinition();
     //Redefine
     TQAbstractRecordTypeDef *recordTypeDef(int recordType);
     TQRecModel *openQueryModel(const QString &queryName, int recType, bool emitEvent = true);
@@ -92,6 +126,8 @@ protected:
 //    TQAbstractRecordTypeDef *loadRecordTypeDef(int recordType);
     void loadRecordTypes();
     void loadQueries();
+
+    friend class JiraDB;
 };
 
 struct JiraFieldDesc

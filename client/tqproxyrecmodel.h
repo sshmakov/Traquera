@@ -24,6 +24,22 @@ public:
     virtual QModelIndex mapToSource(const QModelIndex &proxyIndex) const;
     virtual QModelIndex parent(const QModelIndex &child) const;
     virtual void setSourceModel(QAbstractItemModel *sourceModel);
+private slots:
+    void _q_sourceDataChanged(QModelIndex &topLeft, QModelIndex &bottomRight);
+    void _q_sourceHeaderDataChanged(Qt::Orientation orientation, int first, int last);
+    void _q_sourceRowsAboutToBeInserted(QModelIndex &parent, int first, int last);
+    void _q_sourceRowsInserted(QModelIndex &parent, int first, int last);
+    void _q_sourceColumnsAboutToBeInserted(QModelIndex &parent, int first, int last);
+    void _q_sourceColumnsInserted(QModelIndex &parent, int first, int last);
+    void _q_sourceRowsAboutToBeRemoved(QModelIndex &parent, int first, int last);
+    void _q_sourceRowsRemoved(QModelIndex &parent, int first, int last);
+    void _q_sourceColumnsAboutToBeRemoved(QModelIndex &parent, int first, int last);
+    void _q_sourceColumnsRemoved(QModelIndex &parent, int first, int last);
+    void _q_sourceLayoutAboutToBeChanged();
+    void _q_sourceLayoutChanged();
+    void _q_sourceAboutToBeReset();
+    void _q_sourceReset();
+
 signals:
     
 public slots:

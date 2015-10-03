@@ -16,20 +16,11 @@ TEMPLATE = app
 
 
 SOURCES += \
-    main.cpp \
-    ../common/ttutils.cpp \
-    ../tracker/trkview.cpp \
-    ../tracker/trkcond.cpp
+    main.cpp
 
 
 HEADERS += \
-    main.h \
-    ../common/ttutils.h \
-    ../tracker/trkview.h \
-    ../tracker/trktool2.h \
-    ../tracker/trdefs.h \
-    ../tracker/tracker.h \
-    ../tracker/trkcond.h
+    main.h
 
 DEFINES += CONSOLE_APP
 INCLUDEPATH += $$PWD/../trktool/lib ../common ../tracker
