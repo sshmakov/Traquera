@@ -1,10 +1,10 @@
 #include "ttglobal.h"
 #include "settings.h"
 #ifdef CLIENT_APP
-#include "mainwindow.h"
-#include "querypage.h"
-#include "ttrecwindow.h"
-#include "proxyoptions.h"
+//#include "mainwindow.h"
+//#include "querypage.h"
+//#include "ttrecwindow.h"
+//#include "proxyoptions.h"
 #endif
 #include <QDomDocument>
 #include <QtSql>
@@ -13,11 +13,21 @@
 #include <QTextStream>
 #include <QXmlInputSource>
 #include <Windows.h>
-#include <QMessageBox>
+#include <QtGui>
 #include <tqoauth.h>
+#include <tqbase.h>
 
 
+/*
 static TTGlobal *ttGlobal=0;
+
+TTGlobal *TTGlobal::global()
+{
+    if(!ttGlobal)
+        ttGlobal=new TTGlobal();
+    return ttGlobal;
+}
+*/
 
 class TTGlobalPrivate {
 public:
@@ -47,7 +57,8 @@ public:
 TTGlobal::TTGlobal(QObject *parent) :
     QObject(parent),
     d(new TTGlobalPrivate()),
-    m_oauth(0)
+    m_oauth(0),
+    proc(0)
 //    userDb(),
 //    handlers(),
 //    plugins()
@@ -56,14 +67,6 @@ TTGlobal::TTGlobal(QObject *parent) :
     //ttGlobal = this;
     d->initFileName = "data/init.xml";
     readInitSettings();
-}
-
-
-TTGlobal *TTGlobal::global()
-{
-    if(!ttGlobal)
-        ttGlobal=new TTGlobal();
-    return ttGlobal;
 }
 
 QSqlDatabase TTGlobal::userDatabase()
@@ -97,12 +100,17 @@ QSettings *TTGlobal::settings()
 
 QMainWindow *TTGlobal::mainWindow()
 {
-    return mainWin;
+    return proc->mainWindow();
 }
 
 QObject *TTGlobal::mainWindowObj()
 {
-    return mainWin;
+    return proc->mainWindow();
+}
+
+bool TTGlobal::addPropWidget(QWidget *prop)
+{
+    return proc->addPropWidget(prop);
 }
 
 QString TTGlobal::getClipboardText() const
@@ -117,9 +125,9 @@ void TTGlobal::setClipboardText(const QString &text) const
 
 QString TTGlobal::currentProjectName()
 {
-    if(!mainWin)
+    if(!proc)
         return QString();
-    TQAbstractProject *prj = mainWin->currentProject();
+    TQAbstractProject *prj = proc->currentProject();
     if(!prj)
         return QString();
     return prj->projectName();
@@ -127,9 +135,9 @@ QString TTGlobal::currentProjectName()
 
 QObject *TTGlobal::getRecord(int id, const QString &project)
 {
-    if(!mainWin)
+    if(!proc)
         return 0;
-    TQAbstractProject *prj = mainWin->currentProject();
+    TQAbstractProject *prj = proc->currentProject();
     if(!prj)
         return 0;
     return prj->createRecordById(id,prj->defaultRecType());
@@ -154,8 +162,8 @@ QMap<QString, GetOptionsWidgetFunc> TTGlobal::optionsWidgets() const
 
 void TTGlobal::showError(const QString &text)
 {
-    if(mainWin)
-        mainWin->statusBar()->showMessage(text,10000);
+    if(proc)
+        mainWindow()->statusBar()->showMessage(text,10000);
 }
 
 void TTGlobal::readInitSettings()
@@ -346,14 +354,16 @@ bool TTGlobal::loadSinglePlugin(const QString &path)
     d->plugins.append(p);
     connect(p,SIGNAL(error(QString,QString)),SLOT(pluginError(QString,QString)));
     QMetaObject::invokeMethod(p, "initPlugin", Q_ARG(QObject *,this), Q_ARG(QString, path));
-#ifdef CLIENT_APP
+    /*
+//#ifdef CLIENT_APP
     QWidget *prop=0;
     if(QMetaObject::invokeMethod(p, "getPropWidget",
                                   Q_RETURN_ARG(QWidget *,prop),
-                                  Q_ARG(QWidget *, mainWin))
+                                  Q_ARG(QWidget *, proc->mainWindow()))
             && prop)
-        mainWin->addPropWidget(prop);
-#endif
+        proc->addPropWidget(prop);
+//#endif
+*/
     return true;
 }
 
@@ -382,19 +392,8 @@ void TTGlobal::recordOpened(QWidget *widget, const QString &recType)
 
 bool TTGlobal::insertViewTab(QWidget *view, QWidget *tab, const QString &title)
 {
-    QueryPage *page = qobject_cast<QueryPage *>(view);
-    if(page)
-    {
-        page->addDetailTab(tab, title, QIcon());
-        return true;
-    }
-    TTRecordWindow *editor = qobject_cast<TTRecordWindow *>(view);
-    if(editor)
-    {
-        editor->addDetailTab(tab, title, QIcon());
-        return true;
-    }
-    return false;
+    return proc->insertViewTab(view, tab, title);
+
 }
 
 void TTGlobal::pluginError(const QString &pluginName, const QString &msg)

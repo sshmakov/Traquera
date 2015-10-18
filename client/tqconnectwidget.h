@@ -18,7 +18,7 @@ class QSqlRecord;
 class TQConnectWidget : public QWidget
 {
     Q_OBJECT
-protected:
+public:
     TQConnectModel *model;
     QSqlTableModel *sqlModel;
     int connectionId, tableRow;

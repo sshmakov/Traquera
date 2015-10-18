@@ -11,6 +11,7 @@
 #include "planfilesform.h"
 #include "tqplanswidget.h"
 #include "projectpage.h"
+//#include <ttglobal.h>
 
 Q_EXPORT_PLUGIN2("msprojectplans", PlansPlugin)
 
@@ -453,6 +454,12 @@ void PlansPlugin::initPlugin(QObject *obj, const QString &modulePath)
             settings = s;
     }
     loadSettings();
+    QWidget *prop = getPropWidget();
+    bool res;
+    QMetaObject::invokeMethod(globalObject,"addPropWidget",
+                              Q_RETURN_ARG(bool, res),
+                              Q_ARG(QWidget *, prop))
+                                 ;
 }
 
 void PlansPlugin::initProjectModel()

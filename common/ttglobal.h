@@ -6,6 +6,7 @@
 #include <QSqlError>
 #include <QString>
 #include <tqplugui.h>
+#include <tqplugin_global.h>
 
 class QMainWindow;
 class MainWindow;
@@ -20,7 +21,17 @@ class QNetworkAccessManager;
 class TTGlobalPrivate;
 class TQOAuth;
 
-class TTGlobal : public QObject
+class TTMainProc
+{
+public:
+    virtual QMainWindow *mainWindow() = 0;
+    virtual TQAbstractProject *currentProject() = 0;
+    virtual bool insertViewTab(QWidget *view, QWidget *tab, const QString &title) = 0;
+    virtual bool addPropWidget(QWidget *widget) = 0;
+};
+
+
+class TQPLUGIN_SHARED TTGlobal : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QSettings* settings READ settings)
@@ -29,16 +40,17 @@ class TTGlobal : public QObject
     Q_PROPERTY(QString currentProjectName READ currentProjectName)
 private:
     TTGlobalPrivate *d;
-    explicit TTGlobal(QObject *parent = 0);
 public:
-    MainWindow *mainWin;
+    TTMainProc *proc;
     //TrkToolProject *currentProject;
-    static TTGlobal *global();
+    explicit TTGlobal(QObject *parent = 0);
+//    static TTGlobal *global();
     QSqlDatabase userDatabase();
     Q_INVOKABLE QString toOemString(const QString &s);
     Q_INVOKABLE QSettings *settings();
     Q_INVOKABLE QMainWindow *mainWindow();
     Q_INVOKABLE QObject *mainWindowObj();
+    Q_INVOKABLE bool addPropWidget(QWidget *prop);
     Q_INVOKABLE QString getClipboardText() const;
     Q_INVOKABLE void setClipboardText(const QString &text) const;
     Q_INVOKABLE QString currentProjectName();
@@ -87,9 +99,12 @@ public slots:
 };
 
 
-inline TTGlobal *ttglobal()
+TQPLUGIN_SHARED TTGlobal *ttglobal();
+
+inline void ttShowError(const QString &error)
 {
-    return TTGlobal::global();
+//    QMetaObject::invokeMethod(ttglobal(), "showError", Qt::DirectConnection, Q_ARG(QString, error));
+    ttglobal()->showError(error);
 }
 
 inline void SQLError(const QSqlError &error)

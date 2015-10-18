@@ -5,31 +5,31 @@
 #-------------------------------------------------
 
 #QT       -= gui
-QT += xml network qui
+QT += xml network sql
 
 
 TARGET = tqplugapi
 TEMPLATE = lib
 
-DEFINES += TQ_PLUGIN_API
+DEFINES += TQ_PLUGIN_API CLIENT_APP
 
 INCLUDEPATH += \
         ../common
 
 SOURCES += tqplugapi.cpp \
     ../common/tqbase.cpp \
-    ../common/tqcond.cpp \
     ../common/tqmodels.cpp \
-    tqoauth.cpp
+    tqoauth.cpp \
+    ../common/ttglobal.cpp
 
 HEADERS += tqplugapi.h\
     ../common/tqplugin_global.h \
     ../common/tqplug.h \
-    ../common/tqcond.h \
     ../common/tqbase.h \
     ../common/tqmodels.h \
     ../common/tqplugui.h \
-    ../common/tqoauth.h
+    ../common/tqoauth.h \
+    ../common/ttglobal.h
 
 unix:!symbian {
     maemo5 {

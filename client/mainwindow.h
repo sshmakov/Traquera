@@ -8,11 +8,13 @@
 #include <QHash>
 #include <QTimer>
 #include "ui_tracksmain.h"
+#include "mainproc.h"
 #include "tracker.h"
 //#include "plans.h"
 //#include "trkview.h"
 #include "modifypanel.h"
 #include "unionmodel.h"
+#include <ttglobal.h>
 
 QT_BEGIN_NAMESPACE
 class QComboBox;
@@ -30,9 +32,26 @@ QT_END_NAMESPACE
 class PlanFilesModel;
 class QueryPage;
 //class ProjectPage;
-class TTGlobal;
+//class TTGlobal;
 class TQProjectTree;
 class TQConnectWidget;
+
+struct ProjectRec {
+        int id;
+        QString projectName;
+        QString dbClass;
+        QString dbType;
+        QString dbServer;
+        QString user;
+        QString password;
+        bool dbOsUser;
+        QString dbmsUser;
+        QString dbmsPass;
+        bool autoLogin;
+};
+
+class MainWindow;
+class MainProc;
 
 class MainWindow : public QMainWindow, private Ui::MainWindow
 {
@@ -49,6 +68,8 @@ protected:
         TrkQryFilter *publicModel;
     };
     QList<ProjectModel> projectModels;
+    QList<ProjectRec> projectRecords;
+    MainProc proc;
 
 private slots:
     void about();
@@ -66,13 +87,13 @@ private:
 //    typedef QPair<QString,QString> src_type; //class, source
 //    QList<src_type> dbSources;
     QMap<QString, TQAbstractDB *> dbList; // db by connectingString
-    QList<TQAbstractProject *>projects;
+//    QList<TQAbstractProject *>projects;
     QMap<QString, TQAbstractProject *>projectByName;
 
-    TrkHistory *journal;
+    TQHistory *journal;
     //PlansPlugin *planPlugin;
     //PlanFilesModel *projects;
-	QAbstractItemModel *excels;
+//	QAbstractItemModel *excels;
     //PlanModel planModel;
     friend class PlanFilesModel;
     QComboBox *openIdEdit;
@@ -83,6 +104,7 @@ private:
 //    QNetworkAccessManager *am;
 //    QString solrUrl;
     struct {
+        QModelIndex curIndex;
         TQProjectTree *prjModel;
         TQAbstractProject *prj;
         TTFolderModel *folderModel;
@@ -99,6 +121,7 @@ private:
         QIcon icon;
     } selectedTreeItem;
 public slots:
+    void readProjectTree();
     void readQueries(TQAbstractProject *prj);
     QueryPage *openQuery(TQAbstractProject *project, const QString &queryName, int recordType, bool reusePage);
 //    void showCurrentPlan();
@@ -128,8 +151,9 @@ public:
     void loadPlugins();
     //QMenu MainWindow::planMenu(bool forLink=false);
     void readModifications();
-    Q_INVOKABLE TQAbstractProject *currentProject() const;
+    Q_INVOKABLE TQAbstractProject *currentProject();
     void setCurrentProject(TQAbstractProject *prj);
+    int projectTreeRow(TQAbstractProject *prj);
     void openCurItem(bool reuse);
     void calcCountRecords();
     //ProjectPage *openPlanPage(const QString &fileName);
@@ -174,7 +198,7 @@ public slots:
     /*
      * Public invokable function for using from plugins
      */
-    void addPropWidget(QWidget *widget);
+    bool addPropWidget(QWidget *widget);
     int addTab(const QString &title, QWidget *widget, const QIcon &icon = QIcon());
     void focusTab(QWidget *widget);
     QToolBar *addToolBar(const QString &title);
@@ -231,6 +255,10 @@ private slots:
     void on_actionEditQuery_triggered();
     void on_actionNewQuery_triggered();
     void on_actionSettings_triggered();
+    void on_actionOpen_Project_triggered();
+    void slotNewDBConnect(const QString &dbClass);
 };
+
+
 
 #endif

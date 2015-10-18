@@ -24,12 +24,13 @@ class UnionModel : public QAbstractProxyModel
 {
     Q_OBJECT
 protected:
-    QList<const QAbstractItemModel *>models;
+    QList<QAbstractItemModel *>models;
     QStringList titles;
     int maxColCount;
     QAbstractItemModel *selModel;
     mutable QHash<int, MapInfo> info;
     mutable QMutex mutex;
+//    QSignalMapper mapper;
 public:
     explicit UnionModel(QObject *parent = 0);
     virtual QModelIndex mapFromSource(const QModelIndex &sourceIndex) const;
@@ -39,9 +40,9 @@ public:
     virtual Qt::ItemFlags flags(const QModelIndex &index) const;
     virtual QModelIndex parent(const QModelIndex &child) const;
     virtual bool hasChildren(const QModelIndex &parent) const;
-    virtual QModelIndex index(int row, int column, const QModelIndex &parent) const;
-    virtual int rowCount(const QModelIndex &parent) const;
-    virtual int columnCount(const QModelIndex &parent) const;
+    virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
+    virtual int rowCount(const QModelIndex &parent = QModelIndex()) const;
+    virtual int columnCount(const QModelIndex &parent = QModelIndex()) const;
     virtual bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex());
     virtual bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
     virtual bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
@@ -53,6 +54,7 @@ public:
     QModelIndex appendSourceModel(QAbstractItemModel *model, const QString &title);
     void removeSourceModel(QAbstractItemModel *model);
     QAbstractItemModel *sourceModel(const QModelIndex &proxyIndex) const;
+    QAbstractItemModel *sourceModel(int index) const;
     void setSelectedModel(QAbstractItemModel *models);
     void setMaxColCount(int value);
     void clear();
@@ -91,7 +93,17 @@ private slots:
     { endResetModel(); }
 
     void	do_rowsAboutToBeInserted ( const QModelIndex & parent, int start, int end )
-    { beginInsertRows(mapFromSource(parent), start, end); }
+    {
+        QAbstractItemModel *sModel = qobject_cast<QAbstractItemModel *>(sender());
+        QModelIndex pstart = mapFromSource(sModel->index(start,0,parent));
+        QModelIndex pend = mapFromSource(sModel->index(end,0,parent));
+        QModelIndex pparent;
+        if(parent.isValid())
+            pparent = mapFromSource(parent);
+        else
+            pparent = index(models.indexOf(sModel),0);
+        beginInsertRows(pparent, pstart.row(), pend.row());
+    }
 
     void	do_rowsAboutToBeMoved ( const QModelIndex & sourceParent, int sourceStart, int sourceEnd, const QModelIndex & destinationParent, int destinationRow )
     { beginMoveRows(mapFromSource(sourceParent), sourceStart, sourceEnd, mapFromSource(destinationParent), destinationRow); }

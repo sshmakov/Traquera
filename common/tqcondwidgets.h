@@ -7,7 +7,7 @@
 class TQNumberCond;
 
 
-class TQAbstractCondDialog : public QDialog
+class TQCONDAPISHARED_EXPORT TQAbstractCondDialog : public QDialog
 {
     Q_OBJECT
 public:
@@ -16,7 +16,7 @@ public:
     virtual TQCond &condition() = 0;
 };
 
-class TQNumberCondDialog : public TQAbstractCondDialog
+class TQCONDAPISHARED_EXPORT TQNumberCondDialog : public TQAbstractCondDialog
 {
     Q_OBJECT
 protected:
@@ -47,7 +47,7 @@ private slots:
 
 };
 
-class TQChoiceCondDialog : public TQAbstractCondDialog
+class TQCONDAPISHARED_EXPORT TQChoiceCondDialog : public TQAbstractCondDialog
 {
     Q_OBJECT
 protected:
@@ -68,7 +68,7 @@ protected slots:
     void selectionChanged();
 };
 
-class TQUserCondDialog : public TQAbstractCondDialog
+class TQCONDAPISHARED_EXPORT TQUserCondDialog : public TQAbstractCondDialog
 {
     Q_OBJECT
 protected:
@@ -87,7 +87,7 @@ protected slots:
     void selectionChanged();
 };
 
-class TQStringCondDialog : public TQAbstractCondDialog
+class TQCONDAPISHARED_EXPORT TQStringCondDialog : public TQAbstractCondDialog
 {
     Q_OBJECT
 protected:

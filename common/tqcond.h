@@ -3,14 +3,14 @@
 
 #include <QObject>
 #include <QtCore>
-#include <tqplugin_global.h>
+#include <tqcondapi_global.h>
 #include <tqplug.h>
 
 class TQQueryCond;
 class TQQueryDef;
 class TQAbstractRecordTypeDef;
 
-class TQPLUGIN_SHARED TQCond : public QObject
+class TQCONDAPISHARED_EXPORT TQCond : public QObject
 {
     Q_OBJECT
 protected:
@@ -91,7 +91,7 @@ public:
 };
 */
 
-class TQPLUGIN_SHARED TQChoiceCond: public TQCond
+class TQCONDAPISHARED_EXPORT TQChoiceCond: public TQCond
 {
     Q_OBJECT
 public:
@@ -114,7 +114,7 @@ public:
 class QPushButton;
 class QAction;
 
-class TQPLUGIN_SHARED TQNumberCond: public TQCond
+class TQCONDAPISHARED_EXPORT TQNumberCond: public TQCond
 {
     Q_OBJECT
 public:
@@ -133,7 +133,7 @@ public:
     bool editProperties();
 };
 
-class TQPLUGIN_SHARED TQUserCond: public TQCond
+class TQCONDAPISHARED_EXPORT TQUserCond: public TQCond
 {
     Q_OBJECT
 public:
@@ -154,7 +154,7 @@ public:
     virtual bool editProperties();
 };
 
-class TQPLUGIN_SHARED TQDateCond: public TQCond
+class TQCONDAPISHARED_EXPORT TQDateCond: public TQCond
 {
     Q_OBJECT
 public:
@@ -175,7 +175,7 @@ public:
     virtual QString condSubString() const;
 };
 
-class TQPLUGIN_SHARED TQStringCond: public TQCond
+class TQCONDAPISHARED_EXPORT TQStringCond: public TQCond
 {
     Q_OBJECT
 public:
@@ -205,7 +205,7 @@ public:
 class TQAbstractProject;
 class TQAbstractRecordTypeDef;
 
-class TQPLUGIN_SHARED TQQueryDef: public QObject
+class TQCONDAPISHARED_EXPORT TQQueryDef: public QObject
 {
     Q_OBJECT
 protected:

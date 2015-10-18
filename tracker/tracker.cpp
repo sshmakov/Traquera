@@ -5,6 +5,7 @@
 #include <QSqlRecord>
 #include <QSqlField>
 #include <QSqlResult>
+#include <QMessageBox>
 
 // TrkDb ======================================================
 

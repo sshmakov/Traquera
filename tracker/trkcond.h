@@ -2,6 +2,7 @@
 #define TRKCOND_H
 
 #include <tqbase.h>
+#include <tqcond.h>
 //#include <QtGui>
 
 class TrkQueryDef;

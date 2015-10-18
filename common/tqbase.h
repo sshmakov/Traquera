@@ -1,13 +1,13 @@
 #ifndef TQBASE_H
 #define TQBASE_H
 
-#include <QtCore>
-#include <QtXml>
 //#include <QtGui>
 #include <tqplugin_global.h>
 #include <tqplug.h>
-#include <tqcond.h>
+//#include <tqcond.h>
 
+#include <QtCore>
+#include <QtXml>
 
 class ConnectParams
 {
@@ -87,6 +87,9 @@ class TQQueryFilter: public QSortFilterProxyModel
 };
 */
 
+class QAuthenticator;
+class QWidget;
+
 class TQPLUGIN_SHARED TQAbstractDB: public QObject
 {
     Q_OBJECT
@@ -105,6 +108,9 @@ public:
             const QString &user = QString(),
             const QString &pass = QString()
             ) = 0;
+//    virtual TQAbstractProject *openConnection(
+//            const QString &connectionString
+//            ) = 0;
     virtual void setDbmsType(const QString &dbType);
     virtual QString dbmsType() const;
     virtual void setDbmsServer(const QString &server);
@@ -112,6 +118,7 @@ public:
     virtual void setDbmsUser(const QString &dbmsUser, const QString &dbmsPass = QString());
     virtual QString dbmsUser() const;
     virtual QString dbmsPass() const;
+    virtual QWidget *createConnectWidget() const;
     static TQAbstractProject *getProject(const QString &projectName);
 protected:
     static void registerProject(TQAbstractProject *prj);
@@ -122,6 +129,11 @@ public:
     static bool unregisterDbClass(const QString &dbClass);
     static QStringList registeredDbClasses();
     static TQAbstractDB *createDbClass(const QString &dbClass, QObject *parent = 0);
+
+signals:
+    void dbAuthenticationRequired(TQAbstractDB *db, const QString &projectName, QAuthenticator *authenticator);
+    void projectAuthenticationRequired(TQAbstractDB *db, const QString &projectName, QAuthenticator *authenticator);
+
 
     friend class TQAbstractProject;
 };
@@ -140,6 +152,7 @@ struct TQConditionLine {
 };
 */
 
+class TQQueryDef;
 
 class TQPLUGIN_SHARED TQAbstractProject: public QObject
 {

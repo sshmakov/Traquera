@@ -1,11 +1,14 @@
-#include "tracker.h"
+#include <tqplug.h>
+//#include "tracker.h"
 #include "trkview.h"
 #ifdef CLIENT_APP
 #include "settings.h"
 #include "ttglobal.h"
+#ifdef TRKVIEE_NEED
 #include "trkdecorator.h"
 #include <QHeaderView>
 #include "messager.h"
+#endif
 #endif
 #include "ttutils.h"
 #include "trkcond.h"
@@ -14,7 +17,9 @@
 #include <QXmlSimpleReader>
 #include <QXmlInputSource>
 #include <QDomDocument>
-#include <QXmlQuery>
+//#include <QXmlQuery>
+#include <QAuthenticator>
+//#include <QtWebKit>
 //#include <QtSql>
 //#include <Windows.h>
 //#include <odbcinst.h>
@@ -101,7 +106,8 @@ bool isTrkOK(int result, bool show = true)
 #ifdef CLIENT_APP
 
     if(show)
-        TTGlobal::global()->showError(error);
+        ttShowError(error);
+//        TTGlobal::global()->showError(error);
 #endif
     return false;
 }
@@ -118,6 +124,7 @@ static TRK_UINT Do_TrkSetDescription(TRK_RECORD_HANDLE recHandle, const QByteArr
 }
 
 #ifdef CLIENT_APP
+#ifdef TRK_VIEW_NEED
 // =================== TrkView ===============
 TrkView::TrkView(QWidget *parent) : 
 	QTableView(parent),
@@ -335,7 +342,7 @@ int TrkView::findColumn(const QString &label) const
 	return -1;
 }
 #endif
-
+#endif
 //============================================
 static QString findRegDSN(const QString &desc)
 {
@@ -470,6 +477,11 @@ TQAbstractProject *TrkToolDB::openProject(
     return prj;
 }
 
+QWidget *TrkToolDB::createConnectWidget() const
+{
+    return 0;
+}
+
 QHash<QString, TrkToolProject *> TrkToolDB::openedProjects;
 
 TQAbstractProject *TrkToolDB::getProject(const QString &projectName)
@@ -521,16 +533,31 @@ QString TrkToolProject::projectName() const
     return name;
 }
 
-bool TrkToolProject::login(const QString &user,
-        const QString &pass,
+bool TrkToolProject::login(const QString &userName,
+        const QString &password,
         const QString &project)
 {
 	TRK_UINT res;
 	TRK_UINT mode;
+    QString user = userName;
+    QString pass = password;
     QString dbmsType = db->dbmsType();
     QString dbmsServer = db->dbmsServer();
     QString dbmsUser = db->dbmsUser();
     QString dbmsPass = db->dbmsPass();
+
+    if(user.isEmpty())
+    {
+        QAuthenticator auth;
+        auth.setOption("project", project);
+        emit db->projectAuthenticationRequired(db, project, &auth);
+        if(auth.isNull())
+        {
+            return false;
+        }
+        user = auth.user();
+        pass = auth.password();
+    }
 
     if(!dbmsType.isEmpty())
     {
@@ -1324,7 +1351,8 @@ TQRecord *TrkToolProject::createRecordById(int id, int rectype)
     if(!recHandle.isValid())
         return 0;
     rec = new TrkToolRecord(this, rectype);
-    rec->values[VID_Id] = QVariant::fromValue<int>(id);
+//    rec->values[VID_Id] = QVariant::fromValue<int>(id);
+    rec->setRecordId(id);
     doReadBaseFields(rec, *recHandle);
     connect(rec,SIGNAL(changed(int)),this,SIGNAL(recordChanged(int)));
     return rec;
@@ -2359,6 +2387,17 @@ QVariant TrkToolRecord::value(int vid, int role) const
 //    if(role == Qt::DisplayRole && v.type() == QMetaType::QDateTime)
 //        return QVariant(v.toDateTime().toString(TT_DATETIME_FORMAT));
     return v;
+}
+
+int TrkToolRecord::recordId() const
+{
+    return values[VID_Id].toInt();
+}
+
+void TrkToolRecord::setRecordId(TRK_UINT id)
+{
+    values[VID_Id] = QVariant::fromValue(id);
+    recId = id;
 }
 
 QString TrkToolRecord::title() const

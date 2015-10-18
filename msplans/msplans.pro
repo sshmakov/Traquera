@@ -29,8 +29,7 @@ HEADERS += plans.h\
  tqpluginwidget.h    \
  tqplanswidget.h     \
  project.h \
-    projectpage.h \
-    ../common/tqplug.h
+    projectpage.h
 
 
 FORMS = \

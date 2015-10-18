@@ -1,6 +1,7 @@
 #include "unionmodel.h"
 #include <QMutexLocker>
 #include <QFont>
+#include <QtCore>
 
 UnionModel::UnionModel(QObject *parent) :
     QAbstractProxyModel(parent),models(),maxColCount(0)
@@ -11,7 +12,7 @@ QModelIndex UnionModel::mapFromSource(const QModelIndex &sourceIndex) const
 {
     if(!sourceIndex.isValid())
         return QModelIndex();
-    const QAbstractItemModel *model = sourceIndex.model();
+    QAbstractItemModel *model = const_cast<QAbstractItemModel *>(sourceIndex.model());
     if(models.indexOf(model)==-1)
         return QModelIndex();
     QModelIndex p, sp = sourceIndex.parent();
@@ -136,7 +137,9 @@ bool UnionModel::hasChildren(const QModelIndex &parent) const
     int id = parent.internalId();
     const MapInfo &m = info[id];
     QModelIndex sp = mapToSource(parent);
-    return m.model->hasChildren(sp);
+    if(sp.isValid())
+        return m.model->hasChildren(sp);
+    return m.model->rowCount();
 }
 
 QModelIndex UnionModel::index(int row, int column, const QModelIndex &parent) const
@@ -282,6 +285,7 @@ bool UnionModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int 
 
 QModelIndex UnionModel::appendSourceModel(QAbstractItemModel *model, const QString &title)
 {
+//    beginResetModel();
     QMutexLocker lock(&mutex);
 //    emit layoutAboutToBeChanged();
     int cols = model->columnCount();
@@ -303,9 +307,25 @@ QModelIndex UnionModel::appendSourceModel(QAbstractItemModel *model, const QStri
     connect(model,SIGNAL(rowsInserted(QModelIndex,int,int)),this,SLOT(do_rowsInserted()));
     connect(model,SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),this,SLOT(do_rowsAboutToBeRemoved(QModelIndex,int,int)));
     connect(model,SIGNAL(rowsRemoved(QModelIndex,int,int)),this,SLOT(do_rowsRemoved()));
+    connect(model,SIGNAL(rowsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)),this,SLOT(do_rowsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)));
+    connect(model,SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)),this,SLOT(do_rowsMoved()));
+
+    connect(model,SIGNAL(columnsAboutToBeInserted(QModelIndex, int, int)),SLOT(do_columnsAboutToBeInserted(QModelIndex,int,int)));
+    connect(model,SIGNAL(columnsAboutToBeMoved (QModelIndex, sourceStart, sourceEnd, QModelIndex , int )),SLOT(do_columnsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)));
+    connect(model,SIGNAL(columnsAboutToBeRemoved (QModelIndex, int, int)), SLOT(do_columnsAboutToBeRemoved(QModelIndex,int,int)));
+    connect(model,SIGNAL(columnsInserted(QModelIndex,int,int)),SLOT(do_columnsInserted()));
+    connect(model,SIGNAL(columnsMoved(QModelIndex,int,int,QModelIndex,int)),SLOT(do_columnsMoved()));
+    connect(model,SIGNAL(columnsRemoved(QModelIndex,int,int)),SLOT(do_columnsRemoved()));
+
+    connect(model,SIGNAL(modelAboutToBeReset()),SLOT(do_modelAboutToBeReset()));
+    connect(model,SIGNAL(modelReset()),SLOT(do_modelReset()));
+
     emit layoutChanged();
     lock.unlock();
-    return index(m.row,0,QModelIndex());
+    QModelIndex i = index(m.row,0,QModelIndex());
+//    endResetModel();
+
+    return i;
 }
 
 void UnionModel::removeSourceModel(QAbstractItemModel *model)
@@ -350,6 +370,14 @@ QAbstractItemModel *UnionModel::sourceModel(const QModelIndex &proxyIndex) const
     } while(p.isValid());
     return models[i.row()];
     */
+}
+
+QAbstractItemModel *UnionModel::sourceModel(int index) const
+{
+    if(index<0 || index >= models.size())
+        return 0;
+    QAbstractItemModel *m = models.value(index, 0);
+    return m;
 }
 
 void UnionModel::setSelectedModel(QAbstractItemModel *model)

@@ -510,7 +510,7 @@ static QHash<QString, TQSession *> sessionsPool;
 
 TQSession::TQSession(QObject *parent)
 {
-    db=new TrkToolDB(this);
+    db = TQAbstractDB::createDbClass("pvcs", this); // new TrkToolDB(this);
     dbType = "LocalSQL";
     db->setDbmsType(dbType);
     db->setDbmsServer("SHMAKOVTHINK\\SQLEXPRESS");

@@ -6,19 +6,26 @@
 #include <QAction>
 #endif
 
-#include <QtCore>
-#include <QtXml>
 #include "trktool.h"
 #include "trktool2.h"
 #include "tracker.h"
-#include "tqplug.h"
-#include "tqbase.h"
-#include "tqmodels.h"
+#include <tqplug.h>
+#include <tqbase.h>
+#include <tqmodels.h>
+#include <QObject>
+#include <QtCore>
+#include <QtXml>
 
 #define TT_DATETIME_FORMAT "dd.MM.yyyy H:mm:ss"
 
+class TrkDummy:public QObject
+{
+    Q_OBJECT
+};
+
 class TrkDb;
 
+#ifdef TRK_VIEW_NEED
 #ifndef CONSOLE_APP
 class TrkView: public QTableView 
 {
@@ -48,6 +55,7 @@ public slots:
 //protected slots:
 //	void selectionChanged(const QItemSelection & selected, const QItemSelection & deselected);
 };
+#endif
 #endif
 
 class TrkToolProject;
@@ -417,6 +425,7 @@ public:
 		const QString &projectName,
         const QString &user = QString(),
         const QString &pass = QString());
+    virtual QWidget *createConnectWidget() const;
     TQAbstractProject *getProject(const QString &projectName);
 protected:
     QSqlDatabase openSqlDatabase();
@@ -570,8 +579,8 @@ private:
 protected:
     TQChoiceList *fieldChoiceList(const QString &name, int recType);
     bool login(
-        const QString &user,
-        const QString &pass,
+        const QString &userName,
+        const QString &password,
         const QString &project);
     bool readQueryList();
 	bool readDefs();
@@ -679,9 +688,6 @@ protected:
     QStringList historyListMem;
     void readFullRecord();
     virtual void init();
-public: //protected: // Project specific data
-    //TRK_RECORD_HANDLE lockHandle;
-    void setRecordId(TRK_UINT id) { values[VID_Id] = QVariant::fromValue(id); }
 public:
     TrkToolRecord(TrkToolProject *parent=0, TRK_RECORD_TYPE rtype=TRK_SCR_TYPE);
     TrkToolRecord(const TrkToolRecord &src);
@@ -694,7 +700,8 @@ public:
 
     Q_INVOKABLE QVariant value(const QString& fieldName, int role = Qt::DisplayRole) const;
     Q_INVOKABLE QVariant value(int vid, int role = Qt::DisplayRole) const ;
-    Q_INVOKABLE  int recordId() const { return values[VID_Id].toInt(); } // TRK_UINT
+    Q_INVOKABLE  int recordId() const;
+    void setRecordId(TRK_UINT id);
     Q_INVOKABLE QString title() const;
     Q_INVOKABLE bool setTitle(const QString &newTitle);
     Q_INVOKABLE bool setValue(const QString& fieldName, const QVariant& value, int role = Qt::EditRole);

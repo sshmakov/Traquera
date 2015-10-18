@@ -308,8 +308,8 @@ public:
 	void clear();
 	void readQuery(QSqlQuery * query);
 
-	friend TrkRecord;
-	friend TrkItemModel;
+    friend class TrkRecord;
+    friend class TrkItemModel;
 };
 
 class TrkRecord: public QObject

@@ -50,7 +50,7 @@
       <property name="movable">
        <bool>true</bool>
       </property>
-      <widget class="QWidget" name="tab_2">
+      <widget class="QWidget" name="tabHomePage">
        <attribute name="title">
         <string>+</string>
        </attribute>
@@ -184,15 +184,18 @@
    </widget>
    <widget class="QMenu" name="menu_2">
     <property name="title">
-     <string>Tracker</string>
+     <string>Проект</string>
     </property>
-    <addaction name="actionNewRequest"/>
-    <addaction name="separator"/>
-    <addaction name="actionOpenSelected"/>
-    <addaction name="actionPrint_Preview"/>
+    <widget class="QMenu" name="menuConnect">
+     <property name="title">
+      <string>Подключить проект</string>
+     </property>
+    </widget>
+    <addaction name="actionNewConnect"/>
     <addaction name="separator"/>
     <addaction name="actionPlansDialog"/>
     <addaction name="actionSettings"/>
+    <addaction name="menuConnect"/>
    </widget>
    <widget class="QMenu" name="menu_3">
     <property name="title">
@@ -200,9 +203,19 @@
     </property>
     <addaction name="actionPrevious"/>
     <addaction name="actionForward"/>
+    <addaction name="separator"/>
+    <addaction name="actionOpenSelected"/>
+   </widget>
+   <widget class="QMenu" name="menu_4">
+    <property name="title">
+     <string>Запрос</string>
+    </property>
+    <addaction name="actionNewRequest"/>
+    <addaction name="actionPrint_Preview"/>
    </widget>
    <addaction name="menu_2"/>
    <addaction name="menu_3"/>
+   <addaction name="menu_4"/>
    <addaction name="menu"/>
   </widget>
   <widget class="QDockWidget" name="dockQueries">
@@ -340,7 +353,7 @@
   </action>
   <action name="actionOpen_Project">
    <property name="text">
-    <string>Open Project...</string>
+    <string>Открыть проект...</string>
    </property>
   </action>
   <action name="actionClose_Project">
@@ -601,6 +614,16 @@
   <action name="actionNewQuery">
    <property name="text">
     <string>Новая выборка...</string>
+   </property>
+  </action>
+  <action name="actionNewConnect">
+   <property name="text">
+    <string>Новое соединение...</string>
+   </property>
+  </action>
+  <action name="actionJira">
+   <property name="text">
+    <string>Jira</string>
    </property>
   </action>
  </widget>

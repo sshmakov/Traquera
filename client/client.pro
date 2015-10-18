@@ -35,7 +35,8 @@ FORMS += ui/tracksmain.ui ui/querypage.ui ui/trklogin.ui ui/filters.ui ui/scrwid
     ../tracker/trkchangedlg.ui \
     ../tracker/trkdatesdlg.ui \
     optionsform.ui \
-    proxyoptions.ui
+    proxyoptions.ui \
+    tqlogindlg.ui
 #    ui/planfilesform.ui \
 #    ui/projectpage.ui
 
@@ -55,31 +56,23 @@ HEADERS += \
     ttrecwindow.h \
     preview.h \
     ttfileiconprovider.h \
-    ../tracker/trkview.h \
-    ../tracker/trktool2.h \
-    ../tracker/trdefs.h \
-    ../tracker/tracker.h \
     ../common/settings.h \
     ../common/ttutils.h \
-    ../common/ttglobal.h \
     ../common/cliputil.h \
     notewidget.h \
     scrpluginfactory.h \
     previewfactory.h \
     highlighter.h \
-    ../tracker/tqservicedb.h \
-    replyhdl.h \
     projecttree.h \
     tqcolsdialog.h \
     tqconnectwidget.h \
     tqqrywid.h \
-    ../tracker/trkcond.h \
-    ../common/tqcondwidgets.h \
-    ../tracker/trkcondwidgets.h \
     tqproxyrecmodel.h \
     optionsform.h \
     proxyoptions.h \
-    tqhistory.h
+    tqhistory.h \
+    tqlogindlg.h \
+    mainproc.h
 
 #    plans.h planproxy.h \
 #    planfiles.h \
@@ -105,27 +98,21 @@ SOURCES += database.cpp main.cpp mainwindow.cpp querypage.cpp \
     preview.cpp \
     ttfileiconprovider.cpp \
     ../common/ttutils.cpp \
-    ../common/ttglobal.cpp \
-    ../tracker/trkview.cpp \
-    ../tracker/tracker.cpp \
     ../common/cliputil.cpp \
     notewidget.cpp \
     scrpluginfactory.cpp \
     previewfactory.cpp \
     highlighter.cpp \
-    ../tracker/tqservicedb.cpp \
-    replyhdl.cpp \
     projecttree.cpp \
     tqcolsdialog.cpp \
     tqconnectwidget.cpp \
     tqqrywid.cpp \
-    ../tracker/trkcond.cpp \
-    ../common/tqcondwidgets.cpp \
-    ../tracker/trkcondwidgets.cpp \
     tqproxyrecmodel.cpp \
     optionsform.cpp \
     proxyoptions.cpp \
-    tqhistory.cpp
+    tqhistory.cpp \
+    tqlogindlg.cpp \
+    mainproc.cpp
 
 #    planfilesform.cpp \
 #    project.cpp projectpage.cpp plans.cpp planproxy.cpp planfiles.cpp \
@@ -140,7 +127,6 @@ win32: LIBS += -L$$PWD/../trktool/lib/ -ltrktooln -lshell32 -lshlwapi -L../lib -
 
 INCLUDEPATH += $$PWD/../trktool
 DEPENDPATH += $$PWD/../trktool
-
 
 OTHER_FILES += \
     data/scr.xq \
@@ -176,5 +162,5 @@ RC_FILE = traquera-win.rc
 win32:INCLUDEPATH += C:/OpenSSL-Win32/include
 #win32:LIBS += -LC:/OpenSSL-Win32/lib -LC:/OpenSSL-Win32/bin -llibeay32 -lssleay32
 win32:LIBS += -LC:/OpenSSL-Win32/bin
-LIBS += -L../lib -ltqplugapi
+LIBS += -L../lib -ltqplugapi -ltqcondapi
 

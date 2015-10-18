@@ -23,7 +23,6 @@ HEADERS += jiradb.h\
     webform.h
 
 INCLUDEPATH += ../common
-win32:LIBS += -L../lib -ltqplugapi
 
 unix:!symbian {
     maemo5 {
@@ -34,6 +33,7 @@ unix:!symbian {
     INSTALLS += target
 }
 
+win32:LIBS += -L../lib -ltqplugapi
 DESTDIR = ../plugins/jira
 
 FORMS += \

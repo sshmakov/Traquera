@@ -43,6 +43,11 @@ QString TQAbstractDB::dbmsPass() const
     return m_dbPass;
 }
 
+QWidget *TQAbstractDB::createConnectWidget() const
+{
+    return 0;
+}
+
 TQAbstractProject *TQAbstractDB::getProject(const QString &projectName)
 {
     return projectList.value(projectName, 0);
@@ -379,7 +384,7 @@ TQRecord::~TQRecord()
 
 bool TQRecord::isValid() const
 {
-    return m_prj!=0;
+    return m_prj!=0 && recId > 0;
 }
 
 int TQRecord::recordType() const

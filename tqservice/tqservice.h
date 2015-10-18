@@ -4,9 +4,10 @@
 #include "tqservice_global.h"
 #include <Windows.h>
 #include "HttpExt.h"
-#include "trkview.h"
+//#include "trkview.h"
 #include <QtCore>
 #include <QtXml>
+#include <tqbase.h>
 
 class TQSession;
 class TQMesHandler;
