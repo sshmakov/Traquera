@@ -52,6 +52,7 @@ typedef QList<JiraProjectInfo> JiraPrjInfoList;
 
 class WebForm;
 class TQOAuth;
+class TQJson;
 
 class /*JIRASHARED_EXPORT*/ JiraDB: public TQAbstractDB
 {
@@ -62,6 +63,7 @@ protected:
     QMap<QString, JiraPrjInfoList> projectInfo; // by dbmsType
     WebForm *webForm;
     TQOAuth *oa;
+    TQJson *parser;
 public:
     JiraDB(QObject *parent = 0);
     virtual QStringList dbmsTypes();
@@ -73,7 +75,7 @@ public:
             const QString &user = QString(),
             const QString &pass = QString()
             );
-
+    virtual TQAbstractProject *openConnection(const QString &connectString);
     QVariant sendRequest(const QString &dbmsType, const QString &method, const QString &query, const QString &body = QString());
     QVariant parseValue(const QVariant &source, const QString &path);
     static TQAbstractDB *createJiraDB(QObject *parent);

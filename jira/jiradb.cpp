@@ -6,6 +6,7 @@
 #include <tqplugui.h>
 #include <tqoauth.h>
 #include "webform.h"
+#include <tqjson.h>
 
 Q_EXPORT_PLUGIN2("jira", JiraPlugin)
 
@@ -91,7 +92,7 @@ JiraPlugin *JiraPlugin::plugin()
 
 // ======================== JiraDB ==================================
 JiraDB::JiraDB(QObject *parent)
-    :TQAbstractDB(parent), webForm(0), oa(0)
+    :TQAbstractDB(parent), webForm(0), oa(0), parser(new TQJson(this))
 {
 //    man = new QNetworkAccessManager(this);
 //    connect(man, SIGNAL(finished(QNetworkReply*)), SLOT(replyFinished(QNetworkReply*)));
@@ -162,6 +163,32 @@ TQAbstractProject *JiraDB::openProject(const QString &projectName, const QString
     return 0;
 }
 
+TQAbstractProject *JiraDB::openConnection(const QString &connectString)
+{
+    QStringList values = connectString.split(";");
+    QHash<QString, QString> params;
+    foreach(QString v, values)
+    {
+        int p = v.indexOf("=");
+
+        QString par = v.left(p);
+        QString val = v.mid(p+1);
+        params.insert(par,val);
+    }
+    QString sRecType = params.value("RecordType");
+    bool okRecType;
+    int recType = sRecType.toInt(&okRecType);
+
+    setDbmsType(params.value("DBType"));
+    setDbmsServer(params.value("DBServer"));
+    if(params.value("DBOSUser") != "true")
+        setDbmsUser(params.value("DBUser"),params.value("DBPass"));
+    else
+        setDbmsUser("","");
+    TQAbstractProject *prj = openProject(params.value("Project"),params.value("User"),params.value("Password"));
+    return prj;
+}
+
 QVariant JiraDB::sendRequest(const QString &dbmsType, const QString &method, const QString &query, const QString &body)
 {
     QString link(dbmsType + "rest/api/2/" + query);
@@ -196,7 +223,8 @@ QVariant JiraDB::sendRequest(const QString &dbmsType, const QString &method, con
 //    buf.open(QIODevice::ReadOnly);
 
     bool success;
-    QVariant  obj = QtJson::parse(s, success);
+//    QVariant  obj = QtJson::parse(s, success);
+    QVariant obj = parser->toVariant(s);
     return obj;
 }
 

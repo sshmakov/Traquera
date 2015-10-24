@@ -162,6 +162,7 @@ public:
     QModelIndex selectedFolder(TTFolderModel **folderModel);
     void readSelectedTreeItem();
     QModelIndex mapFolderIndexToTree(const QModelIndex &index);
+    int addProjectItem(const QString &connectString);
 protected:
     QMenu *menuQueryList;
     QMenu *menuId;

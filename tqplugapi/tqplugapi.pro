@@ -5,7 +5,7 @@
 #-------------------------------------------------
 
 #QT       -= gui
-QT += xml network sql
+QT += xml network sql script
 
 
 TARGET = tqplugapi
@@ -20,7 +20,8 @@ SOURCES += tqplugapi.cpp \
     ../common/tqbase.cpp \
     ../common/tqmodels.cpp \
     tqoauth.cpp \
-    ../common/ttglobal.cpp
+    ../common/ttglobal.cpp \
+    tqjson.cpp
 
 HEADERS += tqplugapi.h\
     ../common/tqplugin_global.h \
@@ -29,7 +30,8 @@ HEADERS += tqplugapi.h\
     ../common/tqmodels.h \
     ../common/tqplugui.h \
     ../common/tqoauth.h \
-    ../common/ttglobal.h
+    ../common/ttglobal.h \
+    ../common/tqjson.h
 
 unix:!symbian {
     maemo5 {

@@ -108,9 +108,9 @@ public:
             const QString &user = QString(),
             const QString &pass = QString()
             ) = 0;
-//    virtual TQAbstractProject *openConnection(
-//            const QString &connectionString
-//            ) = 0;
+    virtual TQAbstractProject *openConnection(
+            const QString &connectionString
+            ) = 0;
     virtual void setDbmsType(const QString &dbType);
     virtual QString dbmsType() const;
     virtual void setDbmsServer(const QString &server);

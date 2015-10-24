@@ -4,6 +4,7 @@
 #include "trklogin.h"
 #include <QtSql>
 #include <QMenu>
+#include <tqjson.h>
 
 /*
  sqlite>
@@ -42,12 +43,7 @@ TQConnectWidget::TQConnectWidget(QWidget *parent) :
     sqlModel->setHeaderData(FieldDbmsUser,  Qt::Horizontal, tr("Логин к БД"));                     // dbmsUser varchar(255),
     sqlModel->setHeaderData(FieldDbmsPass,  Qt::Horizontal, tr("Пароль к БД"));                    // dbmsPass varchar (255),
     sqlModel->setHeaderData(FieldAutoLogin, Qt::Horizontal, tr("Автологин"));                     // autoLogin boolean);
-    ui->tableView->setModel(sqlModel);
-    ui->tableView->hideColumn(0);
-    connect(ui->tableView->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
-            SLOT(slotCurrentRowChanged(QModelIndex,QModelIndex)));
-    ui->dbClassComboBox->clear();
-    ui->dbClassComboBox->addItems(TQAbstractDB::registeredDbClasses());
+    ui->dbClassLabel->clear();
     loadSettings();
 }
 
@@ -60,7 +56,7 @@ ConnectParams TQConnectWidget::currentParams() const
 {
     ConnectParams params;
     params.id        = connectionId;
-    params.dbClass   = ui->dbClassComboBox->currentText();
+    params.dbClass   = ui->dbClassLabel->text();
     params.dbType    = ui->dbmsEdit->text().trimmed();
     params.dbServer  = ui->serverEdit->text().trimmed();
     params.dbOsUser  = ui->trustedUserBox->isChecked();
@@ -78,7 +74,7 @@ ConnectParams TQConnectWidget::currentParams() const
 
 void TQConnectWidget::setParams(const ConnectParams &params)
 {
-    ui->dbClassComboBox->setEditText( params.dbClass   );
+    ui->dbClassLabel->setText( params.dbClass   );
     ui->dbmsEdit->setText(            params.dbType    );
     ui->serverEdit->setText(          params.dbServer  );
     ui->trustedUserBox->setChecked(   params.dbOsUser  );
@@ -90,10 +86,129 @@ void TQConnectWidget::setParams(const ConnectParams &params)
     ui->autoLoginCheck->setChecked(   params.autoLogin );
 }
 
+QString TQConnectWidget::connectString() const
+{
+//    item.data.id = connectWidget->sqlModel->index(r,0).data().toInt(); // id integer primary key autoincrement,
+
+    int id        = connectionId;
+    QString dbClass   = ui->dbClassLabel->text();
+    QString dbType    = ui->dbmsEdit->text().trimmed();
+    QString dbServer  = ui->serverEdit->text().trimmed();
+    bool dbOsUser  = ui->trustedUserBox->isChecked();
+    QString dbmsUser, dbmsPass;
+    if(!dbOsUser)
+    {
+        dbmsUser  = ui->sqlUserEdit->text().trimmed();
+        dbmsPass  = ui->sqlPassEdit->text().trimmed();
+    }
+    bool saveDBPass = ui->saveDBPasswordCheck->isChecked();
+    QString project   = ui->projectEdit->text().trimmed();
+    QString user      = ui->userEdit->text().trimmed();
+    QString password  = ui->passwordEdit->text().trimmed();
+    bool savePass = ui->savePasswordCheck->isChecked();
+    bool autoLogin = ui->autoLoginCheck->isChecked();
+
+    QVariantMap params;
+    params.insert("DBClass",dbClass);
+    if(!dbType.isEmpty())
+        params.insert("DBType",dbType);
+    if(!dbServer.isEmpty())
+        params.insert("DBServer", dbServer);
+    params.insert("DBOSUser", dbOsUser);
+    if(!dbOsUser)
+    {
+        params.insert("DBUser", dbmsUser);
+        params.insert("DBPassword", dbmsPass);
+        params.insert("SaveDBPassword", saveDBPass);
+    }
+    if(!project.isEmpty())
+        params.insert("Project", project);
+    if(!user.isEmpty())
+    {
+        params.insert("User", user);
+        params.insert("Password", password);
+    }
+    params.insert("SavePassword", savePass);
+    params.insert("AutoLogin",autoLogin);
+    QString connectString = TQJson().toString(params);
+    return connectString;
+}
+
+QString TQConnectWidget::connectSaveString() const
+{
+    int id        = connectionId;
+    QString dbClass   = ui->dbClassLabel->text();
+    QString dbType    = ui->dbmsEdit->text().trimmed();
+    QString dbServer  = ui->serverEdit->text().trimmed();
+    bool dbOsUser  = ui->trustedUserBox->isChecked();
+    QString dbmsUser, dbmsPass;
+    if(!dbOsUser)
+    {
+        dbmsUser  = ui->sqlUserEdit->text().trimmed();
+        dbmsPass  = ui->sqlPassEdit->text().trimmed();
+    }
+    bool saveDBPass = ui->saveDBPasswordCheck->isChecked();
+    QString project   = ui->projectEdit->text().trimmed();
+    QString user      = ui->userEdit->text().trimmed();
+    QString password  = ui->passwordEdit->text().trimmed();
+    bool savePass = ui->savePasswordCheck->isChecked();
+    bool autoLogin = ui->autoLoginCheck->isChecked();
+
+    QVariantMap params;
+    params.insert("DBClass",dbClass);
+    if(!dbType.isEmpty())
+        params.insert("DBType",dbType);
+    if(!dbServer.isEmpty())
+        params.insert("DBServer", dbServer);
+    if(!dbmsUser.isEmpty())
+    {
+        params.insert("DBUser", dbmsUser);
+        if(saveDBPass)
+            params.insert("DBPassword", dbmsPass);
+    }
+    if(!project.isEmpty())
+        params.insert("Project", project);
+    if(!user.isEmpty())
+    {
+        params.insert("User", user);
+        if(savePass)
+            params.insert("Password", password);
+    }
+    if(autoLogin)
+        params.insert("AutoLogin",true);
+
+    QString connectString = TQJson().toString(params);
+    return connectString;
+}
+
+void TQConnectWidget::setConnectString(const QString &str)
+{
+    TQJson parser;
+    QVariantMap params = parser.toVariant(str).toMap();
+    if(parser.isError())
+    {
+        qDebug() << parser.errorString();
+    }
+//    QString sRecType = params.value("RecordType").toString();
+//    bool okRecType;
+//    int recType = sRecType.toInt(&okRecType);
+    ui->dbClassLabel->setText(params.value("DBClass").toString());
+    ui->dbmsEdit->setText(params.value("DBType").toString());
+    ui->serverEdit->setText(params.value("DBServer").toString());
+    ui->trustedUserBox->setChecked(params.value("DBOSUser").toBool());
+    ui->sqlUserEdit->setText(params.value("DBUser").toString());
+    ui->sqlPassEdit->setText(params.value("DBPass").toString());
+    ui->saveDBPasswordCheck->setChecked(params.contains("DBPass"));
+    ui->projectEdit->setText(params.value("Project").toString());
+    ui->userEdit->setText(params.value("User").toString());
+    ui->passwordEdit->setText(params.value("Password").toString());
+    ui->savePasswordCheck->setChecked(params.contains("Password"));
+}
+
 void TQConnectWidget::loadSettings()
 {
     QSettings *settings = ttglobal()->settings();
-    ui->dbClassComboBox->setEditText(settings->value("TrackerDBMSClass",ui->dbClassComboBox->currentText()).toString());
+    ui->dbClassLabel->setText(settings->value("TrackerDBMSClass",ui->dbClassLabel->text()).toString());
     ui->dbmsEdit->setText(settings->value("TrackerDBMSType",ui->dbmsEdit->text()).toString());
     ui->serverEdit->setText(settings->value("TrackerSQLServer",ui->serverEdit->text()).toString());
     ui->sqlUserEdit->setText(settings->value("TrackerSQLUser",ui->sqlUserEdit->text()).toString());
@@ -113,32 +228,6 @@ void TQConnectWidget::slotCurrentRowChanged(QModelIndex current, QModelIndex pre
     recordToParams(rec, params);
     setParams(params);
     connectionId = rec.value(FieldId).toInt();
-}
-
-void TQConnectWidget::on_btnAdd_clicked()
-{
-    QSqlRecord rec = sqlModel->record();
-    paramsToRecord(currentParams(),rec);
-    sqlModel->database().transaction();
-    sqlModel->insertRecord(-1,rec);
-    if(sqlModel->submitAll())
-        sqlModel->database().commit();
-    else
-        sqlModel->database().rollback();
-}
-
-void TQConnectWidget::on_btnDel_clicked()
-{
-    QModelIndex index = ui->tableView->currentIndex();
-    if(index.isValid())
-    {
-        sqlModel->database().transaction();
-        sqlModel->removeRow(index.row());
-        if(sqlModel->submitAll())
-            sqlModel->database().commit();
-        else
-            sqlModel->database().rollback();
-    }
 }
 
 void TQConnectWidget::on_btnOpen_clicked()
@@ -253,7 +342,7 @@ void TQConnectWidget::on_btnDBMS_clicked()
 {
     QScopedPointer<QSignalMapper> typesMapper(new QSignalMapper);
     connect(typesMapper.data(),SIGNAL(mapped(QString)),SLOT(setDBType(QString)));
-    QString dbClass = ui->dbClassComboBox->currentText();
+    QString dbClass = ui->dbClassLabel->text();
     QScopedPointer<TQAbstractDB> db(TQAbstractDB::createDbClass(dbClass));
     QStringList types = db->dbmsTypes();
     QScopedPointer<QMenu> menu(new QMenu());
@@ -269,7 +358,7 @@ void TQConnectWidget::on_btnDBMS_clicked()
 void TQConnectWidget::setDBType(const QString &type)
 {
     ui->dbmsEdit->setText(type);
-    QString dbClass = ui->dbClassComboBox->currentText();
+    QString dbClass = ui->dbClassLabel->text();
     if(dbClass.isEmpty())
         return;
     QScopedPointer<TQAbstractDB> db(TQAbstractDB::createDbClass(dbClass));
@@ -287,7 +376,7 @@ void TQConnectWidget::on_btnProjects_clicked()
 {
     QScopedPointer<QSignalMapper> projectMapper(new QSignalMapper);
     connect(projectMapper.data(),SIGNAL(mapped(QString)),SLOT(setProject(QString)));
-    QString dbClass = ui->dbClassComboBox->currentText();
+    QString dbClass = ui->dbClassLabel->text();
     QString dbType = ui->dbmsEdit->text().trimmed();
     QString dbServer = ui->serverEdit->text().trimmed();
     if(dbClass.isEmpty())

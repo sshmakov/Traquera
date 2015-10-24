@@ -477,6 +477,32 @@ TQAbstractProject *TrkToolDB::openProject(
     return prj;
 }
 
+TQAbstractProject *TrkToolDB::openConnection(const QString &connectString)
+{
+    QStringList values = connectString.split(";");
+    QHash<QString, QString> params;
+    foreach(QString v, values)
+    {
+        int p = v.indexOf("=");
+
+        QString par = v.left(p);
+        QString val = v.mid(p+1);
+        params.insert(par,val);
+    }
+    QString sRecType = params.value("RecordType");
+    bool okRecType;
+    int recType = sRecType.toInt(&okRecType);
+
+    setDbmsType(params.value("DBType"));
+    setDbmsServer(params.value("DBServer"));
+    if(params.value("DBOSUser") != "true")
+        setDbmsUser(params.value("DBUser"),params.value("DBPass"));
+    else
+        setDbmsUser("","");
+    TQAbstractProject *prj = openProject(params.value("Project"),params.value("User"),params.value("Password"));
+    return prj;
+}
+
 QWidget *TrkToolDB::createConnectWidget() const
 {
     return 0;
@@ -2344,7 +2370,8 @@ TrkToolRecord::~TrkToolRecord()
 {
     disconnect();
     links=0;
-    cancel();
+    if(mode() != TQRecord::View)
+        cancel();
 
     //!!!!!!!!!!!!!!
 //	if(lockHandle)

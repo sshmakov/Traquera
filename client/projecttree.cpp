@@ -4,6 +4,7 @@
 #include <ttglobal.h>
 #include "tqlogindlg.h"
 #include <QtWebKit>
+#include <tqjson.h>
 
 TQProjectTreeItem::TQProjectTreeItem(TQProjectTree *projectTree)
     //: data.tree(projectTree), data.dbClass(), data.connectString(), data.projectName(), data.prj(0), data.db(0)
@@ -33,15 +34,22 @@ bool TQProjectTreeItem::open()
         delete data.prj;
         data.prj = 0;
     }
-    QStringList values = data.connectString.split(";");
-    foreach(QString v, values)
+    TQJson parser;
+    QVariantMap map = parser.toVariant(data.connectString).toMap();
+    foreach(QString key, map.keys())
     {
-        int p = v.indexOf("=");
-
-        QString par = v.left(p);
-        QString val = v.mid(p+1);
-        data.params.insert(par,val);
+        data.params.insert(key, map.value(key).toString());
     }
+
+//    QStringList values = data.connectString.split(";");
+//    foreach(QString v, values)
+//    {
+//        int p = v.indexOf("=");
+
+//        QString par = v.left(p);
+//        QString val = v.mid(p+1);
+//        data.params.insert(par,val);
+//    }
     QString sRecType = data.params.value("RecordType");
     bool okRecType;
     data.recType = sRecType.toInt(&okRecType);

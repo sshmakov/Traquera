@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
 		}
 	}
     QTranslator translator;
-    translator.load(QString("lang/tracks_") + locale);
+    translator.load(QString("tracks_") + locale,"lang");
     app.installTranslator(&translator);
 
 	 //QApplication::setStyle(new QCleanlooksStyle);

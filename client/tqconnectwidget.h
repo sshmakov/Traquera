@@ -18,6 +18,7 @@ class QSqlRecord;
 class TQConnectWidget : public QWidget
 {
     Q_OBJECT
+    Q_PROPERTY(QString connectString READ connectString WRITE setConnectString)
 public:
     TQConnectModel *model;
     QSqlTableModel *sqlModel;
@@ -42,6 +43,9 @@ public:
     ~TQConnectWidget();
     ConnectParams currentParams() const;
     void setParams(const ConnectParams &params);
+    QString connectString() const;
+    QString connectSaveString() const;
+    void setConnectString(const QString &str);
     void loadSettings();
 
 signals:
@@ -49,8 +53,6 @@ signals:
 
 private slots:
     void slotCurrentRowChanged(QModelIndex current, QModelIndex previous);
-    void on_btnAdd_clicked();
-    void on_btnDel_clicked();
     void on_btnOpen_clicked();
     void on_btnClose_clicked();
 
