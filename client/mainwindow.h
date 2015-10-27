@@ -136,7 +136,7 @@ public slots:
     void openQueryById(const QString &numbers, int recordType=0, bool reusePage=true);
     void openQueryById(const QList<int> &idList, const QString &title = QString(), int recordType = 0, bool reusePage=true);
     void connectTracker();
-    void connectTrackerParams(const ConnectParams &params);
+//    void connectTrackerParams(const ConnectParams &params);
     void setDbmsType();
     void setProject();
     void closeTab(int index);

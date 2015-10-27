@@ -736,6 +736,7 @@ void MainWindow::connectTracker()
 */
 }
 
+/*
 void MainWindow::connectTrackerParams(const ConnectParams &params)
 {
     TQAbstractDB *db = newDb(params.dbClass, params.dbType, params.dbServer);
@@ -762,7 +763,7 @@ void MainWindow::connectTrackerParams(const ConnectParams &params)
     }
 
 }
-
+*/
 
 void MainWindow::readQueries(TQAbstractProject *prj)
 {

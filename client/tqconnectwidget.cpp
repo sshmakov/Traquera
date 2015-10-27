@@ -52,6 +52,7 @@ TQConnectWidget::~TQConnectWidget()
     delete ui;
 }
 
+/*
 ConnectParams TQConnectWidget::currentParams() const
 {
     ConnectParams params;
@@ -85,6 +86,7 @@ void TQConnectWidget::setParams(const ConnectParams &params)
     ui->passwordEdit->setText(        params.password  );
     ui->autoLoginCheck->setChecked(   params.autoLogin );
 }
+*/
 
 QString TQConnectWidget::connectString() const
 {
@@ -219,7 +221,7 @@ void TQConnectWidget::loadSettings()
     ui->userEdit->setText(settings->value("TrackerUser",ui->userEdit->text()).toString());
 }
 
-
+/*
 void TQConnectWidget::slotCurrentRowChanged(QModelIndex current, QModelIndex previous)
 {
     tableRow = current.row();
@@ -229,11 +231,20 @@ void TQConnectWidget::slotCurrentRowChanged(QModelIndex current, QModelIndex pre
     setParams(params);
     connectionId = rec.value(FieldId).toInt();
 }
+*/
 
 void TQConnectWidget::on_btnOpen_clicked()
 {
-    ConnectParams params = currentParams();
-    emit connectClicked(params);
+    emit connectClicked();
+    if(!isWindow())
+    {
+        QDialog *dlg = qobject_cast<QDialog*>(window());
+        if(dlg)
+            dlg->accept();
+    }
+
+//    ConnectParams params = currentParams();
+//    emit connectClicked(params);
 }
 
 void TQConnectWidget::on_btnClose_clicked()
@@ -241,6 +252,7 @@ void TQConnectWidget::on_btnClose_clicked()
 
 }
 
+/*
 void TQConnectWidget::recordToParams(const QSqlRecord &rec, ConnectParams &params)
 {
     params.id        = rec.value(FieldId).toInt();
@@ -269,6 +281,7 @@ void TQConnectWidget::paramsToRecord(const ConnectParams &params, QSqlRecord &re
     rec.setValue(FieldPassword, params.password  );
     rec.setValue(FieldAutoLogin,params.autoLogin );
 }
+*/
 
 //// TQConnectModel
 TQConnectModel::TQConnectModel(QObject *parent)

@@ -41,18 +41,19 @@ public:
 public:
     explicit TQConnectWidget(QWidget *parent = 0);
     ~TQConnectWidget();
-    ConnectParams currentParams() const;
-    void setParams(const ConnectParams &params);
+//    ConnectParams currentParams() const;
+//    void setParams(const ConnectParams &params);
     QString connectString() const;
     QString connectSaveString() const;
     void setConnectString(const QString &str);
     void loadSettings();
 
 signals:
-    void connectClicked(ConnectParams params);
+//    void connectClicked(ConnectParams params);
+    void connectClicked();
 
 private slots:
-    void slotCurrentRowChanged(QModelIndex current, QModelIndex previous);
+//    void slotCurrentRowChanged(QModelIndex current, QModelIndex previous);
     void on_btnOpen_clicked();
     void on_btnClose_clicked();
 
@@ -64,8 +65,8 @@ private slots:
     void on_btnProjects_clicked();
 
 protected:
-    static void recordToParams(const QSqlRecord &rec, ConnectParams &params);
-    static void paramsToRecord(const ConnectParams &params, QSqlRecord &rec);
+//    static void recordToParams(const QSqlRecord &rec, ConnectParams &params);
+//    static void paramsToRecord(const ConnectParams &params, QSqlRecord &rec);
 
 private:
     Ui::TQConnectWidget *ui;
