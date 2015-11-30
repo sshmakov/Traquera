@@ -21,7 +21,10 @@ PlanModel::PlanModel(QObject *parent)
     :QAbstractItemModel(parent)
 {
     QString xml = pluginObject->dataDir.absoluteFilePath("project.xml");
-    loadDefinition(xml);
+    if(!loadDefinition(xml))
+    {
+        loadDefinition(":/msplans/data/project.xml");
+    }
 }
 
 PlanModel::~PlanModel()
@@ -253,22 +256,24 @@ void PlanModel::setFieldHeaders(QHeaderView *header)
     }
 }
 
-void PlanModel::loadDefinition(const QString &fileName)
+bool PlanModel::loadDefinition(const QString &fileName)
 {
     //QXmlSimpleReader xmlReader;
-	QFile *file = new QFile(fileName);
-	QXmlInputSource *source = new QXmlInputSource(file);
+    QFile file(fileName);
+    if(!file.exists())
+        return false;
+    QXmlInputSource source(&file);
 	QDomDocument dom;
-	if(!dom.setContent(source,false))
-		return;
+    if(!dom.setContent(&source,false))
+        return false;
 	QDomElement doc = dom.documentElement();
-	if(doc.isNull()) return;
+    if(doc.isNull()) return false;
 	//QDomElement prj = doc.firstChildElement("project");
 	//if(prj.isNull()) return;
 	QDomElement tasks = doc.firstChildElement("tasks");
-	if(tasks.isNull()) return;
+    if(tasks.isNull()) return false;
 	QDomElement flds = tasks.firstChildElement("fields");
-	if(flds.isNull()) return;
+    if(flds.isNull()) return false;
 	/*
 	QHash<QString, int> hc;
 	QDomElement fconsts = tasks.firstChildElement("fconsts");
@@ -320,7 +325,8 @@ void PlanModel::loadDefinition(const QString &fileName)
         f.display = field.attribute("display");
         fields.append(f);
     }
-    delete file;
+//    delete file;
+    return true;
 }
 
 void PlanModel::planChanged()
@@ -443,8 +449,11 @@ void PlansPlugin::initPlugin(QObject *obj, const QString &modulePath)
         pDir = QDir(pDir.filePath(".."));
         pDir.makeAbsolute();
     }
+    QString abs;
     pluginDir = pDir;
-    dataDir = QDir(pDir.filePath("data"));
+    abs = pDir.absolutePath();
+    dataDir = QDir(pluginModule).filePath("data");
+    abs = dataDir.absolutePath();
     initProjectModel();
     if(obj)
     {

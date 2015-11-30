@@ -33,24 +33,14 @@ struct TrkHistoryItem
 
 class TQProxyRecModel;
 
+class QueryPagePrivate;
+
 class QueryPage : public QWidget, public Ui::queryForm
 {
     Q_OBJECT
     Q_PROPERTY(const TQAbstractRecordTypeDef *recordTypeDef READ recordTypeDef)
 protected:
-	bool isInteractive;
-	bool isDefLoaded;
-//	PlanModel *planModel;
-//    PlanProxyModel planViewModel;
-    TQProxyRecModel *proxy;
-    QSortFilterProxyModel *qryFilterModel;
-	QString linkField;
-    TQHistory history;
-    //QList<TrkHistoryItem> history;
-	int curHistoryPos;
-    QString filterString;
-    TTFolder folder;
-    bool itIsFolder;
+    QueryPagePrivate *d;
     QTreeView *planTreeView;
     QTabBar *tabBar;
     QTableWidget *filesTable;
@@ -58,8 +48,6 @@ protected:
     Preview *previewWidget;
 public:
 	//TrkModel trkmodel;
-    TQAbstractProject *modelProject;
-    TQRecModel *tmodel;
     //QAbstractItemModel *tmodel;
     QueryPage(QWidget *parent = 0);
     ~QueryPage();
@@ -79,8 +67,10 @@ public:
 	int getColNum(const QString &colname);
 	QString makeRecordPage(const QModelIndex &qryIndex, const QString& xqCodeFile);
     //QString makeRecordsPage(const QModelIndexList &records, const QString& xqCodeFile);
-    QString makeRecordsPage(const QObjectList &records, const QString& xqCodeFile);
+    Q_INVOKABLE QString makeRecordsPage(const QObjectList &records, const QString& xqCodeFile);
     void sendEmail(const QObjectList &records);
+    void sendEmail2(const QObjectList &records);
+    void sendEmail3(const QObjectList &records);
     void printPreview();
     Q_INVOKABLE QModelIndexList selectedRows();
     Q_INVOKABLE QObjectList selectedRecords(); //Q_INVOKABLE QList<TrkToolRecord *> selectedRecords();
@@ -94,16 +84,14 @@ public:
     Q_INVOKABLE void setRecordsChecked(const QString &ids, bool flag);
     void initWidgets();
     bool hasMarked();
+    TQAbstractProject *project() const;
 protected:
-	QList<QAction*> headerActions;
-	void initPopupMenu();
+    void initPopupMenu();
 	void loadDefinition();
 	void openHistoryItem(int pos);
     //void setQueryModel(TQAbstractProject *prj, TrkToolModel *model);
     void setQueryModel(TQAbstractProject *prj, TQRecModel *model);
     QModelIndex mapIndexToModel(const QModelIndex &index) const;
-    QTimer *detailsTimer;
-    QTimer *previewTimer;
 public slots:
 	void changedView(const QModelIndex &index, const QModelIndex &prev);
 	void headerChanged();
@@ -120,6 +108,7 @@ public slots:
 	void goForward();
     void newFilterString();
     void newFilterString(const QString &text);
+    void appendId(int id);
     void appendIds(const QList<int> &ids);
     void removeIds(const QList<int> &ids);
 //    void appendId(int id);
@@ -178,5 +167,8 @@ private slots:
 public slots:
     void addDetailTab(QWidget *tab, const QString &title, const QIcon &icon = QIcon());
 };
+
+
+Q_DECLARE_METATYPE(QObjectList)
 
 #endif //_QUERYPAGE_H_

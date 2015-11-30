@@ -19,6 +19,7 @@ class TQConnectWidget : public QWidget
 {
     Q_OBJECT
     Q_PROPERTY(QString connectString READ connectString WRITE setConnectString)
+    Q_PROPERTY(QString connectSaveString READ connectSaveString WRITE setConnectString)
 public:
     TQConnectModel *model;
     QSqlTableModel *sqlModel;
@@ -63,6 +64,8 @@ private slots:
     void setProject(const QString &project);
 
     void on_btnProjects_clicked();
+
+    void on_trustedUserBox_toggled(bool checked);
 
 protected:
 //    static void recordToParams(const QSqlRecord &rec, ConnectParams &params);

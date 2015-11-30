@@ -20,6 +20,10 @@ class QNetworkAccessManager;
 
 class TTGlobalPrivate;
 class TQOAuth;
+class QScriptEngine;
+class QAxScriptManager;
+class QAxScript;
+class QAxObject;
 
 class TTMainProc
 {
@@ -34,10 +38,14 @@ public:
 class TQPLUGIN_SHARED TTGlobal : public QObject
 {
     Q_OBJECT
+    Q_CLASSINFO("ClassID", "{6DC8CE91-BFD5-4189-81E0-DDCE0F98A54C}")
+    Q_CLASSINFO("InterfaceID", "{2D3A28A5-E55E-4b2b-9A03-320A7B98B76D}")
+    Q_CLASSINFO("EventsID", "{3B53E3FC-853D-4b47-9C79-BF00F365A43B}")
+
     Q_PROPERTY(QSettings* settings READ settings)
     Q_PROPERTY(QObject *mainWindowObj READ mainWindowObj)
     Q_PROPERTY(QString clipboardText READ getClipboardText WRITE setClipboardText)
-    Q_PROPERTY(QString currentProjectName READ currentProjectName)
+    Q_PROPERTY(QString currentProjectName READ curProjectName)
 private:
     TTGlobalPrivate *d;
 public:
@@ -53,11 +61,15 @@ public:
     Q_INVOKABLE bool addPropWidget(QWidget *prop);
     Q_INVOKABLE QString getClipboardText() const;
     Q_INVOKABLE void setClipboardText(const QString &text) const;
-    Q_INVOKABLE QString currentProjectName();
-    Q_INVOKABLE QObject *getRecord(int id, const QString &project = QString());
+    Q_INVOKABLE QString getClipboardHTML() const;
+    Q_INVOKABLE void setClipboardHTML(const QString &text) const;
+    Q_INVOKABLE QString curProjectName() const;
+    Q_INVOKABLE QObject *getRecord(int id);
     Q_INVOKABLE bool registerOptionsWidget(const QString &path, void *funcPtr);
     Q_INVOKABLE QNetworkAccessManager *networkManager() const;
     QMap<QString, GetOptionsWidgetFunc> optionsWidgets() const;
+    Q_INVOKABLE QVariant CreateObject(const QString &objectName);
+    Q_INVOKABLE QString saveObjectDocumentation(QObject *object, const QString &fileName = QString()) const;
 protected:
     void readInitSettings();
     void upgradeUserDB();
@@ -76,6 +88,8 @@ public:
     Q_INVOKABLE bool registerEventHandler(const QString &event, QObject *obj, const QString &method);
     Q_INVOKABLE bool unregisterEventHandler(const QString &event, QObject *obj, const QString &method);
     Q_INVOKABLE QObject *oauth();
+    QScriptEngine *newScriptEngine();
+    QAxScriptManager *newAxScriptManager();
 protected:
     TQOAuth *m_oauth;
 public slots:
@@ -90,12 +104,14 @@ public slots:
     /* Plugins */
 public slots:
     void loadPlugins();
-    bool loadSinglePlugin(const QString &path);
+    bool loadSinglePlugin(const QDir &dir);
     void appendContextMenu(QMenu *menu);
     void queryViewOpened(QWidget *widget, QTableView *view, const QString &recType = "scr");
     void recordOpened(QWidget *widget, const QString &recType = "scr");
     bool insertViewTab(QWidget *view, QWidget *tab, const QString &title = "");
     void pluginError(const QString &pluginName, const QString &msg);
+protected slots:
+    void axScriptError( QAxScript * script, int code, const QString & description, int sourcePosition, const QString & sourceText );
 };
 
 

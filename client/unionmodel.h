@@ -55,7 +55,9 @@ public:
     void removeSourceModel(QAbstractItemModel *model);
     QAbstractItemModel *sourceModel(const QModelIndex &proxyIndex) const;
     QAbstractItemModel *sourceModel(int index) const;
-    void setSelectedModel(QAbstractItemModel *models);
+    QList<QAbstractItemModel *> sourceModels() const;
+    int sourceModelIndex(QAbstractItemModel *model) const;
+    virtual void setSelectedModel(QAbstractItemModel *models);
     void setMaxColCount(int value);
     void clear();
     //Qt::DropActions supportedDragActions () const;

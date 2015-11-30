@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>598</width>
-    <height>428</height>
+    <width>765</width>
+    <height>442</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -24,37 +24,6 @@
        <property name="icon">
         <iconset resource="resources/tracks.qrc">
          <normaloff>:/images/up.png</normaloff>:/images/up.png</iconset>
-       </property>
-      </widget>
-     </item>
-     <item row="8" column="0" colspan="5">
-      <widget class="QPlainTextEdit" name="pteQueryText">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>100</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>16777215</width>
-         <height>100</height>
-        </size>
-       </property>
-       <property name="baseSize">
-        <size>
-         <width>0</width>
-         <height>100</height>
-        </size>
        </property>
       </widget>
      </item>
@@ -117,7 +86,14 @@
       </widget>
      </item>
      <item row="1" column="2" rowspan="7">
-      <widget class="QListWidget" name="lwCond"/>
+      <widget class="QListWidget" name="lwCond">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>2</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
      </item>
      <item row="3" column="3" colspan="2">
       <widget class="QPushButton" name="btnModify">
@@ -173,7 +149,7 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>Добавить...</string>
+        <string/>
        </property>
        <property name="icon">
         <iconset resource="resources/tracks.qrc">
@@ -190,8 +166,46 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="0" rowspan="7">
-      <widget class="QListWidget" name="lwFields"/>
+     <item row="1" column="0" rowspan="8">
+      <widget class="QListWidget" name="lwFields">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="2" colspan="3">
+      <widget class="QPlainTextEdit" name="pteQueryText">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>100</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>100</height>
+        </size>
+       </property>
+       <property name="baseSize">
+        <size>
+         <width>0</width>
+         <height>100</height>
+        </size>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
@@ -252,6 +266,22 @@
     <hint type="destinationlabel">
      <x>183</x>
      <y>397</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>lwFields</sender>
+   <signal>doubleClicked(QModelIndex)</signal>
+   <receiver>btnAdd</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>100</x>
+     <y>111</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>250</x>
+     <y>37</y>
     </hint>
    </hints>
   </connection>

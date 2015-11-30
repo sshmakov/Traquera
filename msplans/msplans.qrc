@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/msplans">
+        <file>data/project.xml</file>
+    </qresource>
+</RCC>

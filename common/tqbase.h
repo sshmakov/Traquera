@@ -152,17 +152,62 @@ struct TQConditionLine {
 };
 */
 
+class TQScopeSettings
+{
+protected:
+    QSettings *set;
+public:
+    TQScopeSettings(QSettings *set = 0)
+    {
+        this->set = set;
+    }
+    TQScopeSettings(TQScopeSettings *src)
+    {
+        this->set = src->take();
+    }
+    ~TQScopeSettings()
+    {
+        if(set)
+            delete set;
+    }
+    const TQScopeSettings &operator =(QSettings *srcSet)
+    {
+        if(set)
+        {
+            delete set;
+            set = 0;
+        }
+        set = srcSet;
+    }
+
+    QSettings *take()
+    {
+        QSettings *res = set;
+        set = 0;
+        return res;
+    }
+
+    QSettings * operator ->()
+    {
+        return set;
+    }
+};
+
+
 class TQQueryDef;
+
+class TQAbstractProjectPrivate;
 
 class TQPLUGIN_SHARED TQAbstractProject: public QObject
 {
     Q_OBJECT
 protected:
-    TQAbstractDB *db;
+    TQAbstractProjectPrivate *d;
 public:
     TQAbstractProject(TQAbstractDB *db);
     ~TQAbstractProject();
     // Standard manipulations
+    TQAbstractDB *db() const;
     virtual bool isOpened() const = 0;
     virtual QString currentUser() const = 0;
     virtual QString projectName() const = 0;
@@ -183,6 +228,7 @@ public:
     virtual QDomDocument recordTypeDefDoc(int rectype) = 0;
 
     virtual TQRecModel *openQueryModel(const QString &queryName, int recType, bool emitEvent = true) = 0;
+    virtual bool renameQuery(const QString &oldName, const QString &newName);
     virtual QAbstractItemModel *openIdsModel(const IntList &ids, int recType, bool emitEvent = true) = 0;
     virtual void refreshModel(QAbstractItemModel *model) = 0;
     virtual QAbstractItemModel *queryModel(int type) = 0;
@@ -216,6 +262,7 @@ public:
     virtual QString userLogin(int userId) = 0;
     virtual int userId(const QString &login) = 0;
     virtual TQGroupList userGroups() = 0;
+    virtual QSettings *projectSettings() const;
 signals:
     void openedModel(const QAbstractItemModel *model);
     void recordChanged(int id);
@@ -305,6 +352,10 @@ bool isSystemModel(QAbstractItemModel *) const;
 class TQPLUGIN_SHARED TQRecord: public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(QString title READ title WRITE setTitle)
+    Q_PROPERTY(int mode READ mode WRITE setMode)
+    Q_PROPERTY(bool isEditing READ isEditing)
+    Q_PROPERTY(QString description READ description WRITE setDescription)
 public:
     enum TQRecMode {View, Edit, Insert};
 protected:
@@ -388,6 +439,7 @@ public: //protected: // Project specific data
 //    Q_INVOKABLE void setValue(const QString& fieldName, const QVariant& value, int role = Qt::EditRole);
 
     virtual QDomDocument toXML();
+    Q_INVOKABLE virtual QString toJSON();
 //    Q_INVOKABLE virtual QString toHTML(const QString &xqCodeFile);
     Q_INVOKABLE virtual QStringList historyList() const;
     Q_INVOKABLE bool isFieldReadOnly(const QString &field) const;

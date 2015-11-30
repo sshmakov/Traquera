@@ -104,22 +104,51 @@ TQAbstractDB *TQAbstractDB::createDbClass(const QString &dbClass, QObject *paren
 }
 
 
+class TQAbstractProjectPrivate
+{
+public:
+    TQAbstractDB *db;
+    TQAbstractProjectPrivate()
+        : db(0)
+    {}
+    ~TQAbstractProjectPrivate()
+    {
+        db = 0;
+    }
+};
+
+
 /* TQAbstractProject */
 TQAbstractProject::TQAbstractProject(TQAbstractDB *db)
-    :QObject(db)
+    :QObject(db), d(new TQAbstractProjectPrivate())
 {
-    this->db = db;
+    d->db = db;
 }
 
 TQAbstractProject::~TQAbstractProject()
 {
-    if(db)
-    {
-        db = 0;
-//        db->unregisterProject(this);
-    }
+    delete d;
 }
 
+TQAbstractDB *TQAbstractProject::db() const
+{
+    return d->db;
+}
+
+bool TQAbstractProject::renameQuery(const QString &oldName, const QString &newName)
+{
+    return false;
+}
+
+QSettings *TQAbstractProject::projectSettings() const
+{
+    QSettings *set = new QSettings();
+    set->beginGroup("Projects");
+    set->beginGroup(QString("%1").arg(projectName()));
+    return set;
+}
+
+/*  TQBaseProject  */
 TQBaseProject::TQBaseProject(TQAbstractDB *db)
     :TQAbstractProject(db)
 {
@@ -719,6 +748,100 @@ QDomDocument TQRecord::toXML()
     }
     root.appendChild(history);
     return xml;
+}
+
+static QString v2s(const QVariant &value)
+{
+    switch(value.type())
+    {
+    case QVariant::Bool:
+        return value.toBool() ? "true" : "false";
+    case QVariant::Int:
+        return value.toString();
+    }
+    QString s = value.toString();
+    s.replace(QChar('"'),"\\\"");
+    return "\"" + s + "\"";
+}
+
+QString TQRecord::toJSON()
+{
+    const TQAbstractRecordTypeDef *def = typeDef();
+    if(!def)
+        return QString();
+    QString res = "{";
+    res += "fields:[";
+    QList<int> vids = def->fieldVids();
+    int index = 0;
+    foreach(int vid, vids)
+    {
+        QString fname = def->fieldName(vid);
+//        QVariant ftext = value(vid,Qt::DisplayRole);
+        QVariant fvalue = value(vid,Qt::EditRole);
+        if(index++)
+            res += ",";
+        res += QString("{name:%1, value:%2}").arg(v2s(fname), v2s(fvalue));
+    }
+    res += "],";
+    int descVid = def->roleVid(TQAbstractRecordTypeDef::DescriptionField);
+    if(descVid)
+    {
+        res += QString("Description: %1").arg(v2s(description()));
+    }
+    // fill <notes>
+    res += ", notes:[";
+    TQNotesCol notesCol = this->notes();
+    index=0;
+    foreach(const TQNote &tn, notesCol)
+    {
+        if(index)
+            res += ",";
+        QString s = QString("title:%1, author:%2, cdatetime:%3, createdate:%4, mdatetime:%5, modifydate:%6, editable:%7")
+                .arg(
+                    v2s(tn.title),
+                    v2s(project()->userFullName(tn.author)),
+                    v2s(tn.crdate.toString(Qt::ISODate)),
+                    v2s(tn.crdate.toString(def->dateTimeFormat())),
+                    v2s(tn.mddate.toString(Qt::ISODate)),
+                    v2s(tn.mddate.toString(def->dateTimeFormat())),
+                    QString(tn.perm?"true":"false"));
+        s += QString(", isAdded:%1, isChanged:%2, isDeleted:%3, index:%4").arg(
+                    v2s(tn.isAdded),
+                    v2s(tn.isChanged),
+                    v2s(tn.isDeleted),
+                    v2s(index++)
+                    );
+        res += "{" + s + "}";
+    }
+    res += "]";
+
+    /* // fill <history>
+    QDomElement history = xml.createElement("history");
+    index=0;
+    foreach(const QString &item, historyList())
+    {
+        QDomElement change = xml.createElement("change");
+        QStringList sections = item.split(QChar(' '));
+        QString changeDate = sections[0];
+        QString changeTime = sections[1];//item.left(10+1+5);
+        QDateTime changeDateTime = QDateTime::fromString(changeDate + " " + changeTime, def->dateTimeFormat());
+        QString changeAuthor = sections[2].mid(1,sections[2].length()-3);
+
+        QString changeDesc = QStringList(sections.mid(5)).join(" ");
+        change.setAttribute("author", changeAuthor);
+        change.setAttribute("datetime", changeDateTime.toString(Qt::ISODate));
+        change.setAttribute("createdate", changeDate + " " + changeTime);
+        change.setAttribute("action", changeDesc);
+        change.setAttribute("index",index++);
+        QDomText v = xml.createTextNode(item);
+        change.appendChild(v);
+        history.appendChild(change);
+    }
+    root.appendChild(history);
+    return xml;
+    */
+    res += "}";
+    return res;
 }
 
 QStringList TQRecord::historyList() const

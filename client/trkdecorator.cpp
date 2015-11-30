@@ -11,11 +11,12 @@
 #include "trkdecorator.h"
 #include "settings.h"
 #include "ttglobal.h"
+#include "querypage.h"
 
 TrkDecorator *decorator;
 
 TrkDecorator::TrkDecorator(QObject *parent) :
-    QObject(parent)
+    QObject(parent), prj(0)
 {
 }
 
@@ -227,19 +228,24 @@ static int findColumn(QHeaderView *hv, const QString &label)
     return -1;
 }
 
-void TrkDecorator::loadViewDef(QTableView *view)
+void TrkDecorator::loadViewDef(QueryPage *page)
 {
     const QString KEY = Settings_Grid;
     //QXmlSimpleReader xmlReader;
-    QFile *file = new QFile("data/tracker.xml");
-    QXmlInputSource *source = new QXmlInputSource(file);
+    TQAbstractProject *newPrj = page->project();
+    if(prj == newPrj)
+        return;
+    TQScopeSettings sets = newPrj->projectSettings();
+    QString groupFile = sets->value("GroupFile", "data/tracker.xml").toString();
+    QFile file(groupFile);
+    QXmlInputSource source(&file);
     QDomDocument dom;
-    if(!dom.setContent(source,false))
+    if(!dom.setContent(&source,false))
         return;
     QDomElement doc = dom.documentElement();
     if(doc.isNull()) return;
-    QHeaderView *hv = view->horizontalHeader();
-    QVariant gridSet = ttglobal()->settings()->value(KEY);
+    QHeaderView *hv = page->queryView->horizontalHeader();
+    QVariant gridSet = sets->value(KEY);
     bool isGridRestored=false;
     QByteArray tempBuf = hv->saveState();
     if(gridSet.isValid())
@@ -276,10 +282,20 @@ void TrkDecorator::loadViewDef(QTableView *view)
     }
     hv->setMovable(true);
     hv->setDefaultAlignment(Qt::AlignLeft);
-    ttglobal()->settings()->setValue(KEY, hv->saveState());
-//    isDefLoaded = true;
-    delete source;
-    delete file;
+    sets->setValue(KEY, hv->saveState());
+    //    isDefLoaded = true;
+}
+
+bool TrkDecorator::saveState(QueryPage *page)
+{
+    const QString KEY = Settings_Grid;
+    //QXmlSimpleReader xmlReader;
+    TQAbstractProject *newPrj = page->project();
+    TQScopeSettings sets = newPrj->projectSettings();
+    QHeaderView *hv = page->queryView->horizontalHeader();
+    QByteArray tempBuf = hv->saveState();
+    sets->setValue(KEY, tempBuf);
+    return true;
 }
 
 FieldGroupsDef TrkDecorator::loadGroups(const TQAbstractRecordTypeDef *recDef)

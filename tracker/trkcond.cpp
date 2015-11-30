@@ -83,6 +83,7 @@ TQCond *TrkQueryDef::newCondition(int fieldVid)
     case TRK_FIELD_TYPE_DATE:
     {
         TrkDateCond *dcond = new TrkDateCond(this);
+        dcond->setVid(fieldVid);
         dcond->isDaysValue = false;
         dcond->op = TQDateCond::Equals;
         dcond->value1 = QDateTime::currentDateTime();
@@ -91,6 +92,7 @@ TQCond *TrkQueryDef::newCondition(int fieldVid)
     case TRK_FIELD_TYPE_STRING:
     {
         TQStringCond *scond = new TQStringCond(this);
+        scond->setVid(fieldVid);
         scond->isCaseSensitive = false;
         scond->value = "";
         return scond;
@@ -1278,7 +1280,7 @@ QString TrkChangeCond::condSubString() const
         break;
     }
     case RecordChange:
-        s = tr("%1 записи");
+        s = tr("%1 записи").arg(ch);
         break;
     case FileChange:
         if(!fileName.isEmpty())
@@ -1298,7 +1300,7 @@ QString TrkChangeCond::condSubString() const
             s += tr(" \"%1\"").arg(fileName);
         break;
     }
-    QString sday = dateMode == Days ? " дней назад" : "";
+    QString sday = dateMode == Days ? tr(" дней назад") : "";
     QString dateFormat = tr("dd.MM.yyyy");
     QString dateTimeFormat = tr("dd.MM.yyyy");
     QString sdate1 = dateMode == Days ? QString::number(days1) :

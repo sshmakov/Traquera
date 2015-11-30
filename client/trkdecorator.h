@@ -63,15 +63,20 @@ public:
     }
 };
 
+class QueryPage;
+
 class TrkDecorator : public QObject
 {
     Q_OBJECT
+protected:
+    TQAbstractProject *prj;
 public:
     explicit TrkDecorator(QObject *parent = 0);
     void fillEditPanels(QTabWidget *tabs, const TQAbstractRecordTypeDef *recDef, EditDefList &def, bool onlyView = true);
     void readValues(TQRecord *record, EditDefList &def);
     void updateState(TQRecord *record, EditDefList &def);
-    void loadViewDef(QTableView *view);
+    void loadViewDef(QueryPage *page);
+    bool saveState(QueryPage *page);
     FieldGroupsDef loadGroups(const TQAbstractRecordTypeDef *recDef);
 protected:
     void clearEdits(QTabWidget *tabs, EditDefList &def);

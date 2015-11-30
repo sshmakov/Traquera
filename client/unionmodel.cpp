@@ -380,6 +380,16 @@ QAbstractItemModel *UnionModel::sourceModel(int index) const
     return m;
 }
 
+QList<QAbstractItemModel *> UnionModel::sourceModels() const
+{
+    return models;
+}
+
+int UnionModel::sourceModelIndex(QAbstractItemModel *model) const
+{
+    return models.indexOf(model);
+}
+
 void UnionModel::setSelectedModel(QAbstractItemModel *model)
 {
     int row = models.indexOf(model);

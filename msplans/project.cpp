@@ -6,6 +6,7 @@
 #include <QXmlSimpleReader>
 #include <QXmlInputSource>
 #include <QDomDocument>
+#include <comdef.h>
 
 PrjModel::PrjModel(PrjItemModel *projectModel, QObject *parent)
 	: 
@@ -236,7 +237,13 @@ bool PrjItemModel::open(const QString &file, bool readOnly)
 	prj=NULL;
 	tasks=NULL;
     app.setControl("MSProject.Application"); // {36D27C48-A1E8-11D3-BA55-00C04F72F325}
-    bool vis = app.property("Visible").toBool();
+    IDispatch *disp=0;
+    app.queryInterface(IID_IDispatch, (void**)&disp);
+    if(!disp)
+        return false;
+    disp->Release();
+    QVariant v = app.property("Visible");
+    bool vis = v.toBool();
 	if(!vis || file.isEmpty())
 		app.setProperty("Visible", true);
 

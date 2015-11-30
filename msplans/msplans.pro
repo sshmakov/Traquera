@@ -37,6 +37,8 @@ FORMS = \
   prjfiledlg.ui \
     projectpage.ui
 
+DESTDIR=../plugins/msplans
+
 unix:!symbian {
     maemo5 {
         target.path = /opt/usr/lib
@@ -59,4 +61,6 @@ OTHER_FILES += \
     data/project.xml \
     data/scr2prj.xml
 
-DESTDIR=../plugins/msplans
+RESOURCES += \
+    msplans.qrc
+

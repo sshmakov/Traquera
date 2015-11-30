@@ -69,6 +69,9 @@
           <property name="widgetResizable">
            <bool>true</bool>
           </property>
+          <property name="alignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+          </property>
           <widget class="QWidget" name="scrollAreaWidgetContents">
            <property name="geometry">
             <rect>
@@ -77,6 +80,12 @@
              <width>554</width>
              <height>418</height>
             </rect>
+           </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_3">
             <item>
@@ -88,9 +97,9 @@
                </sizepolicy>
               </property>
               <property name="title">
-               <string>GroupBox</string>
+               <string/>
               </property>
-              <layout class="QGridLayout" name="gridLayout_2">
+              <layout class="QGridLayout" name="gridLayout_2" rowstretch="0,1">
                <item row="0" column="1">
                 <widget class="QLabel" name="lCurrentProjectName">
                  <property name="sizePolicy">
@@ -104,26 +113,19 @@
                  </property>
                 </widget>
                </item>
-               <item row="1" column="1">
-                <widget class="QToolButton" name="tbNewConnect">
-                 <property name="text">
-                  <string>...</string>
-                 </property>
-                 <property name="popupMode">
-                  <enum>QToolButton::InstantPopup</enum>
-                 </property>
-                </widget>
-               </item>
                <item row="1" column="0">
                 <widget class="QLabel" name="label_2">
                  <property name="sizePolicy">
-                  <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                    <horstretch>0</horstretch>
                    <verstretch>0</verstretch>
                   </sizepolicy>
                  </property>
                  <property name="text">
-                  <string>Подключиться:</string>
+                  <string>Подключиться к новому проекту:</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
                  </property>
                 </widget>
                </item>
@@ -153,59 +155,24 @@
                  </property>
                 </spacer>
                </item>
+               <item row="1" column="1" colspan="2">
+                <layout class="QHBoxLayout" name="layDBClasses"/>
+               </item>
               </layout>
              </widget>
             </item>
             <item>
-             <widget class="QGroupBox" name="groupBox">
-              <property name="title">
-               <string>Tracker</string>
+             <spacer name="verticalSpacer">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
               </property>
-              <layout class="QVBoxLayout" name="verticalLayout_2">
-               <property name="spacing">
-                <number>6</number>
-               </property>
-               <property name="leftMargin">
-                <number>9</number>
-               </property>
-               <property name="topMargin">
-                <number>3</number>
-               </property>
-               <property name="bottomMargin">
-                <number>3</number>
-               </property>
-               <item>
-                <layout class="QGridLayout" name="gridLayout">
-                 <item row="0" column="0">
-                  <spacer name="horizontalSpacer">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>40</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                </layout>
-               </item>
-               <item>
-                <spacer name="horizontalSpacer_2">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>40</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
-              </layout>
-             </widget>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>3</height>
+               </size>
+              </property>
+             </spacer>
             </item>
            </layout>
           </widget>
@@ -701,6 +668,16 @@
   <action name="actionJira">
    <property name="text">
     <string>Jira</string>
+   </property>
+  </action>
+  <action name="actionDelete_Project">
+   <property name="text">
+    <string>Удалить проект</string>
+   </property>
+  </action>
+  <action name="actionRename_Item">
+   <property name="text">
+    <string>Переименовать...</string>
    </property>
   </action>
  </widget>

@@ -47,9 +47,11 @@
     </qresource>
     <qresource prefix="/sql">
         <file>upgrade1.sql</file>
+        <file>create.sql</file>
     </qresource>
     <qresource prefix="/js">
         <file>test.js</file>
         <file alias="jquery.js">jquery-2.1.3.min.js</file>
+        <file>email.js</file>
     </qresource>
 </RCC>

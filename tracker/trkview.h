@@ -535,6 +535,7 @@ public:
     virtual QString userLogin(int userId);
     virtual int userId(const QString &login);
     virtual TQGroupList userGroups();
+    virtual bool renameQuery(const QString &oldName, const QString &newName);
 
 protected:
     void readProjectDatabaseName();

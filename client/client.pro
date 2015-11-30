@@ -13,7 +13,7 @@ INCLUDEPATH += \
 
 # LIBS += -l./trktool/trktooln
 CONFIG += qaxcontainer
-QT += sql xml webkit xmlpatterns network
+QT += sql xml webkit xmlpatterns network script scripttools
 # CODECFORSRC = windows-1251
 TRANSLATIONS    = \
 	lang/client_en.ts \
@@ -36,7 +36,8 @@ FORMS += ui/tracksmain.ui ui/querypage.ui ui/trklogin.ui ui/filters.ui ui/scrwid
     ../tracker/trkdatesdlg.ui \
     optionsform.ui \
     proxyoptions.ui \
-    tqlogindlg.ui
+    tqlogindlg.ui \
+    tqprjoptdlg.ui
 #    ui/planfilesform.ui \
 #    ui/projectpage.ui
 
@@ -72,7 +73,8 @@ HEADERS += \
     proxyoptions.h \
     tqhistory.h \
     tqlogindlg.h \
-    mainproc.h
+    mainproc.h \
+    tqprjoptdlg.h
 
 #    plans.h planproxy.h \
 #    planfiles.h \
@@ -112,7 +114,8 @@ SOURCES += database.cpp main.cpp mainwindow.cpp querypage.cpp \
     proxyoptions.cpp \
     tqhistory.cpp \
     tqlogindlg.cpp \
-    mainproc.cpp
+    mainproc.cpp \
+    tqprjoptdlg.cpp
 
 #    planfilesform.cpp \
 #    project.cpp projectpage.cpp plans.cpp planproxy.cpp planfiles.cpp \

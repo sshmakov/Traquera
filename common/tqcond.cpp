@@ -1,10 +1,8 @@
 #include "tqbase.h"
 #include "tqcond.h"
 
-#ifdef CLIENT_APP
 #include <QtGui>
 #include "tqcondwidgets.h"
-#endif
 
 TQCond::TQCond(TQQueryDef *parent) :
     QObject(parent), queryDef(parent), m_flags(0), m_mask(0)
@@ -72,9 +70,7 @@ void TQCond::setVid(int value)
 
 bool TQCond::editProperties()
 {
-#ifdef CLIENT_APP
     QMessageBox::information(0,tr("Condition"),condSubString());
-#endif
     return false;
 }
 
@@ -218,7 +214,6 @@ QString TQChoiceCond::condSubString() const
 
 bool TQChoiceCond::editProperties()
 {
-#ifdef CLIENT_APP
     TQChoiceCondDialog dlg;
     dlg.setCondition(*this);
     if(dlg.exec())
@@ -227,24 +222,6 @@ bool TQChoiceCond::editProperties()
         return true;
     }
     return false;
-    /*
-    QVBoxLayout *lay = new QVBoxLayout(&dlg);
-    QListWidget *vList = new QListWidget();
-    lay->addWidget(vList);
-    QString chTable = queryDef->recordDef()->fieldChoiceTable(vid);
-    TQChoiceList choices = queryDef->recordDef()->choiceTable(chTable);
-    foreach(const TQChoiceItem &item, choices)
-    {
-        vList->addItem(item.displayText);
-    }
-    int res = dlg.exec();
-    if(!res)
-        return false;
-    return true;
-    */
-#else
-    return false;
-#endif
 }
 
 TQNumberCond::TQNumberCond(TQQueryDef *parent)
@@ -291,7 +268,6 @@ QString TQNumberCond::condSubString() const
 
 bool TQNumberCond::editProperties()
 {
-#ifdef CLIENT_APP
     TQNumberCondDialog dlg;
     dlg.setCondition(*this);
 
@@ -300,9 +276,6 @@ bool TQNumberCond::editProperties()
         return false;
     *this = dlg.condition();
     return true;
-#else
-    return false;
-#endif
 }
 
 TQUserCond::TQUserCond(TQQueryDef *parent)
@@ -393,7 +366,6 @@ QString TQUserCond::condSubString() const
 
 bool TQUserCond::editProperties()
 {
-#ifdef CLIENT_APP
     TQUserCondDialog dlg;
     dlg.setCondition(*this);
     if(dlg.exec())
@@ -402,9 +374,6 @@ bool TQUserCond::editProperties()
         return true;
     }
     return false;
-#else
-    return false;
-#endif
 }
 
 TQDateCond::TQDateCond(TQQueryDef *parent)
@@ -513,7 +482,6 @@ QString TQStringCond::condSubString() const
 
 bool TQStringCond::editProperties()
 {
-#ifdef CLIENT_APP
     TQStringCondDialog dlg;
     dlg.setCondition(*this);
     if(dlg.exec())
@@ -522,9 +490,6 @@ bool TQStringCond::editProperties()
         return true;
     }
     return false;
-#else
-    return false;
-#endif
 }
 
 /*
@@ -600,40 +565,10 @@ int TQQueryDef::indexOf(TQCond *cond)
 
 bool TQQueryDef::editProperties(int index)
 {
-#ifdef CLIENT_APP
     if(index < 0 || index >= nestedCond.count())
         return false;
     TQCond *cond = nestedCond[index];
     return cond->editProperties();
-    /*
-    TQChoiceCond *ccond = qobject_cast<TQChoiceCond *>(cond);
-    TQNumberCond *ncond = qobject_cast<TQNumberCond *>(cond);
-    TQUserCond *ucond = qobject_cast<TQUserCond *>(cond);
-    if(0 != ccond)
-    {
-        return ccond->editProperties();
-    }
-    else if(ncond)
-    {
-        TQNumberCondDialog dlg;
-        dlg.setCondition(*ncond);
-
-        int res = dlg.exec();
-        if(!res)
-            return false;
-        *ncond = dlg.condition();
-        return true;
-    }
-    else if(ucond)
-    {
-        return ucond->editProperties();
-    }
-    return false;
-    */
-#else
-    Q_UNUSED(index)
-    return false;
-#endif
 }
 
 TQCond *TQQueryDef::newCondition(int fieldVid)

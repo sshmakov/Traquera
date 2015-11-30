@@ -5,7 +5,13 @@
 #-------------------------------------------------
 
 #QT       -= gui
-QT += xml network sql script
+QT += xml network sql script scripttools axserver
+CONFIG += qaxcontainer
+CONFIG += qaxserver dll
+
+DEF_FILE = qaxserver.def
+RC_FILE  = qaxserver.rc
+
 
 
 TARGET = tqplugapi
@@ -21,7 +27,8 @@ SOURCES += tqplugapi.cpp \
     ../common/tqmodels.cpp \
     tqoauth.cpp \
     ../common/ttglobal.cpp \
-    tqjson.cpp
+    tqjson.cpp \
+    activefactory.cpp
 
 HEADERS += tqplugapi.h\
     ../common/tqplugin_global.h \
@@ -31,7 +38,8 @@ HEADERS += tqplugapi.h\
     ../common/tqplugui.h \
     ../common/tqoauth.h \
     ../common/ttglobal.h \
-    ../common/tqjson.h
+    ../common/tqjson.h \
+    activefactory.h
 
 unix:!symbian {
     maemo5 {

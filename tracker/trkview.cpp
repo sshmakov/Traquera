@@ -19,6 +19,7 @@
 #include <QDomDocument>
 //#include <QXmlQuery>
 #include <QAuthenticator>
+#include <tqjson.h>
 //#include <QtWebKit>
 //#include <QtSql>
 //#include <Windows.h>
@@ -479,15 +480,16 @@ TQAbstractProject *TrkToolDB::openProject(
 
 TQAbstractProject *TrkToolDB::openConnection(const QString &connectString)
 {
-    QStringList values = connectString.split(";");
+    TQJson parser;
+    QVariantMap map = parser.toVariant(connectString).toMap();
+//    QStringList values = connectString.split(";");
     QHash<QString, QString> params;
-    foreach(QString v, values)
+    foreach(QString key, map.keys())
     {
-        int p = v.indexOf("=");
-
-        QString par = v.left(p);
-        QString val = v.mid(p+1);
-        params.insert(par,val);
+//        int p = v.indexOf("=");
+//        QString par = v.left(p);
+//        QString val = v.mid(p+1);
+        params.insert(key, map.value(key).toString());
     }
     QString sRecType = params.value("RecordType");
     bool okRecType;
@@ -1314,6 +1316,11 @@ TQGroupList TrkToolProject::userGroups()
     }
 //    groups.sort();
     return groups;
+}
+
+bool TrkToolProject::renameQuery(const QString &oldName, const QString &newName)
+{
+    return false;
 }
 
 void TrkToolProject::readProjectDatabaseName()

@@ -16,6 +16,16 @@
 #include <QtGui>
 #include <tqoauth.h>
 #include <tqbase.h>
+#include <QAxObject>
+#include <QAxScriptManager>
+#include <QtScript>
+#include <QtScriptTools>
+#include <activefactory.h>
+
+
+#ifdef Q_WS_WIN
+//#include <shlobj.h>
+#endif
 
 
 /*
@@ -29,6 +39,37 @@ TTGlobal *TTGlobal::global()
 }
 */
 
+class TTPluginInfo {
+public:
+    QPluginLoader *loader;
+    QString name;
+    QString dir;
+    QString ini;
+    QString library;
+    QObject *instance;
+    QObject *p;
+    TTPluginInfo(QObject *parent) : p(parent), loader(new QPluginLoader(parent)), instance(0) {}
+    bool load()
+    {
+        if(loader->isLoaded())
+            return true;
+        loader->setFileName(library);
+        loader->setLoadHints(QLibrary::ExportExternalSymbolsHint);
+        bool res = loader->load();
+        if(res)
+        {
+            qDebug() << "Loaded" << library;
+            instance = loader->instance();
+        }
+        else
+        {
+            instance = 0;
+            qDebug() << "Not loaded" << library;
+        }
+        return res;
+    }
+};
+
 class TTGlobalPrivate {
 public:
     QString initFileName;
@@ -40,16 +81,18 @@ public:
     QSettings *settingsObj;
     QNetworkAccessManager netman;
 
+
     QMultiHash <QString, QPair<QObject*,QString> > handlers;
 
-    QObjectList plugins;
+    QList<TTPluginInfo> plugins;
     QString pluginDirectory;
     QStringList anotherPlugins;
+    bool isScriptDebuggerEnabled;
 
     QMap<QString, GetOptionsWidgetFunc> optionsRegs;
 
     TTGlobalPrivate()
-        : userDb(), handlers(), plugins()
+        : userDb(), handlers(), plugins(), isScriptDebuggerEnabled(true)
     {
     }
 };
@@ -66,6 +109,7 @@ TTGlobal::TTGlobal(QObject *parent) :
     d->settingsObj = new QSettings(COMPANY_NAME, PRODUCT_NAME);
     //ttGlobal = this;
     d->initFileName = "data/init.xml";
+    setObjectName("Global");
     readInitSettings();
 }
 
@@ -123,7 +167,21 @@ void TTGlobal::setClipboardText(const QString &text) const
     QApplication::clipboard()->setText(text);
 }
 
-QString TTGlobal::currentProjectName()
+QString TTGlobal::getClipboardHTML() const
+{
+    const QClipboard *clipboard = QApplication::clipboard();
+    const QMimeData *mimeData = clipboard->mimeData();
+    return mimeData->html();
+}
+
+void TTGlobal::setClipboardHTML(const QString &text) const
+{
+    QMimeData *mimeData = new QMimeData();
+    mimeData->setHtml(text);
+    QApplication::clipboard()->setMimeData(mimeData);
+}
+
+QString TTGlobal::curProjectName() const
 {
     if(!proc)
         return QString();
@@ -133,7 +191,7 @@ QString TTGlobal::currentProjectName()
     return prj->projectName();
 }
 
-QObject *TTGlobal::getRecord(int id, const QString &project)
+QObject *TTGlobal::getRecord(int id)
 {
     if(!proc)
         return 0;
@@ -160,10 +218,119 @@ QMap<QString, GetOptionsWidgetFunc> TTGlobal::optionsWidgets() const
     return d->optionsRegs;
 }
 
+QVariant TTGlobal::CreateObject(const QString &objectName)
+{
+    QAxObject *obj = new ActiveXObject(objectName, this);
+    return obj->asVariant();
+}
+
+QString TTGlobal::saveObjectDocumentation(QObject *object, const QString &fileName) const
+{
+    QAxBase *ax = qobject_cast<QAxBase *>(object);
+    QString doc = ax->generateDocumentation();
+    if(!fileName.isEmpty())
+    {
+        QFile file(fileName);
+        if(file.open(QFile::WriteOnly | QIODevice::Truncate))
+        {
+            file.write(doc.toUtf8());
+        }
+    }
+    return doc;
+}
+
 void TTGlobal::showError(const QString &text)
 {
     if(proc)
         mainWindow()->statusBar()->showMessage(text,10000);
+}
+
+
+#ifndef CSIDL_COMMON_APPDATA
+#define CSIDL_COMMON_APPDATA	0x0023  // All Users\Application Data
+#endif
+
+#ifndef CSIDL_APPDATA
+#define CSIDL_APPDATA		0x001a	// <username>\Application Data
+#endif
+
+typedef enum {
+    SHGFP_TYPE_CURRENT  = 0,   // current value for user, verify it exists
+    SHGFP_TYPE_DEFAULT  = 1   // default value, may not exist
+} SHGFP_TYPE;
+
+#ifdef Q_OS_WIN
+static QString windowsConfigPath(int type)
+{
+    QString result;
+#ifndef Q_OS_WINCE
+    QLibrary library(QLatin1String("shell32"));
+#else
+    QLibrary library(QLatin1String("coredll"));
+#endif // Q_OS_WINCE
+    typedef HRESULT (WINAPI*GetFolderPath)(
+                HWND   hwndOwner,
+                int    nFolder,
+                HANDLE hToken,
+                DWORD  dwFlags,
+                LPTSTR pszPath);
+
+    GetFolderPath SHGetFolderPath = (GetFolderPath)library.resolve("SHGetFolderPathW");
+    if (SHGetFolderPath) {
+        wchar_t path[MAX_PATH];
+        path[0] = 0;
+        HRESULT res = SHGetFolderPath(0, type, 0, SHGFP_TYPE_DEFAULT, path);
+        if(!res)
+            result = QString::fromWCharArray(path);
+        else
+            result = QString();
+    }
+
+    if (result.isEmpty()) {
+        switch (type) {
+#ifndef Q_OS_WINCE
+        case CSIDL_COMMON_APPDATA:
+            result = QLatin1String("C:\\temp\\qt-common");
+            break;
+        case CSIDL_APPDATA:
+            result = QLatin1String("C:\\temp\\qt-user");
+            break;
+#else
+        case CSIDL_COMMON_APPDATA:
+            result = QLatin1String("\\Temp\\qt-common");
+            break;
+        case CSIDL_APPDATA:
+            result = QLatin1String("\\Temp\\qt-user");
+            break;
+#endif
+        default:
+            ;
+        }
+    }
+
+    return result;
+}
+#endif // Q_OS_WIN
+
+
+
+static QString appDataPath()
+{
+    QString dir;
+    QString orgName = QCoreApplication::organizationName();
+    QString appName = QCoreApplication::applicationName();
+#ifdef Q_WS_WIN
+    dir = windowsConfigPath(CSIDL_APPDATA)+"/"+appName;
+#else
+    // obtain (platform specific) application's data/settings directory
+
+    QSettings ini(QSettings::IniFormat, QSettings::SystemScope, //UserScope,
+                  orgName,
+                  appName);
+    QString fileName = ini.fileName();
+    dir = QFileInfo(fileName).absolutePath();
+#endif
+    return dir;
 }
 
 void TTGlobal::readInitSettings()
@@ -176,6 +343,15 @@ void TTGlobal::readInitSettings()
     QDomElement doc = dom.documentElement();
     if(doc.isNull())
         return;
+
+    QDir appDir(appDataPath());
+    if(!appDir.exists())
+        appDir.mkpath(".");
+    d->userDbType = "QSQLITE";
+    d->userDbPath = QFileInfo(appDir,"user3.db").absoluteFilePath();
+    d->userDbUser = "";
+    d->userDbPassword = "";
+
     QDomElement dbNode = doc.firstChildElement("userdb");
     if(!dbNode.isNull())
     {
@@ -205,7 +381,11 @@ void TTGlobal::readInitSettings()
 
 void TTGlobal::upgradeUserDB()
 {
-    if(d->userDb.tables().contains("recordInFolder",Qt::CaseInsensitive))
+    QStringList tables = d->userDb.tables();
+    if(tables.isEmpty())
+        executeBatchFile(":/sql/create.sql");
+    tables = d->userDb.tables();
+    if(tables.contains("recordInFolder",Qt::CaseInsensitive))
         executeBatchFile(":/sql/upgrade1.sql");
 }
 
@@ -218,14 +398,20 @@ bool TTGlobal::executeBatchFile(const QString &fileName)
         return false;
     }
     QTextStream in(&file);
-    while (!in.atEnd()) {
-        QString line = in.readLine();
+    QString line;
+    while (!in.atEnd())
+    {
+        do
+        {
+            line += in.readLine();
+        } while(line.trimmed().right(1) != ";" && !in.atEnd());
         QSqlQuery q(d->userDb);
         if(!q.exec(line))
         {
             SQLError(q.lastError());
             return false;
         }
+        line.clear();
     }
     return true;
 }
@@ -322,6 +508,41 @@ void TTGlobal::handleEvent(const QString &event, QGenericReturnArgument ret, QGe
 
 void TTGlobal::loadPlugins()
 {
+    QString pluginIni("plugin.ini");
+    QDir dir(d->pluginDirectory);
+    foreach(QString sub, dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot))
+    {
+        QDir subDir(dir.filePath(sub));
+        loadSinglePlugin(subDir);
+        /*
+        if(subDir.exists(pluginIni))
+        {
+            QString ini = subDir.absoluteFilePath(pluginIni);
+            QSettings set(ini,QSettings::IniFormat);
+            QString dll = set.value("plugin").toString();
+            dll = subDir.absoluteFilePath(dll);
+            if(!QLibrary::isLibrary(dll))
+                continue;
+            loadSinglePlugin(dll, ini);
+            continue;
+        }
+        foreach(QString dll, subDir.entryList(QDir::Files))
+        {
+            dll = subDir.absoluteFilePath(dll);
+            if(!QLibrary::isLibrary(dll))
+                continue;
+            loadSinglePlugin(dll);
+        }
+        */
+    }
+    foreach(QString path, d->anotherPlugins)
+    {
+        loadSinglePlugin(path);
+    }
+}
+
+/*void TTGlobal::loadPlugins()
+{
     QDir dir(d->pluginDirectory);
     foreach(QString sub, dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot))
     {
@@ -339,21 +560,78 @@ void TTGlobal::loadPlugins()
         loadSinglePlugin(path);
     }
 }
+*/
 
-bool TTGlobal::loadSinglePlugin(const QString &path)
+bool TTGlobal::loadSinglePlugin(const QDir &dir)
 {
-    QObject *p=0;
-    if(!QLibrary::isLibrary(path))
+    QString dll, ini;
+    QString pluginIni("plugin.ini");
+    if(dir.exists(pluginIni))
+    {
+        ini = dir.absoluteFilePath(pluginIni);
+        QSettings set(ini,QSettings::IniFormat);
+        QString file = set.value("plugin").toString();
+        file = dir.absoluteFilePath(file);
+        if(!QLibrary::isLibrary(file))
+            return false;
+        dll = file;
+    }
+    else
+        foreach(QString file, dir.entryList(QDir::Files))
+        {
+            file = dir.absoluteFilePath(file);
+            if(QLibrary::isLibrary(file))
+            {
+                dll = file;
+                break;
+            }
+        }
+    if(dll.isEmpty())
         return false;
-    QPluginLoader loader(path);
-    if(!loader.load())
+    TTPluginInfo info(this);
+    info.ini = ini;
+    info.library = dll;
+    QString curLib;
+    QCoreApplication::addLibraryPath(dir.absolutePath());
+    if(!ini.isEmpty())
+    {
+        QSettings set(ini,QSettings::IniFormat);
+        if(set.contains("path"))
+        {
+            QString path = set.value("path").toString().trimmed();
+            QStringList list;
+            if(!path.isEmpty())
+                list=path.split(";");
+            foreach(path, list)
+            {
+                path = dir.absoluteFilePath(path);
+                QCoreApplication::addLibraryPath(path);
+            }
+        }
+        set.beginGroup("LIBS");
+        foreach(QString key, set.allKeys())
+        {
+            QString libFile=set.value(key).toString();
+            if(QLibrary::isLibrary(libFile))
+            {
+                QLibrary lib;
+                lib.setFileName(libFile);
+                lib.setLoadHints(QLibrary::ExportExternalSymbolsHint);
+                if(lib.load())
+                    qDebug() << "Loaded" << libFile;
+                else
+                    qDebug() << "Not loaded" << libFile;
+            }
+        }
+    }
+    curLib = QCoreApplication::libraryPaths().join(";");
+    if(!info.load())
         return false;
-    p = loader.instance();
-    if(!p)
-        return false;
-    d->plugins.append(p);
-    connect(p,SIGNAL(error(QString,QString)),SLOT(pluginError(QString,QString)));
-    QMetaObject::invokeMethod(p, "initPlugin", Q_ARG(QObject *,this), Q_ARG(QString, path));
+    d->plugins.append(info);
+    connect(info.instance,SIGNAL(error(QString,QString)),SLOT(pluginError(QString,QString)));
+    QMetaObject::invokeMethod(info.instance, "initPlugin",
+                              Q_ARG(QObject *,this),
+                              Q_ARG(QString, dir.absolutePath()));
     /*
 //#ifdef CLIENT_APP
     QWidget *prop=0;
@@ -369,25 +647,30 @@ bool TTGlobal::loadSinglePlugin(const QString &path)
 
 void TTGlobal::appendContextMenu(QMenu *menu)
 {
-    foreach(QObject *plugin, d->plugins)
-        QMetaObject::invokeMethod(plugin, "appendContextMenu", Q_ARG(QMenu *,menu));
+    foreach(const TTPluginInfo &info, d->plugins)
+    {
+        if(info.loader->isLoaded())
+            QMetaObject::invokeMethod(info.instance, "appendContextMenu", Q_ARG(QMenu *,menu));
+    }
 }
 
 void TTGlobal::queryViewOpened(QWidget *widget, QTableView *view, const QString &recType)
 {
-    foreach(QObject *plugin, d->plugins)
-        QMetaObject::invokeMethod(plugin, "queryViewOpened",
-                                  Q_ARG(QWidget *, widget),
-                                  Q_ARG(QTableView *, view),
-                                  Q_ARG(const QString &, recType));
+    foreach(const TTPluginInfo &info, d->plugins)
+        if(info.loader->isLoaded())
+            QMetaObject::invokeMethod(info.instance, "queryViewOpened",
+                                      Q_ARG(QWidget *, widget),
+                                      Q_ARG(QTableView *, view),
+                                      Q_ARG(const QString &, recType));
 }
 
 void TTGlobal::recordOpened(QWidget *widget, const QString &recType)
 {
-    foreach(QObject *plugin, d->plugins)
-        QMetaObject::invokeMethod(plugin, "recordOpened",
-                                  Q_ARG(QWidget *, widget),
-                                  Q_ARG(const QString &, recType));
+    foreach(const TTPluginInfo &info, d->plugins)
+        if(info.loader->isLoaded())
+            QMetaObject::invokeMethod(info.instance, "recordOpened",
+                                      Q_ARG(QWidget *, widget),
+                                      Q_ARG(const QString &, recType));
 }
 
 bool TTGlobal::insertViewTab(QWidget *view, QWidget *tab, const QString &title)
@@ -399,5 +682,65 @@ bool TTGlobal::insertViewTab(QWidget *view, QWidget *tab, const QString &title)
 void TTGlobal::pluginError(const QString &pluginName, const QString &msg)
 {
     Error(tr("(%1) %2").arg(pluginName,msg));
+}
+
+void TTGlobal::axScriptError(QAxScript *script, int code, const QString &description, int sourcePosition, const QString &sourceText)
+{
+//    QObject *s = sender();
+    QString s = description;
+    if(code)
+        s += tr(" Код:%1").arg(code);
+    if(!sourceText.isEmpty())
+        s += tr(" на строке '%1'(%2)").arg(sourceText).arg(sourcePosition);
+    Error(s);
+}
+
+
+static QScriptValue ActiveXObjectConstructor(QScriptContext *context,
+                                         QScriptEngine *engine)
+{
+    QAxObject *object = 0;
+    QScriptValue c = context->argument(0);
+    if(c.isUndefined())
+        object = new QAxObject(engine);
+    else if(c.isString())
+    {
+        object = new QAxObject(c.toString(), engine);
+        //QVariant v = object->property("Application");
+        //IDispatch *disp = v.value<IDispatch*>();
+    }
+    else //if(c.isVariant())
+    {
+        QVariant v = c.toVariant();
+        IDispatch *disp = v.value<IDispatch*>();
+        object = new QAxObject(disp, engine);
+    }
+    return engine->newQObject(object, QScriptEngine::ScriptOwnership);
+}
+
+
+QScriptEngine *TTGlobal::newScriptEngine()
+{
+    QScriptEngine *engine = new QScriptEngine(this);
+    if(d->isScriptDebuggerEnabled)
+    {
+        QScriptEngineDebugger *debugger = new QScriptEngineDebugger(this);
+        debugger->attachTo(engine);
+    }
+    QScriptValue globalObj = engine->newQObject(this);
+    engine->globalObject().setProperty("Global", globalObj);
+
+    QScriptValue ctor = engine->newFunction(ActiveXObjectConstructor);
+//    QScriptValue metaObject = engine.newQMetaObject(&QAxObject::staticMetaObject, ctor);
+    engine->globalObject().setProperty("ActiveXObject", ctor);
+    return engine;
+}
+
+QAxScriptManager *TTGlobal::newAxScriptManager()
+{
+    QAxScriptManager *man = new QAxScriptManager(this);
+    connect(man, SIGNAL(error(QAxScript*,int,QString,int,QString)),SLOT(axScriptError(QAxScript*,int,QString,int,QString)));
+    man->addObject(this);
+    return man;
 }
 

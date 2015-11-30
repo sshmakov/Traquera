@@ -15,6 +15,7 @@
 #include "modifypanel.h"
 #include "unionmodel.h"
 #include <ttglobal.h>
+#include "projecttree.h"
 
 QT_BEGIN_NAMESPACE
 class QComboBox;
@@ -29,11 +30,11 @@ class QSqlDatabase;
 class QTableView;
 QT_END_NAMESPACE
 
-class PlanFilesModel;
+//class PlanFilesModel;
 class QueryPage;
 //class ProjectPage;
 //class TTGlobal;
-class TQProjectTree;
+class TQOneProjectTree;
 class TQConnectWidget;
 
 struct ProjectRec {
@@ -62,7 +63,7 @@ public:
     virtual ~MainWindow();
 protected:
     struct ProjectModel {
-        TQProjectTree *prjTree;
+        TQOneProjectTree *prjTree;
         TTFolderModel *folders;
         TrkQryFilter *userModel;
         TrkQryFilter *publicModel;
@@ -95,9 +96,9 @@ private:
     //PlanFilesModel *projects;
 //	QAbstractItemModel *excels;
     //PlanModel planModel;
-    friend class PlanFilesModel;
+//    friend class PlanFilesModel;
     QComboBox *openIdEdit;
-    UnionModel *treeModel;
+    TQProjectsTree *treeModel;
     QLabel *statusLine;
     QProgressBar *progressBar;
     int progressLevel;
@@ -105,7 +106,7 @@ private:
 //    QString solrUrl;
     struct {
         QModelIndex curIndex;
-        TQProjectTree *prjModel;
+        TQOneProjectTree *prjModel;
         TQAbstractProject *prj;
         TTFolderModel *folderModel;
         TrkQryFilter *qryModel;
@@ -122,7 +123,9 @@ private:
     } selectedTreeItem;
 public slots:
     void readProjectTree();
-    void readQueries(TQAbstractProject *prj);
+    void saveProjectTree();
+    void autoConnect();
+//    void readQueries(TQAbstractProject *prj);
     QueryPage *openQuery(TQAbstractProject *project, const QString &queryName, int recordType, bool reusePage);
 //    void showCurrentPlan();
 //    void showPlan(bool linked = false);
@@ -158,7 +161,7 @@ public:
     void calcCountRecords();
     //ProjectPage *openPlanPage(const QString &fileName);
     void findTrkRecords(const QString &line, bool reuse=true);
-    TQProjectTree *selectedProjectTree();
+    TQOneProjectTree *selectedProjectTree();
     QModelIndex selectedFolder(TTFolderModel **folderModel);
     void readSelectedTreeItem();
     QModelIndex mapFolderIndexToTree(const QModelIndex &index);
@@ -258,6 +261,8 @@ private slots:
     void on_actionSettings_triggered();
     void on_actionOpen_Project_triggered();
     void slotNewDBConnect(const QString &dbClass);
+    void on_actionDelete_Project_triggered();
+    void on_actionRename_Item_triggered();
 };
 
 

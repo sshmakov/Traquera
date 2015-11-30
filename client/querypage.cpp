@@ -20,6 +20,7 @@
 #include <QClipboard>
 #include <QtGui>
 #include <QtWebKit>
+#include <QScriptEngineDebugger>
 
 #include "querypage.h"
 //#include "trkview.h"
@@ -36,34 +37,57 @@
 #include "cliputil.h"
 #include "tqcolsdialog.h"
 #include "tqproxyrecmodel.h"
+#include <QAxScriptManager>
 //#include <Shlwapi.h>
 
-QueryPage::QueryPage(QWidget *parent)
-	:QWidget(parent)
-    , modelProject(0)
-    , tmodel(0)
-//    , planViewModel(this)
-//	, history()
-    , itIsFolder(false)
-    , isInteractive(true)
+class QueryPagePrivate
 {
+public:
+    bool isInteractive;
+    bool isDefLoaded;
+//	PlanModel *planModel;
+//    PlanProxyModel planViewModel;
+    TQProxyRecModel *proxy;
+    QSortFilterProxyModel *qryFilterModel;
+    QString linkField;
+    TQHistory history;
+    //QList<TrkHistoryItem> history;
+    int curHistoryPos;
+    QString filterString;
+    TTFolder folder;
+    bool itIsFolder;
+    TQAbstractProject *modelProject;
+    QString xqFile;
+    TQRecModel *tmodel;
+    QList<QAction*> headerActions;
+    QTimer *detailsTimer;
+    QTimer *previewTimer;
+};
+
+QueryPage::QueryPage(QWidget *parent)
+    :QWidget(parent), d(new QueryPagePrivate())
+{
+    d->modelProject = 0;
+    d->tmodel = 0;
+    d->itIsFolder = false;
+    d->isInteractive = true;
     setupUi(this);
     initWidgets();
-    proxy = new TQProxyRecModel(this);
-    qryFilterModel = new QSortFilterProxyModel(this);
-    qryFilterModel->setSourceModel(proxy);
-    qryFilterModel->setFilterKeyColumn(-1);
-    qryFilterModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
-    qryFilterModel->setSortRole(Qt::EditRole);
-    detailsTimer = new QTimer(this);
-    detailsTimer->setInterval(0);
-    detailsTimer->setSingleShot(true);
-    connect(detailsTimer,SIGNAL(timeout()),this,SLOT(updateDetails()));
+    d->proxy = new TQProxyRecModel(this);
+    d->qryFilterModel = new QSortFilterProxyModel(this);
+    d->qryFilterModel->setSourceModel(d->proxy);
+    d->qryFilterModel->setFilterKeyColumn(-1);
+    d->qryFilterModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
+    d->qryFilterModel->setSortRole(Qt::EditRole);
+    d->detailsTimer = new QTimer(this);
+    d->detailsTimer->setInterval(0);
+    d->detailsTimer->setSingleShot(true);
+    connect(d->detailsTimer,SIGNAL(timeout()),this,SLOT(updateDetails()));
 
-    previewTimer = new QTimer(this);
-    previewTimer->setInterval(0);
-    previewTimer->setSingleShot(true);
-    connect(previewTimer,SIGNAL(timeout()),this,SLOT(slotFilePreview()));
+    d->previewTimer = new QTimer(this);
+    d->previewTimer->setInterval(0);
+    d->previewTimer->setSingleShot(true);
+    connect(d->previewTimer,SIGNAL(timeout()),this,SLOT(slotFilePreview()));
 
     QVBoxLayout * v = new QVBoxLayout(pageWithPreview);
     v->setContentsMargins(0, 0, 0, 0);
@@ -76,11 +100,11 @@ QueryPage::QueryPage(QWidget *parent)
     stackedWidget->setCurrentIndex(0);
 
 //	planModel=NULL;
-	curHistoryPos=0;
-	isDefLoaded=false;
+    d->curHistoryPos=0;
+    d->isDefLoaded=false;
 	//isInteractive=false;
-	linkField="Id";
-    queryView->setModel(qryFilterModel);
+    d->linkField="Id";
+    queryView->setModel(d->qryFilterModel);
 
     projectTabWidget->hide();
     /* to plugin
@@ -118,10 +142,12 @@ QueryPage::QueryPage(QWidget *parent)
     tabBar->setCurrentIndex(0);
     subViewWidget->hide();
     splitter->setChildrenCollapsible(true);
+
 }
 
 QueryPage::~QueryPage()
 {
+    delete d;
 //    QSettings *settings = ttglobal()->settings();
 //    settings->setValue(Settings_ScrPlanView,planTreeView->header()->saveState());
 }
@@ -178,6 +204,18 @@ void QueryPage::initWidgets()
     webView_2->page()->setForwardUnsupportedContent(true);
     webView_2->page()->mainFrame()->setUrl(QUrl("about:blank"));
     ttglobal()->queryViewOpened(this,queryView);
+
+    QAction *copyAction = webView_2->pageAction(QWebPage::Copy);
+#ifdef Q_WS_WIN
+    copyAction->setShortcuts(QList<QKeySequence>()
+                             << QKeySequence("Ctrl+Insert")
+                             << QKeySequence("Ctrl+C")
+                             );
+#else
+    copyAction->setShortcut(QKeySequence::Copy);
+#endif
+    webView_2->addAction(copyAction);
+    initPopupMenu();
 }
 
 void QueryPage::addDetailTab(QWidget *tab, const QString &title, const QIcon &icon)
@@ -189,6 +227,11 @@ void QueryPage::addDetailTab(QWidget *tab, const QString &title, const QIcon &ic
 bool QueryPage::hasMarked()
 {
     return !markedRecords().isEmpty();
+}
+
+TQAbstractProject *QueryPage::project() const
+{
+    return d->modelProject;
 }
 
 void QueryPage::closeTab(int index)
@@ -226,21 +269,27 @@ void QueryPage::setQueryById(const QString& numbers, TrkDb *trkdb)
 
 void QueryPage::setQueryModel(TQAbstractProject *prj, TQRecModel *model)
 {
-    if(tmodel)
+    TQAbstractProject *oldPrj = d->modelProject;
+    if(d->tmodel)
     {
-        if(((QObject*)tmodel)->parent() == this)
-            tmodel->deleteLater();
-        tmodel->disconnect(this);
-        tmodel = 0;
+        if(((QObject*)d->tmodel)->parent() == this)
+            d->tmodel->deleteLater();
+        d->tmodel->disconnect(this);
+        d->tmodel = 0;
     }
-	tmodel = model;
-    modelProject = prj;
-    if(!tmodel->isSystemModel())
-        tmodel->setParent(this);
-    proxy->setSourceModel(tmodel);
+    d->tmodel = model;
+    d->modelProject = prj;
+    d->xqFile = "data/scr.xq";
+    if(prj)
+    {
+        TQScopeSettings sets(d->modelProject->projectSettings());
+        d->xqFile = sets->value("ListTemplate", d->xqFile).toString();
+    }
+    if(!d->tmodel->isSystemModel())
+        d->tmodel->setParent(this);
+    d->proxy->setSourceModel(d->tmodel);
 //    qryFilterModel->setSourceModel(tmodel);
-    if(!isDefLoaded)
-        loadDefinition();
+    loadDefinition();
 #ifdef DECORATOR
     fieldEdits.clear();
     decorator->fillEditPanels(this->tabPanels, tmodel->typeDef(),fieldEdits);
@@ -248,9 +297,9 @@ void QueryPage::setQueryModel(TQAbstractProject *prj, TQRecModel *model)
     filterFieldComboBox->clear();
     filterFieldComboBox->addItem(tr("Любое поле"),-1);
     QMap<QString, int> headers;
-    for(int col=0; col<tmodel->columnCount(); col++)
+    for(int col=0; col<d->tmodel->columnCount(); col++)
     {
-        headers.insert(tmodel->headerData(col, Qt::Horizontal).toString(),col);
+        headers.insert(d->tmodel->headerData(col, Qt::Horizontal).toString(),col);
     }
     QMapIterator<QString, int> hi(headers);
     while (hi.hasNext()) {
@@ -379,13 +428,13 @@ void QueryPage::selectionChanged(const QItemSelection & /* selected */, const QI
 	proxyModel.setFilterSCR(keys.join(","));
 	planTreeView->expandAll();
     */
-    detailsTimer->start(250);
+    d->detailsTimer->start(250);
     emit selectionRecordsChanged();
 }
 
 void QueryPage::currentChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight)
 {
-    detailsTimer->start(100);
+//    d->detailsTimer->start(100);
     emit selectionRecordsChanged();
 }
 
@@ -468,8 +517,8 @@ void QueryPage::resetPlanFilter()
 
 int QueryPage::getColNum(const QString &colname)
 {
-	for(int i=0; i<tmodel->columnCount(); i++)
-		if(!colname.compare(tmodel->headerData(i,Qt::Horizontal).toString(),
+    for(int i=0; i<d->tmodel->columnCount(); i++)
+        if(!colname.compare(d->tmodel->headerData(i,Qt::Horizontal).toString(),
 			Qt::CaseInsensitive))
 			return i;
 	return -1;
@@ -477,10 +526,11 @@ int QueryPage::getColNum(const QString &colname)
 
 void QueryPage::headerChanged()
 {
-	if(isInteractive)
+    if(d->isInteractive)
     {
-        QSettings *settings = ttglobal()->settings();
-        settings->setValue(Settings_Grid, queryView->horizontalHeader()->saveState());
+        decorator->saveState(this);
+//        QSettings *settings = ttglobal()->settings();
+//        settings->setValue(Settings_Grid, queryView->horizontalHeader()->saveState());
     }
 }
 
@@ -588,8 +638,7 @@ QString QueryPage::makeRecordPage(const QModelIndex &qryIndex, const QString& xq
 	
 }
 
-/*
-QString QueryPage::makeRecordsPage(const QModelIndexList &records, const QString& xqCodeFile)
+/*QString QueryPage::makeRecordsPage(const QModelIndexList &records, const QString& xqCodeFile)
 {
     QDomDocument xml("scr");
     QDomElement root=xml.createElement("scrs");
@@ -684,7 +733,7 @@ QString QueryPage::makeRecordsPage(const QObjectList &records, const QString &xq
 void QueryPage::drawNotes(const QModelIndex &qryIndex)
 {
     QString base = qApp->applicationDirPath()+"/data/";
-    QString page = makeRecordPage(qryIndex,"data/scr.xq");
+    QString page = makeRecordPage(qryIndex, d->xqFile);
 #ifdef QT_DEBUG
     QFile testRes("!testResult.html");
     testRes.open(QIODevice::WriteOnly | QIODevice::Text);
@@ -762,7 +811,50 @@ void QueryPage::sendEmail(const QObjectList &records)
        .HTMLBody = "<HTML><H2>The body of this message will appear in HTML.</H2><BODY>Type the message text here. </BODY></HTML>"
        .Display
     End With
-	*/
+    */
+}
+
+
+void QueryPage::sendEmail3(const QObjectList &records)
+{
+    if(!records.count())
+        return;
+    QString json = "[";
+    int index=0;
+    foreach(QObject *obj, records)
+    {
+        TQRecord *rec = qobject_cast<TQRecord *>(obj);
+        if(index++)
+            json += ", ";
+        json += rec->toJSON();
+    }
+    json += "]";
+
+    QAxScriptManager *man = ttglobal()->newAxScriptManager();
+    QAxScript * script = man->load("C:/gits/traquera/client/data/email3.js","email");
+//    QStringList funcs = script->functions();
+//    script->call("test", QList<QVariant>());
+    delete man;
+}
+
+void QueryPage::sendEmail2(const QObjectList &records)
+{
+    if(!records.count())
+        return;
+    QScopedPointer<QScriptEngine>engine(ttglobal()->newScriptEngine());
+    QScriptEngineDebugger debugger;
+    debugger.attachTo(engine.data());
+    QString fileName("data/email.js");
+//    QString fileName(":/js/email.js");
+    QFile js(fileName);
+    js.open(QFile::ReadOnly);
+    QByteArray buf = js.readAll();
+    QString script = QString::fromUtf8(buf.constData());
+    QScriptValue recs = engine->toScriptValue(records);
+    engine->globalObject().setProperty("records", recs);
+    QScriptValue qObj = engine->newQObject(this);
+    engine->globalObject().setProperty("query", qObj);
+    engine->evaluate(script,fileName);
 }
 
 /* to plugin
@@ -852,7 +944,7 @@ void QueryPage::showScrFromTasks()
 
 void QueryPage::loadDefinition()
 {
-    decorator->loadViewDef(queryView);
+    decorator->loadViewDef(this);
 	/*
 	QXmlSimpleReader xmlReader;
 	QFile *file = new QFile("data/tracker.xml");
@@ -984,8 +1076,7 @@ void QueryPage::loadDefinition()
 	delete source;
 	delete file;
 	*/
-    initPopupMenu();
-    isDefLoaded = true;
+    d->isDefLoaded = true;
 }
 
 void QueryPage::recordOpen(const QModelIndex & index)
@@ -1008,7 +1099,7 @@ void QueryPage::recordOpen(const QModelIndex & index)
 
 void QueryPage::openQuery(TQAbstractProject *prj, const QString &queryName, int recType)
 {
-    itIsFolder = false;
+    d->itIsFolder = false;
     TQRecModel *newmodel = prj->openQueryModel(queryName, recType);
 	if(!newmodel)
 		return;
@@ -1031,7 +1122,7 @@ void QueryPage::openQuery(TQAbstractProject *prj, const QString &queryName, int 
 
 void QueryPage::openIds(TQAbstractProject *prj, const QString &ids, const QString &title, int recType)
 {
-    itIsFolder = false;
+    d->itIsFolder = false;
     QList<int> idlist = toIntList(ids);
     TQRecModel *newmodel = qobject_cast<TQRecModel *>(prj->openIdsModel(idlist, recType));
 	if(!newmodel)
@@ -1064,7 +1155,7 @@ void QueryPage::openIds(TQAbstractProject *prj, const QString &ids, const QStrin
 
 void QueryPage::openIds(TQAbstractProject *prj, const QList<int> &idlist, const QString &title, int recType)
 {
-    itIsFolder = false;
+    d->itIsFolder = false;
     TQRecModel *newmodel = qobject_cast<TQRecModel *>(prj->openIdsModel(idlist, recType));
     if(!newmodel)
         return;
@@ -1093,8 +1184,8 @@ void QueryPage::openModel(TQAbstractProject *prj, QAbstractItemModel *newModel)
 void QueryPage::openFolder(TQAbstractProject *prj, const TTFolder &afolder, int recType)
 {
     QList<int> idlist = afolder.folderContent();
-    itIsFolder = true;
-    folder = afolder;
+    d->itIsFolder = true;
+    d->folder = afolder;
     TQRecModel *newmodel = qobject_cast<TQRecModel *>(prj->openIdsModel(idlist, recType, false));
     if(!newmodel)
         return;
@@ -1118,9 +1209,9 @@ void QueryPage::openQuery(const QString &projectName, const QString &queryName, 
 void QueryPage::openHistoryItem(int pos)
 {
 
-    if(pos<0 || pos>=history.rowCount())
+    if(pos<0 || pos>=d->history.rowCount())
 		return;
-    const TQHistoryItem &item = history[pos];
+    const TQHistoryItem &item = d->history[pos];
 	if(item.isQuery)
 	{
         TQAbstractProject *prj = TQAbstractDB::getProject(item.projectName);
@@ -1133,7 +1224,7 @@ void QueryPage::openHistoryItem(int pos)
         appendIds(stringToIntList(item.addedIds));
         removeIds(stringToIntList(item.removedIds));
         emit changedQuery(item.projectName, item.queryName);
-        curHistoryPos = pos;
+        d->curHistoryPos = pos;
 	}
 	else
 	{
@@ -1147,18 +1238,18 @@ void QueryPage::openHistoryItem(int pos)
         appendIds(stringToIntList(item.addedIds));
         removeIds(stringToIntList(item.removedIds));
         emit changedQuery(item.projectName, item.queryName);
-        curHistoryPos = pos;
+        d->curHistoryPos = pos;
 	}
 }
 
 void QueryPage::goBack()
 {
-	openHistoryItem(curHistoryPos-1);
+    openHistoryItem(d->curHistoryPos-1);
 }
 
 void QueryPage::goForward()
 {
-	openHistoryItem(curHistoryPos+1);
+    openHistoryItem(d->curHistoryPos+1);
 }
 
 void QueryPage::printPreview()
@@ -1206,9 +1297,9 @@ TQRecord *QueryPage::recordOnIndex(const QModelIndex &index)
 
 const TQAbstractRecordTypeDef *QueryPage::recordTypeDef()
 {
-    if(!tmodel)
+    if(!d->tmodel)
         return 0;
-    return tmodel->typeDef();
+    return d->tmodel->typeDef();
 }
 
 void QueryPage::setRecordsChecked(const QString &ids, bool flag)
@@ -1280,7 +1371,7 @@ QObjectList QueryPage::markedRecords()
 
 TQAbstractProject *QueryPage::currentProject()
 {
-    return modelProject;
+    return d->modelProject;
 }
 
 TQRecord *QueryPage::currentRecord()
@@ -1303,7 +1394,7 @@ TQRecord *QueryPage::currentRecord()
 void QueryPage::on_actionAdd_Note_triggered()
 {
     NoteDialog *nd=new NoteDialog();
-    const TQAbstractRecordTypeDef *def = tmodel->typeDef();
+    const TQAbstractRecordTypeDef *def = d->tmodel->typeDef();
     nd->titleEdit->addItems(def->noteTitleList());
 //    nd->titleEdit->addItems(((const TQAbstractRecordTypeDef*)tmodel->typeDef())->project()->noteTitleList());
     QSettings *settings = ttglobal()->settings();
@@ -1350,13 +1441,13 @@ void QueryPage::newFilterString()
 
 void QueryPage::newFilterString(const QString &text)
 {
-    if(text == filterString)
+    if(text == d->filterString)
         return;
-    filterString = text;
+    d->filterString = text;
     if(text.isEmpty())
     {
         //actionFilter->setChecked(false);
-        qryFilterModel->setFilterFixedString("");
+        d->qryFilterModel->setFilterFixedString("");
         if(filterButton->isChecked())
             filterButton->setChecked(false);
         return;
@@ -1369,20 +1460,25 @@ void QueryPage::newFilterString(const QString &text)
     if(!filterButton->isChecked())
         filterButton->setChecked(true);
     if(text.contains(','))
-        qryFilterModel->setFilterRegExp(stringToRegExp(text));
+        d->qryFilterModel->setFilterRegExp(stringToRegExp(text));
     else
-        qryFilterModel->setFilterFixedString(text);
+        d->qryFilterModel->setFilterFixedString(text);
+}
+
+void QueryPage::appendId(int id)
+{
+    appendIds(QList<int>() << id);
 }
 
 void QueryPage::appendIds(const QList<int> &ids)
 {
-    tmodel->appendRecordIds(ids);
+    d->tmodel->appendRecordIds(ids);
     updateHistoryPoint();
 }
 
 void QueryPage::removeIds(const QList<int> &ids)
 {
-    tmodel->removeRecordIds(ids);
+    d->tmodel->removeRecordIds(ids);
     updateHistoryPoint();
 }
 
@@ -1398,22 +1494,22 @@ void QueryPage::removeIds(const QList<int> &ids)
 
 void QueryPage::setIdChecked(int id, bool checked)
 {
-    int row = tmodel->rowOfRecordId(id);
+    int row = d->tmodel->rowOfRecordId(id);
     Qt::CheckState state = checked ? Qt::Checked : Qt::Unchecked;
-    tmodel->setData(tmodel->index(row,tmodel->idColumn()), state, Qt::CheckStateRole);
+    d->tmodel->setData(d->tmodel->index(row,d->tmodel->idColumn()), state, Qt::CheckStateRole);
 }
 
 void QueryPage::refreshQuery()
 {
-    if(tmodel)
+    if(d->tmodel)
     {
-        tmodel->refreshQuery();
+        d->tmodel->refreshQuery();
     }
 }
 
 void QueryPage::openRecordId(int id)
 {
-    TQRecord *rec = tmodel->project()->createRecordById(id,tmodel->project()->defaultRecType());
+    TQRecord *rec = d->tmodel->project()->createRecordById(id,d->tmodel->project()->defaultRecType());
     if(rec)
     {
         TTRecordWindow *win = new TTRecordWindow();
@@ -1468,15 +1564,16 @@ void QueryPage::on_actionFilter_toggled(bool arg1)
 void QueryPage::on_filterFieldComboBox_currentIndexChanged(int index)
 {
     if(index == 0 || index == -1)
-        qryFilterModel->setFilterKeyColumn(-1);
+        d->qryFilterModel->setFilterKeyColumn(-1);
     else
-        qryFilterModel->setFilterKeyColumn(filterFieldComboBox->itemData(index).toInt());
+        d->qryFilterModel->setFilterKeyColumn(filterFieldComboBox->itemData(index).toInt());
 }
 
 
 void QueryPage::updateDetails()
 {
     //int linkCol=getColNum(linkField);
+    d->detailsTimer->stop();
     QStringList keys;
     QObjectList selected = selectedRecords();
     foreach(QObject *obj, selected)
@@ -1495,7 +1592,7 @@ void QueryPage::updateDetails()
     QModelIndex qryIndex = mapIndexToModel(queryView->currentIndex());
     if(!qryIndex.isValid())
         return;
-    TQRecord *record = tmodel->at(qryIndex.row());
+    TQRecord *record = d->tmodel->at(qryIndex.row());
     const TQAbstractRecordTypeDef *def = record->typeDef();
 #ifdef DECORATOR
     decorator->readValues(record, fieldEdits);
@@ -1709,7 +1806,7 @@ void QueryPage::on_queryView_customContextMenuRequested(const QPoint &pos)
     }
     menu.addSeparator();
     menu.addAction(actionDeleteFromList);
-    if(itIsFolder)
+    if(d->itIsFolder)
     {
         menu.addSeparator();
         menu.addAction(actionDeleteFromFolder);
@@ -1723,7 +1820,7 @@ void QueryPage::on_queryView_customContextMenuRequested(const QPoint &pos)
 
 void QueryPage::on_actionDeleteFromFolder_triggered()
 {
-    if(!itIsFolder)
+    if(!d->itIsFolder)
         return;
     QList<int> ids;
     foreach(QObject *obj, selectedRecords())
@@ -1734,12 +1831,12 @@ void QueryPage::on_actionDeleteFromFolder_triggered()
     }
     removeIds(ids);
     foreach(int id, ids)
-        folder.deleteRecordId(id);
+        d->folder.deleteRecordId(id);
 }
 
 void QueryPage::slotFilesTable_doubleClicked(const QModelIndex &index)
 {
-    previewTimer->stop();
+    d->previewTimer->stop();
     TQRecord *rec = recordOnIndex(queryView->currentIndex());
     if(!rec || !index.isValid())
         return;
@@ -1767,7 +1864,7 @@ void QueryPage::slotFilesTable_doubleClicked(const QModelIndex &index)
 
 void QueryPage::slotFilesTable_pressed(const QModelIndex &index)
 {
-    previewTimer->start(100);
+    d->previewTimer->start(100);
 }
 
 void QueryPage::slotFilePreview()
@@ -1851,39 +1948,39 @@ void QueryPage::slotCheckNoPlannedIds()
 void QueryPage::addHistoryPoint()
 {
     TQHistoryItem item;
-    item.projectName = modelProject->projectName();
-    if(tmodel)
+    item.projectName = d->modelProject->projectName();
+    if(d->tmodel)
     {
-        item.isQuery = tmodel->isQuery();
-        item.queryName = tmodel->queryName();
-        item.rectype = tmodel->recordType();
-        item.foundIds = intListToString(tmodel->getIdList());
-        item.addedIds = intListToString(tmodel->addedIdList());
-        item.removedIds = intListToString(tmodel->deletedIdList());
+        item.isQuery = d->tmodel->isQuery();
+        item.queryName = d->tmodel->queryName();
+        item.rectype = d->tmodel->recordType();
+        item.foundIds = intListToString(d->tmodel->getIdList());
+        item.addedIds = intListToString(d->tmodel->addedIdList());
+        item.removedIds = intListToString(d->tmodel->deletedIdList());
     }
-    history.append(item);
-    curHistoryPos = history.rowCount()-1;
+    d->history.append(item);
+    d->curHistoryPos = d->history.rowCount()-1;
 }
 
 void QueryPage::updateHistoryPoint()
 {
-    if(!history.rowCount())
+    if(!d->history.rowCount())
         addHistoryPoint();
     else
     {
-        int r = history.rowCount()-1;
-        TQHistoryItem item = history.at(r);
-        item.projectName = modelProject->projectName();
-        if(tmodel)
+        int r = d->history.rowCount()-1;
+        TQHistoryItem item = d->history.at(r);
+        item.projectName = d->modelProject->projectName();
+        if(d->tmodel)
         {
 //            item.isQuery = tmodel->isQuery();
 //            item.queryName = tmodel->queryName();
 //            item.rectype = tmodel->recordType();
 //            item.foundIds = intListToString(tmodel->getIdList());
-            item.addedIds = intListToString(tmodel->addedIdList());
-            item.removedIds = intListToString(tmodel->deletedIdList());
+            item.addedIds = intListToString(d->tmodel->addedIdList());
+            item.removedIds = intListToString(d->tmodel->deletedIdList());
         }
-        history.removeRow(r);
-        history.append(item);
+        d->history.removeRow(r);
+        d->history.append(item);
     }
 }

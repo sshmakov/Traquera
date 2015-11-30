@@ -7,13 +7,13 @@ TEMPLATE = subdirs
 # Directories
 SUBDIRS += \
     tqplugapi \
+    tqcondapi \
     tracker \
     msplans   \
     tqservice  \
     jira \
     client \
     trindex \
-    tqcondapi
 
 msplans.depends = client
 client.depends = tqplugapi

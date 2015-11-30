@@ -407,3 +407,9 @@ void TQConnectWidget::on_btnProjects_clicked()
 //    connect(menu,SIGNAL(aboutToHide()),this,SLOT(deleteTheObject()));
     menu->exec(QCursor::pos());
 }
+
+void TQConnectWidget::on_trustedUserBox_toggled(bool checked)
+{
+    ui->sqlUserEdit->setEnabled(!checked);
+    ui->sqlPassEdit->setEnabled(!checked);
+}

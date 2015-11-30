@@ -9,9 +9,12 @@ int main(int argc, char *argv[])
 {
     //Q_INIT_RESOURCE(masterdetail);
 
+//    QCoreApplication::addLibraryPath("C:/gits/build/traquera-main-Desktop-Debug/plugins/tracker");
     QApplication app(argc, argv);
 	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("windows-1251"));
 	QTextCodec::setCodecForTr(QTextCodec::codecForName("windows-1251"));
+    app.setApplicationName(PRODUCT_NAME);
+    app.setOrganizationName(COMPANY_NAME);
 
 	QString locale = QLocale::system().name();
 	QStringList args = app.arguments();

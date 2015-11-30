@@ -72,7 +72,7 @@ public:
     void readScrSetNewRec(PrjItemModel *plan, int row);
     void setFieldHeaders(QHeaderView *header);
 protected:
-	void loadDefinition(const QString &fileName);
+    bool loadDefinition(const QString &fileName);
 protected slots:
     void planChanged();
     void planRowsInserted(const QModelIndex & parent, int start, int end );

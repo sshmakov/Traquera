@@ -6,7 +6,7 @@
 #include <QtWebKit>
 #include <tqjson.h>
 
-TQProjectTreeItem::TQProjectTreeItem(TQProjectTree *projectTree)
+TQProjectTreeItem::TQProjectTreeItem(TQOneProjectTree *projectTree)
     //: data.tree(projectTree), data.dbClass(), data.connectString(), data.projectName(), data.prj(0), data.db(0)
 {
     data.tree = projectTree;
@@ -25,7 +25,7 @@ bool TQProjectTreeItem::isOpened() const
     return (data.prj && data.prj->isOpened());
 }
 
-bool TQProjectTreeItem::open()
+bool TQProjectTreeItem::open(const QString &connString)
 {
     if(isOpened())
         return true;
@@ -34,25 +34,10 @@ bool TQProjectTreeItem::open()
         delete data.prj;
         data.prj = 0;
     }
-    TQJson parser;
-    QVariantMap map = parser.toVariant(data.connectString).toMap();
-    foreach(QString key, map.keys())
-    {
-        data.params.insert(key, map.value(key).toString());
-    }
-
-//    QStringList values = data.connectString.split(";");
-//    foreach(QString v, values)
-//    {
-//        int p = v.indexOf("=");
-
-//        QString par = v.left(p);
-//        QString val = v.mid(p+1);
-//        data.params.insert(par,val);
-//    }
-    QString sRecType = data.params.value("RecordType");
-    bool okRecType;
-    data.recType = sRecType.toInt(&okRecType);
+    QString cs = connString;
+    if(cs.isEmpty())
+        cs = data.connectString;
+    updateParams(cs);
     if(!data.db)
         data.db = TQAbstractDB::createDbClass(data.dbClass, data.tree);
     if(!data.db)
@@ -62,6 +47,22 @@ bool TQProjectTreeItem::open()
                        data.tree,
                        SLOT(onProjectAuthenticationRequired(TQAbstractDB*,QString,QAuthenticator*)),
                        Qt::DirectConnection);
+    data.prj = data.db->openConnection(cs);
+    if(!data.prj || !data.prj->isOpened())
+    {
+        if(data.prj)
+        {
+            delete data.prj;
+            data.prj = 0;
+        }
+        delete data.db;
+        data.db = 0;
+        return false;
+    }
+    if(data.recType < 0)
+        data.recType = data.prj->defaultRecType();
+    return true;
+    /*
     QString dbType = data.params.value("DBType");
     if(!dbType.isEmpty())
         data.db->setDbmsType(dbType);
@@ -81,32 +82,70 @@ bool TQProjectTreeItem::open()
         data.prj = 0;
         return false;
     }
-    if(!okRecType)
+    if(!data.params.contains("RecordType"))
         data.recType = data.prj->defaultRecType();
     return true;
+    */
+}
+
+void TQProjectTreeItem::setConnectString(const QString &string)
+{
+    data.connectString = string;
+    updateParams(string);
+}
+
+void TQProjectTreeItem::updateParams(const QString &string)
+{
+    TQJson parser;
+    QVariantMap map = parser.toVariant(string).toMap();
+    foreach(QString key, map.keys())
+    {
+        data.params.insert(key, map.value(key).toString());
+    }
+    data.dbClass = data.params.value("DBClass");
+    data.projectName = data.params.value("Project");
+    QString sRecType = data.params.value("RecordType");
+    bool okRecType;
+    data.recType = sRecType.toInt(&okRecType);
+    if(!okRecType)
+        data.recType = -1;
 }
 
 // ================== TQProjectTree ===================
-TQProjectTree::TQProjectTree(QObject *parent)
+TQOneProjectTree::TQOneProjectTree(QObject *parent)
     : UnionModel(parent), info(this)
 {
 }
 
+/*
 void TQProjectTree::setProject(TQAbstractProject *prj, int recordType)
 {
     info.data.prj = prj;
 //    info.db = prj->db;
     info.data.recType = recordType;
 }
+*/
 
+void TQOneProjectTree::setConnectString(const QString &connectString)
+{
+    info.setConnectString(connectString);
+}
+
+QString TQOneProjectTree::connectString() const
+{
+    return info.data.connectString;
+}
+
+/*
 void TQProjectTree::setProject(const QString &dbClass, const QString &projectName, const QString &connectString)
 {
     info.data.dbClass = dbClass;
     info.data.projectName = projectName;
     info.data.connectString = connectString;
 }
+*/
 
-void TQProjectTree::setItem(const TQProjectTreeItem &item)
+void TQOneProjectTree::setItem(const TQProjectTreeItem &item)
 {
     beginResetModel();
     if(info.data.prj)
@@ -116,47 +155,66 @@ void TQProjectTree::setItem(const TQProjectTreeItem &item)
     endResetModel();
 }
 
+const TQProjectTreeItem &TQOneProjectTree::item() const
+{
+    return info;
+}
 
-TQAbstractProject *TQProjectTree::project() const
+
+TQAbstractProject *TQOneProjectTree::project() const
 {
     return info.data.prj;
 }
 
-int TQProjectTree::recordType() const
+QString TQOneProjectTree::projectTitle() const
+{
+    return info.data.projectName;
+}
+
+int TQOneProjectTree::recordType() const
 {
     return info.data.recType;
 }
 
-bool TQProjectTree::isOpened() const
+bool TQOneProjectTree::isOpened() const
 {
     return info.isOpened();
 }
 
-bool TQProjectTree::open()
+bool TQOneProjectTree::isAutoOpen() const
 {
-    if(!info.open())
+    QString s = info.data.params.value("AutoLogin","false");
+    return QString::compare(s,"true",Qt::CaseInsensitive) == 0;
+}
+
+bool TQOneProjectTree::open(const QString &connectString)
+{
+    if(!info.open(connectString))
         return false;
+    emit projectOpened();
+    beginResetModel();
     folders = new TTFolderModel(this);
     QSqlDatabase db = ttglobal()->userDatabase();
-    folders->setDatabaseTable(db,"folders",info.data.prj->projectName());
+    folders->setDatabaseTable(db,"folders",project()->projectName());
     appendSourceModel(folders,tr("Личные папки"));
 
 
     userModel = new TrkQryFilter(this);
-    userModel->setSourceQueryModel(info.data.prj->queryModel(info.data.recType),TrkQryFilter::UserOnly);
+    userModel->setSourceQueryModel(project()->queryModel(recordType()),TrkQryFilter::UserOnly);
     appendSourceModel(userModel,tr("Личные выборки"));
     int rows = userModel->rowCount();
 
     publicModel = new TrkQryFilter(this);
-    publicModel->setSourceQueryModel(info.data.prj->queryModel(info.data.recType),TrkQryFilter::PublicOnly);
+    publicModel->setSourceQueryModel(project()->queryModel(recordType()),TrkQryFilter::PublicOnly);
     appendSourceModel(publicModel,tr("Общие выборки"));
     rows = publicModel->rowCount();
-    setMaxColCount(1);
+    setMaxColCount(1);    
+    endResetModel();
 
     return true;
 }
 
-void TQProjectTree::close()
+void TQOneProjectTree::close()
 {
     if(!isOpened())
         return;
@@ -186,9 +244,10 @@ void TQProjectTree::close()
         info.data.prj = 0;
     }
     endResetModel();
+    emit projectClosed();
 }
 
-void TQProjectTree::onProjectAuthenticationRequired(TQAbstractDB *db, const QString &projectName, QAuthenticator *authenticator)
+void TQOneProjectTree::onProjectAuthenticationRequired(TQAbstractDB *db, const QString &projectName, QAuthenticator *authenticator)
 {
     TQLoginDlg dlg;
     dlg.setAuthenticator(authenticator);
@@ -196,4 +255,86 @@ void TQProjectTree::onProjectAuthenticationRequired(TQAbstractDB *db, const QStr
         dlg.assignToAuthenticator(authenticator);
 }
 
+// ================ TQProjectsTree ====================
+TQProjectsTree::TQProjectsTree(QObject *parent)
+    : UnionModel(parent), selModel(0)
+{
+}
+
+int TQProjectsTree::appendProject(TQOneProjectTree *prjTree)
+{
+    return appendSourceModel(prjTree, prjTree->projectTitle()).row();
+}
+
+void TQProjectsTree::removeProject(TQOneProjectTree *prjTree)
+{
+    removeSourceModel(prjTree);
+    if(prjTree == selModel)
+        selModel = 0;
+}
+
+void TQProjectsTree::setSelectedModel(QAbstractItemModel *model)
+{
+    selModel = model;
+    UnionModel::setSelectedModel(model);
+}
+
+QVariant TQProjectsTree::data(const QModelIndex &proxyIndex, int role) const
+{
+    if(role == Qt::DisplayRole)
+        return UnionModel::data(proxyIndex, role);
+    QModelIndex pp = proxyIndex.parent();
+    if(pp.isValid())
+        return UnionModel::data(proxyIndex, role);
+    TQOneProjectTree *prjTree = qobject_cast<TQOneProjectTree *>(sourceModel(proxyIndex));
+    if(!prjTree)
+        return QVariant();
+    if(role == Qt::FontRole)
+    {
+        if(prjTree == selModel)
+        {
+            QFont boldFont;
+            boldFont.setBold(true);
+            return boldFont;
+        }
+        return QFont();
+    }
+    if(role == Qt::ForegroundRole)
+    {
+        if(!prjTree->isOpened())
+        {
+            QBrush gr;
+            gr.setColor(Qt::gray);
+            return gr;
+        }
+        return QVariant();
+    }
+    return QVariant();
+
+    /*
+    if(!proxyIndex.isValid())
+        return QVariant();
+    int id = proxyIndex.internalId();
+    if(!info.contains(id))
+        return QVariant();
+    const MapInfo &m = info[id];
+    if(m.parentId<0)
+    {
+        if(proxyIndex.column()==0 && proxyIndex.row()<titles.count())
+        {
+            switch(role)
+            {
+            case Qt::FontRole:
+                QFont boldFont;
+                if(m.model == selModel)
+                    boldFont.setBold(true);
+                return boldFont;
+            }
+        }
+        return QVariant();
+    }
+    QModelIndex si = mapToSource(proxyIndex);
+    return si.data(role);
+    */
+}
 
