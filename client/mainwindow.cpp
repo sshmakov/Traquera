@@ -2229,7 +2229,7 @@ void MainWindow::on_actionRename_Item_triggered()
                                                 selectedTreeItem.queryName);
         if(!newName.isEmpty() && newName != selectedTreeItem.queryName)
         {
-            selectedTreeItem.prj->renameQuery(selectedTreeItem.queryName, newName);
+            selectedTreeItem.prj->renameQuery(selectedTreeItem.queryName, newName, selectedTreeItem.recordType);
             selectedTreeItem.prj->refreshModel(selectedTreeItem.qryModel->sourceModel());
         }
     }
@@ -2248,7 +2248,7 @@ void MainWindow::on_actionDeleteQuery_triggered()
     readSelectedTreeItem();
     if(selectedTreeItem.isQuerySelected)
     {
-        selectedTreeItem.prj->deleteQuery(selectedTreeItem.queryName);
+        selectedTreeItem.prj->deleteQuery(selectedTreeItem.queryName, selectedTreeItem.recordType);
         selectedTreeItem.prj->refreshModel(selectedTreeItem.qryModel->sourceModel());
     }
 }

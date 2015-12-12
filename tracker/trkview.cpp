@@ -643,14 +643,14 @@ void TrkToolProject::close()
     recordDef.clear();
 	opened = false;
     db->openedProjects.remove(name);
-    foreach(QStringList *list, qList)
-        delete list;
+//    foreach(QStringList *list, qList)
+//        delete list;
 }
 
-const QStringList &TrkToolProject::queryList(TRK_RECORD_TYPE type) const
+QStringList TrkToolProject::queryList(TRK_RECORD_TYPE type) const
 {
-	const QStringList *list = qList[type];
-	return *list;
+    const QStringList list = qList[type];
+    return list;
 }
 
 bool TrkToolProject::readQueryList()
@@ -663,9 +663,9 @@ bool TrkToolProject::readQueryList()
     while(TRK_SUCCESS == TrkGetNextQueryName(handle, 256, buf, &recType))
 	{
 		QString name(buf);
-		if(!qList[recType])
-            qList[recType] = new QStringList();
-		qList[recType]->append(name);
+        if(!qList.contains(recType))
+            qList.insert(recType, QStringList());
+        qList[recType].append(name);
 	}
     initQueryModel();
     return rc;
@@ -673,7 +673,7 @@ bool TrkToolProject::readQueryList()
 
 bool TrkToolProject::refreshQueryList()
 {
-    QHash<TRK_RECORD_TYPE, QStringList*> newQList; //QueryList
+    QHash<TRK_RECORD_TYPE, QStringList> newQList; //QueryList
     TRK_UINT res = TRK_SCR_TYPE;
     unsigned long r = TrkProjectRefresh(handle, res);
     bool rc = isTrkOK(TrkInitQueryNameList(handle));
@@ -685,22 +685,17 @@ bool TrkToolProject::refreshQueryList()
     {
         QString name(buf);
         TrkGetQueryRecordType(handle, buf, &recType);
-        if(!newQList[recType])
-            newQList[recType] = new QStringList();
-        newQList[recType]->append(name);
+        if(!newQList.contains(recType))
+            newQList[recType] = QStringList();
+        newQList[recType].append(name);
         recType=0;
     }
     foreach(recType, newQList.keys())
     {
-        QStringList *nlist = newQList[recType];
-        QStringList *olist = qList.value(recType, 0);
-        if(!olist)
-        {
-            olist = new QStringList();
-            qList.insert(recType, olist);
-        }
-        QSet<QString> nSet = nlist->toSet();
-        QSet<QString> oSet = olist->toSet();
+        QStringList &nlist = newQList[recType];
+        QStringList &olist = qList[recType];
+        QSet<QString> nSet = nlist.toSet();
+        QSet<QString> oSet = olist.toSet();
         QSet<QString> added = nSet - oSet;
         QSet<QString> removed = oSet - nSet;
 
@@ -944,7 +939,7 @@ void TrkToolProject::initQueryModel(int type)
     //theQueryModel.headers << tr("Query Name");
 	if(!qList.isEmpty() && qList.contains(type))
      {
-        foreach(const QString &qryName, *qList[type])
+        foreach(const QString &qryName, qList[type])
         {
             TRK_UINT res=0;
 
@@ -961,12 +956,6 @@ void TrkToolProject::initQueryModel(int type)
         }
     }
 }
-
-bool TrkToolProject::deleteQuery(const QString &queryName)
-{
-    return isTrkOK(TrkDeleteQuery(handle, queryName.toLocal8Bit().constData()));
-}
-
 
 bool displayLessThan(const TQChoiceItem &c1, const TQChoiceItem &c2)
 {
@@ -1376,10 +1365,28 @@ TQGroupList TrkToolProject::userGroups()
     return groups;
 }
 
-bool TrkToolProject::renameQuery(const QString &oldName, const QString &newName)
+bool TrkToolProject::renameQuery(const QString &oldName, const QString &newName, int recordType)
 {
+    foreach(const QStringList list, qList)
+    {
+        if(list.contains(newName, Qt::CaseInsensitive))
+            return false;
+    }
+    TQQueryDef *def = queryDefinition(oldName, recordType);
+    if(def && saveQueryDefinition(def,newName,recordType))
+    {
+        deleteQuery(oldName, recordType);
+        return true;
+    }
     return false;
 }
+
+bool TrkToolProject::deleteQuery(const QString &queryName, int recordType)
+{
+    return isTrkOK(TrkDeleteQuery(handle, queryName.toLocal8Bit().constData()));
+}
+
+
 
 void TrkToolProject::readProjectDatabaseName()
 {

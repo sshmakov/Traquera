@@ -466,7 +466,7 @@ protected:
     TrkToolDB *db;
     bool opened;
 	QHash<TRK_RECORD_TYPE, QString> recordTypes;
-	QHash<TRK_RECORD_TYPE, QStringList*> qList; //QueryList
+    QHash<TRK_RECORD_TYPE, QStringList> qList; //QueryList
     QHash<TRK_RECORD_TYPE, TrkRecordTypeDef*> recordDef;
     //QHash<TRK_RECORD_TYPE, TrkIntDef> fields; // field by vid by record_type
     //QHash<TRK_RECORD_TYPE, NameVid> nameVids;
@@ -494,7 +494,7 @@ public:
     virtual QString projectName() const;
 
     // Tracker specific
-    const QStringList &queryList(TRK_RECORD_TYPE type = TRK_SCR_TYPE) const;
+    QStringList queryList(TRK_RECORD_TYPE type = TRK_SCR_TYPE) const;
 	void close();
     QAbstractItemModel *queryModel(int type);
 #ifdef CLIENT_APP
@@ -517,7 +517,6 @@ public:
     virtual void setSelectedId(int id, bool value, int recType);
     virtual void clearSelected(int recType);
     void initQueryModel(int type = TRK_SCR_TYPE);
-    virtual bool deleteQuery(const QString &queryName);
     virtual int fieldNativeType(const QString &name, int recType);
     virtual TQRecModel *selectedModel(int recType);
     virtual bool canFieldSubmit(int vid, int recType);
@@ -538,7 +537,8 @@ public:
     virtual QString userLogin(int userId);
     virtual int userId(const QString &login);
     virtual TQGroupList userGroups();
-    virtual bool renameQuery(const QString &oldName, const QString &newName);
+    virtual bool renameQuery(const QString &oldName, const QString &newName, int recordType);
+    virtual bool deleteQuery(const QString &queryName, int recordType);
 
 protected:
     void readProjectDatabaseName();

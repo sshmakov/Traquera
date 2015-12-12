@@ -135,14 +135,18 @@ TQAbstractDB *TQAbstractProject::db() const
     return d->db;
 }
 
-bool TQAbstractProject::renameQuery(const QString &oldName, const QString &newName)
+bool TQAbstractProject::renameQuery(const QString &oldName, const QString &newName, int recordType)
 {
+    Q_UNUSED(oldName)
+    Q_UNUSED(newName)
+    Q_UNUSED(recordType)
     return false;
 }
 
-bool TQAbstractProject::deleteQuery(const QString &queryName)
+bool TQAbstractProject::deleteQuery(const QString &queryName, int recordType)
 {
     Q_UNUSED(queryName)
+    Q_UNUSED(recordType)
     return false;
 }
 

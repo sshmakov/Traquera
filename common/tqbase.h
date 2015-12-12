@@ -228,8 +228,8 @@ public:
     virtual QDomDocument recordTypeDefDoc(int rectype) = 0;
 
     virtual TQRecModel *openQueryModel(const QString &queryName, int recType, bool emitEvent = true) = 0;
-    virtual bool renameQuery(const QString &oldName, const QString &newName);
-    virtual bool deleteQuery(const QString &queryName);
+    virtual bool renameQuery(const QString &oldName, const QString &newName, int recordType);
+    virtual bool deleteQuery(const QString &queryName, int recordType);
     virtual QAbstractItemModel *openIdsModel(const IntList &ids, int recType, bool emitEvent = true) = 0;
     virtual void refreshModel(QAbstractItemModel *model) = 0;
     virtual QAbstractItemModel *queryModel(int type) = 0;
