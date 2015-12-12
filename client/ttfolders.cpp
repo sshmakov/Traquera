@@ -575,13 +575,15 @@ bool TTFolder::setRecords(const QString &records)
 #ifdef CLIENT_APP
 //TrkQryFilter
 
-TrkQryFilter::TrkQryFilter(QObject *parent)
+TQQryFilter::TQQryFilter(QObject *parent)
     : QSortFilterProxyModel(parent),
       filter(All), queryIcon(":/images/query.png")
 {
+    setDynamicSortFilter(true);
+    sort(0);
 }
 
-void TrkQryFilter::setSourceQueryModel(QAbstractItemModel *sourceModel, TrkQryFilter::Filter filter)
+void TQQryFilter::setSourceQueryModel(QAbstractItemModel *sourceModel, TQQryFilter::Filter filter)
 {
     QSortFilterProxyModel::setSourceModel(sourceModel);
     switch(filter)
@@ -605,7 +607,7 @@ void TrkQryFilter::setSourceQueryModel(QAbstractItemModel *sourceModel, TrkQryFi
     sort(0);
 }
 
-QVariant TrkQryFilter::data(const QModelIndex &index, int role) const
+QVariant TQQryFilter::data(const QModelIndex &index, int role) const
 {
     if(index.isValid() && index.column()==0 && role==Qt::DecorationRole)
         return queryIcon;

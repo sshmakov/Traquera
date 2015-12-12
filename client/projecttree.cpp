@@ -199,13 +199,13 @@ bool TQOneProjectTree::open(const QString &connectString)
     appendSourceModel(folders,tr("Личные папки"));
 
 
-    userModel = new TrkQryFilter(this);
-    userModel->setSourceQueryModel(project()->queryModel(recordType()),TrkQryFilter::UserOnly);
+    userModel = new TQQryFilter(this);
+    userModel->setSourceQueryModel(project()->queryModel(recordType()),TQQryFilter::UserOnly);
     appendSourceModel(userModel,tr("Личные выборки"));
     int rows = userModel->rowCount();
 
-    publicModel = new TrkQryFilter(this);
-    publicModel->setSourceQueryModel(project()->queryModel(recordType()),TrkQryFilter::PublicOnly);
+    publicModel = new TQQryFilter(this);
+    publicModel->setSourceQueryModel(project()->queryModel(recordType()),TQQryFilter::PublicOnly);
     appendSourceModel(publicModel,tr("Общие выборки"));
     rows = publicModel->rowCount();
     setMaxColCount(1);    

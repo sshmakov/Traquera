@@ -6,7 +6,7 @@ class TQAbstractDB;
 class TQAbstractProject;
 class TQOneProjectTree;
 class TTFolderModel;
-class TrkQryFilter;
+class TQQryFilter;
 
 class TQProjectTreeItem {
 public:
@@ -40,8 +40,8 @@ protected:
     TQProjectTreeItem info;
 public:
     TTFolderModel *folders;
-    TrkQryFilter *userModel;
-    TrkQryFilter *publicModel;
+    TQQryFilter *userModel;
+    TQQryFilter *publicModel;
 
     explicit TQOneProjectTree(QObject *parent = 0);
 //    void setProject(TQAbstractProject *prj, int recordType);

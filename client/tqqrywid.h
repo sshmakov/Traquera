@@ -29,6 +29,8 @@ public:
     int currentCIndex();
     TQCond *currentCondition();
     void setCurrentCondition(TQCond *cond);
+    QString queryName() const;
+    void setQueryName(const QString &name);
 private slots:
     void refreshCList();
     void refreshCondLine(TQCond *cond);
@@ -56,6 +58,8 @@ private slots:
     void on_cbCloseBracket_clicked(bool checked);
 
     void on_btnModify_clicked();
+
+    void on_buttonBox_accepted();
 
 private:
     Ui::TQQueryWidget *ui;

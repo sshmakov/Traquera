@@ -400,6 +400,8 @@ class TrkToolQryModel: public BaseRecModel<TrkQuery>
 public:
     TrkToolQryModel(QObject *parent = 0);
     void appendQry(const QString &queryName, bool isPublic=false, TRK_UINT rectype = TRK_SCR_TYPE);
+    void appendQry(const QStringList &queryList, bool isPublic=false, TRK_UINT rectype = TRK_SCR_TYPE);
+    void removeQry(const QString &queryName, TRK_UINT rectype = TRK_SCR_TYPE);
 protected:
     virtual QVariant displayColData(const TrkQuery &rec, int col) const;
 };
@@ -515,6 +517,7 @@ public:
     virtual void setSelectedId(int id, bool value, int recType);
     virtual void clearSelected(int recType);
     void initQueryModel(int type = TRK_SCR_TYPE);
+    virtual bool deleteQuery(const QString &queryName);
     virtual int fieldNativeType(const QString &name, int recType);
     virtual TQRecModel *selectedModel(int recType);
     virtual bool canFieldSubmit(int vid, int recType);
@@ -586,6 +589,7 @@ protected:
         const QString &password,
         const QString &project);
     bool readQueryList();
+    bool refreshQueryList();
 	bool readDefs();
     void readUserList();
     void readNoteTitles();

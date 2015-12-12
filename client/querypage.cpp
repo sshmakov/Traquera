@@ -434,7 +434,9 @@ void QueryPage::selectionChanged(const QItemSelection & /* selected */, const QI
 
 void QueryPage::currentChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight)
 {
-//    d->detailsTimer->start(100);
+    if(d->detailsTimer->isActive())
+        return;
+    d->detailsTimer->start(100);
     emit selectionRecordsChanged();
 }
 

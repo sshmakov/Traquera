@@ -1034,7 +1034,7 @@ void MainWindow::readSelectedTreeItem()
         selectedTreeItem.icon = QIcon(":/images/folder.png");
         return;
     }
-    selectedTreeItem.qryModel = qobject_cast<TrkQryFilter*>(model);
+    selectedTreeItem.qryModel = qobject_cast<TQQryFilter*>(model);
     if(selectedTreeItem.qryModel)
     {
         selectedTreeItem.folderIndex = index;
@@ -1720,11 +1720,16 @@ void MainWindow::on_treeView_customContextMenuRequested(const QPoint &pos)
         if(selectedTreeItem.isQuerySelected)
         {
             menu.addAction(actionEditQuery);
+            menu.addAction(actionRename_Item);
+            menu.addAction(actionDeleteQuery);
         }
         menu.addSeparator();
     }
     if(selectedTreeItem.isQryGroupSelected)
+    {
         menu.addAction(actionNewQuery);
+        menu.addAction(actionRefreshQueryList);
+    }
     if(selectedTreeItem.isFolderSelected)
     {
         menu.addAction(actionAddToFolder);
@@ -2119,9 +2124,11 @@ void MainWindow::on_actionEditQuery_triggered()
     {
         TQQueryWidget dlg;
         dlg.setQueryDefinition(selectedTreeItem.prj->queryDefinition(selectedTreeItem.queryName, selectedTreeItem.recordType));
+        dlg.setQueryName(selectedTreeItem.queryName);
         if(dlg.exec() == QDialog::Accepted)
         {
-            selectedTreeItem.prj->saveQueryDefinition(dlg.queryDefinition(), selectedTreeItem.queryName, selectedTreeItem.recordType);
+            selectedTreeItem.prj->saveQueryDefinition(dlg.queryDefinition(), dlg.queryName(), selectedTreeItem.recordType);
+            selectedTreeItem.prj->refreshModel(selectedTreeItem.qryModel->sourceModel());
         }
     }
 }
@@ -2135,7 +2142,8 @@ void MainWindow::on_actionNewQuery_triggered()
     dlg.setQueryDefinition(qDef);
     if(dlg.exec() == QDialog::Accepted)
     {
-        //5selectedTreeItem.prj->saveQueryDefinition(dlg.queryDefinition(), selectedTreeItem.queryName, selectedTreeItem.recordType);
+        selectedTreeItem.prj->saveQueryDefinition(dlg.queryDefinition(), dlg.queryName(), selectedTreeItem.recordType);
+        selectedTreeItem.prj->refreshModel(selectedTreeItem.qryModel->sourceModel());
     }
 
 }
@@ -2222,6 +2230,25 @@ void MainWindow::on_actionRename_Item_triggered()
         if(!newName.isEmpty() && newName != selectedTreeItem.queryName)
         {
             selectedTreeItem.prj->renameQuery(selectedTreeItem.queryName, newName);
+            selectedTreeItem.prj->refreshModel(selectedTreeItem.qryModel->sourceModel());
         }
+    }
+}
+
+void MainWindow::on_actionRefreshQueryList_triggered()
+{
+    TQQryFilter *filter = selectedTreeItem.qryModel;
+    if(!filter || !filter->sourceModel())
+        return;
+    selectedTreeItem.prj->refreshModel(filter->sourceModel());
+}
+
+void MainWindow::on_actionDeleteQuery_triggered()
+{
+    readSelectedTreeItem();
+    if(selectedTreeItem.isQuerySelected)
+    {
+        selectedTreeItem.prj->deleteQuery(selectedTreeItem.queryName);
+        selectedTreeItem.prj->refreshModel(selectedTreeItem.qryModel->sourceModel());
     }
 }

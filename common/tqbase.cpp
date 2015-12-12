@@ -140,6 +140,12 @@ bool TQAbstractProject::renameQuery(const QString &oldName, const QString &newNa
     return false;
 }
 
+bool TQAbstractProject::deleteQuery(const QString &queryName)
+{
+    Q_UNUSED(queryName)
+    return false;
+}
+
 QSettings *TQAbstractProject::projectSettings() const
 {
     QSettings *set = new QSettings();

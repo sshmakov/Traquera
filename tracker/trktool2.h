@@ -162,6 +162,8 @@ TRKAPI TrkGetNextGroup( //@20
                         );
 
 
+extern "C" unsigned long TrkProjectRefresh(TRK_HANDLE	trkHandle, TRK_UINT res);
+
 /*
 qryId
  int
@@ -230,6 +232,11 @@ TRKAPI TrkSaveQuery( //@24
                      TRK_RECORD_TYPE recordType
                      );
 //_TrkSaveUserQuery@12
+
+TRKAPI TrkDeleteQuery( // @8
+                       TRK_HANDLE	trkHandle,				// Input
+                       TRK_CSTR					queryName				// Input
+                       );
 
 
 //_TrkHandleAlloc@8

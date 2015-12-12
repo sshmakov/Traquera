@@ -94,26 +94,16 @@ private slots:
     void	do_modelReset ()
     { endResetModel(); }
 
-    void	do_rowsAboutToBeInserted ( const QModelIndex & parent, int start, int end )
-    {
-        QAbstractItemModel *sModel = qobject_cast<QAbstractItemModel *>(sender());
-        QModelIndex pstart = mapFromSource(sModel->index(start,0,parent));
-        QModelIndex pend = mapFromSource(sModel->index(end,0,parent));
-        QModelIndex pparent;
-        if(parent.isValid())
-            pparent = mapFromSource(parent);
-        else
-            pparent = index(models.indexOf(sModel),0);
-        beginInsertRows(pparent, pstart.row(), pend.row());
-    }
+    void	do_rowsAboutToBeInserted ( const QModelIndex & parent, int start, int end );
 
     void	do_rowsAboutToBeMoved ( const QModelIndex & sourceParent, int sourceStart, int sourceEnd, const QModelIndex & destinationParent, int destinationRow )
     { beginMoveRows(mapFromSource(sourceParent), sourceStart, sourceEnd, mapFromSource(destinationParent), destinationRow); }
     void	do_rowsAboutToBeRemoved ( const QModelIndex & parent, int start, int end )
-    { beginRemoveRows(mapFromSource(parent), start, end); }
+    {
+        beginRemoveRows(mapFromSource(parent), start, end);
+    }
 
-    void	do_rowsInserted ()
-    { endInsertRows(); }
+    void	do_rowsInserted ();
 
     void	do_rowsMoved ()
     { endMoveRows(); }

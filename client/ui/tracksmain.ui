@@ -680,6 +680,16 @@
     <string>Переименовать...</string>
    </property>
   </action>
+  <action name="actionRefreshQueryList">
+   <property name="text">
+    <string>Обновить список</string>
+   </property>
+  </action>
+  <action name="actionDeleteQuery">
+   <property name="text">
+    <string>Удалить выборку</string>
+   </property>
+  </action>
  </widget>
  <resources>
   <include location="../resources/tracks.qrc"/>

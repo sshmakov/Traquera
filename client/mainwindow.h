@@ -65,8 +65,8 @@ protected:
     struct ProjectModel {
         TQOneProjectTree *prjTree;
         TTFolderModel *folders;
-        TrkQryFilter *userModel;
-        TrkQryFilter *publicModel;
+        TQQryFilter *userModel;
+        TQQryFilter *publicModel;
     };
     QList<ProjectModel> projectModels;
     QList<ProjectRec> projectRecords;
@@ -109,7 +109,7 @@ private:
         TQOneProjectTree *prjModel;
         TQAbstractProject *prj;
         TTFolderModel *folderModel;
-        TrkQryFilter *qryModel;
+        TQQryFilter *qryModel;
         bool isProjectSelected;
         bool isFoldersGroupSelected;
         bool isFolderSelected;
@@ -263,6 +263,8 @@ private slots:
     void slotNewDBConnect(const QString &dbClass);
     void on_actionDelete_Project_triggered();
     void on_actionRename_Item_triggered();
+    void on_actionRefreshQueryList_triggered();
+    void on_actionDeleteQuery_triggered();
 };
 
 

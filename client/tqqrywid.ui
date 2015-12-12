@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>Условия выборки</string>
   </property>
+  <property name="modal">
+   <bool>true</bool>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QGridLayout" name="gridLayout">
@@ -210,10 +213,35 @@
     </layout>
    </item>
    <item>
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
+    <widget class="QWidget" name="widget" native="true">
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <property name="margin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Имя выборки:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="leQueryName"/>
+      </item>
+      <item>
+       <widget class="QDialogButtonBox" name="buttonBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="standardButtons">
+         <set>QDialogButtonBox::Cancel|QDialogButtonBox::Save</set>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
   </layout>
@@ -231,7 +259,6 @@
   <tabstop>btnMoveUp</tabstop>
   <tabstop>btnMoveDown</tabstop>
   <tabstop>pteQueryText</tabstop>
-  <tabstop>buttonBox</tabstop>
  </tabstops>
  <resources>
   <include location="resources/tracks.qrc"/>
@@ -239,29 +266,13 @@
  <connections>
   <connection>
    <sender>buttonBox</sender>
-   <signal>accepted()</signal>
-   <receiver>TQQueryWidget</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>395</x>
-     <y>398</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>294</x>
-     <y>399</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>buttonBox</sender>
    <signal>rejected()</signal>
    <receiver>TQQueryWidget</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>413</x>
-     <y>399</y>
+     <x>755</x>
+     <y>432</y>
     </hint>
     <hint type="destinationlabel">
      <x>183</x>
@@ -280,8 +291,8 @@
      <y>111</y>
     </hint>
     <hint type="destinationlabel">
-     <x>250</x>
-     <y>37</y>
+     <x>316</x>
+     <y>50</y>
     </hint>
    </hints>
   </connection>

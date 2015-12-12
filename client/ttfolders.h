@@ -71,14 +71,14 @@ public slots:
 
 #ifdef CLIENT_APP
 
-class TrkQryFilter: public QSortFilterProxyModel
+class TQQryFilter: public QSortFilterProxyModel
 {
     Q_OBJECT
 protected:
     QIcon queryIcon;
 public:
     enum Filter {All, UserOnly, PublicOnly} filter;
-    TrkQryFilter(QObject *parent=0);
+    TQQryFilter(QObject *parent=0);
     void setSourceQueryModel(QAbstractItemModel *sourceModel, Filter filter);
     virtual QVariant data(const QModelIndex &index, int role) const;
 private:

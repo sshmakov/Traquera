@@ -13,15 +13,16 @@ QModelIndex UnionModel::mapFromSource(const QModelIndex &sourceIndex) const
     if(!sourceIndex.isValid())
         return QModelIndex();
     QAbstractItemModel *model = const_cast<QAbstractItemModel *>(sourceIndex.model());
-    if(models.indexOf(model)==-1)
+    int id = models.indexOf(model);
+    if(id == -1)
         return QModelIndex();
     QModelIndex p, sp = sourceIndex.parent();
     if(sp.isValid())
+    {
         p = mapFromSource(sp);
-    if(p.isValid())
-        p.internalId();
-    return index(sourceIndex.row(),sourceIndex.column(),p);
-    //return createIndex(sourceIndex.row(),sourceIndex.column(),model);
+        return index(sourceIndex.row(),sourceIndex.column(),p);
+    }
+    return createIndex(sourceIndex.row(),sourceIndex.column(),id);
 }
 
 QModelIndex UnionModel::mapToSource(const QModelIndex &proxyIndex) const
@@ -101,6 +102,8 @@ QModelIndex UnionModel::parent(const QModelIndex &child) const
     if(!child.isValid())
         return QModelIndex();
     int infoIndex = child.internalId();
+    if(infoIndex<0 || infoIndex>info.size())
+        return QModelIndex();
     const MapInfo &m = info[infoIndex];
     if(m.parentId<0)
         return QModelIndex();
@@ -428,4 +431,29 @@ MapInfo UnionModel::findInfo(int row, const QModelIndex &parent) const
             return m;
         }
     return MapInfo();
+}
+
+void UnionModel::do_rowsAboutToBeInserted(const QModelIndex &parent, int start, int end)
+{
+    QAbstractItemModel *sModel = qobject_cast<QAbstractItemModel *>(sender());
+    QModelIndex pparent;
+    if(parent.isValid())
+        pparent = mapFromSource(parent);
+    else
+        pparent = index(models.indexOf(sModel),0);
+    int pStartRow, pEndRow;
+    if(start >= sModel->rowCount(parent))
+        pStartRow = rowCount(pparent);
+    else
+        pStartRow = start;
+    if(end >= sModel->rowCount(parent))
+        pEndRow = rowCount(pparent);
+    else
+        pEndRow = end;
+    beginInsertRows(pparent, pStartRow, pEndRow);
+}
+
+void UnionModel::do_rowsInserted()
+{
+    endInsertRows();
 }

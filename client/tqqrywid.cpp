@@ -98,6 +98,16 @@ void TQQueryWidget::setCurrentCondition(TQCond *cond)
     }
 }
 
+QString TQQueryWidget::queryName() const
+{
+    return ui->leQueryName->text();
+}
+
+void TQQueryWidget::setQueryName(const QString &name)
+{
+    ui->leQueryName->setText(name);
+}
+
 void TQQueryWidget::refreshCList()
 {
     TQCond *cond = currentCondition();
@@ -265,4 +275,10 @@ void TQQueryWidget::on_btnModify_clicked()
     QListWidgetItem *item = ui->lwCond->currentItem();
     if(item)
         on_lwCond_itemActivated(item);
+}
+
+void TQQueryWidget::on_buttonBox_accepted()
+{
+    if(!ui->leQueryName->text().trimmed().isEmpty())
+        accept();
 }

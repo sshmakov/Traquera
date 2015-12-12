@@ -668,7 +668,60 @@ bool TrkToolProject::readQueryList()
 		qList[recType]->append(name);
 	}
     initQueryModel();
-	return rc;
+    return rc;
+}
+
+bool TrkToolProject::refreshQueryList()
+{
+    QHash<TRK_RECORD_TYPE, QStringList*> newQList; //QueryList
+    TRK_UINT res = TRK_SCR_TYPE;
+    unsigned long r = TrkProjectRefresh(handle, res);
+    bool rc = isTrkOK(TrkInitQueryNameList(handle));
+    if(!rc)
+        return false;
+    char buf[256];
+    TRK_RECORD_TYPE recType=0;
+    while(TRK_SUCCESS == TrkGetNextQueryName(handle, 256, buf, &recType))
+    {
+        QString name(buf);
+        TrkGetQueryRecordType(handle, buf, &recType);
+        if(!newQList[recType])
+            newQList[recType] = new QStringList();
+        newQList[recType]->append(name);
+        recType=0;
+    }
+    foreach(recType, newQList.keys())
+    {
+        QStringList *nlist = newQList[recType];
+        QStringList *olist = qList.value(recType, 0);
+        if(!olist)
+        {
+            olist = new QStringList();
+            qList.insert(recType, olist);
+        }
+        QSet<QString> nSet = nlist->toSet();
+        QSet<QString> oSet = olist->toSet();
+        QSet<QString> added = nSet - oSet;
+        QSet<QString> removed = oSet - nSet;
+
+        TrkToolQryModel *model  = theQueryModel.value(recType);
+        if(!model)
+        {
+            model = new TrkToolQryModel(this);
+            theQueryModel.insert(recType, model);
+        }
+        foreach(QString qryName, removed)
+            model->removeQry(qryName, recType);
+        foreach(QString qryName, added)
+        {
+            TRK_UINT res=0;
+
+            TrkGetQueryIsPublic(handle, qryName.toLocal8Bit().constData(), &res);
+            model->appendQry(qryName, (res!=0), recType);
+        }
+    }
+    qList = newQList;
+    return rc;
 }
 
 bool TrkToolProject::readDefs()
@@ -907,6 +960,11 @@ void TrkToolProject::initQueryModel(int type)
             model->appendQry(qryName, (res!=0), type);
         }
     }
+}
+
+bool TrkToolProject::deleteQuery(const QString &queryName)
+{
+    return isTrkOK(TrkDeleteQuery(handle, queryName.toLocal8Bit().constData()));
 }
 
 
@@ -1490,6 +1548,16 @@ QAbstractItemModel *TrkToolProject::openIdsModel(const QList<int> &ids, int type
 
 void TrkToolProject::refreshModel(QAbstractItemModel *model)
 {
+    TQRecModel *recModel = qobject_cast<TQRecModel *>(model);
+    if(recModel)
+    {
+        return;
+    }
+    TrkToolQryModel *qryModel = qobject_cast<TrkToolQryModel *>(model);
+    if(qryModel)
+    {
+        refreshQueryList();
+    }
 }
 
 QStringList TrkToolProject::noteTitleList()
@@ -3351,6 +3419,35 @@ void TrkToolQryModel::appendQry(const QString &queryName, bool isPublic, TRK_UIN
     query.isPublic = isPublic;
     query.qryTypeId = rectype;
     append(query);
+}
+
+void TrkToolQryModel::appendQry(const QStringList &queryList, bool isPublic, TRK_UINT rectype)
+{
+    QList<TrkQuery> list;
+    foreach(QString qryName, queryList)
+    {
+        TrkQuery query;
+        query.qryName = qryName;
+        query.isPublic = isPublic;
+        query.qryTypeId = rectype;
+        list.append(query);
+    }
+    append(list);
+}
+
+void TrkToolQryModel::removeQry(const QString &queryName, TRK_UINT rectype)
+{
+    int r=0;
+    foreach(const TrkQuery &rec, records)
+    {
+        if(rec.qryName == queryName && rec.qryTypeId == rectype)
+        {
+            beginRemoveRows(QModelIndex(),r,r);
+            records.removeAt(r);
+            endRemoveRows();
+        }
+        r++;
+    }
 }
 
 QVariant TrkToolQryModel::displayColData(const TrkQuery &rec, int col) const
