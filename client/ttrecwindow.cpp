@@ -137,7 +137,7 @@ void TTRecordWindow::setRecord(TQRecord *rec)
     */
     refreshState();
     setWindowTitle(QString(tr("Запрос %1 %2")).arg(rec->recordId()).arg(rec->title()));
-    connect(a_record, SIGNAL(changedState(TrkToolRecord::RecMode)), SLOT(refreshState()));
+    connect(a_record, SIGNAL(changedState(int)), SLOT(refreshState()));
 }
 
 bool TTRecordWindow::setNote(int index, const QString &title, const QString &text)
@@ -206,6 +206,10 @@ void TTRecordWindow::refreshState()
     ui->actionEditRecord->setEnabled(!edit);
     ui->actionSaveChanges->setEnabled(edit);
     ui->actionCancelChanges->setEnabled(edit);
+    bool changed = editorMode != a_record->mode();
+    editorMode = a_record->mode();
+    if(changed)
+        emit modeChanged(editorMode);
 }
 
 void TTRecordWindow::valueChanged()
@@ -358,11 +362,16 @@ void TTRecordWindow::cancel()
 
 void TTRecordWindow::commit()
 {
+    int mode = a_record->mode();
     if(writeChanges() && a_record->commit())
     {
         props->resetAll();
         props->fillValues(QObjectList() << a_record);
         setRecord(a_record);
+        if(mode == TQRecord::Insert)
+            emit recordAdded(a_record);
+        if(mode == TQRecord::Edit)
+            emit recordModified(a_record);
 
     }
     refreshState();
@@ -464,6 +473,11 @@ bool TTRecordWindow::isChanged()
 void TTRecordWindow::setChanged(bool value)
 {
     changed = value;
+}
+
+int TTRecordWindow::mode()
+{
+    return editorMode;
 }
 
 bool TTRecordWindow::startEditDescription()

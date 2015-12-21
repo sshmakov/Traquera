@@ -486,6 +486,22 @@ void MainWindow::slotOpenRecordsClicked(ScrSet res)
     openQueryById(res.toList(),intListToString(res.toList()),false);
 }
 
+void MainWindow::showRecordInList(TQRecord *record)
+{
+    if(!record || !record->isValid())
+        return;
+    QueryPage *page = curQueryPage();
+    if(!page
+            || page->project() != record->project()
+            || page->recordTypeDef() != record->typeDef())
+    {
+        page = createNewPage(QString::number(record->recordId()));
+        page->openIds(record->project(), QList<int>() << record->recordId(), QString::number(record->recordId()), record->recordType());
+        return;
+    }
+    page->appendId(record->recordId());
+}
+
 
 //QString MainWindow::getTrkConnectString()
 //{
@@ -2032,6 +2048,7 @@ void MainWindow::on_actionNewRequest_triggered()
     TTRecordWindow *win = new TTRecordWindow();
     win->setTypeDef(rec->typeDef());
     win->setRecord(rec);
+    connect(win, SIGNAL(recordAdded(TQRecord*)), SLOT(showRecordInList(TQRecord*)));
     win->show();
 }
 
@@ -2170,6 +2187,11 @@ void MainWindow::on_actionOpen_Project_triggered()
     }
 }
 
+void MainWindow::on_actionEditProject_triggered()
+{
+    TQOneProjectTree *tree = selectedTreeItem.prjModel;
+}
+
 void MainWindow::slotNewDBConnect(const QString &dbClass)
 {
     QDialog dlg;
@@ -2252,3 +2274,4 @@ void MainWindow::on_actionDeleteQuery_triggered()
         selectedTreeItem.prj->refreshModel(selectedTreeItem.qryModel->sourceModel());
     }
 }
+

@@ -25,6 +25,7 @@ class TTRecordWindow : public QMainWindow
     Q_PROPERTY(TQRecord *record READ getRecord)
     Q_PROPERTY(QString description READ description WRITE setDescription)
     Q_PROPERTY(bool changed READ isChanged WRITE setChanged)
+    Q_PROPERTY(int mode READ mode NOTIFY modeChanged)
 public:
     explicit TTRecordWindow(QWidget *parent = 0);
     ~TTRecordWindow();
@@ -42,6 +43,7 @@ public:
     bool writeDraftChanges();
     bool isChanged();
     void setChanged(bool value);
+    int mode();
 
 public slots:
     bool setDescription(const QString &desc);
@@ -55,6 +57,9 @@ public slots:
 signals:
     void noteChanged(int index, const QString &title, const QString &text);
     void noteStateChanged(int index, const QString &newState);
+    void recordAdded(TQRecord *record);
+    void recordModified(TQRecord *record);
+    void modeChanged(int mode);
 
 protected:
     ModifyPanel *props;
@@ -72,6 +77,7 @@ protected:
     QTabBar *tabBar;
     int titleVid;
     QString titleFieldName;
+    int editorMode;
 
     void initWidgets();
     virtual void closeEvent(QCloseEvent *event);

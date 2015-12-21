@@ -423,7 +423,7 @@ TQRecord::~TQRecord()
 
 bool TQRecord::isValid() const
 {
-    return m_prj!=0 && recId > 0;
+    return this && m_prj!=0 && (recId > 0 || mode() == Insert);
 }
 
 int TQRecord::recordType() const

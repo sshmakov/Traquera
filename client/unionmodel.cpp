@@ -314,7 +314,7 @@ QModelIndex UnionModel::appendSourceModel(QAbstractItemModel *model, const QStri
     connect(model,SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)),this,SLOT(do_rowsMoved()));
 
     connect(model,SIGNAL(columnsAboutToBeInserted(QModelIndex, int, int)),SLOT(do_columnsAboutToBeInserted(QModelIndex,int,int)));
-    connect(model,SIGNAL(columnsAboutToBeMoved (QModelIndex, sourceStart, sourceEnd, QModelIndex , int )),SLOT(do_columnsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)));
+    connect(model,SIGNAL(columnsAboutToBeMoved (QModelIndex, int, int, QModelIndex , int )),SLOT(do_columnsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)));
     connect(model,SIGNAL(columnsAboutToBeRemoved (QModelIndex, int, int)), SLOT(do_columnsAboutToBeRemoved(QModelIndex,int,int)));
     connect(model,SIGNAL(columnsInserted(QModelIndex,int,int)),SLOT(do_columnsInserted()));
     connect(model,SIGNAL(columnsMoved(QModelIndex,int,int,QModelIndex,int)),SLOT(do_columnsMoved()));

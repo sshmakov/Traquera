@@ -229,15 +229,22 @@
        <widget class="QLineEdit" name="leQueryName"/>
       </item>
       <item>
-       <widget class="QDialogButtonBox" name="buttonBox">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
+       <widget class="QPushButton" name="btnSave">
+        <property name="text">
+         <string>Сохранить</string>
         </property>
-        <property name="standardButtons">
-         <set>QDialogButtonBox::Cancel|QDialogButtonBox::Save</set>
+        <property name="shortcut">
+         <string>Ctrl+Return</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnCancel">
+        <property name="text">
+         <string>Отмена</string>
+        </property>
+        <property name="shortcut">
+         <string>Esc</string>
         </property>
        </widget>
       </item>
@@ -265,22 +272,6 @@
  </resources>
  <connections>
   <connection>
-   <sender>buttonBox</sender>
-   <signal>rejected()</signal>
-   <receiver>TQQueryWidget</receiver>
-   <slot>reject()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>755</x>
-     <y>432</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>183</x>
-     <y>397</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>lwFields</sender>
    <signal>doubleClicked(QModelIndex)</signal>
    <receiver>btnAdd</receiver>
@@ -293,6 +284,54 @@
     <hint type="destinationlabel">
      <x>316</x>
      <y>50</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btnSave</sender>
+   <signal>clicked()</signal>
+   <receiver>TQQueryWidget</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>625</x>
+     <y>422</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>4</x>
+     <y>405</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btnCancel</sender>
+   <signal>clicked()</signal>
+   <receiver>TQQueryWidget</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>700</x>
+     <y>421</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>597</x>
+     <y>406</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>lwFields</sender>
+   <signal>activated(QModelIndex)</signal>
+   <receiver>btnAdd</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>196</x>
+     <y>67</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>289</x>
+     <y>39</y>
     </hint>
    </hints>
   </connection>

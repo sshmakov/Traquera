@@ -1118,10 +1118,12 @@ TQRecord *TrkToolProject::newRecord(int rectype)
         return 0;
     }
     */
-    QList<int> vids = recordDef[rectype]->fieldVids();
+    TrkRecordTypeDef* recDef = recordDef[rectype];
+    QList<int> vids = recDef->fieldVids();
     foreach(int vid, vids)
     {
-        rec->values[vid] = recordDef[rectype]->getFieldType(vid).defaultValue();
+        QVariant value = recDef->getFieldType(vid).defaultValue();
+        rec->values[vid] = value;
     }
 
 

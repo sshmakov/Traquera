@@ -165,7 +165,9 @@ TQAbstractProject *JiraDB::openProject(const QString &projectName, const QString
 
 TQAbstractProject *JiraDB::openConnection(const QString &connectString)
 {
-    QStringList values = connectString.split(";");
+    QVariantMap params = parser->toVariant(connectString).toMap();
+
+    /*QStringList values = connectString.split(";");
     QHash<QString, QString> params;
     foreach(QString v, values)
     {
@@ -174,18 +176,21 @@ TQAbstractProject *JiraDB::openConnection(const QString &connectString)
         QString par = v.left(p);
         QString val = v.mid(p+1);
         params.insert(par,val);
-    }
-    QString sRecType = params.value("RecordType");
-    bool okRecType;
-    int recType = sRecType.toInt(&okRecType);
+    }*/
 
-    setDbmsType(params.value("DBType"));
-    setDbmsServer(params.value("DBServer"));
-    if(params.value("DBOSUser") != "true")
-        setDbmsUser(params.value("DBUser"),params.value("DBPass"));
+    /*QString sRecType = params.value("RecordType").toString();
+    bool okRecType;
+    int recType = sRecType.toInt(&okRecType);*/
+
+    int recType = params.value("RecordType").toInt();
+
+    setDbmsType(params.value("DBType").toString());
+    setDbmsServer(params.value("DBServer").toString());
+    if(!params.value("DBOSUser").toBool())
+        setDbmsUser(params.value("DBUser").toString(), params.value("DBPass").toString());
     else
         setDbmsUser("","");
-    TQAbstractProject *prj = openProject(params.value("Project"),params.value("User"),params.value("Password"));
+    TQAbstractProject *prj = openProject(params.value("Project").toString(), params.value("User").toString(), params.value("Password").toString());
     return prj;
 }
 

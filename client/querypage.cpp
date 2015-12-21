@@ -1297,11 +1297,21 @@ TQRecord *QueryPage::recordOnIndex(const QModelIndex &index)
     return trkmodel->at(f.row());
 }
 
-const TQAbstractRecordTypeDef *QueryPage::recordTypeDef()
+const TQAbstractRecordTypeDef *QueryPage::recordTypeDef() const
 {
     if(!d->tmodel)
         return 0;
     return d->tmodel->typeDef();
+}
+
+int QueryPage::recordType() const
+{
+    if(!d->tmodel)
+        return 0;
+    const TQAbstractRecordTypeDef *recDef = d->tmodel->typeDef();
+    if(!recDef)
+        return 0;
+    return recDef->recordType();
 }
 
 void QueryPage::setRecordsChecked(const QString &ids, bool flag)

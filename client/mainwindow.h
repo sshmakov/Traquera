@@ -220,6 +220,7 @@ public slots:
     void applyChanges();
     void repeatLastChanges();
     void slotOpenRecordsClicked(ScrSet res);
+    void showRecordInList(TQRecord *record);
 
 private slots:
     void on_changedQuery(const QString & projectName, const QString & queryName);
@@ -265,6 +266,7 @@ private slots:
     void on_actionRename_Item_triggered();
     void on_actionRefreshQueryList_triggered();
     void on_actionDeleteQuery_triggered();
+    void on_actionEditProject_triggered();
 };
 
 

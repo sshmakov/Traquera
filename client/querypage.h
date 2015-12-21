@@ -39,6 +39,7 @@ class QueryPage : public QWidget, public Ui::queryForm
 {
     Q_OBJECT
     Q_PROPERTY(const TQAbstractRecordTypeDef *recordTypeDef READ recordTypeDef)
+    Q_PROPERTY(int recordType READ recordType)
 protected:
     QueryPagePrivate *d;
     QTreeView *planTreeView;
@@ -80,7 +81,8 @@ public:
     Q_INVOKABLE TQAbstractProject *currentProject();
     Q_INVOKABLE TQRecord *currentRecord();
     Q_INVOKABLE TQRecord *recordOnIndex(const QModelIndex &index);
-    Q_INVOKABLE const TQAbstractRecordTypeDef *recordTypeDef();
+    Q_INVOKABLE const TQAbstractRecordTypeDef *recordTypeDef() const;
+    int recordType() const;
     Q_INVOKABLE void setRecordsChecked(const QString &ids, bool flag);
     void initWidgets();
     bool hasMarked();

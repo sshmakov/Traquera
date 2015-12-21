@@ -690,6 +690,11 @@
     <string>Удалить выборку</string>
    </property>
   </action>
+  <action name="actionEditProject">
+   <property name="text">
+    <string>Изменить проект...</string>
+   </property>
+  </action>
  </widget>
  <resources>
   <include location="../resources/tracks.qrc"/>

@@ -504,7 +504,12 @@ QString TrkQueryDef::makeFieldsString()
         }
         addCItem(res,fc);
         addCItem(res,cond->isOr() ? "2" : "1");
-        addCItem(res,QString::number(cond->flags()));
+
+        int f=0;
+        f |= cond->isNot() ? 0x1 : 0;
+        f |= cond->isOpenBracket() ? 0x2 : 0;
+        f |= cond->isCloseBracket() ? 0x4 : 0;
+        addCItem(res,QString::number(f));
     }
     return res;
 }

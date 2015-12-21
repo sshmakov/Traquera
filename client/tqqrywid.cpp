@@ -282,3 +282,5 @@ void TQQueryWidget::on_buttonBox_accepted()
     if(!ui->leQueryName->text().trimmed().isEmpty())
         accept();
 }
+
+\
