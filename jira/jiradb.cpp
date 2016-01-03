@@ -7,6 +7,7 @@
 #include <tqoauth.h>
 #include "webform.h"
 #include <tqjson.h>
+#include "jiralogin.h"
 
 Q_EXPORT_PLUGIN2("jira", JiraPlugin)
 
@@ -62,17 +63,22 @@ void JiraPlugin::initPlugin(QObject *obj, const QString &modulePath)
 
 bool JiraPlugin::saveSettings()
 {
-    settings->beginGroup("JiraPlugin/Servers");
+    settings->beginGroup("JiraPlugin");
+    settings->beginGroup("Servers");
     settings->remove("");
     for(int i=0; i<servers.size(); i++)
         settings->setValue(QString("Server%1").arg(i), servers.value(i));
+    settings->endGroup();
+    settings->setValue("KeyFile", keyFile);
+    settings->setValue("KeyPass", keyPass);
     settings->endGroup();
     return true;
 }
 
 bool JiraPlugin::loadSettings()
 {
-    settings->beginGroup("JiraPlugin/Servers");
+    settings->beginGroup("JiraPlugin");
+    settings->beginGroup("Servers");
     servers.clear();
     foreach(QString key, settings->allKeys())
     {
@@ -81,7 +87,9 @@ bool JiraPlugin::loadSettings()
             servers.append(s);
     }
     settings->endGroup();
-
+    keyFile = settings->value("KeyFile").toString();
+    keyPass = settings->value("KeyPass").toString();
+    settings->endGroup();
     return true;
 }
 
@@ -90,16 +98,36 @@ JiraPlugin *JiraPlugin::plugin()
     return jira;
 }
 
+
+class JiraDBPrivate
+{
+public:
+    QString token;
+    QString token_secret;
+    QString callback_confirm;
+    QString access_token;
+};
+
 // ======================== JiraDB ==================================
 JiraDB::JiraDB(QObject *parent)
-    :TQAbstractDB(parent), webForm(0), oa(0), parser(new TQJson(this))
+    : TQAbstractDB(parent), webForm(0), oa(new TQOAuth(this)), parser(new TQJson(this)),
+      d(new JiraDBPrivate()),
+      timeOutSecs(10)
 {
-//    man = new QNetworkAccessManager(this);
-//    connect(man, SIGNAL(finished(QNetworkReply*)), SLOT(replyFinished(QNetworkReply*)));
-    QObject *obj;
+    man = new QNetworkAccessManager(this);
+    connect(man, SIGNAL(finished(QNetworkReply*)), SLOT(replyFinished(QNetworkReply*)));
+    /*QObject *obj;
+
     if(QMetaObject::invokeMethod(jira->globalObject,"oauth",
                                  Q_RETURN_ARG(QObject *, obj)))
         oa = qobject_cast<TQOAuth*>(obj);
+        */
+    oa->loadPrivateKey(jira->keyFile, jira->keyPass);
+}
+
+JiraDB::~JiraDB()
+{
+    delete d;
 }
 
 QStringList JiraDB::dbmsTypes()
@@ -125,42 +153,72 @@ QStringList JiraDB::projects(const QString &dbmsType, const QString &user, const
 
 TQAbstractProject *JiraDB::openProject(const QString &projectName, const QString &user, const QString &pass)
 {
-    if(!oa)
-        return 0;
-    QString baseUrl = jira->servers.value(0);
+    QString baseUrl = this->dbmsServer();
     if(baseUrl.isEmpty())
         return 0;
+    if(connectMethod == OAuth)
+    {
+        if(!oauthLogin())
+            return 0;
+    }
+    JiraPrjInfoList prjList = getProjectList(baseUrl);
+    if(prjList.isEmpty())
+        return 0;
+
+    JiraProject *project = new JiraProject(this);
+    project->dbmsServer = baseUrl;
+    QString pname = projectName;
+    int pid = 10000;
+    if(pname.isEmpty())
+    {
+        if(prjList.size())
+        {
+            JiraProjectInfo &info = prjList.first();
+            pname = info.name;
+            pid = info.id;
+        }
+    }
+    foreach(const JiraProjectInfo &info, prjList)
+    {
+        if(pname == info.name)
+            pid = info.id;
+    }
+    project->name = pname;
+    project->projectId = pid; // !!!
+    project->loadDefinition();
+    project->opened = true;
+    return project;
+}
+
+bool JiraDB::oauthLogin()
+{
+    QString baseUrl = this->dbmsServer();
+    if(baseUrl.isEmpty())
+        return false;
+    if(!oa)
+        return false;
     QString callbackUrl = "http://oauth/" ; //+ QUuid::createUuid().toString();
     QMap< QString, QString> result;
     result = oa->getRequestToken("POST",
                                  baseUrl + JIRA_REQTOKEN_PATH, // "http://rt.allrecall.com:8081/plugins/servlet/oauth/request-token",
                                  callbackUrl);
-    QString token = result.value("oauth_token");
-    QString token_secret = result.value("oauth_token_secret");
-    QString callback_confirm = result.value("oauth_callback_confirmed");
+    d->token = result.value("oauth_token");
+    d->token_secret = result.value("oauth_token_secret");
+    d->callback_confirm = result.value("oauth_callback_confirmed");
 
-    if(token.isEmpty())
+    if(d->token.isEmpty())
         return 0;
     QScopedPointer<WebForm> web(new WebForm());
-    if(web->request(QString("%1?oauth_token=%2").arg(baseUrl + JIRA_AUTHORIZE_PATH, token), QRegExp(callbackUrl)))
+    if(web->request(QString("%1?oauth_token=%2").arg(baseUrl + JIRA_AUTHORIZE_PATH, d->token), QRegExp(callbackUrl)))
     {
         QUrl url = web->foundUrl();
         oa->setFoundUrl(url);
-        QString access_token = oa->getAccessToken("POST",
-                           baseUrl + JIRA_ACCTOKEN_PATH,
-                           token);
-        JiraPrjInfoList prjList = getProjectList(baseUrl);
-
-        JiraProject *project = new JiraProject(this);
-        project->token = access_token;
-        project->dbmsType = baseUrl;
-        project->name = projectName;
-        project->projectId = 10000; // !!!
-        project->loadDefinition();
-        project->opened = true;
-        return project;
+        d->access_token = oa->getAccessToken("POST",
+                                                  baseUrl + JIRA_ACCTOKEN_PATH,
+                                                  d->token);
+        return true;
     }
-    return 0;
+    return false;
 }
 
 TQAbstractProject *JiraDB::openConnection(const QString &connectString)
@@ -182,27 +240,40 @@ TQAbstractProject *JiraDB::openConnection(const QString &connectString)
     bool okRecType;
     int recType = sRecType.toInt(&okRecType);*/
 
-    int recType = params.value("RecordType").toInt();
+    int recType = params.value(PRJPARAM_RECORDTYPE).toInt();
 
-    setDbmsType(params.value("DBType").toString());
-    setDbmsServer(params.value("DBServer").toString());
-    if(!params.value("DBOSUser").toBool())
-        setDbmsUser(params.value("DBUser").toString(), params.value("DBPass").toString());
-    else
-        setDbmsUser("","");
-    TQAbstractProject *prj = openProject(params.value("Project").toString(), params.value("User").toString(), params.value("Password").toString());
+    setConnectString(connectString);
+    TQAbstractProject *prj = openProject(params.value(PRJPARAM_NAME).toString(),
+                                         params.value(DBPARAM_USER).toString(),
+                                         params.value(DBPARAM_PASSWORD).toString());
     return prj;
 }
 
-QVariant JiraDB::sendRequest(const QString &dbmsType, const QString &method, const QString &query, const QString &body)
+void JiraDB::setConnectString(const QString &connectString)
 {
-    QString link(dbmsType + "rest/api/2/" + query);
+    TQAbstractDB::setConnectString(connectString);
+    QVariantMap params = parser->toVariant(connectString).toMap();
+    int method = params.value("ConnectMethod").toInt();
+    setConnectMethod((JiraConnectMethod)method);
+}
+
+QVariant JiraDB::sendRequest(const QString &dbmsServer, const QString &method, const QString &query, const QString &body)
+{
+    QString link(dbmsServer + "rest/api/2/" + query);
     QUrl url(link);
 
     QNetworkRequest req;
     req.setUrl(url);
     req.setHeader(QNetworkRequest::ContentTypeHeader,"application/json");
-    QNetworkReply *r = oa->signedGet(&req);
+    QNetworkReply *r;
+    if(connectMethod == OAuth)
+        r = oa->signedGet(&req);
+    else
+    {
+        QByteArray v = QByteArray("Basic ") + QString(dbmsUser() + ":" + dbmsPass()).toLocal8Bit().toBase64();
+        req.setRawHeader("Authorization", v);
+        r = sendWait(method, req, body.toLocal8Bit());
+    }
     QScopedPointer<QNetworkReply> reply(r);
     /*
     QDateTime endTime = QDateTime::currentDateTime().addSecs(10);
@@ -216,7 +287,9 @@ QVariant JiraDB::sendRequest(const QString &dbmsType, const QString &method, con
     */
     if(reply->error() != QNetworkReply::NoError)
     {
-        qDebug(reply->errorString().toLocal8Bit().constData());
+        qDebug() << "Error:" << reply->error()
+                 << reply->errorString();
+        qDebug() << reply->readAll();
         return QVariant();
     }
 
@@ -231,6 +304,122 @@ QVariant JiraDB::sendRequest(const QString &dbmsType, const QString &method, con
 //    QVariant  obj = QtJson::parse(s, success);
     QVariant obj = parser->toVariant(s);
     return obj;
+}
+
+static int method2op(const QString &method)
+{
+    if(method == "GET")
+        return QNetworkAccessManager::GetOperation;
+    if(method == "POST")
+        return QNetworkAccessManager::PostOperation;
+    if(method == "HEAD")
+        return QNetworkAccessManager::HeadOperation;
+    else if(method == "DELETE")
+        return QNetworkAccessManager::DeleteOperation;
+    else if(method == "PUT")
+        return QNetworkAccessManager::PutOperation;
+    return -1;
+}
+
+
+QNetworkReply *JiraDB::sendWait(const QString &method, QNetworkRequest &request, const QByteArray &body)
+{
+    int op = method2op(method);
+    return sendWait((QNetworkAccessManager::Operation)op, request, body);
+}
+
+QNetworkReply *JiraDB::sendWait(QNetworkAccessManager::Operation op, QNetworkRequest &request, const QByteArray &body)
+{
+    QNetworkReply *reply;
+    switch(op)
+    {
+    case -1:
+        return 0;
+    case QNetworkAccessManager::HeadOperation:
+        reply = man->head(request);
+        break;
+    case QNetworkAccessManager::GetOperation:
+        reply = man->get(request);
+        break;
+    case QNetworkAccessManager::PutOperation:
+        reply = man->put(request, body);
+        break;
+    case QNetworkAccessManager::PostOperation:
+        reply = man->post(request, body);
+        break;
+    case QNetworkAccessManager::DeleteOperation:
+        reply = man->deleteResource(request);
+        break;
+    case QNetworkAccessManager::CustomOperation:
+        return 0;
+    }
+    waitReply(reply);
+    return reply;
+}
+
+bool JiraDB::waitReply(QNetworkReply *reply)
+{
+    if(!reply)
+        return false;
+    QDateTime endTime = QDateTime::currentDateTime().addSecs(timeOutSecs);
+    while(!readyReplies.contains(reply))
+    {
+        if(QDateTime::currentDateTime() > endTime)
+            return false;
+        qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+    }
+    readyReplies.removeAll(reply);
+    return true;
+}
+
+
+
+QVariant JiraDB::sendSimpleRequest(const QString &dbmsType, const QString &method, const QString &query, const QString &body)
+{
+    QString link(dbmsType + "rest/api/2/" + query);
+    QUrl url(link);
+
+    QNetworkAccessManager man;
+    QNetworkRequest req;
+    req.setUrl(url);
+    req.setHeader(QNetworkRequest::ContentTypeHeader,"application/json");
+    QNetworkReply *r = oa->sendWait(method, req);
+    QScopedPointer<QNetworkReply> reply(r);
+    /*
+    QDateTime endTime = QDateTime::currentDateTime().addSecs(10);
+    while(!readyReplies.contains(reply.data()))
+    {
+        qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+        if(QDateTime::currentDateTime() > endTime)
+            return QVariant();
+    }
+    readyReplies.removeAll(reply.data());
+    */
+    if(reply->error() != QNetworkReply::NoError)
+    {
+        qDebug() << "Error:" << reply->error()
+                 << reply->errorString();
+        qDebug() << reply->readAll();
+        return QVariant();
+    }
+
+    QByteArray text = reply->readAll();
+
+    qDebug() << text;
+    QString s(text.constData());
+//    qDebug(text.constData());
+//    QBuffer buf(&text);
+//    buf.open(QIODevice::ReadOnly);
+
+    bool success;
+//    QVariant  obj = QtJson::parse(s, success);
+    QVariant obj = parser->toVariant(s);
+    return obj;
+}
+
+QDialog *JiraDB::createConnectDialog() const
+{
+    return new JiraLogin();
 }
 
 QVariant JiraDB::parseValue(const QVariant &source, const QString &path)
@@ -274,13 +463,17 @@ TQAbstractDB *JiraDB::createJiraDB(QObject *parent)
     return new JiraDB(parent);
 }
 
-JiraPrjInfoList JiraDB::getProjectList(const QString& dbmsType)
+JiraPrjInfoList JiraDB::getProjectList(const QString& serverUrl)
 {
+    QString server = serverUrl;
+    if(server.isEmpty())
+        server = dbmsServer();
+
     projectInfo.clear();
-    if(!projectInfo.contains(dbmsType))
+    if(!projectInfo.contains(server))
     {
         JiraPrjInfoList list;
-        QVariantList reply = sendRequest(dbmsType, "GET","project").toList();
+        QVariantList reply = sendRequest(server, "GET","project").toList();
         foreach(QVariant v, reply)
         {
             JiraProjectInfo info;
@@ -291,15 +484,15 @@ JiraPrjInfoList JiraDB::getProjectList(const QString& dbmsType)
             info.name = map.value("name").toString();
             list.append(info);
         }
-        projectInfo.insert(dbmsType, list);
+        projectInfo.insert(server, list);
     }
-    return projectInfo.value(dbmsType);
+    return projectInfo.value(server);
 }
 
-//void JiraDB::replyFinished(QNetworkReply *reply)
-//{
-//    readyReplies.append(reply);
-//}
+void JiraDB::replyFinished(QNetworkReply *reply)
+{
+    readyReplies.append(reply);
+}
 
 void JiraDB::callbackClicked()
 {
@@ -333,7 +526,7 @@ TQRecModel *JiraProject::openQueryModel(const QString &queryName, int recType, b
     if(!favSearch.contains(queryName))
         return 0;
     QString jql = favSearch.value(queryName);
-    QVariantMap map = db->sendRequest(dbmsType,"GET",QString("search&jql=%1").arg(jql)).toMap();
+    QVariantMap map = db->sendRequest(dbmsServer,"GET",QString("search&jql=%1").arg(jql)).toMap();
     QVariantList issueList = map.value("issues").toList();
     TQRecModel *model = new TQRecModel(this, recType, this);
     foreach(QVariant i, issueList)
@@ -351,15 +544,17 @@ QAbstractItemModel *JiraProject::openIdsModel(const IntList &ids, int recType, b
     foreach(int i, ids)
         list.append(QString::number(i));
     QString jql = QString("id in (%1)").arg(list.join(","));
-    QVariantMap map = db->sendRequest(dbmsType,"GET",QString("search&jql=%1").arg(jql)).toMap();
+    QVariantMap map = db->sendRequest(dbmsServer,"GET",QString("search?jql=%1").arg(jql)).toMap();
     QVariantList issueList = map.value("issues").toList();
     TQRecModel *model = new TQRecModel(this, recType, this);
+    QList<TQRecord*> records;
     foreach(QVariant i, issueList)
     {
         QVariantMap issue = i.toMap();
         JiraRecord *rec = new JiraRecord(this, recType, issue.value("id").toInt());
-        model->append(rec);
+        records.append(rec);
     }
+    model->append(records);
     return model;
 }
 
@@ -388,7 +583,7 @@ bool JiraProject::readRecordWhole(TQRecord *record)
     if(!rec)
         return false;
     TQAbstractRecordTypeDef *rdef = record->recordDef();
-    QVariantMap issue = db->sendRequest(dbmsType,"GET",QString("issue/%1").arg(rec->recordId())).toMap();
+    QVariantMap issue = db->sendRequest(dbmsServer,"GET",QString("issue/%1").arg(rec->recordId())).toMap();
     rec->key = issue.value("key").toString();
     QVariantMap fields = issue.value("fields").toMap();
     QVariantMap::iterator i;
@@ -429,7 +624,7 @@ bool JiraProject::readRecordFields(TQRecord *record)
     if(!rec)
         return false;
     TQAbstractRecordTypeDef *rdef = record->recordDef();
-    QVariantMap issue = db->sendRequest(dbmsType,"GET",QString("issue/%1?fields=*all,-description,-comment").arg(rec->recordId())).toMap();
+    QVariantMap issue = db->sendRequest(dbmsServer,"GET",QString("issue/%1?fields=*all,-description,-comment").arg(rec->recordId())).toMap();
     QVariantMap fields = issue.value("fields").toMap();
     QVariantMap::iterator i;
     for(i = fields.begin(); i!=fields.end(); i++)
@@ -447,7 +642,7 @@ bool JiraProject::readRecordTexts(TQRecord *record)
     JiraRecord *rec = qobject_cast<JiraRecord *>(record);
     if(!rec)
         return false;
-    QVariantMap issue = db->sendRequest(dbmsType,"GET",QString("issue/%1?fields=description,comment").arg(rec->recordId())).toMap();
+    QVariantMap issue = db->sendRequest(dbmsServer,"GET",QString("issue/%1?fields=description,comment").arg(rec->recordId())).toMap();
     rec->desc = db->parseValue(issue,"fields/description").toString();
     QVariantList comments = db->parseValue(issue,"comment/comments").toList();
     rec->notesCol.clear();
@@ -474,7 +669,7 @@ bool JiraProject::readRecordBase(TQRecord *record)
     TQAbstractRecordTypeDef *rdef = record->recordDef();
     QHash<int, QString> fieldList = baseRecordFields(record->recordType());
     QStringList list = fieldList.values();
-    QVariantMap issue = db->sendRequest(dbmsType,"GET",QString("issue/%1?fields=%2").arg(rec->recordId()).arg(list.join(","))).toMap();
+    QVariantMap issue = db->sendRequest(dbmsServer,"GET",QString("issue/%1?fields=%2").arg(rec->recordId()).arg(list.join(","))).toMap();
     QVariantMap fields = issue.value("fields").toMap();
     QVariantMap::iterator i;
     for(i = fields.begin(); i!=fields.end(); i++)
@@ -615,9 +810,9 @@ bool JiraProject::isSystemModel(QAbstractItemModel *model) const
 
 void JiraProject::loadRecordTypes()
 {
-    QVariant obj = db->sendRequest(dbmsType,"GET", "field");
+    QVariant obj = db->sendRequest(dbmsServer,"GET", "field");
     QVariantList fieldList = obj.toList();
-    QVariantList types = db->sendRequest(dbmsType,"GET","issuetype").toList();
+    QVariantList types = db->sendRequest(dbmsServer,"GET","issuetype").toList();
     foreach(const QVariant &t, types)
     {
         QVariantMap typeMap = t.toMap();
@@ -629,7 +824,7 @@ void JiraProject::loadRecordTypes()
         rdef->recType = recordType;
         rdef->recTypeName = typeMap.value("name").toString();
 
-        obj = db->sendRequest(dbmsType,"GET", QString("issue/createmeta?projectIds=%1&issuetypeIds=%2").arg(projectId).arg(recordType));
+        obj = db->sendRequest(dbmsServer,"GET", QString("issue/createmeta?projectIds=%1&issuetypeIds=%2").arg(projectId).arg(recordType));
         QVariantMap createFields = db->parseValue(obj, "projects/0/issuetypes/fields").toMap();
         int vid = 1;
         int nativeType = 1;
@@ -700,7 +895,7 @@ void JiraProject::loadRecordTypes()
 
 void JiraProject::loadQueries()
 {
-    QVariantList favs = db->sendRequest(dbmsType,"GET", "filter/favourite").toList();
+    QVariantList favs = db->sendRequest(dbmsServer,"GET", "filter/favourite").toList();
     foreach(QVariant v, favs)
     {
         QVariantMap favMap = v.toMap();
@@ -1046,4 +1241,10 @@ QVariant JiraRecord::value(int vid, int role) const
 TQNotesCol JiraRecord::notes() const
 {
     return notesCol;
+}
+
+
+void JiraDB::setConnectMethod(JiraDB::JiraConnectMethod method)
+{
+    connectMethod = method;
 }

@@ -2,14 +2,18 @@
 #include "ui_jiraoptions.h"
 #include "jiradb.h"
 #include <QMessageBox>
+#include <QFileDialog>
 
 JiraOptions::JiraOptions(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::JiraOptions)
 {
     ui->setupUi(this);
+    plugin = JiraPlugin::plugin();
     setAttribute(Qt::WA_DeleteOnClose, true);
-    ui->leServer->setText(JiraPlugin::plugin()->servers.join("; "));
+    ui->leServer->setText(plugin->servers.join("; "));
+    ui->leKeyFile->setText(plugin->keyFile);
+    ui->leKeyPassword->setText(plugin->keyPass);
     isModified = false;
 }
 
@@ -78,12 +82,36 @@ bool JiraOptions::event(QEvent *e)
 void JiraOptions::saveChanges()
 {
     QString server = ui->leServer->text();
-    JiraPlugin::plugin()->servers = server.split(QRegExp("\\s*;\\s*"));
-    JiraPlugin::plugin()->saveSettings();
+    plugin->servers = server.split(QRegExp("\\s*;\\s*"));
+    plugin->keyFile = ui->leKeyFile->text();
+    plugin->keyPass = ui->leKeyPassword->text();
+    plugin->saveSettings();
     isModified = false;
 }
 
 void JiraOptions::on_leServer_textEdited()
+{
+    isModified = true;
+}
+
+void JiraOptions::on_tbKeyFileBrowse_clicked()
+{
+    QString keyFile = QFileDialog::getOpenFileName(this, tr("Âûבונטעו פאיכ ךכ‏קא"),
+                                 QString(),
+                                 tr("PEM פאיכû (*.pem);;Âסו פאיכû (*.*)"));
+    if(!keyFile.isEmpty())
+    {
+        ui->leKeyFile->setText(keyFile);
+        isModified = true;
+    }
+}
+
+void JiraOptions::on_leKeyFile_textChanged(const QString &arg1)
+{
+    isModified = true;
+}
+
+void JiraOptions::on_leKeyPassword_textChanged(const QString &arg1)
 {
     isModified = true;
 }

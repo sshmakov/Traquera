@@ -11,16 +11,19 @@ TEMPLATE = lib
 
 DEFINES += JIRA_LIBRARY
 
+
 SOURCES += jiradb.cpp \
     qt-json/json.cpp \
     jiraoptions.cpp \
-    webform.cpp
+    webform.cpp \
+    jiralogin.cpp
 
 HEADERS += jiradb.h\
         jira_global.h \
     qt-json/json.h \
     jiraoptions.h \
-    webform.h
+    webform.h \
+    jiralogin.h
 
 INCLUDEPATH += ../common
 
@@ -38,7 +41,8 @@ DESTDIR = ../plugins/jira
 
 FORMS += \
     jiraoptions.ui \
-    webform.ui
+    webform.ui \
+    jiralogin.ui
 
 OTHER_FILES += \
     mykey.pub \

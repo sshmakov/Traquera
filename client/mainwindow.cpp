@@ -129,7 +129,7 @@ MainWindow::MainWindow(QWidget *parent)
     tabWidget->setCornerWidget(closeBtn);
 
 	connect(tabWidget,SIGNAL(tabCloseRequested(int)),this,SLOT(closeTab(int)));
-    connect(tabWidget,SIGNAL(currentChanged(int)),this,SLOT(on_tabChanged(int)));
+    connect(tabWidget,SIGNAL(currentChanged(int)),this,SLOT(on_tabChanged(int)),Qt::QueuedConnection);
     connect(closeBtn,SIGNAL(clicked()),this,SLOT(closeCurTab()));
 
     //createConnection();
@@ -874,6 +874,7 @@ void MainWindow::openQueryByIdClip()
 
 void MainWindow::openQueryById(const QString &numbers, int recordType, bool reusePage)
 {
+    TQAbstractProject *prj = currentProject();
     QueryPage *page=NULL; // = qobject_cast<QueryPage *>(w);
     QObject *w = tabWidget->currentWidget();
     page = qobject_cast<QueryPage *>(w);
@@ -882,12 +883,13 @@ void MainWindow::openQueryById(const QString &numbers, int recordType, bool reus
     else
         page = createNewPage(minTitle(numbers));
     showProgressBar();
-    page->openIds(currentProject(), numbers, numbers, recordType);
+    page->openIds(prj, numbers, numbers, recordType);
     hideProgressBar();
 }
 
 void MainWindow::openQueryById(const QList<int> &idList, const QString &title, int recordType, bool reusePage)
 {
+    TQAbstractProject *prj = currentProject();
     QueryPage *page = curQueryPage(); // = qobject_cast<QueryPage *>(w);
     QString newTitle = title;
     if(newTitle.isEmpty())
@@ -897,7 +899,7 @@ void MainWindow::openQueryById(const QList<int> &idList, const QString &title, i
     else
         tabWidget->setTabText(tabWidget->currentIndex(),minTitle(newTitle));
     showProgressBar();
-    page->openIds(currentProject(),idList,title, recordType);
+    page->openIds(prj,idList,title, recordType);
     hideProgressBar();
 }
 
@@ -1260,24 +1262,14 @@ int MainWindow::addProjectItem(const QString &connectString)
         return -1;
     }
 
-    QString dbClass = params.value("DBClass").toString();
-    QString projectName = params.value("Project").toString();
-    QString dbServer = params.value("DBServer").toString();
-    QString dbType = params.value("DBType").toString();
+    QString dbClass = params.value(DBPARAM_CLASS).toString();
+    QString projectName = params.value(PRJPARAM_NAME).toString();
+    QString dbServer = params.value(DBPARAM_SERVER).toString();
+    QString dbType = params.value(DBPARAM_TYPE).toString();
 
     TQOneProjectTree *prjTree = new TQOneProjectTree(this);
     prjTree->setConnectString(connectString);
 
-    /*
-    TQProjectTreeItem item(prjTree);
-
-    item.data.dbClass = params.value("DBClass").toString();
-    item.data.projectName = params.value("Project").toString();
-    item.data.connectString = connectString;
-
-
-    prjTree->setItem(item);
-    */
     prjTree->setMaxColCount(1);
     ProjectModel m;
     m.prjTree = prjTree;
@@ -1603,7 +1595,9 @@ void MainWindow::on_tabChanged(int tab)
     QueryPage *qpage = qobject_cast<QueryPage *>(w);
     if(!qpage)
         return;
-    setCurrentProject(qpage->project());
+    TQAbstractProject *prj = qpage->project();
+    if(prj)
+        setCurrentProject(prj);
 }
 
 void MainWindow::on_actionForward_triggered()
@@ -1763,6 +1757,7 @@ void MainWindow::on_treeView_customContextMenuRequested(const QPoint &pos)
     }
     if(selectedTreeItem.isProjectSelected)
     {
+        menu.addAction(actionMakeActive);
         menu.addSeparator();
         if(selectedTreeItem.prj)
             menu.addAction(actionClose_Project);
@@ -2194,28 +2189,38 @@ void MainWindow::on_actionEditProject_triggered()
 
 void MainWindow::slotNewDBConnect(const QString &dbClass)
 {
-    QDialog dlg;
-    QHBoxLayout *lay = new QHBoxLayout(&dlg);
     TQAbstractDB *db = TQAbstractDB::createDbClass(dbClass, this);
     if(!db)
         return;
-    QWidget *w = db->createConnectWidget();
-    if(!w)
+    QDialog *dlg;
+    QWidget *connWidget;
+    dlg = db->createConnectDialog();
+    if(!dlg)
     {
-        w = new TQConnectWidget();
-        w->setProperty("connectString", QString("{DBClass: \""+dbClass+"\"}"));
+        dlg = new QDialog();
+        QHBoxLayout *lay = new QHBoxLayout(dlg);
+        QWidget *w = db->createConnectWidget();
+        if(!w)
+        {
+            w = new TQConnectWidget();
+        }
+        lay->addWidget(w);
+        connWidget = w;
     }
-    lay->addWidget(w);
-    if(dlg.exec())
+    else
+        connWidget = dlg;
+    connWidget->setProperty("connectString", QString("{%1: \"%2\"").arg(DBPARAM_CLASS,dbClass));
+    if(dlg->exec())
     {
-        QString connString = w->property("connectString").toString();
-        QString saveString = w->property("connectSaveString").toString();
+        QString connString = connWidget->property("connectString").toString();
+        QString saveString = connWidget->property("connectSaveString").toString();
         int row = addProjectItem(saveString);
         TQOneProjectTree *tree = qobject_cast<TQOneProjectTree *>(treeModel->sourceModel(row));
         treeView->setCurrentIndex(treeModel->index(row,0));
         readSelectedTreeItem();
         if(tree->open(connString))
         {
+
             treeView->expand(selectedTreeItem.curIndex);
             setCurrentProject(tree->project());
         }
@@ -2223,6 +2228,7 @@ void MainWindow::slotNewDBConnect(const QString &dbClass)
         saveProjectTree();
 //        TQAbstractProject *project = db->openConnection(connString);
     }
+    delete dlg;
 }
 
 void MainWindow::on_actionDelete_Project_triggered()
@@ -2275,3 +2281,11 @@ void MainWindow::on_actionDeleteQuery_triggered()
     }
 }
 
+
+
+void MainWindow::on_actionMakeActive_triggered()
+{
+    readSelectedTreeItem();
+    TQAbstractProject *prj = selectedTreeItem.prj;
+    setCurrentProject(prj);
+}

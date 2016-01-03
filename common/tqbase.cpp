@@ -1,4 +1,5 @@
 #include "tqbase.h"
+#include "tqjson.h"
 
 QHash<QString, TQAbstractProject *> TQAbstractDB::projectList;
 
@@ -43,7 +44,20 @@ QString TQAbstractDB::dbmsPass() const
     return m_dbPass;
 }
 
+void TQAbstractDB::setConnectString(const QString &connectString)
+{
+    QVariantMap params = TQJson().toVariant(connectString).toMap();
+    setDbmsType(params.value(DBPARAM_TYPE).toString());
+    setDbmsServer(params.value(DBPARAM_SERVER).toString());
+    setDbmsUser(params.value(DBPARAM_USER).toString(), params.value(DBPARAM_PASSWORD).toString());
+}
+
 QWidget *TQAbstractDB::createConnectWidget() const
+{
+    return 0;
+}
+
+QDialog *TQAbstractDB::createConnectDialog() const
 {
     return 0;
 }

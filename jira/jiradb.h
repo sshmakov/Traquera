@@ -7,6 +7,7 @@
 #include <tqplug.h>
 
 #include "jira_global.h"
+#include <QtNetwork>
 
 class QNetworkReply;
 
@@ -23,6 +24,8 @@ public:
     QDir pluginDir;
     QDir dataDir;
     QStringList servers;
+    QString keyFile;
+    QString keyPass;
 
     JiraPlugin(QObject *parent = 0);
     Q_INVOKABLE void initPlugin(QObject *obj, const QString &modulePath);
@@ -54,18 +57,31 @@ class WebForm;
 class TQOAuth;
 class TQJson;
 
+class JiraDBPrivate;
+class QNetworkRequest;
+
 class /*JIRASHARED_EXPORT*/ JiraDB: public TQAbstractDB
 {
     Q_OBJECT
+public:
+    enum JiraConnectMethod {
+        BaseAuth = 0,
+        OAuth
+    };
+private:
+    JiraDBPrivate *d;
 protected:
-//    QNetworkAccessManager *man;
+    QNetworkAccessManager *man;
 //    QList<QObject *> readyReplies;
     QMap<QString, JiraPrjInfoList> projectInfo; // by dbmsType
     WebForm *webForm;
     TQOAuth *oa;
     TQJson *parser;
+    JiraConnectMethod connectMethod;
+    int timeOutSecs;
 public:
     JiraDB(QObject *parent = 0);
+    ~JiraDB();
     virtual QStringList dbmsTypes();
     virtual QStringList projects(const QString &dbmsType,
                                  const QString &user = QString(),
@@ -75,14 +91,24 @@ public:
             const QString &user = QString(),
             const QString &pass = QString()
             );
+    bool isAuthorized();
+    void setConnectMethod(JiraConnectMethod method);
     virtual TQAbstractProject *openConnection(const QString &connectString);
-    QVariant sendRequest(const QString &dbmsType, const QString &method, const QString &query, const QString &body = QString());
+    void setConnectString(const QString &connectString);
+    QVariant sendRequest(const QString &dbmsServer, const QString &method, const QString &query, const QString &body = QString());
     QVariant parseValue(const QVariant &source, const QString &path);
     static TQAbstractDB *createJiraDB(QObject *parent);
+    QVariant sendSimpleRequest(const QString &dbmsType, const QString &method, const QString &query, const QString &body = QString());
+    QDialog *createConnectDialog() const;
+    bool oauthLogin();
+    QNetworkReply *sendWait(const QString &method, QNetworkRequest &request, const QByteArray &body = QByteArray());
+    QNetworkReply *sendWait(QNetworkAccessManager::Operation op, QNetworkRequest &request, const QByteArray &body  = QByteArray());
 protected:
-    JiraPrjInfoList getProjectList(const QString& dbmsType);
+    QList<QNetworkReply*> readyReplies;
+    bool waitReply(QNetworkReply *reply);
+    JiraPrjInfoList getProjectList(const QString& serverUrl);
 protected slots:
-//    void	replyFinished(QNetworkReply * reply);
+    void	replyFinished(QNetworkReply * reply);
     void callbackClicked();
 private:
 
@@ -93,14 +119,15 @@ class JiraRecTypeDef;
 class JiraProject: public TQBaseProject
 {
     Q_OBJECT
+
 protected:
     JiraDB *db;
-    QString dbmsType;
+    QString dbmsServer;
     QHash<int,JiraRecTypeDef *> recordDefs;
     QString projectKey;
     int projectId;
     QMap<QString, QString> favSearch;
-    QString token;
+
 public:
     JiraProject(TQAbstractDB *db);
     void loadDefinition();

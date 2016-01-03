@@ -242,7 +242,8 @@ QString TTGlobal::saveObjectDocumentation(QObject *object, const QString &fileNa
 void TTGlobal::showError(const QString &text)
 {
     if(proc)
-        mainWindow()->statusBar()->showMessage(text,10000);
+        QMessageBox::critical(mainWindow(),tr("Error"),text);
+//        mainWindow()->statusBar()->showMessage(text,10000);
 }
 
 

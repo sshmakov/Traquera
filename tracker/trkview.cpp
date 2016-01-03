@@ -27,7 +27,7 @@
 //#include <sqlext.h>
 
 
-bool isTrkOK(int result, bool show = true)
+int isTrkOK(int result, bool show = true)
 {
     if(result ==  TRK_SUCCESS)
         return true;
@@ -36,6 +36,8 @@ bool isTrkOK(int result, bool show = true)
     {
     case TRK_SUCCESS:
         return true;
+    case TRK_E_END_OF_LIST			       :
+        return false;
     case TRK_E_VERSION_MISMATCH		       :    error = QObject::tr("TRK_E_VERSION_MISMATCH        "); break;
     case TRK_E_OUT_OF_MEMORY		 	   :    error = QObject::tr("TRK_E_OUT_OF_MEMORY			"); break;
     case TRK_E_BAD_HANDLE			       :    error = QObject::tr("TRK_E_BAD_HANDLE			"); break;
@@ -44,7 +46,7 @@ bool isTrkOK(int result, bool show = true)
     case TRK_E_DATA_TRUNCATED		       :    error = QObject::tr("TRK_E_DATA_TRUNCATED		"); break;
     case TRK_E_NO_MORE_DATA			       :    error = QObject::tr("TRK_E_NO_MORE_DATA			"); break;
     case TRK_E_LIST_NOT_INITIALIZED	       :    error = QObject::tr("TRK_E_LIST_NOT_INITIALIZED	"); break;
-    case TRK_E_END_OF_LIST			       :    error = QObject::tr("TRK_E_END_OF_LIST			"); break;
+//    case TRK_E_END_OF_LIST			       :    error = QObject::tr("TRK_E_END_OF_LIST			"); break;
     case TRK_E_NOT_LOGGED_IN			   :    error = QObject::tr("TRK_E_NOT_LOGGED_IN			"); break;
     case TRK_E_SERVER_NOT_PREPARED	       :    error = QObject::tr("TRK_E_SERVER_NOT_PREPARED	"); break;
     case TRK_E_BAD_DATABASE_VERSION	       :    error = QObject::tr("TRK_E_BAD_DATABASE_VERSION	"); break;
@@ -495,13 +497,15 @@ TQAbstractProject *TrkToolDB::openConnection(const QString &connectString)
     bool okRecType;
     int recType = sRecType.toInt(&okRecType);
 
-    setDbmsType(params.value("DBType"));
-    setDbmsServer(params.value("DBServer"));
-    if(params.value("DBOSUser") != "true")
-        setDbmsUser(params.value("DBUser"),params.value("DBPass"));
+    setDbmsType(params.value(DBPARAM_TYPE));
+    setDbmsServer(params.value(DBPARAM_SERVER));
+    if(!map.value(DBPARAM_OSUSER).toBool())
+        setDbmsUser(params.value(DBPARAM_USER),params.value(DBPARAM_PASSWORD));
     else
         setDbmsUser("","");
-    TQAbstractProject *prj = openProject(params.value("Project"),params.value("User"),params.value("Password"));
+    TQAbstractProject *prj = openProject(params.value(PRJPARAM_NAME),
+                                         params.value(PRJPARAM_USER),
+                                         params.value(PRJPARAM_PASSWORD));
     return prj;
 }
 
@@ -1539,12 +1543,14 @@ QAbstractItemModel *TrkToolProject::openIdsModel(const QList<int> &ids, int type
     //beginResetModel();
     QList <int> unique = uniqueIntList(ids);
     model->prevTransId=0;
+    QList<TQRecord*> records;
     foreach(int id, unique)
     {
         TrkToolRecord *rec = qobject_cast<TrkToolRecord *>(createRecordById(id, type));
         if(rec)
-            model->append(rec);
+            records.append(rec);
     }
+    model->append(records);
     model->setQueryName(intListToString(unique));
     model->isQueryType = false;
     //endResetModel();

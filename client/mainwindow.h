@@ -267,6 +267,7 @@ private slots:
     void on_actionRefreshQueryList_triggered();
     void on_actionDeleteQuery_triggered();
     void on_actionEditProject_triggered();
+    void on_actionMakeActive_triggered();
 };
 
 

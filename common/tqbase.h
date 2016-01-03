@@ -9,6 +9,20 @@
 #include <QtCore>
 #include <QtXml>
 
+#define DBPARAM_CLASS "DBClass"
+#define DBPARAM_TYPE "DBType"
+#define DBPARAM_SERVER "DBServer"
+#define DBPARAM_OSUSER "DBOSUser"
+#define DBPARAM_USER "DBUser"
+#define DBPARAM_PASSWORD "DBPassword"
+#define PRJPARAM_USER "User"
+#define PRJPARAM_PASSWORD "Password"
+#define PRJPARAM_NAME "Project"
+#define PRJPARAM_RECORDTYPE "RecordType"
+#define PRJPARAM_AUTOLOGIN "AutoLogin"
+
+
+
 class ConnectParams
 {
 public:
@@ -89,6 +103,7 @@ class TQQueryFilter: public QSortFilterProxyModel
 
 class QAuthenticator;
 class QWidget;
+class QDialog;
 
 class TQPLUGIN_SHARED TQAbstractDB: public QObject
 {
@@ -118,7 +133,9 @@ public:
     virtual void setDbmsUser(const QString &dbmsUser, const QString &dbmsPass = QString());
     virtual QString dbmsUser() const;
     virtual QString dbmsPass() const;
+    virtual void setConnectString(const QString &connectString);
     virtual QWidget *createConnectWidget() const;
+    virtual QDialog *createConnectDialog() const;
     static TQAbstractProject *getProject(const QString &projectName);
 protected:
     static void registerProject(TQAbstractProject *prj);

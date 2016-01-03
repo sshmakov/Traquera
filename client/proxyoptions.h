@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QtGui>
+#include <QNetworkProxy>
 
 namespace Ui {
 class ProxyOptions;
@@ -37,7 +38,9 @@ class ProxyOptionsPrivate;
 class ProxyOptions : public QWidget
 {
     Q_OBJECT
-    
+protected:
+    QList<QPair<QString, QNetworkProxy::ProxyType> > proxyTypes;
+
 public:
     explicit ProxyOptions(QWidget *parent = 0);
     ~ProxyOptions();

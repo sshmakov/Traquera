@@ -30,7 +30,7 @@ public:
     void setConsumerKey(const QString &key);
     void setConsumerSecret(const QString &secret);
     void setSignatureMethod(const QString &method);
-    void setBaseUrl(const QString &url);
+//    void setBaseUrl(const QString &url);
     void setRealm(const QString &realm);
     void setFoundUrl(const QUrl& url);
 
@@ -38,10 +38,13 @@ public:
     QNetworkReply *sendRequest(int operation, const QString &link, const QString &headers, const QByteArray &body = QByteArray());
     static QMap<QString, QString> parseBodyReply(QNetworkReply *reply);
     bool waitReply(QNetworkReply *reply);
+    bool loadPrivateKey(const QString &fileName, const QString &filePassword);
 //    QString parJoin(const QMap<QString, QString> &pars);
 signals:
 private slots:
     void replyFinished(QNetworkReply* reply);
+    void queryAuthentication(QNetworkReply *reply, QAuthenticator*authenticator);
+    void proxyAuthentication(const QNetworkProxy &proxy, QAuthenticator*authenticator);
 public slots:
     
 };

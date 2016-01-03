@@ -76,38 +76,49 @@ void ProxySet::getFromProxy(const QNetworkProxy &proxy)
 class ProxyOptionsPrivate
 {
 public:
-    QList<QPair<QString, QNetworkProxy::ProxyType> > proxyTypes;
-    QNetworkProxy cur;
+//    QNetworkProxy cur;
+    QNetworkProxy::ProxyType ptype;
+    QString hostname;
+    int port;
+    QString user,password;
     ProxyOptionsPrivate();
 };
 
+static ProxyOptionsPrivate options;
+
 ProxyOptionsPrivate::ProxyOptionsPrivate()
 {
-    proxyTypes.append(qMakePair(QObject::tr("Нет"), QNetworkProxy::NoProxy));
-    proxyTypes.append(qMakePair(QObject::tr("Системный"), QNetworkProxy::DefaultProxy));
-    proxyTypes.append(qMakePair(QObject::tr("SOCKS5"), QNetworkProxy::Socks5Proxy));
-    proxyTypes.append(qMakePair(QObject::tr("HTTP only"), QNetworkProxy::HttpCachingProxy));
-    proxyTypes.append(qMakePair(QObject::tr("HTTPS"), QNetworkProxy::HttpProxy));
-    cur = QNetworkProxy::applicationProxy();
+    QNetworkProxy cur = QNetworkProxy::applicationProxy();
+    ptype = cur.type();
+    hostname = cur.hostName();
+    port = cur.port();
+    user = cur.user();
+    password = cur.password();
 }
 
 ProxyOptions::ProxyOptions(QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::ProxyOptions), d(new ProxyOptionsPrivate())
+    ui(new Ui::ProxyOptions), d(&options)
 {
     ui->setupUi(this);
     setAttribute( Qt::WA_DeleteOnClose, true);
 
 //    man = ttglobal()->networkManager();
 //    cur = pset;
-    ui->leServer->setText(d->cur.hostName());
-    ui->lePort->setValue(d->cur.port());
-    ui->leLogin->setText(d->cur.user());
-    ui->lePassword->setText(d->cur.password());
+    ui->leServer->setText(d->hostname);
+    ui->lePort->setValue(d->port);
+    ui->leLogin->setText(d->user);
+    ui->lePassword->setText(d->password);
+    proxyTypes
+            << qMakePair(QObject::tr("Нет"), QNetworkProxy::NoProxy)
+            << qMakePair(QObject::tr("Системный"), QNetworkProxy::DefaultProxy)
+            << qMakePair(QObject::tr("SOCKS5"), QNetworkProxy::Socks5Proxy)
+            << qMakePair(QObject::tr("HTTP only"), QNetworkProxy::HttpCachingProxy)
+            << qMakePair(QObject::tr("HTTPS"), QNetworkProxy::HttpProxy);
     QPair<QString, QNetworkProxy::ProxyType> p;
     int curIndex = -1, i=0;
-    QNetworkProxy::ProxyType curType = d->cur.type();
-    foreach(p, d->proxyTypes)
+    QNetworkProxy::ProxyType curType = d->ptype;
+    foreach(p, proxyTypes)
     {
         ui->cbProxyType->addItem(p.first, p.second);
         if(curType == p.second)
@@ -119,7 +130,7 @@ ProxyOptions::ProxyOptions(QWidget *parent) :
 
 ProxyOptions::~ProxyOptions()
 {
-    delete d;
+//    delete d;
     delete ui;
 }
 
@@ -137,15 +148,48 @@ bool ProxyOptions::event(QEvent *event)
 
 void ProxyOptions::applyChanges()
 {
-    QNetworkProxy::setApplicationProxy(d->cur);
+    QNetworkProxy p;
+    p.setType(options.ptype);
+    p.setHostName(options.hostname);
+    p.setPort(options.port);
+    p.setUser(options.user);
+    p.setPassword(options.password);
+    QNetworkProxy::setApplicationProxy(p);
 }
 
 void ProxyOptions::saveSettings()
 {
+//    QNetworkProxy p = QNetworkProxy::applicationProxy();
+    QSettings sets;
+    sets.beginGroup("Proxy");
+    QNetworkProxy::ProxyType curType = options.ptype;
+    sets.setValue("Type",(int)curType);
+    sets.setValue("HostName", options.hostname);
+    sets.setValue("Port", options.port);
+    sets.setValue("User", options.user);
+    sets.setValue("Password", options.password);
 }
 
 void ProxyOptions::loadSettings()
 {
+    QNetworkProxy p = QNetworkProxy::applicationProxy();
+    QNetworkProxy::ProxyType curType = p.type();
+    QSettings sets;
+    sets.beginGroup("Proxy");
+    if(!sets.contains("Type"))
+        return;
+    options.ptype = (QNetworkProxy::ProxyType)sets.value("Type").toInt();
+    options.hostname = sets.value("HostName").toString();
+    options.port = sets.value("Port").toInt();
+    options.user = sets.value("User").toString();
+    if(sets.contains("Password"))
+        options.password = sets.value("Password").toString();
+    p.setType(options.ptype);
+    p.setHostName(options.hostname);
+    p.setPort(options.port);
+    p.setUser(options.user);
+    p.setPassword(options.password);
+    QNetworkProxy::setApplicationProxy(p);
 }
 
 //void ProxyOptions::on_chUseProxy_clicked(bool checked)
@@ -170,33 +214,33 @@ void ProxyOptions::loadSettings()
 
 void ProxyOptions::on_cbProxyType_currentIndexChanged(int index)
 {
-    if(index>=0 && index < d->proxyTypes.size())
+    if(index>=0 && index < proxyTypes.size())
     {
-        QPair<QString, QNetworkProxy::ProxyType> p = d->proxyTypes.value(index);
-        d->cur.setType(p.second);
+        QPair<QString, QNetworkProxy::ProxyType> p = proxyTypes.value(index);
+        d->ptype = p.second;
     }
     else
-        d->cur.setType(QNetworkProxy::NoProxy);
+        d->ptype = QNetworkProxy::NoProxy;
 }
 
 void ProxyOptions::on_leServer_editingFinished()
 {
-    d->cur.setHostName(ui->leServer->text());
+    d->hostname = ui->leServer->text();
 }
 
 void ProxyOptions::on_lePort_editingFinished()
 {
-    d->cur.setPort(ui->lePort->value());
+    d->port = ui->lePort->value();
 }
 
 void ProxyOptions::on_leLogin_editingFinished()
 {
-    d->cur.setUser(ui->leLogin->text());
+    d->user = ui->leLogin->text();
 }
 
 void ProxyOptions::on_lePassword_editingFinished()
 {
-    d->cur.setPassword(ui->lePassword->text());
+    d->password = ui->lePassword->text();
 }
 
 

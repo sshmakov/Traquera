@@ -5,6 +5,7 @@
 #include <openssl/err.h>
 #include <QFile>
 #include <io.h>
+#include <QMessageBox>
 //#include "ttglobal.h"
 //#include <openssl/applink.c>
 
@@ -18,11 +19,11 @@ public:
     QString consumer_secret;
     QString signature_method;
     QString timestamp;
-    QString nonce;
+//    QString nonce;
     QString version;
-    QString signature;
-    QString baseUrl;
-    QString callbackUrl;
+//    QString signature;
+//    QString baseUrl;
+//    QString callbackUrl;
     QString verifier;
 
     QString request_token;
@@ -86,7 +87,7 @@ public:
         return true;
     }
 
-
+    /*
     bool loadPrivateKey(const QString &keyFile, const QString &pempass = QString())
     {
         isPrivateKeyLoaded = false;
@@ -104,6 +105,7 @@ public:
         else
             return false;
     }
+    */
 
     QByteArray signRSA(const QByteArray &buf)
     {
@@ -175,6 +177,7 @@ public:
         qDebug() << "URL:" << request->url();
         foreach(const QByteArray &h, request->rawHeaderList())
             qDebug() << h << ": " << request->rawHeader(h);
+        qDebug() << "===";
     }
 
     void dumpReply(QNetworkReply *reply)
@@ -193,6 +196,7 @@ public:
             qDebug() << reply->readAll();
         }
         qDebug() << "===";
+        dumpRequest(&reply->request());
     }
 
 /*
@@ -256,16 +260,24 @@ TQOAuth::TQOAuth(QObject *parent) :
 //    man =  ttglobal()->networkManager();// new QNetworkAccessManager(this);
     man =  new QNetworkAccessManager(this);
     connect(man, SIGNAL(finished(QNetworkReply*)), SLOT(replyFinished(QNetworkReply*)));
+    connect(man,
+            SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
+            SLOT(queryAuthentication(QNetworkReply*,QAuthenticator*)),
+            Qt::DirectConnection);
+    connect(man,
+            SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
+            SLOT(proxyAuthentication(QNetworkProxy,QAuthenticator*)),
+            Qt::DirectConnection);
     timeOutSecs = 10;
 //    d->realm="http%3A%2F%2Fapi.twitter.com%2F";
     d->consumer_key="1q2w3e4r";
     d->signature_method="RSA-SHA1";
 //    d->timestamp="137131200";
-    d->nonce="4572616e48616d6d65724c61686176";
+//    d->nonce="4572616e48616d6d65724c61686176";
     d->version="1.0";
-    d->signature="wOJIO9A2W5mFwDgiDvZbTSMK%2FPY%3D";
-    d->baseUrl = "http://rt.allrecall.com:8081/";
-    d->callbackUrl = "oob";
+//    d->signature="wOJIO9A2W5mFwDgiDvZbTSMK%2FPY%3D";
+//    d->baseUrl = "http://rt.allrecall.com:8081/";
+//    d->callbackUrl = "oob";
 }
 
 TQOAuth::~TQOAuth()
@@ -368,6 +380,24 @@ bool TQOAuth::waitReply(QNetworkReply *reply)
     return true;
 }
 
+bool TQOAuth::loadPrivateKey(const QString &fileName, const QString &filePassword)
+{
+    d->isPrivateKeyLoaded = false;
+    FILE *priv_key_file=NULL;
+    priv_key_file=fopen(fileName.toAscii(), "rb");
+    if(priv_key_file)
+    {
+        d->rsa_private=PEM_read_RSAPrivateKey(priv_key_file, NULL, 0, filePassword.toLocal8Bit().data());
+        if (d->rsa_private == NULL)
+            return false;
+        fclose(priv_key_file);
+        d->isPrivateKeyLoaded = true;
+        return true;
+    }
+    else
+        return false;
+}
+
 
 class ParItem: public QPair<QString, QString>
 {
@@ -417,6 +447,8 @@ static bool parLessThan(const ParItem &i1, const ParItem &i2)
 
 QMap< QString, QString> TQOAuth::getRequestToken(const QString &method, const QString &link, const QString &callback)
 {
+    if(!d->isPrivateKeyLoaded)
+        return QMap<QString, QString>();
     QMap< QString, QString> result;
     uint timestamp = QDateTime::currentDateTime().toTime_t();
     QString nonce = QUuid::createUuid().toString();
@@ -487,12 +519,9 @@ urlencode("<oauth_consumer_secret>&<oauth_token_secret>") Ч (на данном этапе oau
 GET&http3A%2F2Fapi.twitter.com%2Frequest_token&oauth_consumer_key%3Ddpf43f3p2l4k3l03%26oauth_nonce%3Dkllo9940pd9333jh%26oauth_signature_method%3DHMAC-SHA1%26oauth_timestamp%3D1191242096%26oauth_version%3D1.0
 */
 
-//    QString rsaKey = QUrl::toPercentEncoding(d->consumer_secret);
+    /*if(!d->loadPrivateKey("../test/mykey.pem", QString()))
+        qDebug("Error load privateKey");*/
 
-//    baseString = "aaaa";
-    if(!d->loadPrivateKey("../test/mykey.pem", QString()))
-        qDebug("Error load privateKey");
-//    d->setPrivateKey(rsaKey);
     QByteArray baseBuf = baseString.toAscii();
     QByteArray sign = d->signRSA(baseBuf);
     QString sign64 = sign.toBase64();
@@ -573,8 +602,12 @@ QNetworkReply *TQOAuth::signedGet(QNetworkRequest *request)
 
 bool TQOAuth::signRequest(const QString &method, QNetworkRequest *request, const QString &token, const QMap<QString, QString> &pars)
 {
+    if(!d->isPrivateKeyLoaded)
+        return false;
     uint timestamp = QDateTime::currentDateTime().toTime_t();
-    QString nonce = QUuid::createUuid().toString().replace(QChar('{'),"").replace(QChar('}'),"");
+    QString nonce = QUuid::createUuid().toString()
+            .replace(QChar('{'),"")
+            .replace(QChar('}'),"");
 
     QUrl url = request->url();
 //    ParList reqPars;
@@ -620,11 +653,11 @@ bool TQOAuth::signRequest(const QString &method, QNetworkRequest *request, const
     QString baseString = QString("%1&%2&%3")
             .arg(encMethod, encBaseUrl, QUrl::toPercentEncoding(join).constData());
 
-    if(!d->loadPrivateKey("../test/mykey.pem", QString()))
+    /*if(!d->loadPrivateKey("../test/mykey.pem", QString()))
     {
         qDebug("Error load privateKey");
         return false;
-    }
+    }*/
     QByteArray baseBuf = baseString.toAscii();
     QByteArray sign = d->signRSA(baseBuf);
     QString sign64 = sign.toBase64();
@@ -660,10 +693,10 @@ void TQOAuth::setSignatureMethod(const QString &method)
     d->signature_method = method;
 }
 
-void TQOAuth::setBaseUrl(const QString &url)
-{
-    d->baseUrl = url;
-}
+//void TQOAuth::setBaseUrl(const QString &url)
+//{
+//    d->baseUrl = url;
+//}
 
 void TQOAuth::setRealm(const QString &realm)
 {
@@ -710,4 +743,15 @@ QNetworkReply *TQOAuth::sendWait(const QString &method, QNetworkRequest &request
 void TQOAuth::replyFinished(QNetworkReply *reply)
 {
     readyReplies.append(reply);
+}
+
+void TQOAuth::queryAuthentication(QNetworkReply *reply, QAuthenticator *authenticator)
+{
+    qDebug() << "Realm: " << authenticator->realm();
+    //    qDebug() << authenticator->
+}
+
+void TQOAuth::proxyAuthentication(const QNetworkProxy &proxy, QAuthenticator *authenticator)
+{
+    qDebug() << "Proxy realm: " << authenticator->realm();
 }

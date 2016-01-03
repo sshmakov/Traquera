@@ -111,27 +111,27 @@ QString TQConnectWidget::connectString() const
     bool autoLogin = ui->autoLoginCheck->isChecked();
 
     QVariantMap params;
-    params.insert("DBClass",dbClass);
+    params.insert(DBPARAM_CLASS, dbClass);
     if(!dbType.isEmpty())
-        params.insert("DBType",dbType);
+        params.insert(DBPARAM_TYPE,dbType);
     if(!dbServer.isEmpty())
-        params.insert("DBServer", dbServer);
-    params.insert("DBOSUser", dbOsUser);
+        params.insert(DBPARAM_SERVER, dbServer);
+    params.insert(DBPARAM_OSUSER, dbOsUser);
     if(!dbOsUser)
     {
-        params.insert("DBUser", dbmsUser);
-        params.insert("DBPassword", dbmsPass);
+        params.insert(DBPARAM_USER, dbmsUser);
+        params.insert(DBPARAM_PASSWORD, dbmsPass);
         params.insert("SaveDBPassword", saveDBPass);
     }
     if(!project.isEmpty())
-        params.insert("Project", project);
+        params.insert(PRJPARAM_NAME, project);
     if(!user.isEmpty())
     {
-        params.insert("User", user);
-        params.insert("Password", password);
+        params.insert(PRJPARAM_USER, user);
+        params.insert(PRJPARAM_PASSWORD, password);
     }
     params.insert("SavePassword", savePass);
-    params.insert("AutoLogin",autoLogin);
+    params.insert(PRJPARAM_AUTOLOGIN,autoLogin);
     QString connectString = TQJson().toString(params);
     return connectString;
 }
@@ -157,27 +157,27 @@ QString TQConnectWidget::connectSaveString() const
     bool autoLogin = ui->autoLoginCheck->isChecked();
 
     QVariantMap params;
-    params.insert("DBClass",dbClass);
+    params.insert(DBPARAM_CLASS, dbClass);
     if(!dbType.isEmpty())
-        params.insert("DBType",dbType);
+        params.insert(DBPARAM_TYPE, dbType);
     if(!dbServer.isEmpty())
-        params.insert("DBServer", dbServer);
+        params.insert(DBPARAM_SERVER, dbServer);
     if(!dbmsUser.isEmpty())
     {
-        params.insert("DBUser", dbmsUser);
+        params.insert(DBPARAM_USER, dbmsUser);
         if(saveDBPass)
-            params.insert("DBPassword", dbmsPass);
+            params.insert(DBPARAM_PASSWORD, dbmsPass);
     }
     if(!project.isEmpty())
-        params.insert("Project", project);
+        params.insert(PRJPARAM_NAME, project);
     if(!user.isEmpty())
     {
-        params.insert("User", user);
+        params.insert(PRJPARAM_USER, user);
         if(savePass)
-            params.insert("Password", password);
+            params.insert(PRJPARAM_PASSWORD, password);
     }
     if(autoLogin)
-        params.insert("AutoLogin",true);
+        params.insert(PRJPARAM_AUTOLOGIN,true);
 
     QString connectString = TQJson().toString(params);
     return connectString;
@@ -194,17 +194,17 @@ void TQConnectWidget::setConnectString(const QString &str)
 //    QString sRecType = params.value("RecordType").toString();
 //    bool okRecType;
 //    int recType = sRecType.toInt(&okRecType);
-    ui->dbClassLabel->setText(params.value("DBClass").toString());
-    ui->dbmsEdit->setText(params.value("DBType").toString());
-    ui->serverEdit->setText(params.value("DBServer").toString());
-    ui->trustedUserBox->setChecked(params.value("DBOSUser").toBool());
-    ui->sqlUserEdit->setText(params.value("DBUser").toString());
-    ui->sqlPassEdit->setText(params.value("DBPass").toString());
-    ui->saveDBPasswordCheck->setChecked(params.contains("DBPass"));
-    ui->projectEdit->setText(params.value("Project").toString());
-    ui->userEdit->setText(params.value("User").toString());
-    ui->passwordEdit->setText(params.value("Password").toString());
-    ui->savePasswordCheck->setChecked(params.contains("Password"));
+    ui->dbClassLabel->setText(params.value(DBPARAM_CLASS).toString());
+    ui->dbmsEdit->setText(params.value(DBPARAM_TYPE).toString());
+    ui->serverEdit->setText(params.value(DBPARAM_SERVER).toString());
+    ui->trustedUserBox->setChecked(params.value(DBPARAM_OSUSER).toBool());
+    ui->sqlUserEdit->setText(params.value(DBPARAM_USER).toString());
+    ui->sqlPassEdit->setText(params.value(DBPARAM_PASSWORD).toString());
+    ui->saveDBPasswordCheck->setChecked(params.contains(DBPARAM_PASSWORD));
+    ui->projectEdit->setText(params.value(PRJPARAM_NAME).toString());
+    ui->userEdit->setText(params.value(PRJPARAM_USER).toString());
+    ui->passwordEdit->setText(params.value(PRJPARAM_PASSWORD).toString());
+    ui->savePasswordCheck->setChecked(params.contains(PRJPARAM_PASSWORD));
 }
 
 void TQConnectWidget::loadSettings()

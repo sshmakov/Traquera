@@ -62,30 +62,6 @@ bool TQProjectTreeItem::open(const QString &connString)
     if(data.recType < 0)
         data.recType = data.prj->defaultRecType();
     return true;
-    /*
-    QString dbType = data.params.value("DBType");
-    if(!dbType.isEmpty())
-        data.db->setDbmsType(dbType);
-    QString dbServer = data.params.value("DBServer");
-    if(!dbServer.isEmpty())
-        data.db->setDbmsServer(dbServer);
-    QString user, pass;
-    user = data.params.value("DBUser");
-    pass = data.params.value("DBPass");
-    data.db->setDbmsUser(user,pass);
-    data.prj = data.db->openProject(data.projectName, data.params.value("User"), data.params.value("Password"));
-    if(!data.prj)
-        return false;
-    if(!data.prj->isOpened())
-    {
-        delete data.prj;
-        data.prj = 0;
-        return false;
-    }
-    if(!data.params.contains("RecordType"))
-        data.recType = data.prj->defaultRecType();
-    return true;
-    */
 }
 
 void TQProjectTreeItem::setConnectString(const QString &string)
@@ -102,9 +78,9 @@ void TQProjectTreeItem::updateParams(const QString &string)
     {
         data.params.insert(key, map.value(key).toString());
     }
-    data.dbClass = data.params.value("DBClass");
-    data.projectName = data.params.value("Project");
-    QString sRecType = data.params.value("RecordType");
+    data.dbClass = data.params.value(DBPARAM_CLASS);
+    data.projectName = data.params.value(PRJPARAM_NAME);
+    QString sRecType = data.params.value(PRJPARAM_RECORDTYPE);
     bool okRecType;
     data.recType = sRecType.toInt(&okRecType);
     if(!okRecType)
@@ -168,7 +144,14 @@ TQAbstractProject *TQOneProjectTree::project() const
 
 QString TQOneProjectTree::projectTitle() const
 {
-    return info.data.projectName;
+    QString title = info.data.projectName;
+    if(!title.isEmpty())
+        return title;
+    if(info.data.prj)
+        title = info.data.prj->projectName();
+    if(!title.isEmpty())
+        return title;
+    return QString();
 }
 
 int TQOneProjectTree::recordType() const
@@ -263,7 +246,8 @@ TQProjectsTree::TQProjectsTree(QObject *parent)
 
 int TQProjectsTree::appendProject(TQOneProjectTree *prjTree)
 {
-    return appendSourceModel(prjTree, prjTree->projectTitle()).row();
+    QString title = prjTree->projectTitle();
+    return appendSourceModel(prjTree, title).row();
 }
 
 void TQProjectsTree::removeProject(TQOneProjectTree *prjTree)

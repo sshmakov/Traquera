@@ -695,6 +695,11 @@
     <string>Изменить проект...</string>
    </property>
   </action>
+  <action name="actionMakeActive">
+   <property name="text">
+    <string>Сделать активным</string>
+   </property>
+  </action>
  </widget>
  <resources>
   <include location="../resources/tracks.qrc"/>
