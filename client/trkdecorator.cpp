@@ -235,48 +235,94 @@ void TrkDecorator::loadViewDef(QueryPage *page)
     TQAbstractProject *newPrj = page->project();
     if(prj == newPrj)
         return;
-    TQScopeSettings sets = newPrj->projectSettings();
-    QString groupFile = sets->value("GroupFile", "data/tracker.xml").toString();
-    QFile file(groupFile);
-    QXmlInputSource source(&file);
-    QDomDocument dom;
-    if(!dom.setContent(&source,false))
-        return;
-    QDomElement doc = dom.documentElement();
-    if(doc.isNull()) return;
+
     QHeaderView *hv = page->queryView->horizontalHeader();
+    TQScopeSettings sets = newPrj->projectSettings();
     QVariant gridSet = sets->value(KEY);
     bool isGridRestored=false;
     QByteArray tempBuf = hv->saveState();
     if(gridSet.isValid())
         isGridRestored = hv->restoreState(gridSet.toByteArray());
+
     if(!isGridRestored)
     {
-        hv->restoreState(tempBuf);
-        QDomElement grid = doc.firstChildElement("grid");
-        if(!grid.isNull())
+//        hv->restoreState(tempBuf);
+//        QString groupFile = sets->value("GroupFile", "data/tracker.xml").toString();
+        QString groupFile = newPrj->property("groupFile").toString();
+        QFile file(groupFile);
+        QXmlInputSource source(&file);
+        QDomDocument dom;
+        if(!dom.setContent(&source,false))
         {
-            int nextCol=0;
-            for(QDomElement col = grid.firstChildElement("col");
-                !col.isNull();
-                col = col.nextSiblingElement("col"))
+            const TQAbstractRecordTypeDef::TQFieldRole roles[] = {
+                TQAbstractRecordTypeDef::IdField,
+                TQAbstractRecordTypeDef::TitleField,
+                TQAbstractRecordTypeDef::StateField,
+                TQAbstractRecordTypeDef::SubmitDateTimeField,
+                TQAbstractRecordTypeDef::SubmitterField,
+                TQAbstractRecordTypeDef::OwnerField,
+                TQAbstractRecordTypeDef::IdFriendlyField
+            };
+
+            const TQAbstractRecordTypeDef *def = page->recordTypeDef();
+            if(def)
             {
-                QString flabel = col.attribute("field");
-                int colNum = findColumn(hv, flabel);
-                if(colNum>=0)
+                int nextCol = 0;
+                for(int i=0; i<sizeof(roles); i++)
                 {
-                    int from = hv->visualIndex(colNum);
-                    hv->moveSection(from, nextCol++);
-                    bool ok;
-                    int size = col.attribute("size").toInt(&ok);
-                    if(ok)
-                        hv->resizeSection(colNum,size);
+                    int vid = def->roleVid(roles[i]);
+                    if(vid != TQ::TQ_NO_VID)
+                    {
+                        QString flabel = def->fieldName(vid);
+                        int colNum = findColumn(hv, flabel);
+                        if(colNum>=0)
+                        {
+                            int from = hv->visualIndex(colNum);
+                            hv->moveSection(from, nextCol++);
+//                            bool ok;
+//                            int size = col.attribute("size").toInt(&ok);
+//                            if(ok)
+//                                hv->resizeSection(colNum,size);
+                        }
+                    }
+                }
+                for(; nextCol<hv->count(); nextCol++)
+                {
+                    int log=hv->logicalIndex(nextCol);
+                    hv->hideSection(log);
                 }
             }
-            for(; nextCol<hv->count(); nextCol++)
+        }
+        else
+        {
+            QDomElement doc = dom.documentElement();
+            if(doc.isNull())
+                return;
+            QDomElement grid = doc.firstChildElement("grid");
+            if(!grid.isNull())
             {
-                int log=hv->logicalIndex(nextCol);
-                hv->hideSection(log);
+                int nextCol=0;
+                for(QDomElement col = grid.firstChildElement("col");
+                    !col.isNull();
+                    col = col.nextSiblingElement("col"))
+                {
+                    QString flabel = col.attribute("field");
+                    int colNum = findColumn(hv, flabel);
+                    if(colNum>=0)
+                    {
+                        int from = hv->visualIndex(colNum);
+                        hv->moveSection(from, nextCol++);
+                        bool ok;
+                        int size = col.attribute("size").toInt(&ok);
+                        if(ok)
+                            hv->resizeSection(colNum,size);
+                    }
+                }
+                for(; nextCol<hv->count(); nextCol++)
+                {
+                    int log=hv->logicalIndex(nextCol);
+                    hv->hideSection(log);
+                }
             }
         }
     }

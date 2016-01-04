@@ -36,7 +36,7 @@ void JiraPlugin::initPlugin(QObject *obj, const QString &modulePath)
     QFileInfo fi(modulePath);
     pluginModule = fi.absoluteFilePath();
     QDir pDir;
-    pDir = fi.absoluteDir();
+    pDir = pluginModule; //fi.absoluteDir();
     if(pDir.dirName().compare("debug",Qt::CaseInsensitive) == 0)
     {
         pDir = QDir(pDir.filePath(".."));
@@ -114,8 +114,10 @@ JiraDB::JiraDB(QObject *parent)
       d(new JiraDBPrivate()),
       timeOutSecs(10)
 {
+    parser->setCharset("UTF-8");
     man = new QNetworkAccessManager(this);
     connect(man, SIGNAL(finished(QNetworkReply*)), SLOT(replyFinished(QNetworkReply*)));
+
     /*QObject *obj;
 
     if(QMetaObject::invokeMethod(jira->globalObject,"oauth",
@@ -293,16 +295,16 @@ QVariant JiraDB::sendRequest(const QString &dbmsServer, const QString &method, c
         return QVariant();
     }
 
-    QByteArray text = reply->readAll();
-    qDebug() << text;
-    QString s(text.constData());
+    QByteArray buf = reply->readAll();
+    qDebug() << buf;
+//    QString s(buf.constData());
 //    qDebug(text.constData());
 //    QBuffer buf(&text);
 //    buf.open(QIODevice::ReadOnly);
 
     bool success;
 //    QVariant  obj = QtJson::parse(s, success);
-    QVariant obj = parser->toVariant(s);
+    QVariant obj = parser->toVariant(buf);
     return obj;
 }
 
@@ -403,17 +405,17 @@ QVariant JiraDB::sendSimpleRequest(const QString &dbmsType, const QString &metho
         return QVariant();
     }
 
-    QByteArray text = reply->readAll();
+    QByteArray buf = reply->readAll();
 
-    qDebug() << text;
-    QString s(text.constData());
+    qDebug() << buf;
+    QString s(buf.constData());
 //    qDebug(text.constData());
 //    QBuffer buf(&text);
 //    buf.open(QIODevice::ReadOnly);
 
     bool success;
 //    QVariant  obj = QtJson::parse(s, success);
-    QVariant obj = parser->toVariant(s);
+    QVariant obj = parser->toVariant(buf);
     return obj;
 }
 
@@ -521,6 +523,13 @@ TQAbstractRecordTypeDef *JiraProject::recordTypeDef(int recordType)
     return recordDefs.value(recordType, 0);
 }
 
+int JiraProject::defaultRecType() const
+{
+    if(recordDefs.isEmpty())
+        return -1;
+    return recordDefs.keys().first();
+}
+
 TQRecModel *JiraProject::openQueryModel(const QString &queryName, int recType, bool emitEvent)
 {
     if(!favSearch.contains(queryName))
@@ -540,6 +549,9 @@ TQRecModel *JiraProject::openQueryModel(const QString &queryName, int recType, b
 
 QAbstractItemModel *JiraProject::openIdsModel(const IntList &ids, int recType, bool emitEvent)
 {
+    TQAbstractRecordTypeDef *rdef = recordTypeDef(recType);
+    if(!rdef)
+        return 0;
     QStringList list;
     foreach(int i, ids)
         list.append(QString::number(i));
@@ -547,11 +559,13 @@ QAbstractItemModel *JiraProject::openIdsModel(const IntList &ids, int recType, b
     QVariantMap map = db->sendRequest(dbmsServer,"GET",QString("search?jql=%1").arg(jql)).toMap();
     QVariantList issueList = map.value("issues").toList();
     TQRecModel *model = new TQRecModel(this, recType, this);
+    model->setHeaders(rdef->fieldNames());
     QList<TQRecord*> records;
     foreach(QVariant i, issueList)
     {
         QVariantMap issue = i.toMap();
         JiraRecord *rec = new JiraRecord(this, recType, issue.value("id").toInt());
+        readRecordFields(rec);
         records.append(rec);
     }
     model->append(records);
@@ -582,7 +596,9 @@ bool JiraProject::readRecordWhole(TQRecord *record)
     JiraRecord *rec = qobject_cast<JiraRecord *>(record);
     if(!rec)
         return false;
-    TQAbstractRecordTypeDef *rdef = record->recordDef();
+    JiraRecTypeDef *rdef = dynamic_cast<JiraRecTypeDef *>(record->recordDef());
+    if(!rdef)
+        return false;
     QVariantMap issue = db->sendRequest(dbmsServer,"GET",QString("issue/%1").arg(rec->recordId())).toMap();
     rec->key = issue.value("key").toString();
     QVariantMap fields = issue.value("fields").toMap();
@@ -591,10 +607,10 @@ bool JiraProject::readRecordWhole(TQRecord *record)
     rec->displayValues.clear();
     for(i = fields.begin(); i!=fields.end(); i++)
     {
-        QString fName = i.key();
+        QString fid = i.key();
         QVariant value = i.value();
-        int vid = rdef->fieldVid(fName);
-        if(fName == "description")
+        int vid = rdef->fieldVidSystem(fid);
+        if(fid == "description")
             rec->desc = value.toString();
         else
         {
@@ -602,7 +618,7 @@ bool JiraProject::readRecordWhole(TQRecord *record)
             rec->displayValues.insert(vid, value);
         }
     }
-    QVariantList comments = issue.value("comment").toList();
+    QVariantList comments = fields.value("comment").toMap().value("comments").toList();
     foreach(QVariant c, comments)
     {
         QVariantMap com = c.toMap();
@@ -623,17 +639,22 @@ bool JiraProject::readRecordFields(TQRecord *record)
     JiraRecord *rec = qobject_cast<JiraRecord *>(record);
     if(!rec)
         return false;
-    TQAbstractRecordTypeDef *rdef = record->recordDef();
+    JiraRecTypeDef *rdef = dynamic_cast<JiraRecTypeDef *>(record->recordDef());
+    if(!rdef)
+        return false;
     QVariantMap issue = db->sendRequest(dbmsServer,"GET",QString("issue/%1?fields=*all,-description,-comment").arg(rec->recordId())).toMap();
     QVariantMap fields = issue.value("fields").toMap();
     QVariantMap::iterator i;
     for(i = fields.begin(); i!=fields.end(); i++)
     {
-        QString fName = i.key();
+        QString fid = i.key();
         QVariant value = i.value();
-        int vid = rdef->fieldVid(fName);
-        rec->values.insert(vid, value);
-        rec->displayValues.insert(vid,value);
+        int vid = rdef->fieldVidSystem(fid);
+        if(vid != TQ::TQ_NO_VID)
+        {
+            rec->values.insert(vid, value);
+            rec->displayValues.insert(vid,value);
+        }
     }
 }
 
@@ -666,7 +687,9 @@ bool JiraProject::readRecordBase(TQRecord *record)
     JiraRecord *rec = qobject_cast<JiraRecord *>(record);
     if(!rec)
         return false;
-    TQAbstractRecordTypeDef *rdef = record->recordDef();
+    JiraRecTypeDef *rdef = dynamic_cast<JiraRecTypeDef *>(record->recordDef());
+    if(!rdef)
+        return false;
     QHash<int, QString> fieldList = baseRecordFields(record->recordType());
     QStringList list = fieldList.values();
     QVariantMap issue = db->sendRequest(dbmsServer,"GET",QString("issue/%1?fields=%2").arg(rec->recordId()).arg(list.join(","))).toMap();
@@ -674,10 +697,10 @@ bool JiraProject::readRecordBase(TQRecord *record)
     QVariantMap::iterator i;
     for(i = fields.begin(); i!=fields.end(); i++)
     {
-        QString fName = i.key();
+        QString fid = i.key();
         QVariant value = i.value();
-        int vid = rdef->fieldVid(fName);
-        if(fName == "description")
+        int vid = rdef->fieldVidSystem(fid);
+        if(fid == "description")
             rec->desc = value.toString();
         else
         {
@@ -733,13 +756,13 @@ QHash<int, QString> JiraProject::baseRecordFields(int rectype)
     QHash<int, QString> res;
     QList<int> roles;
     roles << TQAbstractRecordTypeDef::IdField
-             << TQAbstractRecordTypeDef::IdFriendlyField
-             << TQAbstractRecordTypeDef::TitleField
+          << TQAbstractRecordTypeDef::IdFriendlyField
+          << TQAbstractRecordTypeDef::TitleField
 //                <<  TQAbstractRecordTypeDef::DescriptionField
-                    << TQAbstractRecordTypeDef::StateField
-                       <<  TQAbstractRecordTypeDef::SubmitDateTimeField
-                           << TQAbstractRecordTypeDef::SubmitterField
-                              << TQAbstractRecordTypeDef::OwnerField;
+          << TQAbstractRecordTypeDef::StateField
+          << TQAbstractRecordTypeDef::SubmitDateTimeField
+          << TQAbstractRecordTypeDef::SubmitterField
+          << TQAbstractRecordTypeDef::OwnerField;
     foreach(int role, roles)
     {
         int vid = rdef->roleVid(role);
@@ -755,6 +778,13 @@ QHash<int, QString> JiraProject::baseRecordFields(int rectype)
 bool JiraProject::isSystemModel(QAbstractItemModel *model) const
 {
     return false;
+}
+
+QSettings *JiraProject::projectSettings() const
+{
+    QString iniFile = jira->dataDir.absoluteFilePath("jira.ini");
+    QSettings *sets = new QSettings(iniFile, QSettings::IniFormat);
+    return sets;
 }
 
 /*TQAbstractRecordTypeDef *JiraProject::loadRecordTypeDef(int recordType)
@@ -844,12 +874,21 @@ void JiraProject::loadRecordTypes()
             f.schemaItems = s.value("items").toString();
             f.schemaSystem = s.value("system").toString();
             f.vid = ++vid;
+            if(f.id == "issuekey")
+            {
+                f.schemaType = "issuekey";
+                rdef->idVid = f.vid;
+            }
+            else if(f.id == "description")
+            {
+                rdef->descVid = f.vid;
+            }
             if(!rdef->schemaTypes.contains(f.schemaType))
             {
                 rdef->schemaTypes.append(f.schemaType);
                 rdef->nativeTypes.insert(f.schemaType, nativeType++);
             }
-            f.nativeType = rdef->schemaTypes.indexOf(f.schemaType);
+            f.nativeType = rdef->schemaTypes.indexOf(f.schemaType); // not work for issuekey
             f.simpleType = rdef->schemaToSimpleType(f.schemaType);
             if(f.simpleType == TQ::TQ_FIELD_TYPE_USER)
                 f.choiceTable = "Users";
@@ -884,7 +923,7 @@ void JiraProject::loadRecordTypes()
                 f.createShow = false;
                 f.createRequired = false;
             }
-            rdef->systemNames.insert(f.schemaSystem, f.vid);
+            rdef->systemNames.insert(f.id, f.vid);
             rdef->fields.insert(f.vid,f);
             rdef->vids.insert(f.name, f.vid);
         }
@@ -922,14 +961,16 @@ JiraRecTypeDef::JiraRecTypeDef(JiraProject *project)
     schemaToSimple.insert("string", TQ::TQ_FIELD_TYPE_STRING);
     schemaToSimple.insert("timetracking", TQ::TQ_FIELD_TYPE_DATE);
     schemaToSimple.insert("user", TQ::TQ_FIELD_TYPE_USER);
+    schemaToSimple.insert("issuekey", TQ::TQ_FIELD_TYPE_NUMBER);
 
-    roleFields.insert(TQAbstractRecordTypeDef::IdField,"id");
+    roleFields.insert(TQAbstractRecordTypeDef::IdField,"issuekey");
     roleFields.insert(TQAbstractRecordTypeDef::TitleField, "summary");
     roleFields.insert(TQAbstractRecordTypeDef::DescriptionField, "description");
     roleFields.insert(TQAbstractRecordTypeDef::StateField, "status");
     roleFields.insert(TQAbstractRecordTypeDef::SubmitDateTimeField, "created");
     roleFields.insert(TQAbstractRecordTypeDef::SubmitterField, "creator");
     roleFields.insert(TQAbstractRecordTypeDef::OwnerField, "assignee");
+    roleFields.insert(TQAbstractRecordTypeDef::IdFriendlyField,"key");
 }
 
 QStringList JiraRecTypeDef::fieldNames() const
@@ -1056,12 +1097,21 @@ bool JiraRecTypeDef::containFieldVid(int vid) const
 
 int JiraRecTypeDef::fieldVid(const QString &name) const
 {
-    return vids.value(name, 0);
+    return vids.value(name, TQ::TQ_NO_VID);
+}
+
+int JiraRecTypeDef::fieldVidSystem(const QString &systemName) const
+{
+    return systemNames.value(systemName, TQ::TQ_NO_VID);
 }
 
 QList<int> JiraRecTypeDef::fieldVids() const
 {
-    return vids.values();
+    QList<int> list;
+    foreach(const JiraFieldDesc &desc, fields)
+        list.append(desc.vid);
+    return list;
+//    return vids.values();
 }
 
 QString JiraRecTypeDef::fieldName(int vid) const
@@ -1181,7 +1231,7 @@ int JiraRecTypeDef::roleVid(int role) const
 {
     QString fSystem = roleFields.value(role);
     if(fSystem.isEmpty())
-        return 0;
+        return TQ::TQ_NO_VID;
     return systemNames.value(fSystem, TQ::TQ_NO_VID);
 }
 
@@ -1208,17 +1258,22 @@ int JiraRecTypeDef::schemaToSimpleType(const QString &schemaType)
 
 // ====================== Jira Record ===================
 JiraRecord::JiraRecord()
+    : TQRecord(), def(0)
 {
 }
 
 JiraRecord::JiraRecord(TQAbstractProject *prj, int rtype, int id)
     : TQRecord(prj, rtype, id)
 {
+    if(prj)
+        def = dynamic_cast<JiraRecTypeDef*>(prj->recordTypeDef(rtype));
 }
 
 JiraRecord::JiraRecord(const TQRecord &src)
     : TQRecord(src)
 {
+    if(project())
+        def = dynamic_cast<JiraRecTypeDef*>(project()->recordTypeDef(recordType()));
 }
 
 QString JiraRecord::jiraKey()
@@ -1228,6 +1283,14 @@ QString JiraRecord::jiraKey()
 
 QVariant JiraRecord::value(int vid, int role) const
 {
+    if(def && vid == def->idVid)
+        return recordId();
+    if(def && vid == def->descVid)
+        return desc;
+    if(!values.contains(vid))
+    {
+//        project()->readRecordFields(this);
+    }
     switch(role)
     {
     case Qt::DisplayRole:

@@ -283,12 +283,13 @@ void QueryPage::setQueryModel(TQAbstractProject *prj, TQRecModel *model)
     if(prj)
     {
         TQScopeSettings sets(d->modelProject->projectSettings());
-        d->xqFile = sets->value("ListTemplate", d->xqFile).toString();
+        d->xqFile = sets->value("RecordTemplate", d->xqFile).toString();
     }
     if(!d->tmodel->isSystemModel())
         d->tmodel->setParent(this);
     d->proxy->setSourceModel(d->tmodel);
-//    qryFilterModel->setSourceModel(tmodel);
+//    d->qryFilterModel->setSourceModel(d->tmodel);
+//    queryView->setModel(d->tmodel);
     loadDefinition();
 #ifdef DECORATOR
     fieldEdits.clear();

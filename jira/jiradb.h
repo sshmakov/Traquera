@@ -119,11 +119,10 @@ class JiraRecTypeDef;
 class JiraProject: public TQBaseProject
 {
     Q_OBJECT
-
 protected:
     JiraDB *db;
     QString dbmsServer;
-    QHash<int,JiraRecTypeDef *> recordDefs;
+    QMap<int,JiraRecTypeDef *> recordDefs;
     QString projectKey;
     int projectId;
     QMap<QString, QString> favSearch;
@@ -133,6 +132,7 @@ public:
     void loadDefinition();
     //Redefine
     TQAbstractRecordTypeDef *recordTypeDef(int recordType);
+    int defaultRecType() const;
     TQRecModel *openQueryModel(const QString &queryName, int recType, bool emitEvent = true);
     QAbstractItemModel *openIdsModel(const IntList &ids, int recType, bool emitEvent = true);
     void refreshModel(QAbstractItemModel *model);
@@ -151,6 +151,7 @@ public:
     QStringList historyList(TQRecord *record);
     QHash<int,QString> baseRecordFields(int rectype);
     bool isSystemModel(QAbstractItemModel *model) const;
+    QSettings *projectSettings() const;
 protected:
 //    TQAbstractRecordTypeDef *loadRecordTypeDef(int recordType);
     void loadRecordTypes();
@@ -203,13 +204,14 @@ protected:
     int recType;
     QString recTypeName;
     QMap<int, JiraFieldDesc> fields;
-    QHash<QString, int> systemNames;
+    QMap<QString, int> systemNames;
     QMap<QString, int> vids;
-    QHash<int, QString> roleFields;
+    QMap<int, QString> roleFields;
 //    QHash<int,int> fIndexByVid;
     QStringList schemaTypes;
     QMap<QString, int> nativeTypes; // schema type to native type
     QMap<QString, int> schemaToSimple;
+    int idVid, descVid;
 public:
     JiraRecTypeDef(JiraProject *project);
     virtual QStringList fieldNames() const;
@@ -227,6 +229,7 @@ public:
     virtual TQChoiceList choiceTable(const QString &tableName) const;
     virtual bool containFieldVid(int vid) const;
     virtual int fieldVid(const QString &name) const;
+    int fieldVidSystem(const QString &systemName) const;
     virtual QList<int> fieldVids() const;
     virtual QString fieldName(int vid) const;
     virtual QIODevice *defineSource() const;
@@ -243,6 +246,7 @@ public:
     virtual TQAbstractProject *project() const;
 
     friend class JiraProject;
+    friend class JiraRecord;
 protected:
     int schemaToSimpleType(const QString &schemaType);
 };
@@ -268,6 +272,7 @@ protected:
     TQNotesCol notesCol;
     QString desc;
     QString key;
+    JiraRecTypeDef *def;
 public:
     JiraRecord();
     JiraRecord(TQAbstractProject *prj, int rtype, int id);
@@ -275,7 +280,6 @@ public:
     Q_INVOKABLE QString jiraKey();
     QVariant value(int vid, int role = Qt::DisplayRole) const ;
     TQNotesCol notes() const;
-
 
     friend class JiraProject;
 };

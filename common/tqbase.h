@@ -296,7 +296,7 @@ class TQPLUGIN_SHARED TQBaseProject: public TQAbstractProject
 protected:
     QString name;
     bool opened;
-    QHash<int, QString> recordTypes;
+    QMap<int, QString> recordTypes;
     QHash<int, QStringList*> qList; //QueryList
 //    QHash<int, TQAbstractRecordTypeDef*> recordDef;
     //QHash<TRK_RECORD_TYPE, TrkIntDef> fields; // field by vid by record_type

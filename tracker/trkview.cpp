@@ -543,6 +543,7 @@ TrkToolProject::TrkToolProject(TrkToolDB *parent)
 {
     db=parent;
 	TrkHandleAlloc(TRK_VERSION_ID, &handle);
+    setProperty("groupFile", QString("data/tracker.xml"));
 }
 
 TrkToolProject::~TrkToolProject()

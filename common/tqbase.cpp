@@ -221,7 +221,9 @@ int TQBaseProject::fieldNativeType(const QString &name, int recType)
 
 int TQBaseProject::defaultRecType() const
 {
-    return 0;
+    if(recordTypes.isEmpty())
+        return -1;
+    return recordTypes.keys().first();
 }
 
 bool TQBaseProject::isSelectedId(int id, int recType) const
@@ -269,6 +271,8 @@ bool TQBaseProject::canFieldUpdate(int vid, int recType)
 
 QString TQBaseProject::userFullName(const QString &login)
 {
+    if(!m_userList.contains(login))
+        return login;
     return m_userList.value(login).fullName;
 }
 

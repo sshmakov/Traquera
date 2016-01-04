@@ -46,4 +46,6 @@ FORMS += \
 
 OTHER_FILES += \
     mykey.pub \
-    mykey.pem
+    mykey.pem \
+    jira.ini \
+    data/issue.xq
