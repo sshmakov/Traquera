@@ -7,11 +7,11 @@ TQHistory::TQHistory(QObject *parent)
     : BaseRecModel(parent),
       prj(0)
 {
-    headers << tr("Âûáîðêà");
-    headers << tr("Òèï");
-    headers << tr("Çàïèñè");
-    headers << tr("Òèï çàïèñåé");
-    headers << tr("Âðåìÿ");
+    headers << tr("Ð’Ñ‹Ð±Ð¾Ñ€ÐºÐ°");
+    headers << tr("Ð¢Ð¸Ð¿");
+    headers << tr("Ð—Ð°Ð¿Ð¸ÑÐ¸");
+    headers << tr("Ð¢Ð¸Ð¿ Ð·Ð°Ð¿Ð¸ÑÐµÐ¹");
+    headers << tr("Ð’Ñ€ÐµÐ¼Ñ");
 }
 
 TQHistory::~TQHistory()

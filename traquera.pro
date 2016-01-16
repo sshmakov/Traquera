@@ -22,3 +22,4 @@ CONFIG += ordered
 
 
 TARGET = traquera
+TRANSLATIONS =

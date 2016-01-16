@@ -37,9 +37,9 @@ TrkQueryDef::TrkQueryDef(TrkToolProject *project, TrkRecordTypeDef *def)
     : TQQueryDef(project, def->recordType()), prj(project), recDef(def),
       styleLoc(2), styleName("Standard")
 {
-    listActions.append(tr("Добавить текстовый поиск..."));
-    listActions.append(tr("Добавить поиск по изменениям..."));
-    listActions.append(tr("Добавить поиск в модулях..."));
+    listActions.append(tr("Р”РѕР±Р°РІРёС‚СЊ С‚РµРєСЃС‚РѕРІС‹Р№ РїРѕРёСЃРє..."));
+    listActions.append(tr("Р”РѕР±Р°РІРёС‚СЊ РїРѕРёСЃРє РїРѕ РёР·РјРµРЅРµРЅРёСЏРј..."));
+    listActions.append(tr("Р”РѕР±Р°РІРёС‚СЊ РїРѕРёСЃРє РІ РјРѕРґСѓР»СЏС…..."));
 }
 
 TQCond *TrkQueryDef::newCondition(int fieldVid)
@@ -137,7 +137,7 @@ TQCond *TrkQueryDef::newCondition(int fieldVid)
 
         1,    -- 0, 1, 2 (module search logic. 0 = records that have any modules, 1 = OR, 2 = AND)
         1,    -- number of modules (if module search logic = 1 or 2)
-        C:\Users\ВС\Documents\Log.txt.zip,  -- for each module, the module names.
+        C:\Users\Р’РЎ\Documents\Log.txt.zip,  -- for each module, the module names.
         1,    -- number of keywords.
         abs,  -- for each keyword, the keyword to search for.
         ,     -- note title to search in.
@@ -417,8 +417,8 @@ QString TrkQueryDef::makeFieldsString()
             If a user ID = 0, then the next number will be either 1, 2, or 3.
                 1 means <<Unassigned>>, 2 means <<Current Login User>>, 3 means both.
             For instance, if the condition is ...
-                2, 14, 0, 1 it means “select where that user field = 14 or 0.”
-                2, 14, 0, 2 and the current login user has a user ID of 3, it means “select where that user field = 14 or 3.”
+                2, 14, 0, 1 it means вЂњselect where that user field = 14 or 0.вЂќ
+                2, 14, 0, 2 and the current login user has a user ID of 3, it means вЂњselect where that user field = 14 or 3.вЂќ
             */
             int idcount = ucond->ids.count();
             if(ucond->isNullIncluded || ucond->isCurrentIncluded)
@@ -589,7 +589,7 @@ QString TrkQueryDef::makeModuleString()
 /*
 1,    -- 0, 1, 2 (module search logic. 0 = records that have any modules, 1 = OR, 2 = AND)
 1,    -- number of modules (if module search logic = 1 or 2)
-C:\Users\ВС\Documents\Log.txt.zip,  -- for each module, the module names.
+C:\Users\Р’РЎ\Documents\Log.txt.zip,  -- for each module, the module names.
 */
 
     QString res;
@@ -1091,14 +1091,14 @@ TQCond &TrkKeywordCond::operator =(const TQCond &src)
 
 QString TrkKeywordCond::condSubString() const
 {
-    QString templ = tr("Поиск текста \"%1\" %2%3%4%5%6%7");
-    QString sop = isKeyAnd ? tr(" И ") : tr(" ИЛИ ");
-    QString scase = isKeyCase ? tr("с учетом регистра") : tr("без учета регистра"); //2
-    QString sinrt = isKeyInRecTitles ? tr(", в заголовке") : ""; //3
-    QString sind = isKeyInDesc ? tr(", в описании") : ""; //4
-    QString sinnt = isKeyInNoteTitles ? tr(", в заголовках нот") : ""; //3
-    QString sinn = isKeyInNoteText ? tr(", во всех нотах") : ""; //6
-    QString sinn1 = isKeyInNoteOnly ? tr(", только в ноте '%1'").arg(noteTitleSearch) : ""; //7
+    QString templ = tr("РџРѕРёСЃРє С‚РµРєСЃС‚Р° \"%1\" %2%3%4%5%6%7");
+    QString sop = isKeyAnd ? tr(" Р ") : tr(" РР›Р ");
+    QString scase = isKeyCase ? tr("СЃ СѓС‡РµС‚РѕРј СЂРµРіРёСЃС‚СЂР°") : tr("Р±РµР· СѓС‡РµС‚Р° СЂРµРіРёСЃС‚СЂР°"); //2
+    QString sinrt = isKeyInRecTitles ? tr(", РІ Р·Р°РіРѕР»РѕРІРєРµ") : ""; //3
+    QString sind = isKeyInDesc ? tr(", РІ РѕРїРёСЃР°РЅРёРё") : ""; //4
+    QString sinnt = isKeyInNoteTitles ? tr(", РІ Р·Р°РіРѕР»РѕРІРєР°С… РЅРѕС‚") : ""; //3
+    QString sinn = isKeyInNoteText ? tr(", РІРѕ РІСЃРµС… РЅРѕС‚Р°С…") : ""; //6
+    QString sinn1 = isKeyInNoteOnly ? tr(", С‚РѕР»СЊРєРѕ РІ РЅРѕС‚Рµ '%1'").arg(noteTitleSearch) : ""; //7
     QString res = templ.arg(keys.join(sop),scase,sinrt,sind,sinnt,sinn,sinn1);
 
     return res;
@@ -1139,7 +1139,7 @@ TQCond &TrkModuleCond::operator =(const TQCond &src)
 
 QString TrkModuleCond::condSubString() const
 {
-    return tr("<Модули>");
+    return tr("<РњРѕРґСѓР»Рё>");
 }
 
 bool TrkModuleCond::editProperties()
@@ -1228,16 +1228,16 @@ QString TrkChangeCond::condSubString() const
     switch(changeType)
     {
     case AnyChange:
-        ch = tr("Любое изменение");
+        ch = tr("Р›СЋР±РѕРµ РёР·РјРµРЅРµРЅРёРµ");
         break;
     case AddChange:
-        ch = tr("Добавление");
+        ch = tr("Р”РѕР±Р°РІР»РµРЅРёРµ");
         break;
     case ModifyChange:
-        ch = tr("Редактирование");
+        ch = tr("Р РµРґР°РєС‚РёСЂРѕРІР°РЅРёРµ");
         break;
     case DeleteChange:
-        ch = tr("Удаление");
+        ch = tr("РЈРґР°Р»РµРЅРёРµ");
         break;
     case CheckedIn:
         ch = tr("Check-in");
@@ -1246,7 +1246,7 @@ QString TrkChangeCond::condSubString() const
         ch = tr("Check-out");
         break;
     case AssignLabelChange:
-        ch = tr("Присвоение метки");
+        ch = tr("РџСЂРёСЃРІРѕРµРЅРёРµ РјРµС‚РєРё");
         break;
     }
 //    QStringList oldText, newText;
@@ -1255,12 +1255,12 @@ QString TrkChangeCond::condSubString() const
     case FieldChange:
     {
         if(!fname.isEmpty())
-            s = tr("Изменение поля %1").arg(fname);
+            s = tr("РР·РјРµРЅРµРЅРёРµ РїРѕР»СЏ %1").arg(fname);
         else
-            s = tr("Изменение любого поля");
+            s = tr("РР·РјРµРЅРµРЅРёРµ Р»СЋР±РѕРіРѕ РїРѕР»СЏ");
         TQChoiceList chTable = choiceTable();
         QStringList oList, nList;
-        QString emp(tr("<пусто>"));
+        QString emp(tr("<РїСѓСЃС‚Рѕ>"));
         if(choiceIds1.contains(0))
             oList.append(emp);
         if(choiceIds2.contains(0))
@@ -1279,33 +1279,33 @@ QString TrkChangeCond::condSubString() const
             }
         }
         if(!oList.isEmpty())
-            s += tr(" со значения (%1)").arg(oList.join(", "));
+            s += tr(" СЃРѕ Р·РЅР°С‡РµРЅРёСЏ (%1)").arg(oList.join(", "));
         if(!nList.isEmpty())
-            s += tr(" на значение (%1)").arg(nList.join(", "));
+            s += tr(" РЅР° Р·РЅР°С‡РµРЅРёРµ (%1)").arg(nList.join(", "));
         break;
     }
     case RecordChange:
-        s = tr("%1 записи").arg(ch);
+        s = tr("%1 Р·Р°РїРёСЃРё").arg(ch);
         break;
     case FileChange:
         if(!fileName.isEmpty())
-            s = tr("%1 файла \"%2\"").arg(ch,fileName);
+            s = tr("%1 С„Р°Р№Р»Р° \"%2\"").arg(ch,fileName);
         else
-            s = tr("%1 любого файла").arg(ch);
+            s = tr("%1 Р»СЋР±РѕРіРѕ С„Р°Р№Р»Р°").arg(ch);
         break;
     case NoteChange:
         if(!noteTitles.isEmpty())
-            s += tr("%1 ноты (%2)").arg(ch,noteTitles.join(", "));
+            s += tr("%1 РЅРѕС‚С‹ (%2)").arg(ch,noteTitles.join(", "));
         else
-            s = tr("%1 любой ноты").arg(ch);
+            s = tr("%1 Р»СЋР±РѕР№ РЅРѕС‚С‹").arg(ch);
         break;
     case ModuleChange:
-        s = tr("%1 модуля").arg(ch);
+        s = tr("%1 РјРѕРґСѓР»СЏ").arg(ch);
         if(!fileName.isEmpty())
             s += tr(" \"%1\"").arg(fileName);
         break;
     }
-    QString sday = dateMode == Days ? tr(" дней назад") : "";
+    QString sday = dateMode == Days ? tr(" РґРЅРµР№ РЅР°Р·Р°Рґ") : "";
     QString dateFormat = tr("dd.MM.yyyy");
     QString dateTimeFormat = tr("dd.MM.yyyy");
     QString sdate1 = dateMode == Days ? QString::number(days1) :
@@ -1319,16 +1319,16 @@ QString TrkChangeCond::condSubString() const
     case AnyDate:
         break;
     case BetweenDates:
-        s += tr(" между %1 и %2%3").arg(sdate1, sdate2, sday);
+        s += tr(" РјРµР¶РґСѓ %1 Рё %2%3").arg(sdate1, sdate2, sday);
         break;
     case NotBetweenDates:
-        s += tr(" до %1 и после %2%3").arg(sdate1, sdate2, sday);
+        s += tr(" РґРѕ %1 Рё РїРѕСЃР»Рµ %2%3").arg(sdate1, sdate2, sday);
         break;
     case AfterDate:
-        s += tr(" после %1%2").arg(sdate1, sday);
+        s += tr(" РїРѕСЃР»Рµ %1%2").arg(sdate1, sday);
         break;
     case BeforeDate:
-        s += tr(" до %1%2").arg(sdate1, sday);
+        s += tr(" РґРѕ %1%2").arg(sdate1, sday);
         break;
     }
 
@@ -1337,7 +1337,7 @@ QString TrkChangeCond::condSubString() const
         QString user = queryDef->project()->userFullName(authorId);
         if(user.isEmpty())
             user = tr("???");
-        s += tr(" пользователем %1").arg(user);
+        s += tr(" РїРѕР»СЊР·РѕРІР°С‚РµР»РµРј %1").arg(user);
     }
 
     return s;
@@ -1361,23 +1361,23 @@ bool TrkChangeCond::editProperties()
 
 /*
 0,AgingStartVersion2
-1        -- 1-field или record, 2-note, 3-файл, 4-модуль
+1        -- 1-field РёР»Рё record, 2-note, 3-С„Р°Р№Р», 4-РјРѕРґСѓР»СЊ
 0
 0        -- 0-days, 1-date, 2-datetime
-         -- id старое значение
-         -- id новое значение
-1        -- 1-field, 2-record, 3-файл, 4-note, 5-модуль
+         -- id СЃС‚Р°СЂРѕРµ Р·РЅР°С‡РµРЅРёРµ
+         -- id РЅРѕРІРѕРµ Р·РЅР°С‡РµРЅРёРµ
+1        -- 1-field, 2-record, 3-С„Р°Р№Р», 4-note, 5-РјРѕРґСѓР»СЊ
 1
 0        -- 1-not
-1        -- ор 0-between, 1-after, 2-before
-1428580800 -- дата1 (без времени)
-1428580800 -- дата2
+1        -- РѕСЂ 0-between, 1-after, 2-before
+1428580800 -- РґР°С‚Р°1 (Р±РµР· РІСЂРµРјРµРЅРё)
+1428580800 -- РґР°С‚Р°2
 12     -- days1 before
-0      -- вид изменений 0-any , 1-добавление, 2-изменение, 3-удаление / 4-checked in, 5-checked out, 6-assigned version label, 2-modified, 1-added, 0-any, 3-removed
-       -- заголовок ноты или маска файла
-26     -- id поля или -1 для record и note
-5      -- days2 after  если days1=days2=0, то op == any
-4      -- id автора изменений или 0-any
+0      -- РІРёРґ РёР·РјРµРЅРµРЅРёР№ 0-any , 1-РґРѕР±Р°РІР»РµРЅРёРµ, 2-РёР·РјРµРЅРµРЅРёРµ, 3-СѓРґР°Р»РµРЅРёРµ / 4-checked in, 5-checked out, 6-assigned version label, 2-modified, 1-added, 0-any, 3-removed
+       -- Р·Р°РіРѕР»РѕРІРѕРє РЅРѕС‚С‹ РёР»Рё РјР°СЃРєР° С„Р°Р№Р»Р°
+26     -- id РїРѕР»СЏ РёР»Рё -1 РґР»СЏ record Рё note
+5      -- days2 after  РµСЃР»Рё days1=days2=0, С‚Рѕ op == any
+4      -- id Р°РІС‚РѕСЂР° РёР·РјРµРЅРµРЅРёР№ РёР»Рё 0-any
 0      -- anydate (?)
 End
 
@@ -1545,7 +1545,7 @@ QString TrkChangeCond::makeString()
     addLine(res, "1");
     // 0        -- 1-not
     addLine(res, changeDate == NotBetweenDates ? "1" : "0");
-    // 1        -- ор 0-between, 1-after, 2-before
+    // 1        -- РѕСЂ 0-between, 1-after, 2-before
     switch(changeDate)
     {
     case NotBetweenDates:
@@ -1570,7 +1570,7 @@ QString TrkChangeCond::makeString()
     else
         addLine(res, "0");
 
-    //  0      -- вид изменений 0-any , 1-добавление, 2-изменение, 3-удаление / 4-checked in, 5-checked out, 6-assigned version label, 2-modified, 1-added, 0-any, 3-removed
+    //  0      -- РІРёРґ РёР·РјРµРЅРµРЅРёР№ 0-any , 1-РґРѕР±Р°РІР»РµРЅРёРµ, 2-РёР·РјРµРЅРµРЅРёРµ, 3-СѓРґР°Р»РµРЅРёРµ / 4-checked in, 5-checked out, 6-assigned version label, 2-modified, 1-added, 0-any, 3-removed
     switch(changeType)
     {
     case AnyChange:
@@ -1598,14 +1598,14 @@ QString TrkChangeCond::makeString()
         addLine(res, "0");
     }
 
-    //       -- заголовок ноты или маска файла
+    //       -- Р·Р°РіРѕР»РѕРІРѕРє РЅРѕС‚С‹ РёР»Рё РјР°СЃРєР° С„Р°Р№Р»Р°
     if(changeObject == FileChange || changeObject == ModuleChange)
         addLine(res, fileName);
     else if(changeObject == NoteChange)
         addLine(res, noteTitles.join("\t"));
     else
         addLine(res, "");
-    //    26     -- id поля или -1 для record и note
+    //    26     -- id РїРѕР»СЏ РёР»Рё -1 РґР»СЏ record Рё note
     if(changeObject == FieldChange)
     {
         if(qDef && qDef->trkRecordDef())
@@ -1619,12 +1619,12 @@ QString TrkChangeCond::makeString()
     else
         addLine(res, "-1");
 
-    //  5      -- days2 after  если days1=days2=0, то op == any
+    //  5      -- days2 after  РµСЃР»Рё days1=days2=0, С‚Рѕ op == any
     if(dateMode == Days && changeDate != AnyDate)
         addLine(res,QString::number(days2));
     else
         addLine(res, "0");
-    //  4      -- id автора изменений или 0-any
+    //  4      -- id Р°РІС‚РѕСЂР° РёР·РјРµРЅРµРЅРёР№ РёР»Рё 0-any
     addLine(res, QString::number(authorId));
     // 1 - any date
     if(changeDate == AnyDate)

@@ -569,11 +569,11 @@ void DiffMemoryTable()
 		list[0]=0;
 		addline(&html,
 			"<tr>"
-			"<td valign='top'>Память</td>"
-			"<td valign='top'>Буфер</td>"
-			"<td valign='top'>Совпадающие</td>"
-			"<td valign='top'>Нет в памяти</td>"
-			"<td valign='top'>Нет в буфере</td>"
+			"<td valign='top'>РџР°РјСЏС‚СЊ</td>"
+			"<td valign='top'>Р‘СѓС„РµСЂ</td>"
+			"<td valign='top'>РЎРѕРІРїР°РґР°СЋС‰РёРµ</td>"
+			"<td valign='top'>РќРµС‚ РІ РїР°РјСЏС‚Рё</td>"
+			"<td valign='top'>РќРµС‚ РІ Р±СѓС„РµСЂРµ</td>"
 			"</tr>\r\n"
 			);
 		while(i<bufcount || j<memcount)

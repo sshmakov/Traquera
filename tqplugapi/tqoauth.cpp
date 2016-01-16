@@ -511,11 +511,11 @@ QMap< QString, QString> TQOAuth::getRequestToken(const QString &method, const QS
 //    " oauth_signature=%7";
 
 /*
-Нам необходимо выполнять HMAC-SHA1 (или RSA-SHA1) с ключем, который формируется так:
-urlencode("<oauth_consumer_secret>&<oauth_token_secret>") — (на данном этапе oauth_token_secret еще не получен, поэтому он будет пустым)
-и базовой строкой, которая составляется следующим образом:
-"<метод запроса>&<urlencode(адрес запроса)>&<urlencode(key_sort(параметры запроса))>",
-чтобы было понятнее приведу пример:
+РќР°Рј РЅРµРѕР±С…РѕРґРёРјРѕ РІС‹РїРѕР»РЅСЏС‚СЊ HMAC-SHA1 (РёР»Рё RSA-SHA1) СЃ РєР»СЋС‡РµРј, РєРѕС‚РѕСЂС‹Р№ С„РѕСЂРјРёСЂСѓРµС‚СЃСЏ С‚Р°Рє:
+urlencode("<oauth_consumer_secret>&<oauth_token_secret>") вЂ” (РЅР° РґР°РЅРЅРѕРј СЌС‚Р°РїРµ oauth_token_secret РµС‰Рµ РЅРµ РїРѕР»СѓС‡РµРЅ, РїРѕСЌС‚РѕРјСѓ РѕРЅ Р±СѓРґРµС‚ РїСѓСЃС‚С‹Рј)
+Рё Р±Р°Р·РѕРІРѕР№ СЃС‚СЂРѕРєРѕР№, РєРѕС‚РѕСЂР°СЏ СЃРѕСЃС‚Р°РІР»СЏРµС‚СЃСЏ СЃР»РµРґСѓСЋС‰РёРј РѕР±СЂР°Р·РѕРј:
+"<РјРµС‚РѕРґ Р·Р°РїСЂРѕСЃР°>&<urlencode(Р°РґСЂРµСЃ Р·Р°РїСЂРѕСЃР°)>&<urlencode(key_sort(РїР°СЂР°РјРµС‚СЂС‹ Р·Р°РїСЂРѕСЃР°))>",
+С‡С‚РѕР±С‹ Р±С‹Р»Рѕ РїРѕРЅСЏС‚РЅРµРµ РїСЂРёРІРµРґСѓ РїСЂРёРјРµСЂ:
 GET&http3A%2F2Fapi.twitter.com%2Frequest_token&oauth_consumer_key%3Ddpf43f3p2l4k3l03%26oauth_nonce%3Dkllo9940pd9333jh%26oauth_signature_method%3DHMAC-SHA1%26oauth_timestamp%3D1191242096%26oauth_version%3D1.0
 */
 
@@ -576,7 +576,7 @@ oauth_signature_method: The signature method the Consumer used to sign the reque
 oauth_signature: The signature as defined in Signing Requests.
 oauth_timestamp: As defined in Nonce and Timestamp.
 oauth_nonce: As defined in Nonce and Timestamp.
-oauth_version: OPTIONAL. If present, value MUST be 1.0. Service Providers MUST assume the protocol version to be 1.0 if this parameter is not present. Service Providers’ response to non-1.0 value is left undefined.
+oauth_version: OPTIONAL. If present, value MUST be 1.0. Service Providers MUST assume the protocol version to be 1.0 if this parameter is not present. Service ProvidersвЂ™ response to non-1.0 value is left undefined.
 Additional parameters: Any additional parameters, as defined by the Service Provider.
 */
 

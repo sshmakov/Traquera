@@ -10,7 +10,7 @@ PlanProxyModel::PlanProxyModel(QObject * parent)
 bool PlanProxyModel::filterAcceptsRow ( int source_row, const QModelIndex & source_parent ) const
 {
 	if(!source_parent.isValid())
-		return true; // всегда показывать узлы верхнего уровня
+		return true; // РІСЃРµРіРґР° РїРѕРєР°Р·С‹РІР°С‚СЊ СѓР·Р»С‹ РІРµСЂС…РЅРµРіРѕ СѓСЂРѕРІРЅСЏ
 	if(scrSet.isEmpty())
 		return true;
 	PlanModel *plan = (PlanModel *)sourceModel();

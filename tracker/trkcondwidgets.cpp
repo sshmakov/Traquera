@@ -128,8 +128,8 @@ TQCond &TrkKeywordCondDialog::condition()
 QString TrkKeywordCondDialog::andOr(bool value)
 {
     return value ?
-                tr("ÈËÈ") :
-                tr("È");
+                tr("Ð˜Ð›Ð˜") :
+                tr("Ð˜");
 }
 
 void TrkKeywordCondDialog::keyEditFinished()
@@ -209,7 +209,7 @@ TrkChangeCondDialog::TrkChangeCondDialog(QWidget *parent)
 {
 //    isInteractive = false;
     lockChanges();
-    dummyAnyField = tr("-- Ëþáîå ïîëå --");
+    dummyAnyField = tr("-- Ð›ÑŽÐ±Ð¾Ðµ Ð¿Ð¾Ð»Ðµ --");
     ui->setupUi(this);
     connect(ui->rbField, SIGNAL(toggled(bool)),SLOT(rbObjectToggled(bool)));
     connect(ui->rbRecord, SIGNAL(toggled(bool)),SLOT(rbObjectToggled(bool)));
@@ -234,10 +234,10 @@ TrkChangeCondDialog::TrkChangeCondDialog(QWidget *parent)
 
     connect(ui->lwNoteTitles,SIGNAL(itemSelectionChanged()),SLOT(noteTitlesSelected()));
 
-    noteChangeTypes = tr("Ëþáîå èçìåíåíèå,0;Íîòà äîáàâëåíà,1;Íîòà èçìåíåíà,2;Íîòà óäàëåíà,3");
-    fileChangeTypes = tr("Ëþáîå èçìåíåíèå,0;Ôàéë äîáàâëåí,1;Ôàéë óäàëåí,3");
-    moduleChangeTypes = tr("Ëþáîå èçìåíåíèå,0;Ìîäóëü äîáàâëåí,1;Ìîäóëü èçìåíåí,2;Ìîäóëü óäàëåí,3;"
-                           "Ìîäóëü check-in,4;Ìîäóëü check-out,5;Ìîäóëþ ïðèñâîåíà ìåòêà âåðñèè,6");;
+    noteChangeTypes = tr("Ð›ÑŽÐ±Ð¾Ðµ Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸Ðµ,0;ÐÐ¾Ñ‚Ð° Ð´Ð¾Ð±Ð°Ð²Ð»ÐµÐ½Ð°,1;ÐÐ¾Ñ‚Ð° Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð°,2;ÐÐ¾Ñ‚Ð° ÑƒÐ´Ð°Ð»ÐµÐ½Ð°,3");
+    fileChangeTypes = tr("Ð›ÑŽÐ±Ð¾Ðµ Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸Ðµ,0;Ð¤Ð°Ð¹Ð» Ð´Ð¾Ð±Ð°Ð²Ð»ÐµÐ½,1;Ð¤Ð°Ð¹Ð» ÑƒÐ´Ð°Ð»ÐµÐ½,3");
+    moduleChangeTypes = tr("Ð›ÑŽÐ±Ð¾Ðµ Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸Ðµ,0;ÐœÐ¾Ð´ÑƒÐ»ÑŒ Ð´Ð¾Ð±Ð°Ð²Ð»ÐµÐ½,1;ÐœÐ¾Ð´ÑƒÐ»ÑŒ Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½,2;ÐœÐ¾Ð´ÑƒÐ»ÑŒ ÑƒÐ´Ð°Ð»ÐµÐ½,3;"
+                           "ÐœÐ¾Ð´ÑƒÐ»ÑŒ check-in,4;ÐœÐ¾Ð´ÑƒÐ»ÑŒ check-out,5;ÐœÐ¾Ð´ÑƒÐ»ÑŽ Ð¿Ñ€Ð¸ÑÐ²Ð¾ÐµÐ½Ð° Ð¼ÐµÑ‚ÐºÐ° Ð²ÐµÑ€ÑÐ¸Ð¸,6");;
     // 0-any, 1-added, 2-modified,  3-removed, 4-checked in, 5-checked out, 6-assigned version label
 //    isInteractive = true;
     unlockChanges();
@@ -402,11 +402,11 @@ void TrkChangeCondDialog::updateFieldValues()
 
         QListWidgetItem *item;
         ui->lwOldValues->clear();
-        item = new QListWidgetItem(tr("<Ïóñòî>"), ui->lwOldValues);
+        item = new QListWidgetItem(tr("<ÐŸÑƒÑÑ‚Ð¾>"), ui->lwOldValues);
         item->setData(Qt::UserRole, 0);
         item->setSelected(cond.choiceIds1.contains(0));
         ui->lwNewValues->clear();
-        item = new QListWidgetItem(tr("<Ïóñòî>"), ui->lwNewValues);
+        item = new QListWidgetItem(tr("<ÐŸÑƒÑÑ‚Ð¾>"), ui->lwNewValues);
         item->setData(Qt::UserRole, 0);
         item->setSelected(cond.choiceIds2.contains(0));
 
@@ -450,8 +450,8 @@ void TrkChangeCondDialog::btnAddNoteClicked()
     if(!isInteractive())
         return;
     QString note = QInputDialog::getText(this,
-                                         tr("Ââåäèòå ñâîé çàãîëîâîê"),
-                                         tr("Çàãîëîâîê"));
+                                         tr("Ð’Ð²ÐµÐ´Ð¸Ñ‚Ðµ ÑÐ²Ð¾Ð¹ Ð·Ð°Ð³Ð¾Ð»Ð¾Ð²Ð¾Ðº"),
+                                         tr("Ð—Ð°Ð³Ð¾Ð»Ð¾Ð²Ð¾Ðº"));
     if(!note.isEmpty())
     {
         QListWidgetItem *item = new QListWidgetItem(note,ui->lwNoteTitles);
@@ -674,40 +674,40 @@ void TrkChangeCondDialog::setDateMode(TrkChangeCond::DateModeEnum mode)
         ui->hlBetween->insertWidget(0, sb);
         dateEdits.append(sb);
         connect(sb,SIGNAL(valueChanged(int)),SLOT(sbDays1Changed(int)));
-        ui->hlBetween->insertWidget(1, new QLabel(tr("è")));
+        ui->hlBetween->insertWidget(1, new QLabel(tr("Ð¸")));
         sb = new QSpinBox(this);
         sb->setValue(cond.days2);
         ui->hlBetween->insertWidget(2, sb);
         dateEdits.append(sb);
         connect(sb,SIGNAL(valueChanged(int)),SLOT(sbDays2Changed(int)));
-        ui->hlBetween->insertWidget(3, new QLabel(tr("äíåé íàçàä")));
+        ui->hlBetween->insertWidget(3, new QLabel(tr("Ð´Ð½ÐµÐ¹ Ð½Ð°Ð·Ð°Ð´")));
 
         sb = new QSpinBox(this);
         sb->setValue(cond.days1);
         ui->hlNotBetween->insertWidget(0, sb);
         dateEdits.append(sb);
-        ui->hlNotBetween->insertWidget(1, new QLabel(tr("è ïîñëå")));
+        ui->hlNotBetween->insertWidget(1, new QLabel(tr("Ð¸ Ð¿Ð¾ÑÐ»Ðµ")));
         connect(sb,SIGNAL(valueChanged(int)),SLOT(sbDays1Changed(int)));
         sb = new QSpinBox(this);
         sb->setValue(cond.days2);
         ui->hlNotBetween->insertWidget(2, sb);
         dateEdits.append(sb);
         connect(sb,SIGNAL(valueChanged(int)),SLOT(sbDays2Changed(int)));
-        ui->hlNotBetween->insertWidget(3, new QLabel(tr("äíåé íàçàä")));
+        ui->hlNotBetween->insertWidget(3, new QLabel(tr("Ð´Ð½ÐµÐ¹ Ð½Ð°Ð·Ð°Ð´")));
 
         sb = new QSpinBox(this);
         sb->setValue(cond.days1);
         ui->hlBefore->insertWidget(0, sb);
         dateEdits.append(sb);
         connect(sb,SIGNAL(valueChanged(int)),SLOT(sbDays1Changed(int)));
-        ui->hlBefore->insertWidget(1, new QLabel(tr("äíåé íàçàä")));
+        ui->hlBefore->insertWidget(1, new QLabel(tr("Ð´Ð½ÐµÐ¹ Ð½Ð°Ð·Ð°Ð´")));
 
         sb = new QSpinBox(this);
         sb->setValue(cond.days1);
         ui->hlAfter->insertWidget(0, sb);
         dateEdits.append(sb);
         connect(sb,SIGNAL(valueChanged(int)),SLOT(sbDays1Changed(int)));
-        ui->hlAfter->insertWidget(1, new QLabel(tr("äíåé íàçàä")));
+        ui->hlAfter->insertWidget(1, new QLabel(tr("Ð´Ð½ÐµÐ¹ Ð½Ð°Ð·Ð°Ð´")));
     }
     else if(mode == TrkChangeCond::Date)
     {
@@ -719,7 +719,7 @@ void TrkChangeCondDialog::setDateMode(TrkChangeCond::DateModeEnum mode)
         ui->hlBetween->insertWidget(0, de);
         dateEdits.append(de);
         connect(de,SIGNAL(dateTimeChanged(QDateTime)),SLOT(deDate1Changed(QDateTime)));
-        ui->hlBetween->insertWidget(1, new QLabel(tr("è")));
+        ui->hlBetween->insertWidget(1, new QLabel(tr("Ð¸")));
         de = new QDateEdit(this);
         de->setDateTime(cond.date2);
         de->setCalendarPopup(true);
@@ -733,7 +733,7 @@ void TrkChangeCondDialog::setDateMode(TrkChangeCond::DateModeEnum mode)
         ui->hlNotBetween->insertWidget(0, de);
         dateEdits.append(de);
         connect(de,SIGNAL(dateTimeChanged(QDateTime)),SLOT(deDate1Changed(QDateTime)));
-        ui->hlNotBetween->insertWidget(1, new QLabel(tr("è ïîñëå")));
+        ui->hlNotBetween->insertWidget(1, new QLabel(tr("Ð¸ Ð¿Ð¾ÑÐ»Ðµ")));
         de = new QDateEdit(this);
         de->setDateTime(cond.date2);
         de->setCalendarPopup(true);
@@ -765,7 +765,7 @@ void TrkChangeCondDialog::setDateMode(TrkChangeCond::DateModeEnum mode)
         ui->hlBetween->insertWidget(0, de);
         dateEdits.append(de);
         connect(de,SIGNAL(dateTimeChanged(QDateTime)),SLOT(deDate1Changed(QDateTime)));
-        ui->hlBetween->insertWidget(1, new QLabel(tr("è")));
+        ui->hlBetween->insertWidget(1, new QLabel(tr("Ð¸")));
         de = new QDateTimeEdit(this);
         de->setDateTime(cond.date2);
         de->setCalendarPopup(true);
@@ -779,7 +779,7 @@ void TrkChangeCondDialog::setDateMode(TrkChangeCond::DateModeEnum mode)
         ui->hlNotBetween->insertWidget(0, de);
         dateEdits.append(de);
         connect(de,SIGNAL(dateTimeChanged(QDateTime)),SLOT(deDate1Changed(QDateTime)));
-        ui->hlNotBetween->insertWidget(1, new QLabel(tr("è ïîñëå")));
+        ui->hlNotBetween->insertWidget(1, new QLabel(tr("Ð¸ Ð¿Ð¾ÑÐ»Ðµ")));
         de = new QDateTimeEdit(this);
         de->setDateTime(cond.date2);
         de->setCalendarPopup(true);

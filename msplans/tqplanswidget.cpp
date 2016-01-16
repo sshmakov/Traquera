@@ -58,15 +58,15 @@ void TQPlansWidget::contextMenuRequested(const QPoint &pos)
     QMenu menu;
     if(isTasksSelected || isGroupSelected)
     {
-        menu.addAction(tr("Êîïèðîâàòü íîìåðà çàïðîñîâ èç çàäà÷"),this,SLOT(copyScrFromTasks()));
-        menu.addAction(tr("Ïîêàçàòü çàïðîñû èç çàäà÷"),this,SLOT(showScrFromTasks()));
+        menu.addAction(tr("ÐšÐ¾Ð¿Ð¸Ñ€Ð¾Ð²Ð°Ñ‚ÑŒ Ð½Ð¾Ð¼ÐµÑ€Ð° Ð·Ð°Ð¿Ñ€Ð¾ÑÐ¾Ð² Ð¸Ð· Ð·Ð°Ð´Ð°Ñ‡"),this,SLOT(copyScrFromTasks()));
+        menu.addAction(tr("ÐŸÐ¾ÐºÐ°Ð·Ð°Ñ‚ÑŒ Ð·Ð°Ð¿Ñ€Ð¾ÑÑ‹ Ð¸Ð· Ð·Ð°Ð´Ð°Ñ‡"),this,SLOT(showScrFromTasks()));
     }
     if(isTasksSelected)
     {
-        menu.addAction(tr("Îòìåòèòü çàïëàíèðîâàííûå çàïðîñû"),this,SLOT(slotCheckPlannedIds()));
-        menu.addAction(tr("Îòìåòèòü íåçàïëàíèðîâàííûå çàïðîñû"),this,SLOT(slotCheckNoPlannedIds()));
+        menu.addAction(tr("ÐžÑ‚Ð¼ÐµÑ‚Ð¸Ñ‚ÑŒ Ð·Ð°Ð¿Ð»Ð°Ð½Ð¸Ñ€Ð¾Ð²Ð°Ð½Ð½Ñ‹Ðµ Ð·Ð°Ð¿Ñ€Ð¾ÑÑ‹"),this,SLOT(slotCheckPlannedIds()));
+        menu.addAction(tr("ÐžÑ‚Ð¼ÐµÑ‚Ð¸Ñ‚ÑŒ Ð½ÐµÐ·Ð°Ð¿Ð»Ð°Ð½Ð¸Ñ€Ð¾Ð²Ð°Ð½Ð½Ñ‹Ðµ Ð·Ð°Ð¿Ñ€Ð¾ÑÑ‹"),this,SLOT(slotCheckNoPlannedIds()));
         menu.addSeparator();
-        menu.addAction(tr("Ïåðåéòè íà çàäà÷ó â ïëàíå"),this,SLOT(showCurrentTaskInPlan()));
+        menu.addAction(tr("ÐŸÐµÑ€ÐµÐ¹Ñ‚Ð¸ Ð½Ð° Ð·Ð°Ð´Ð°Ñ‡Ñƒ Ð² Ð¿Ð»Ð°Ð½Ðµ"),this,SLOT(showCurrentTaskInPlan()));
 
     }
     if(isTasksSelected && isGroupSelected)
@@ -75,8 +75,8 @@ void TQPlansWidget::contextMenuRequested(const QPoint &pos)
     }
     if(isGroupSelected)
     {
-        menu.addAction(tr("Äîáàâèòü âûäåëåííûå çàïðîñû â ïëàí"),this,SLOT(addScrTasks()));
-        menu.addAction(tr("Îòêðûòü ïëàí"),this,SLOT(showCurrentPlan()));
+        menu.addAction(tr("Ð”Ð¾Ð±Ð°Ð²Ð¸Ñ‚ÑŒ Ð²Ñ‹Ð´ÐµÐ»ÐµÐ½Ð½Ñ‹Ðµ Ð·Ð°Ð¿Ñ€Ð¾ÑÑ‹ Ð² Ð¿Ð»Ð°Ð½"),this,SLOT(addScrTasks()));
+        menu.addAction(tr("ÐžÑ‚ÐºÑ€Ñ‹Ñ‚ÑŒ Ð¿Ð»Ð°Ð½"),this,SLOT(showCurrentPlan()));
     }
     QPoint gPos = planTreeView->mapToGlobal(pos);
     menu.exec(gPos);

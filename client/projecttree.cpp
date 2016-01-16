@@ -179,17 +179,17 @@ bool TQOneProjectTree::open(const QString &connectString)
     folders = new TTFolderModel(this);
     QSqlDatabase db = ttglobal()->userDatabase();
     folders->setDatabaseTable(db,"folders",project()->projectName());
-    appendSourceModel(folders,tr("Ëè÷íûå ïàïêè"));
+    appendSourceModel(folders,tr("Ð›Ð¸Ñ‡Ð½Ñ‹Ðµ Ð¿Ð°Ð¿ÐºÐ¸"));
 
 
     userModel = new TQQryFilter(this);
     userModel->setSourceQueryModel(project()->queryModel(recordType()),TQQryFilter::UserOnly);
-    appendSourceModel(userModel,tr("Ëè÷íûå âûáîðêè"));
+    appendSourceModel(userModel,tr("Ð›Ð¸Ñ‡Ð½Ñ‹Ðµ Ð²Ñ‹Ð±Ð¾Ñ€ÐºÐ¸"));
     int rows = userModel->rowCount();
 
     publicModel = new TQQryFilter(this);
     publicModel->setSourceQueryModel(project()->queryModel(recordType()),TQQryFilter::PublicOnly);
-    appendSourceModel(publicModel,tr("Îáùèå âûáîðêè"));
+    appendSourceModel(publicModel,tr("ÐžÐ±Ñ‰Ð¸Ðµ Ð²Ñ‹Ð±Ð¾Ñ€ÐºÐ¸"));
     rows = publicModel->rowCount();
     setMaxColCount(1);    
     endResetModel();

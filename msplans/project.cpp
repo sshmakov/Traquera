@@ -461,11 +461,11 @@ void PrjItemModel::readTask(int row, QAxObject *task)
         const QString &format = fields[c].format;
         if(type == "min")
             if(format == "days")
-                res = QString(tr("%1 ä")).arg(res.toDouble()/60.0/8.0,0,'g',3);
+                res = QString(tr("%1 Ð´")).arg(res.toDouble()/60.0/8.0,0,'g',3);
             else
-                res = QString(tr("%1 ÷")).arg(res.toDouble()/60.0,0,'g',3);
+                res = QString(tr("%1 Ñ‡")).arg(res.toDouble()/60.0,0,'g',3);
         if(type == "sec")
-            res = QString(tr("%1 ÷")).arg(res.toDouble()/3600.0,0,'g',3);
+            res = QString(tr("%1 Ñ‡")).arg(res.toDouble()/3600.0,0,'g',3);
         if(type == "%")
             res = QString(tr("%1%")).arg(res.toInt());
         item->setData(res, Qt::DisplayRole);
@@ -482,26 +482,26 @@ void PrjItemModel::readTask(int row, QAxObject *task)
             prevLevel = prevItem->data(Qt::EditRole).toInt();
         else
         {
-            level = 1; // åñëè íåò ïðåäûäóùåé çàäà÷è, òî ýòî âåðõíèé óðîâåíü
+            level = 1; // ÐµÑÐ»Ð¸ Ð½ÐµÑ‚ Ð¿Ñ€ÐµÐ´Ñ‹Ð´ÑƒÑ‰ÐµÐ¹ Ð·Ð°Ð´Ð°Ñ‡Ð¸, Ñ‚Ð¾ ÑÑ‚Ð¾ Ð²ÐµÑ€Ñ…Ð½Ð¸Ð¹ ÑƒÑ€Ð¾Ð²ÐµÐ½ÑŒ
         }
-        if(level == 1) // âåðõíèé óðîâåíü çàäà÷
+        if(level == 1) // Ð²ÐµÑ€Ñ…Ð½Ð¸Ð¹ ÑƒÑ€Ð¾Ð²ÐµÐ½ÑŒ Ð·Ð°Ð´Ð°Ñ‡
         {
             cash->item(row,0)->setData(0,Qt::UserRole);
         }
-        else if(prevLevel == level) // òàêîé æå óðîâåíü, êàê ó ïðåäûäóùåé çàäà÷è
+        else if(prevLevel == level) // Ñ‚Ð°ÐºÐ¾Ð¹ Ð¶Ðµ ÑƒÑ€Ð¾Ð²ÐµÐ½ÑŒ, ÐºÐ°Ðº Ñƒ Ð¿Ñ€ÐµÐ´Ñ‹Ð´ÑƒÑ‰ÐµÐ¹ Ð·Ð°Ð´Ð°Ñ‡Ð¸
         {
             parentTask = cash->item(prevRow,0)->data(Qt::UserRole).toInt();
             cash->item(row,0)->setData(parentTask,Qt::UserRole);
         }
-        else if (prevLevel < level) // ïðåäûäóùàÿ çàäà÷à ÿâëÿåòñÿ ñóììàðíîé äëÿ òåêóùåé
+        else if (prevLevel < level) // Ð¿Ñ€ÐµÐ´Ñ‹Ð´ÑƒÑ‰Ð°Ñ Ð·Ð°Ð´Ð°Ñ‡Ð° ÑÐ²Ð»ÑÐµÑ‚ÑÑ ÑÑƒÐ¼Ð¼Ð°Ñ€Ð½Ð¾Ð¹ Ð´Ð»Ñ Ñ‚ÐµÐºÑƒÑ‰ÐµÐ¹
         {
             parentTask = row;
             cash->item(row,0)->setData(parentTask,Qt::UserRole);
         }
-        else // òåêóùàÿ çàäà÷à âûøå ïðåäûäóùåé
+        else // Ñ‚ÐµÐºÑƒÑ‰Ð°Ñ Ð·Ð°Ð´Ð°Ñ‡Ð° Ð²Ñ‹ÑˆÐµ Ð¿Ñ€ÐµÐ´Ñ‹Ð´ÑƒÑ‰ÐµÐ¹
         {
-            parentTask = cash->item(prevRow,0)->data(Qt::UserRole).toInt(); // íîìåð ïðåäûäóùåé çàäà÷è
-            while(prevLevel >= level) // ïîêà íå íàéäåì çàäà÷ó, êîòîðàÿ âûøå ïî óðîâíþ, ÷åì òåêóùàÿ
+            parentTask = cash->item(prevRow,0)->data(Qt::UserRole).toInt(); // Ð½Ð¾Ð¼ÐµÑ€ Ð¿Ñ€ÐµÐ´Ñ‹Ð´ÑƒÑ‰ÐµÐ¹ Ð·Ð°Ð´Ð°Ñ‡Ð¸
+            while(prevLevel >= level) // Ð¿Ð¾ÐºÐ° Ð½Ðµ Ð½Ð°Ð¹Ð´ÐµÐ¼ Ð·Ð°Ð´Ð°Ñ‡Ñƒ, ÐºÐ¾Ñ‚Ð¾Ñ€Ð°Ñ Ð²Ñ‹ÑˆÐµ Ð¿Ð¾ ÑƒÑ€Ð¾Ð²Ð½ÑŽ, Ñ‡ÐµÐ¼ Ñ‚ÐµÐºÑƒÑ‰Ð°Ñ
             {
                 parentTask = cash->item(parentTask-1,0)->data(Qt::UserRole).toInt();
                 prevLevel = cash->item(parentTask-1,outlineCol)->data(Qt::EditRole).toInt();

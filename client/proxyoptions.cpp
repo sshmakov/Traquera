@@ -110,8 +110,8 @@ ProxyOptions::ProxyOptions(QWidget *parent) :
     ui->leLogin->setText(d->user);
     ui->lePassword->setText(d->password);
     proxyTypes
-            << qMakePair(QObject::tr("Íåò"), QNetworkProxy::NoProxy)
-            << qMakePair(QObject::tr("Ñèñòåìíûé"), QNetworkProxy::DefaultProxy)
+            << qMakePair(QObject::tr("ÐÐµÑ‚"), QNetworkProxy::NoProxy)
+            << qMakePair(QObject::tr("Ð¡Ð¸ÑÑ‚ÐµÐ¼Ð½Ñ‹Ð¹"), QNetworkProxy::DefaultProxy)
             << qMakePair(QObject::tr("SOCKS5"), QNetworkProxy::Socks5Proxy)
             << qMakePair(QObject::tr("HTTP only"), QNetworkProxy::HttpCachingProxy)
             << qMakePair(QObject::tr("HTTPS"), QNetworkProxy::HttpProxy);

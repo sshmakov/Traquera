@@ -629,10 +629,10 @@ bool TrkToolProject::login(const QString &userName,
 	}
     else
 #ifdef CONSOLE_APP
-        qDebug() << tr("Îøèáêà îòêðûòèÿ ïðîåêòà %1 (%2)").arg(project).arg(res);
+        qDebug() << tr("ÐžÑˆÐ¸Ð±ÐºÐ° Ð¾Ñ‚ÐºÑ€Ñ‹Ñ‚Ð¸Ñ Ð¿Ñ€Ð¾ÐµÐºÑ‚Ð° %1 (%2)").arg(project).arg(res);
 #else
-        QMessageBox::critical(0,tr("Îøèáêà ïîäêëþ÷åíèÿ"),
-                              tr("Îøèáêà îòêðûòèÿ ïðîåêòà %1 (%2)")
+        QMessageBox::critical(0,tr("ÐžÑˆÐ¸Ð±ÐºÐ° Ð¿Ð¾Ð´ÐºÐ»ÑŽÑ‡ÐµÐ½Ð¸Ñ"),
+                              tr("ÐžÑˆÐ¸Ð±ÐºÐ° Ð¾Ñ‚ÐºÑ€Ñ‹Ñ‚Ð¸Ñ Ð¿Ñ€Ð¾ÐµÐºÑ‚Ð° %1 (%2)")
                               .arg(project).arg(res));
 #endif
 	return opened;
@@ -3333,11 +3333,11 @@ TrkHistory::TrkHistory(QObject *parent)
     : BaseRecModel(parent),
       prj(0)
 {
-    headers << tr("Âûáîðêà");
-    headers << tr("Òèï");
-    headers << tr("Çàïèñè");
-    headers << tr("Òèï çàïèñåé");
-    headers << tr("Âðåìÿ");
+    headers << tr("Ð’Ñ‹Ð±Ð¾Ñ€ÐºÐ°");
+    headers << tr("Ð¢Ð¸Ð¿");
+    headers << tr("Ð—Ð°Ð¿Ð¸ÑÐ¸");
+    headers << tr("Ð¢Ð¸Ð¿ Ð·Ð°Ð¿Ð¸ÑÐµÐ¹");
+    headers << tr("Ð’Ñ€ÐµÐ¼Ñ");
 }
 
 TrkHistory::~TrkHistory()
@@ -3426,9 +3426,9 @@ TrkToolQryModel::TrkToolQryModel(QObject *parent)
     : BaseRecModel(parent)
 {
     headers
-            << tr("Íàçâàíèå âûáîðêè")
-            << tr("Ïóáëè÷íàÿ")
-            << tr("Òèï çàïèñè");
+            << tr("ÐÐ°Ð·Ð²Ð°Ð½Ð¸Ðµ Ð²Ñ‹Ð±Ð¾Ñ€ÐºÐ¸")
+            << tr("ÐŸÑƒÐ±Ð»Ð¸Ñ‡Ð½Ð°Ñ")
+            << tr("Ð¢Ð¸Ð¿ Ð·Ð°Ð¿Ð¸ÑÐ¸");
 }
 
 void TrkToolQryModel::appendQry(const QString &queryName, bool isPublic, TRK_UINT rectype)

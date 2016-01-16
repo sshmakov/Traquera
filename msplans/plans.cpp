@@ -504,10 +504,10 @@ void PlansPlugin::initProjectModel()
     planListView->setModel(projects);
     //planListView->setModelColumn(1);
     QAction *a;
-    a = new QAction(QString::fromLocal8Bit("Îòêðûòü ïëàí"),this);
+    a = new QAction(QString::fromLocal8Bit("ÐžÑ‚ÐºÑ€Ñ‹Ñ‚ÑŒ Ð¿Ð»Ð°Ð½"),this);
     connect(a,SIGNAL(triggered(bool)),this,SLOT(openProject()));
     planListView->addAction(a);
-    a = new QAction(QString::fromLocal8Bit("Îòêðûòü câÿçàííûé ïëàí"),this);
+    a = new QAction(QString::fromLocal8Bit("ÐžÑ‚ÐºÑ€Ñ‹Ñ‚ÑŒ cÐ²ÑÐ·Ð°Ð½Ð½Ñ‹Ð¹ Ð¿Ð»Ð°Ð½"),this);
     connect(a,SIGNAL(triggered()),this,SLOT(openLinkedProject()));
     planListView->addAction(a);
     planListView->setContextMenuPolicy(Qt::ActionsContextMenu);
@@ -518,11 +518,11 @@ void PlansPlugin::addPlanFile()
 {
     QString selectedFilter;
     QStringList fileNames= QFileDialog::getOpenFileNames(0,
-        tr("Äîáàâèòü ïëàí"),
+        tr("Ð”Ð¾Ð±Ð°Ð²Ð¸Ñ‚ÑŒ Ð¿Ð»Ð°Ð½"),
         ".",
         tr(
-            "Ïðîåêòû Microsoft Project (*.mpp);;"
-            "Êíèãè Microsoft Excel (*.xls)"
+            "ÐŸÑ€Ð¾ÐµÐºÑ‚Ñ‹ Microsoft Project (*.mpp);;"
+            "ÐšÐ½Ð¸Ð³Ð¸ Microsoft Excel (*.xls)"
         ),
         &selectedFilter
         );
@@ -806,15 +806,15 @@ void PlansPlugin::slotPlanContextMenuRequested(const QPoint &pos)
     QMenu menu;
     if(isTasksSelected || isGroupSelected)
     {
-        menu.addAction(tr("Êîïèðîâàòü íîìåðà çàïðîñîâ èç çàäà÷"),this,SLOT(copyScrFromTasks()));
-        menu.addAction(tr("Ïîêàçàòü çàïðîñû èç çàäà÷"),this,SLOT(showScrFromTasks()));
+        menu.addAction(tr("ÐšÐ¾Ð¿Ð¸Ñ€Ð¾Ð²Ð°Ñ‚ÑŒ Ð½Ð¾Ð¼ÐµÑ€Ð° Ð·Ð°Ð¿Ñ€Ð¾ÑÐ¾Ð² Ð¸Ð· Ð·Ð°Ð´Ð°Ñ‡"),this,SLOT(copyScrFromTasks()));
+        menu.addAction(tr("ÐŸÐ¾ÐºÐ°Ð·Ð°Ñ‚ÑŒ Ð·Ð°Ð¿Ñ€Ð¾ÑÑ‹ Ð¸Ð· Ð·Ð°Ð´Ð°Ñ‡"),this,SLOT(showScrFromTasks()));
     }
     if(isTasksSelected)
     {
-        menu.addAction(tr("Îòìåòèòü çàïëàíèðîâàííûå çàïðîñû"),this,SLOT(slotCheckPlannedIds()));
-        menu.addAction(tr("Îòìåòèòü íåçàïëàíèðîâàííûå çàïðîñû"),this,SLOT(slotCheckNoPlannedIds()));
+        menu.addAction(tr("ÐžÑ‚Ð¼ÐµÑ‚Ð¸Ñ‚ÑŒ Ð·Ð°Ð¿Ð»Ð°Ð½Ð¸Ñ€Ð¾Ð²Ð°Ð½Ð½Ñ‹Ðµ Ð·Ð°Ð¿Ñ€Ð¾ÑÑ‹"),this,SLOT(slotCheckPlannedIds()));
+        menu.addAction(tr("ÐžÑ‚Ð¼ÐµÑ‚Ð¸Ñ‚ÑŒ Ð½ÐµÐ·Ð°Ð¿Ð»Ð°Ð½Ð¸Ñ€Ð¾Ð²Ð°Ð½Ð½Ñ‹Ðµ Ð·Ð°Ð¿Ñ€Ð¾ÑÑ‹"),this,SLOT(slotCheckNoPlannedIds()));
         menu.addSeparator();
-        menu.addAction(tr("Ïåðåéòè íà çàäà÷ó â ïëàíå"),this,SLOT(showCurrentTaskInPlan()));
+        menu.addAction(tr("ÐŸÐµÑ€ÐµÐ¹Ñ‚Ð¸ Ð½Ð° Ð·Ð°Ð´Ð°Ñ‡Ñƒ Ð² Ð¿Ð»Ð°Ð½Ðµ"),this,SLOT(showCurrentTaskInPlan()));
 
     }
     if(isTasksSelected && isGroupSelected)
@@ -823,7 +823,7 @@ void PlansPlugin::slotPlanContextMenuRequested(const QPoint &pos)
     }
     if(isGroupSelected)
     {
-        menu.addAction(tr("Äîáàâèòü âûäåëåííûå çàïðîñû â ïëàí"),this,SLOT(addScrTasks()));
+        menu.addAction(tr("Ð”Ð¾Ð±Ð°Ð²Ð¸Ñ‚ÑŒ Ð²Ñ‹Ð´ÐµÐ»ÐµÐ½Ð½Ñ‹Ðµ Ð·Ð°Ð¿Ñ€Ð¾ÑÑ‹ Ð² Ð¿Ð»Ð°Ð½"),this,SLOT(addScrTasks()));
     }
     QPoint gPos = planTreeView->mapToGlobal(pos);
     menu.exec(gPos);

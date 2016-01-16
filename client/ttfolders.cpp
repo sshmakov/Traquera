@@ -204,7 +204,7 @@ QVariant TTFolderModel::headerData(int section, Qt::Orientation orientation, int
 {
     if(orientation != Qt::Horizontal || role != Qt::DisplayRole || section)
         return QVariant();
-    return QVariant(tr("œ‡ÔÍ‡"));
+    return QVariant(tr("–ü–∞–ø–∫–∞"));
 }
 
 bool TTFolderModel::insertRows(int row, int count, const QModelIndex &parent)
@@ -217,7 +217,7 @@ bool TTFolderModel::insertRows(int row, int count, const QModelIndex &parent)
         pid = parent.internalId();
     for(int i=0; i<count; i++)
     {
-        QString title = tr("œ‡ÔÍ‡ %1(%2)")
+        QString title = tr("–ü–∞–ø–∫–∞ %1(%2)")
                 .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd"))
                 .arg(i);
         QSqlQuery q(db);

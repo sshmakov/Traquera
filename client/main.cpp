@@ -1,4 +1,4 @@
-#include <QtGui>
+﻿#include <QtGui>
 
 #include "database.h"
 #include "mainwindow.h"
@@ -11,8 +11,10 @@ int main(int argc, char *argv[])
 
 //    QCoreApplication::addLibraryPath("C:/gits/build/traquera-main-Desktop-Debug/plugins/tracker");
     QApplication app(argc, argv);
-	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("windows-1251"));
-	QTextCodec::setCodecForTr(QTextCodec::codecForName("windows-1251"));
+//	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("windows-1251"));
+//	QTextCodec::setCodecForTr(QTextCodec::codecForName("windows-1251"));
+    QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
+    QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF-8"));
     app.setApplicationName(PRODUCT_NAME);
     app.setOrganizationName(COMPANY_NAME);
 

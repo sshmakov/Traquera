@@ -765,9 +765,9 @@ void TTGlobal::axScriptError(QAxScript *script, int code, const QString &descrip
 //    QObject *s = sender();
     QString s = description;
     if(code)
-        s += tr(" Код:%1").arg(code);
+        s += tr(" РљРѕРґ:%1").arg(code);
     if(!sourceText.isEmpty())
-        s += tr(" на строке '%1'(%2)").arg(sourceText).arg(sourcePosition);
+        s += tr(" РЅР° СЃС‚СЂРѕРєРµ '%1'(%2)").arg(sourceText).arg(sourcePosition);
     Error(s);
 }
 

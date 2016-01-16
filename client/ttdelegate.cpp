@@ -350,7 +350,7 @@ void TTItemEditor::initInternal(const QStyleOptionViewItem &option, const QModel
 TQDateTimeEdit::TQDateTimeEdit(QWidget *parent)
     : QDateTimeEdit(parent)
 {
-    setSpecialValueText(tr("пусто"));
+    setSpecialValueText(tr("РїСѓСЃС‚Рѕ"));
     setCalendarPopup(true);
 }
 

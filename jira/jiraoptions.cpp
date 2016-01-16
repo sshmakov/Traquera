@@ -58,7 +58,7 @@ bool JiraOptions::event(QEvent *e)
     case QEvent::Hide:
         if(isModified)
         {
-            int button = QMessageBox::information(this, tr("?"), tr("Ñîõðàíèòü èçìåíåíèÿ"),
+            int button = QMessageBox::information(this, tr("?"), tr("Ð¡Ð¾Ñ…Ñ€Ð°Ð½Ð¸Ñ‚ÑŒ Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸Ñ"),
                                         QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel,
                                         QMessageBox::Yes);
             switch(button)
@@ -96,9 +96,9 @@ void JiraOptions::on_leServer_textEdited()
 
 void JiraOptions::on_tbKeyFileBrowse_clicked()
 {
-    QString keyFile = QFileDialog::getOpenFileName(this, tr("Âûáåðèòå ôàéë êëþ÷à"),
+    QString keyFile = QFileDialog::getOpenFileName(this, tr("Ð’Ñ‹Ð±ÐµÑ€Ð¸Ñ‚Ðµ Ñ„Ð°Ð¹Ð» ÐºÐ»ÑŽÑ‡Ð°"),
                                  QString(),
-                                 tr("PEM ôàéëû (*.pem);;Âñå ôàéëû (*.*)"));
+                                 tr("PEM Ñ„Ð°Ð¹Ð»Ñ‹ (*.pem);;Ð’ÑÐµ Ñ„Ð°Ð¹Ð»Ñ‹ (*.*)"));
     if(!keyFile.isEmpty())
     {
         ui->leKeyFile->setText(keyFile);

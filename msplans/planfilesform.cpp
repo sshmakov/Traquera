@@ -47,11 +47,11 @@ void PlanFilesForm::on_projectAddBtn_clicked()
     /*
     QString selectedFilter;
     QStringList fileNames= QFileDialog::getOpenFileNames(this,
-        tr("Добавить план"),
+        tr("Р”РѕР±Р°РІРёС‚СЊ РїР»Р°РЅ"),
         ".",
         tr(
-            "Проекты Microsoft Project (*.mpp)"
-            //  ";;Книги Microsoft Excel (*.xls)"
+            "РџСЂРѕРµРєС‚С‹ Microsoft Project (*.mpp)"
+            //  ";;РљРЅРёРіРё Microsoft Excel (*.xls)"
         ),
         &selectedFilter
         );

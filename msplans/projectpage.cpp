@@ -84,7 +84,7 @@ void ProjectPage::setParentColumn(QHeaderView *hv, const QString& srcFieldTitle,
 	int colSrc = findColumn(hv, srcFieldTitle);
 	if(colSrc<0)
 	{
-		QMessageBox::critical(this,"Error","Не найдено поле-источник "+srcFieldTitle);
+		QMessageBox::critical(this,"Error","РќРµ РЅР°Р№РґРµРЅРѕ РїРѕР»Рµ-РёСЃС‚РѕС‡РЅРёРє "+srcFieldTitle);
 		return;
 	}
 	prjmodel.setParentColumn(colSrc, dstFieldTitle);

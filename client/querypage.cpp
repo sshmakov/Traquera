@@ -113,7 +113,7 @@ QueryPage::QueryPage(QWidget *parent)
 	connect(projectTabWidget,SIGNAL(tabCloseRequested(int)),this,SLOT(closeTab(int)));
 
 	QAction *a;
-    a = new QAction(QString::fromLocal8Bit("Добавить в план"),this);
+    a = new QAction(QString::fromLocal8Bit("Р”РѕР±Р°РІРёС‚СЊ РІ РїР»Р°РЅ"),this);
 	connect(a,SIGNAL(triggered(bool)),this,SLOT(addScrTasks()));
 	planTreeView->addAction(a);
 
@@ -155,9 +155,9 @@ QueryPage::~QueryPage()
 void QueryPage::initWidgets()
 {
     tabBar = new QTabBar(tabPlaceWidget);
-    tabBar->addTab(QIcon(":/images/file.png"),tr("Текст"));
-    //tabBar->addTab(QIcon(":/images/plan.png"),tr("Планы"));
-    tabBar->addTab(tr("Файлы"));
+    tabBar->addTab(QIcon(":/images/file.png"),tr("РўРµРєСЃС‚"));
+    //tabBar->addTab(QIcon(":/images/plan.png"),tr("РџР»Р°РЅС‹"));
+    tabBar->addTab(tr("Р¤Р°Р№Р»С‹"));
 
     QBoxLayout *lay = qobject_cast<QBoxLayout *>(tabPlaceWidget->layout());
     lay->insertWidget(0,tabBar);
@@ -189,9 +189,9 @@ void QueryPage::initWidgets()
     filesTable->horizontalHeader()->setStretchLastSection(true);
     filesTable->verticalHeader()->setVisible(false);
     filesTable->verticalHeader()->setDefaultSectionSize(19);
-    filesTable->horizontalHeaderItem(0)->setText(tr("Файл"));
-    filesTable->horizontalHeaderItem(1)->setText(tr("Изменен"));
-    filesTable->horizontalHeaderItem(2)->setText(tr("Путь"));
+    filesTable->horizontalHeaderItem(0)->setText(tr("Р¤Р°Р№Р»"));
+    filesTable->horizontalHeaderItem(1)->setText(tr("РР·РјРµРЅРµРЅ"));
+    filesTable->horizontalHeaderItem(2)->setText(tr("РџСѓС‚СЊ"));
     subLay->addWidget(filesTable);
     connect(filesTable,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(slotFilesTable_doubleClicked(QModelIndex)));
     connect(filesTable,SIGNAL(clicked(QModelIndex)),this,SLOT(slotFilesTable_pressed(QModelIndex)));
@@ -296,7 +296,7 @@ void QueryPage::setQueryModel(TQAbstractProject *prj, TQRecModel *model)
     decorator->fillEditPanels(this->tabPanels, tmodel->typeDef(),fieldEdits);
 #endif
     filterFieldComboBox->clear();
-    filterFieldComboBox->addItem(tr("Любое поле"),-1);
+    filterFieldComboBox->addItem(tr("Р›СЋР±РѕРµ РїРѕР»Рµ"),-1);
     QMap<QString, int> headers;
     for(int col=0; col<d->tmodel->columnCount(); col++)
     {
@@ -475,15 +475,15 @@ void QueryPage::slotPlanContextMenuRequested(const QPoint &pos)
     QMenu menu;
     if(isTasksSelected || isGroupSelected)
     {
-        menu.addAction(tr("Копировать номера запросов из задач"),this,SLOT(copyScrFromTasks()));
-        menu.addAction(tr("Показать запросы из задач"),this,SLOT(showScrFromTasks()));
+        menu.addAction(tr("РљРѕРїРёСЂРѕРІР°С‚СЊ РЅРѕРјРµСЂР° Р·Р°РїСЂРѕСЃРѕРІ РёР· Р·Р°РґР°С‡"),this,SLOT(copyScrFromTasks()));
+        menu.addAction(tr("РџРѕРєР°Р·Р°С‚СЊ Р·Р°РїСЂРѕСЃС‹ РёР· Р·Р°РґР°С‡"),this,SLOT(showScrFromTasks()));
     }
     if(isTasksSelected)
     {
-        menu.addAction(tr("Отметить запланированные запросы"),this,SLOT(slotCheckPlannedIds()));
-        menu.addAction(tr("Отметить незапланированные запросы"),this,SLOT(slotCheckNoPlannedIds()));
+        menu.addAction(tr("РћС‚РјРµС‚РёС‚СЊ Р·Р°РїР»Р°РЅРёСЂРѕРІР°РЅРЅС‹Рµ Р·Р°РїСЂРѕСЃС‹"),this,SLOT(slotCheckPlannedIds()));
+        menu.addAction(tr("РћС‚РјРµС‚РёС‚СЊ РЅРµР·Р°РїР»Р°РЅРёСЂРѕРІР°РЅРЅС‹Рµ Р·Р°РїСЂРѕСЃС‹"),this,SLOT(slotCheckNoPlannedIds()));
         menu.addSeparator();
-        menu.addAction(tr("Перейти на задачу в плане"),this,SLOT(showCurrentTaskInPlan()));
+        menu.addAction(tr("РџРµСЂРµР№С‚Рё РЅР° Р·Р°РґР°С‡Сѓ РІ РїР»Р°РЅРµ"),this,SLOT(showCurrentTaskInPlan()));
 
     }
     if(isTasksSelected && isGroupSelected)
@@ -492,7 +492,7 @@ void QueryPage::slotPlanContextMenuRequested(const QPoint &pos)
     }
     if(isGroupSelected)
     {
-        menu.addAction(tr("Добавить выделенные запросы в план"),this,SLOT(addScrTasks()));
+        menu.addAction(tr("Р”РѕР±Р°РІРёС‚СЊ РІС‹РґРµР»РµРЅРЅС‹Рµ Р·Р°РїСЂРѕСЃС‹ РІ РїР»Р°РЅ"),this,SLOT(addScrTasks()));
     }
     QPoint gPos = planTreeView->mapToGlobal(pos);
     menu.exec(gPos);
@@ -541,7 +541,7 @@ void QueryPage::initPopupMenu()
 {
 	QHeaderView *hv=queryView->horizontalHeader();
 
-    QAction *action = new QAction(tr("Настройка столбцов..."),this);
+    QAction *action = new QAction(tr("РќР°СЃС‚СЂРѕР№РєР° СЃС‚РѕР»Р±С†РѕРІ..."),this);
     connect(action,SIGNAL(triggered()),this,SLOT(execColumnsEditor()));
     hv->addAction(action);
 
@@ -760,8 +760,8 @@ void QueryPage::sendEmail(const QObjectList &records)
 	app.setControl("Outlook.Application");
 	if(app.isNull())
 	{
-		QMessageBox::critical(this,tr("Ошибка"),
-			tr("Нет доступа к Outlook"));
+		QMessageBox::critical(this,tr("РћС€РёР±РєР°"),
+			tr("РќРµС‚ РґРѕСЃС‚СѓРїР° Рє Outlook"));
 		return;
 	}
 	QVariant itemType = app.property("olMailItem");
@@ -770,8 +770,8 @@ void QueryPage::sendEmail(const QObjectList &records)
 	QAxObject *mail = app.querySubObject("CreateItem(QVariant)",itemType);
 	if(!mail)
 	{
-		QMessageBox::critical(this,tr("Ошибка"),
-			tr("Не создается письмо в Outlook"));
+		QMessageBox::critical(this,tr("РћС€РёР±РєР°"),
+			tr("РќРµ СЃРѕР·РґР°РµС‚СЃСЏ РїРёСЃСЊРјРѕ РІ Outlook"));
 		return;
 	}
 	QVariant format = app.property("olFormatHTML");
@@ -783,11 +783,11 @@ void QueryPage::sendEmail(const QObjectList &records)
     if(records.count()==1)
     {
         TQRecord *rec = qobject_cast<TQRecord *>(records[0]);
-        subject = QString(tr("Запрос %1. %2")).arg((int)(rec->recordId())).arg(rec->value("Title").toString());
+        subject = QString(tr("Р—Р°РїСЂРѕСЃ %1. %2")).arg((int)(rec->recordId())).arg(rec->value("Title").toString());
     }
     else
     {
-        subject = tr("Запросы ");
+        subject = tr("Р—Р°РїСЂРѕСЃС‹ ");
         for(int i=0; i<records.count(); i++)
         {
             const TQRecord *rec = qobject_cast<TQRecord *>(records[i]);
@@ -1556,7 +1556,7 @@ void QueryPage::popupScrMenu(int id)
 {
 //    QMenu menu;
 //    QAction
-    //    menu.addAction(tr("Добавить #$1 в список").arg(id),this,SLOT(appendId(int))
+    //    menu.addAction(tr("Р”РѕР±Р°РІРёС‚СЊ #$1 РІ СЃРїРёСЃРѕРє").arg(id),this,SLOT(appendId(int))
 }
 
 void QueryPage::execColumnsEditor()
@@ -1799,7 +1799,7 @@ void QueryPage::on_actionDeleteFromList_triggered()
 
 void QueryPage::on_queryView_customContextMenuRequested(const QPoint &pos)
 {
-    // Контекстое меню списка запросов
+    // РљРѕРЅС‚РµРєСЃС‚РѕРµ РјРµРЅСЋ СЃРїРёСЃРєР° Р·Р°РїСЂРѕСЃРѕРІ
     //queryView->setContextMenuPolicy(Qt::CustomContextMenu);
     QMenu menu;
     menu.addAction(actionCopyId);
@@ -1810,7 +1810,7 @@ void QueryPage::on_queryView_customContextMenuRequested(const QPoint &pos)
     if(hasMarked())
     {
         menu.addSeparator();
-        QMenu *subMenu = menu.addMenu(tr("Отмеченные запросы"));
+        QMenu *subMenu = menu.addMenu(tr("РћС‚РјРµС‡РµРЅРЅС‹Рµ Р·Р°РїСЂРѕСЃС‹"));
         subMenu->addAction(actionCopyMarkedId);
         subMenu->addAction(actionCopyMarkedTable);
         subMenu->addAction(actionCopyMarkedRecords);
@@ -1867,7 +1867,7 @@ void QueryPage::slotFilesTable_doubleClicked(const QModelIndex &index)
 //    delete buf;
     /*
     QString newFile = QFileDialog::getSaveFileName(this,
-                                                   tr("Сохранить файл"),
+                                                   tr("РЎРѕС…СЂР°РЅРёС‚СЊ С„Р°Р№Р»"),
                                                    fileName);
     if(newFile.isEmpty())
         return;

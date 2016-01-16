@@ -24,7 +24,7 @@ static const char szDescription[] = "TQService";
 
 #define EventSource TEXT("Test.MyISAPI")
 
-//êîä îòâåòà http
+//ÐºÐ¾Ð´ Ð¾Ñ‚Ð²ÐµÑ‚Ð° http
 static const char szRespOK[]="HTTP/1.1 200 OK";
 
 
@@ -40,9 +40,9 @@ extern "C" TQSERVICESHARED_EXPORT BOOL __stdcall  GetExtensionVersion( __out HSE
     QMutexLocker locker(&reqMutex);
     if(!service)
         service = new TQService();
-    //óñòàíàâëèâàåò âåðñèþ
+    //ÑƒÑÑ‚Ð°Ð½Ð°Ð²Ð»Ð¸Ð²Ð°ÐµÑ‚ Ð²ÐµÑ€ÑÐ¸ÑŽ
     pVer->dwExtensionVersion=MAKELONG(0,1);
-    //êîïèðóåì îïèñàíèå
+    //ÐºÐ¾Ð¿Ð¸Ñ€ÑƒÐµÐ¼ Ð¾Ð¿Ð¸ÑÐ°Ð½Ð¸Ðµ
     memcpy(pVer->lpszExtensionDesc, szDescription, sizeof(szDescription));
     return TRUE;
 }
@@ -127,9 +127,9 @@ extern "C" TQSERVICESHARED_EXPORT DWORD WINAPI   HttpExtensionProc( __in EXTENSI
     hInfo.pszHeader = pszHdr;
     hInfo.cchStatus = sizeof(szRespOK) - 1;
     hInfo.cchHeader = strlen(pszHdr);
-    //èñïîëüçóåì KeepAlive http/1.1
+    //Ð¸ÑÐ¿Ð¾Ð»ÑŒÐ·ÑƒÐµÐ¼ KeepAlive http/1.1
     hInfo.fKeepConn = TRUE;
-    //îòïðàâëÿåì çàãîëîâîê
+    //Ð¾Ñ‚Ð¿Ñ€Ð°Ð²Ð»ÑÐµÐ¼ Ð·Ð°Ð³Ð¾Ð»Ð¾Ð²Ð¾Ðº
     lpECB->ServerSupportFunction(lpECB->ConnID, HSE_APPEND_LOG_PARAMETER, &hInfo, NULL, NULL);
     lpECB->ServerSupportFunction(lpECB->ConnID, HSE_REQ_SEND_RESPONSE_HEADER_EX, &hInfo, NULL, NULL);
     //lpECB->ServerSupportFunction(lpECB->ConnID, HSE_REQ_SEND_RESPONSE_HEADER, pszHdr, NULL, NULL);
@@ -146,22 +146,22 @@ extern "C" TQSERVICESHARED_EXPORT DWORD WINAPI   HttpExtensionProc( __in EXTENSI
         sended += bufLen;
     }
     DWORD dwStatus = HSE_STATUS_SUCCESS;
-    //óâåäîìëÿåì îá óñïåøíîì çàâåðøåíèè îáðàáîòêè
+    //ÑƒÐ²ÐµÐ´Ð¾Ð¼Ð»ÑÐµÐ¼ Ð¾Ð± ÑƒÑÐ¿ÐµÑˆÐ½Ð¾Ð¼ Ð·Ð°Ð²ÐµÑ€ÑˆÐµÐ½Ð¸Ð¸ Ð¾Ð±Ñ€Ð°Ð±Ð¾Ñ‚ÐºÐ¸
     //lpECB->ServerSupportFunction(lpECB->ConnID, HSE_REQ_DONE_WITH_SESSION, &dwStatus, NULL, NULL);
 
     return HSE_STATUS_SUCCESS;
 
 #ifdef _SAMPLE_
-    //óêàçàòåëü íà áóôåð
+    //ÑƒÐºÐ°Ð·Ð°Ñ‚ÐµÐ»ÑŒ Ð½Ð° Ð±ÑƒÑ„ÐµÑ€
     char *pAll = NULL;
-    //ðàçìåð áóôåðà
+    //Ñ€Ð°Ð·Ð¼ÐµÑ€ Ð±ÑƒÑ„ÐµÑ€Ð°
     DWORD dwAll;
     DWORD dwFlag, dwNull;
-    //ïàðàìåòðû a è b
+    //Ð¿Ð°Ñ€Ð°Ð¼ÐµÑ‚Ñ€Ñ‹ a Ð¸ b
     __int64 ia, ib;
-    //ôëàãè íàëè÷èÿ ïàðìåòðîâ
+    //Ñ„Ð»Ð°Ð³Ð¸ Ð½Ð°Ð»Ð¸Ñ‡Ð¸Ñ Ð¿Ð°Ñ€Ð¼ÐµÑ‚Ñ€Ð¾Ð²
     int iParamFlg = 0;
-    //òåêóùàÿ ïîçèöèÿ â ñòðîêå çàïðîñà
+    //Ñ‚ÐµÐºÑƒÑ‰Ð°Ñ Ð¿Ð¾Ð·Ð¸Ñ†Ð¸Ñ Ð² ÑÑ‚Ñ€Ð¾ÐºÐµ Ð·Ð°Ð¿Ñ€Ð¾ÑÐ°
     char *ppos = lpECB->lpszQueryString;
     char *pend = strchr(ppos, 0);
     ppos--;
@@ -169,7 +169,7 @@ extern "C" TQSERVICESHARED_EXPORT DWORD WINAPI   HttpExtensionProc( __in EXTENSI
     {
         ppos++;
         char cPar = *ppos++;
-        //èùåì ñòðî÷êó âèäà "X="
+        //Ð¸Ñ‰ÐµÐ¼ ÑÑ‚Ñ€Ð¾Ñ‡ÐºÑƒ Ð²Ð¸Ð´Ð° "X="
         if(*ppos++ == '=')
         {
             switch(cPar)
@@ -183,10 +183,10 @@ extern "C" TQSERVICESHARED_EXPORT DWORD WINAPI   HttpExtensionProc( __in EXTENSI
                 iParamFlg |= 0x02;
             }
         }
-        //èùåì ñëåäóþùèé ïàðàìåòð.
+        //Ð¸Ñ‰ÐµÐ¼ ÑÐ»ÐµÐ´ÑƒÑŽÑ‰Ð¸Ð¹ Ð¿Ð°Ñ€Ð°Ð¼ÐµÑ‚Ñ€.
         ppos = strchr(ppos, '&');
     }
-    if(iParamFlg == 3) //îáà ïàðàìåòðà
+    if(iParamFlg == 3) //Ð¾Ð±Ð° Ð¿Ð°Ñ€Ð°Ð¼ÐµÑ‚Ñ€Ð°
     {
         QString rec = service->requestRecord(ia);
         pAll = new char[rec.length()+1];
@@ -201,36 +201,36 @@ extern "C" TQSERVICESHARED_EXPORT DWORD WINAPI   HttpExtensionProc( __in EXTENSI
     else
     {
         dwAll = 0;
-        //îïðåäåëèì òðåáóåìûé ðàçìåð áóôåðà
+        //Ð¾Ð¿Ñ€ÐµÐ´ÐµÐ»Ð¸Ð¼ Ñ‚Ñ€ÐµÐ±ÑƒÐµÐ¼Ñ‹Ð¹ Ñ€Ð°Ð·Ð¼ÐµÑ€ Ð±ÑƒÑ„ÐµÑ€Ð°
         lpECB->GetServerVariable(lpECB->ConnID, "ALL_RAW", pAll, (unsigned long *)&dwAll); //get size
         pAll = new char[dwAll+1];
-        //ïîëó÷èì ïåðåìåííóþ
+        //Ð¿Ð¾Ð»ÑƒÑ‡Ð¸Ð¼ Ð¿ÐµÑ€ÐµÐ¼ÐµÐ½Ð½ÑƒÑŽ
         lpECB->GetServerVariable(lpECB->ConnID, "ALL_RAW", pAll, (unsigned long *)&dwAll); //get data
         pAll[dwAll] = 0;
         dwAll = strlen(pAll);
     }
     char pszHdr[200];
     static char szHeader[] = "Content-Length: %lu\r\nContent-type: text/plain\r\nPragma: no-cache\r\nExpires: 0\r\nCache-Control: no-cache\r\n\r\n";
-    //ôîðìèðóåì çàãîëîâîê
+    //Ñ„Ð¾Ñ€Ð¼Ð¸Ñ€ÑƒÐµÐ¼ Ð·Ð°Ð³Ð¾Ð»Ð¾Ð²Ð¾Ðº
     sprintf(pszHdr, szHeader, dwAll); //create header
     HSE_SEND_HEADER_EX_INFO hInfo;
     hInfo.pszStatus = szRespOK;
     hInfo.pszHeader = pszHdr;
     hInfo.cchStatus = sizeof(szRespOK) - 1;
     hInfo.cchHeader = strlen(pszHdr);
-    //èñïîëüçóåì KeepAlive http/1.1
+    //Ð¸ÑÐ¿Ð¾Ð»ÑŒÐ·ÑƒÐµÐ¼ KeepAlive http/1.1
     hInfo.fKeepConn = TRUE;
-    //îòïðàâëÿåì çàãîëîâîê
+    //Ð¾Ñ‚Ð¿Ñ€Ð°Ð²Ð»ÑÐµÐ¼ Ð·Ð°Ð³Ð¾Ð»Ð¾Ð²Ð¾Ðº
     lpECB->ServerSupportFunction(lpECB->ConnID, HSE_APPEND_LOG_PARAMETER, &hInfo, NULL, NULL);
     lpECB->ServerSupportFunction(lpECB->ConnID, HSE_REQ_SEND_RESPONSE_HEADER_EX, &hInfo, NULL, NULL);
     //lpECB->ServerSupportFunction(lpECB->ConnID, HSE_REQ_SEND_RESPONSE_HEADER, pszHdr, NULL, NULL);
-    //îòïðàâëÿåì äàííûå
+    //Ð¾Ñ‚Ð¿Ñ€Ð°Ð²Ð»ÑÐµÐ¼ Ð´Ð°Ð½Ð½Ñ‹Ðµ
     lpECB->WriteClient(lpECB->ConnID, pAll, &dwAll, HSE_IO_SYNC);
     DWORD dwStatus = HSE_STATUS_SUCCESS;
-    //óâåäîìëÿåì îá óñïåøíîì çàâåðøåíèè îáðàáîòêè
+    //ÑƒÐ²ÐµÐ´Ð¾Ð¼Ð»ÑÐµÐ¼ Ð¾Ð± ÑƒÑÐ¿ÐµÑˆÐ½Ð¾Ð¼ Ð·Ð°Ð²ÐµÑ€ÑˆÐµÐ½Ð¸Ð¸ Ð¾Ð±Ñ€Ð°Ð±Ð¾Ñ‚ÐºÐ¸
     //lpECB->ServerSupportFunction(lpECB->ConnID, HSE_REQ_DONE_WITH_SESSION, &dwStatus, NULL, NULL);
     delete [] pAll;
-    //îñâîáîæäàåì ñåìàôîð
+    //Ð¾ÑÐ²Ð¾Ð±Ð¾Ð¶Ð´Ð°ÐµÐ¼ ÑÐµÐ¼Ð°Ñ„Ð¾Ñ€
 
     return HSE_STATUS_SUCCESS;
 #endif
@@ -243,13 +243,13 @@ void ExtensionThreadProc(LPVOID)
   OVERLAPPED * pParam;
   while(::GetQueuedCompletionStatus(hIOPort, &dwFlag, &dwNull, &pParam, INFINITE) && dwFlag != NULL)
   {
-    //ïðåîáðàçóåì óêàçàòåëü
+    //Ð¿Ñ€ÐµÐ¾Ð±Ñ€Ð°Ð·ÑƒÐµÐ¼ ÑƒÐºÐ°Ð·Ð°Ñ‚ÐµÐ»ÑŒ
     LPEXTENSION_CONTROL_BLOCK lpECB = (LPEXTENSION_CONTROL_BLOCK)pParam;
-    //ïàðàìåòðû a è b
+    //Ð¿Ð°Ñ€Ð°Ð¼ÐµÑ‚Ñ€Ñ‹ a Ð¸ b
     __int64 ia, ib;
-    //ôëàãè íàëè÷èÿ ïàðìåòðîâ
+    //Ñ„Ð»Ð°Ð³Ð¸ Ð½Ð°Ð»Ð¸Ñ‡Ð¸Ñ Ð¿Ð°Ñ€Ð¼ÐµÑ‚Ñ€Ð¾Ð²
     int iParamFlg = 0;
-    //òåêóùàÿ ïîçèöèÿ â ñòðîêå çàïðîñà
+    //Ñ‚ÐµÐºÑƒÑ‰Ð°Ñ Ð¿Ð¾Ð·Ð¸Ñ†Ð¸Ñ Ð² ÑÑ‚Ñ€Ð¾ÐºÐµ Ð·Ð°Ð¿Ñ€Ð¾ÑÐ°
     char *ppos = lpECB->lpszQueryString;
     char *pend = strchr(ppos, 0);
     ppos--;
@@ -257,7 +257,7 @@ void ExtensionThreadProc(LPVOID)
     {
       ppos++;
       char cPar = *ppos++;
-      //èùåì ñòðî÷êó âèäà "X="
+      //Ð¸Ñ‰ÐµÐ¼ ÑÑ‚Ñ€Ð¾Ñ‡ÐºÑƒ Ð²Ð¸Ð´Ð° "X="
       if(*ppos++ == '=')
       {
         switch(cPar)
@@ -271,14 +271,14 @@ void ExtensionThreadProc(LPVOID)
               iParamFlg |= 0x02;
         }
       }
-      //èùåì ñëåäóþùèé ïàðàìåòð.
+      //Ð¸Ñ‰ÐµÐ¼ ÑÐ»ÐµÐ´ÑƒÑŽÑ‰Ð¸Ð¹ Ð¿Ð°Ñ€Ð°Ð¼ÐµÑ‚Ñ€.
       ppos = strchr(ppos, '&');
     }
-    //óêàçàòåëü íà áóôåð
+    //ÑƒÐºÐ°Ð·Ð°Ñ‚ÐµÐ»ÑŒ Ð½Ð° Ð±ÑƒÑ„ÐµÑ€
     char *pAll = NULL;
-    //ðàçìåð áóôåðà
+    //Ñ€Ð°Ð·Ð¼ÐµÑ€ Ð±ÑƒÑ„ÐµÑ€Ð°
     DWORD dwAll;
-    if(iParamFlg == 3) //îáà ïàðàìåòðà
+    if(iParamFlg == 3) //Ð¾Ð±Ð° Ð¿Ð°Ñ€Ð°Ð¼ÐµÑ‚Ñ€Ð°
     {
       pAll = new char[21];
       __int64 res = ia*ib;
@@ -288,32 +288,32 @@ void ExtensionThreadProc(LPVOID)
     else
     {
       dwAll = 0;
-      //îïðåäåëèì òðåáóåìûé ðàçìåð áóôåðà
+      //Ð¾Ð¿Ñ€ÐµÐ´ÐµÐ»Ð¸Ð¼ Ñ‚Ñ€ÐµÐ±ÑƒÐµÐ¼Ñ‹Ð¹ Ñ€Ð°Ð·Ð¼ÐµÑ€ Ð±ÑƒÑ„ÐµÑ€Ð°
       lpECB->GetServerVariable(lpECB->ConnID, "ALL_RAW", pAll, (unsigned long *)&dwAll); //get size
       pAll = new char[dwAll];
-      //ïîëó÷èì ïåðåìåííóþ
+      //Ð¿Ð¾Ð»ÑƒÑ‡Ð¸Ð¼ Ð¿ÐµÑ€ÐµÐ¼ÐµÐ½Ð½ÑƒÑŽ
       lpECB->GetServerVariable(lpECB->ConnID, "ALL_RAW", pAll, (unsigned long *)&dwAll); //get data
     }
     char pszHdr[200];
     static char szHeader[] = "Content-Length: %lu\r\nContent-type: text/plain\r\nPragma: no-cache\r\nExpires: 0\r\nCache-Control: no-cache\r\n\r\n";
-    //ôîðìèðóåì çàãîëîâîê
+    //Ñ„Ð¾Ñ€Ð¼Ð¸Ñ€ÑƒÐµÐ¼ Ð·Ð°Ð³Ð¾Ð»Ð¾Ð²Ð¾Ðº
     sprintf(pszHdr, szHeader, dwAll); //create header
     HSE_SEND_HEADER_EX_INFO hInfo;
     hInfo.pszStatus = szRespOK;
     hInfo.pszHeader = pszHdr;
     hInfo.cchStatus = sizeof(szRespOK) - 1;
     hInfo.cchHeader = strlen(pszHdr);
-    //èñïîëüçóåì KeepAlive http/1.1
+    //Ð¸ÑÐ¿Ð¾Ð»ÑŒÐ·ÑƒÐµÐ¼ KeepAlive http/1.1
     hInfo.fKeepConn = TRUE;
-    //îòïðàâëÿåì çàãîëîâîê
+    //Ð¾Ñ‚Ð¿Ñ€Ð°Ð²Ð»ÑÐµÐ¼ Ð·Ð°Ð³Ð¾Ð»Ð¾Ð²Ð¾Ðº
     lpECB->ServerSupportFunction(lpECB->ConnID, HSE_REQ_SEND_RESPONSE_HEADER_EX, &hInfo, NULL, NULL);
-    //îòïðàâëÿåì äàííûå
+    //Ð¾Ñ‚Ð¿Ñ€Ð°Ð²Ð»ÑÐµÐ¼ Ð´Ð°Ð½Ð½Ñ‹Ðµ
     lpECB->WriteClient(lpECB->ConnID, pAll, &dwAll, HSE_IO_SYNC);
     DWORD dwStatus = HSE_STATUS_SUCCESS_AND_KEEP_CONN;
-    //óâåäîìëÿåì îá óñïåøíîì çàâåðøåíèè îáðàáîòêè
+    //ÑƒÐ²ÐµÐ´Ð¾Ð¼Ð»ÑÐµÐ¼ Ð¾Ð± ÑƒÑÐ¿ÐµÑˆÐ½Ð¾Ð¼ Ð·Ð°Ð²ÐµÑ€ÑˆÐµÐ½Ð¸Ð¸ Ð¾Ð±Ñ€Ð°Ð±Ð¾Ñ‚ÐºÐ¸
     lpECB->ServerSupportFunction(lpECB->ConnID, HSE_REQ_DONE_WITH_SESSION, &dwStatus, NULL, NULL);
     delete [] pAll;
-    //îñâîáîæäàåì ñåìàôîð
+    //Ð¾ÑÐ²Ð¾Ð±Ð¾Ð¶Ð´Ð°ÐµÐ¼ ÑÐµÐ¼Ð°Ñ„Ð¾Ñ€
     ::ReleaseSemaphore(hSemaphore, 1, NULL);
   }
   _endthread();
@@ -554,7 +554,7 @@ QString TQSession::login(const QString &user, const QString &password, const QSt
 {
      //sets.value("dbmsType").toString(),
 //            project = "RS-Bank V.6", //sets.value("project").toString(),
-//            user = QString::fromLocal8Bit("Ñåðãåé"), //sets.value("user").toString(),
+//            user = QString::fromLocal8Bit("Ð¡ÐµÑ€Ð³ÐµÐ¹"), //sets.value("user").toString(),
 //            password = ""; //sets.value("password").toString();
     TQAbstractProject *prj = db->openProject(project,user,password);
     if(prj)

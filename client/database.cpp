@@ -68,7 +68,7 @@ bool createConnection2()
 	QSqlQuery qa(auth);
 	
 	//if(!qa.exec(QString("select * from %1").arg(auth.tables()[0])))
-	if(!qa.exec("select * from [Ëèñò1$]"))
+	if(!qa.exec("select * from [Ð›Ð¸ÑÑ‚1$]"))
 	{
 		//QString mes = QString("Cannot open authors\n%1\nClick Cancel to exit.").arg(qa.lastError().text());
 		QString mes = qa.lastError().text();
@@ -103,7 +103,7 @@ bool createConnection2()
     }
 
 	QSqlQuery qr(reqs);
-	if(!qr.exec("select * from [Ëèñò1$]"))
+	if(!qr.exec("select * from [Ð›Ð¸ÑÑ‚1$]"))
 	{
         QMessageBox::critical(0, qApp->tr("Cannot open reqs"),
             qApp->tr("Cannot open reqs\n\n"

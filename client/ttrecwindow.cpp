@@ -46,8 +46,8 @@ void TTRecordWindow::closeEvent(QCloseEvent *event)
         if(isChanged())
         {
             QMessageBox msgBox;
-            msgBox.setText(tr("Çàïðîñ áûë èçìåíåí"));
-            msgBox.setInformativeText(tr("Õîòèòå çàïèñàòü èçìåíåíèÿ?"));
+            msgBox.setText(tr("Ð—Ð°Ð¿Ñ€Ð¾Ñ Ð±Ñ‹Ð» Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½"));
+            msgBox.setInformativeText(tr("Ð¥Ð¾Ñ‚Ð¸Ñ‚Ðµ Ð·Ð°Ð¿Ð¸ÑÐ°Ñ‚ÑŒ Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸Ñ?"));
             msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
             msgBox.setDefaultButton(QMessageBox::Save);
             int ret = msgBox.exec();
@@ -110,7 +110,7 @@ void TTRecordWindow::setTypeDef(const TQAbstractRecordTypeDef *recDef)
     else
         titleFieldName.clear();
     if(titleFieldName.isEmpty())
-        ui->labelRecordTitle->setText(tr("Òåìà:"));
+        ui->labelRecordTitle->setText(tr("Ð¢ÐµÐ¼Ð°:"));
     else
         ui->labelRecordTitle->setText(titleFieldName+":");
 }
@@ -136,7 +136,7 @@ void TTRecordWindow::setRecord(TQRecord *rec)
     changed = false;
     */
     refreshState();
-    setWindowTitle(QString(tr("Çàïðîñ %1 %2")).arg(rec->recordId()).arg(rec->title()));
+    setWindowTitle(QString(tr("Ð—Ð°Ð¿Ñ€Ð¾Ñ %1 %2")).arg(rec->recordId()).arg(rec->title()));
     connect(a_record, SIGNAL(changedState(int)), SLOT(refreshState()));
 }
 
@@ -599,7 +599,7 @@ void TTRecordWindow::initWidgets()
     connect(props,SIGNAL(dataChanged()),SLOT(valueChanged()));
     connect(ui->recordTitleEdit,SIGNAL(textChanged(QString)),SLOT(titleChanged(QString)));
     ui->dockWidget->setWidget(props);
-    ui->dockWidget->setWindowTitle(tr("Ñâîéñòâà"));
+    ui->dockWidget->setWindowTitle(tr("Ð¡Ð²Ð¾Ð¹ÑÑ‚Ð²Ð°"));
     setAttribute(Qt::WA_DeleteOnClose,true);
     if(settings->contains(TTRecordGeometry))
         restoreGeometry(settings->value(TTRecordGeometry).toByteArray());
@@ -629,9 +629,9 @@ void TTRecordWindow::initWidgets()
     */
 
 //    tabBar = new QTabBar(ui->tabPlaceWidget);
-//    tabBar->addTab(QIcon(":/images/file.png"),tr("Òåêñò"));
-//    tabBar->addTab(QIcon(":/images/plan.png"),tr("Ïëàíû"));
-//    tabBar->addTab(tr("Ôàéëû"));
+//    tabBar->addTab(QIcon(":/images/file.png"),tr("Ð¢ÐµÐºÑÑ‚"));
+//    tabBar->addTab(QIcon(":/images/plan.png"),tr("ÐŸÐ»Ð°Ð½Ñ‹"));
+//    tabBar->addTab(tr("Ð¤Ð°Ð¹Ð»Ñ‹"));
 
 //    QBoxLayout *lay = qobject_cast<QBoxLayout *>(ui->tabPlaceWidget->layout());
 //    lay->insertWidget(0,tabBar);

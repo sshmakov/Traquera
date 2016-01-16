@@ -40,8 +40,8 @@ QVariant PlanFilesModel::data(const QModelIndex & index, int role) const
         case 1:
             return "";
 //            return plans[index.row()].readOnly?
-//                    QString(tr("чтение"))
-//                    : QString(tr("запись"));
+//                    QString(tr("С‡С‚РµРЅРёРµ"))
+//                    : QString(tr("Р·Р°РїРёСЃСЊ"));
         case 2:
             return plans[index.row()].file;
         }
@@ -110,11 +110,11 @@ QVariant PlanFilesModel::headerData ( int section, Qt::Orientation orientation, 
         switch(section)
         {
         case 0:
-            return QString(tr("План"));
+            return QString(tr("РџР»Р°РЅ"));
         case 1:
             return QString(tr("RO"));
         case 2:
-            return QString(tr("Путь"));
+            return QString(tr("РџСѓС‚СЊ"));
         }
     }
     else if(role==Qt::TextAlignmentRole)

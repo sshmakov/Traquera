@@ -33,16 +33,16 @@ TQConnectWidget::TQConnectWidget(QWidget *parent) :
     sqlModel->setEditStrategy(QSqlTableModel::OnManualSubmit);
     sqlModel->select();
     sqlModel->setHeaderData(FieldId,        Qt::Horizontal, tr("Id"));                             // id integer primary key autoincrement,
-    sqlModel->setHeaderData(FieldProject,   Qt::Horizontal, tr("Ïðîåêò"));                         // project varchar(255),
-    sqlModel->setHeaderData(FieldDbClass,   Qt::Horizontal, tr("Ñèñòåìà"));                        // dbClass varchar(255),
-    sqlModel->setHeaderData(FieldDbType,    Qt::Horizontal, tr("Òèï ÁÄ"));                         // dbType varchar(255),
-    sqlModel->setHeaderData(FieldDbServer,  Qt::Horizontal, tr("Ñåðâåð"));                         // dbServer varchar(255),
-    sqlModel->setHeaderData(FieldUser,      Qt::Horizontal, tr("Ëîãèí"));                          // user varchar(255),
-    sqlModel->setHeaderData(FieldPassword,  Qt::Horizontal, tr("Ïàðîëü"));                         // password varchar(255),
-    sqlModel->setHeaderData(FieldDbOsUser,  Qt::Horizontal, tr("Èíòåãðèðîâàííàÿ àâòîðèçàöèÿ"));    // dbOsUser boolean,
-    sqlModel->setHeaderData(FieldDbmsUser,  Qt::Horizontal, tr("Ëîãèí ê ÁÄ"));                     // dbmsUser varchar(255),
-    sqlModel->setHeaderData(FieldDbmsPass,  Qt::Horizontal, tr("Ïàðîëü ê ÁÄ"));                    // dbmsPass varchar (255),
-    sqlModel->setHeaderData(FieldAutoLogin, Qt::Horizontal, tr("Àâòîëîãèí"));                     // autoLogin boolean);
+    sqlModel->setHeaderData(FieldProject,   Qt::Horizontal, tr("ÐŸÑ€Ð¾ÐµÐºÑ‚"));                         // project varchar(255),
+    sqlModel->setHeaderData(FieldDbClass,   Qt::Horizontal, tr("Ð¡Ð¸ÑÑ‚ÐµÐ¼Ð°"));                        // dbClass varchar(255),
+    sqlModel->setHeaderData(FieldDbType,    Qt::Horizontal, tr("Ð¢Ð¸Ð¿ Ð‘Ð”"));                         // dbType varchar(255),
+    sqlModel->setHeaderData(FieldDbServer,  Qt::Horizontal, tr("Ð¡ÐµÑ€Ð²ÐµÑ€"));                         // dbServer varchar(255),
+    sqlModel->setHeaderData(FieldUser,      Qt::Horizontal, tr("Ð›Ð¾Ð³Ð¸Ð½"));                          // user varchar(255),
+    sqlModel->setHeaderData(FieldPassword,  Qt::Horizontal, tr("ÐŸÐ°Ñ€Ð¾Ð»ÑŒ"));                         // password varchar(255),
+    sqlModel->setHeaderData(FieldDbOsUser,  Qt::Horizontal, tr("Ð˜Ð½Ñ‚ÐµÐ³Ñ€Ð¸Ñ€Ð¾Ð²Ð°Ð½Ð½Ð°Ñ Ð°Ð²Ñ‚Ð¾Ñ€Ð¸Ð·Ð°Ñ†Ð¸Ñ"));    // dbOsUser boolean,
+    sqlModel->setHeaderData(FieldDbmsUser,  Qt::Horizontal, tr("Ð›Ð¾Ð³Ð¸Ð½ Ðº Ð‘Ð”"));                     // dbmsUser varchar(255),
+    sqlModel->setHeaderData(FieldDbmsPass,  Qt::Horizontal, tr("ÐŸÐ°Ñ€Ð¾Ð»ÑŒ Ðº Ð‘Ð”"));                    // dbmsPass varchar (255),
+    sqlModel->setHeaderData(FieldAutoLogin, Qt::Horizontal, tr("ÐÐ²Ñ‚Ð¾Ð»Ð¾Ð³Ð¸Ð½"));                     // autoLogin boolean);
     ui->dbClassLabel->clear();
     loadSettings();
 }

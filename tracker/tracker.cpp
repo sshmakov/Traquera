@@ -1064,21 +1064,21 @@ QVariant TrkQryModel::headerData ( int section, Qt::Orientation orientation, int
 	case QryId:
 		return "Id";
 	case QryName:
-		return tr("Название");
+		return tr("РќР°Р·РІР°РЅРёРµ");
 	case QryAuhId:
-		return tr("Автор");
+		return tr("РђРІС‚РѕСЂ");
 	case QryOwnerId:
-		return tr("Владелец");
+		return tr("Р’Р»Р°РґРµР»РµС†");
 	case QryCrDate:
-		return tr("Создан");
+		return tr("РЎРѕР·РґР°РЅ");
 	case QryMdDate:
-		return tr("Изменен");
+		return tr("РР·РјРµРЅРµРЅ");
 	case QryCont:
-		return tr("Определение");
+		return tr("РћРїСЂРµРґРµР»РµРЅРёРµ");
 	case QryComment:
-		return tr("Комментарий");
+		return tr("РљРѕРјРјРµРЅС‚Р°СЂРёР№");
 	case QryDescr:
-		return tr("Описание");
+		return tr("РћРїРёСЃР°РЅРёРµ");
 	}
 	return QVariant();
 }

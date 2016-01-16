@@ -365,13 +365,13 @@ FieldGroupsDef TrkDecorator::loadGroups(const TQAbstractRecordTypeDef *recDef)
         }
     }
     flist += baseList;
-    res.groups.append(tr("Основные"));
+    res.groups.append(tr("РћСЃРЅРѕРІРЅС‹Рµ"));
     res.fieldsByGroup.append(flist);
     QSet<QString> fieldSet = fieldList.toSet();
     QSet<QString> baseSet = flist.toSet();
     fieldList = (fieldSet - baseSet).toList();
     qSort(fieldList);
-    res.groups.append(tr("Другие"));
+    res.groups.append(tr("Р”СЂСѓРіРёРµ"));
     res.fieldsByGroup.append(fieldList);
     return res;
 }
@@ -422,7 +422,7 @@ FieldGroupsDef TrkDecorator::loadGroupsXML(const TQAbstractRecordTypeDef *recDef
             }
             if(f_in_p.count())
             {
-                res.groups.append(panel.attribute("title", QString("Группа %1").arg(res.groups.count()+1)));
+                res.groups.append(panel.attribute("title", QString("Р“СЂСѓРїРїР° %1").arg(res.groups.count()+1)));
                 res.fieldsByGroup.append(f_in_p);
                 used.append(f_in_p);
             }

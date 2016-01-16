@@ -161,7 +161,7 @@ MainWindow::MainWindow(QWidget *parent)
     readProjectTree();
     setCurrentProject(0);
 
-    ttglobal()->registerOptionsWidget(tr("Сеть")+"/"+tr("Прокси"), ProxyOptions::proxyOptionsFunc);
+    ttglobal()->registerOptionsWidget(tr("РЎРµС‚СЊ")+"/"+tr("РџСЂРѕРєСЃРё"), ProxyOptions::proxyOptionsFunc);
     ProxyOptions::loadSettings();
     QSignalMapper *openMapper = new QSignalMapper(this);
 
@@ -296,15 +296,15 @@ void MainWindow::setupToolbar()
     openIdEdit->setInsertPolicy(QComboBox::NoInsert);
     openIdEdit->setSizePolicy(QSizePolicy::MinimumExpanding,QSizePolicy::Maximum);
 
-    //Добавляем строку поиска по Id
+    //Р”РѕР±Р°РІР»СЏРµРј СЃС‚СЂРѕРєСѓ РїРѕРёСЃРєР° РїРѕ Id
     toolBar_2->addSeparator();
-    QLabel *idLabel = new QLabel(tr("&Id или текст: "),this);
+    QLabel *idLabel = new QLabel(tr("&Id РёР»Рё С‚РµРєСЃС‚: "),this);
     toolBar_2->addWidget(idLabel);
     toolBar_2->addWidget(openIdEdit);
     idLabel->setBuddy(openIdEdit);
-    // Добавляем кнопку открытия
+    // Р”РѕР±Р°РІР»СЏРµРј РєРЅРѕРїРєСѓ РѕС‚РєСЂС‹С‚РёСЏ
     QToolButton *tb = new QToolButton(this);
-    tb->setText(tr("Открыть"));
+    tb->setText(tr("РћС‚РєСЂС‹С‚СЊ"));
     tb->setPopupMode(QToolButton::MenuButtonPopup);
     toolBar_2->addWidget(tb);
     QSignalMapper *map = new QSignalMapper(this);
@@ -313,21 +313,21 @@ void MainWindow::setupToolbar()
     map->setMapping(tb, (int)true);
     connect(tb,SIGNAL(clicked()),map,SLOT(map()));
 
-    // К кнопке добавляем popup-меню
+    // Рљ РєРЅРѕРїРєРµ РґРѕР±Р°РІР»СЏРµРј popup-РјРµРЅСЋ
     QMenu *tbMenu =new QMenu(tb);
-    QAction *a = new QAction(tr("Открыть в новой вкладке"),tb);
+    QAction *a = new QAction(tr("РћС‚РєСЂС‹С‚СЊ РІ РЅРѕРІРѕР№ РІРєР»Р°РґРєРµ"),tb);
 
     map->setMapping(a, (int)false);
     connect(a,SIGNAL(triggered()),map,SLOT(map()));
 
     tbMenu->addAction(a);
-    a = new QAction(tr("Добавить"),tb);
+    a = new QAction(tr("Р”РѕР±Р°РІРёС‚СЊ"),tb);
     connect(a,SIGNAL(triggered()),this,SLOT(slotAppendRecordsId()));
     //tbMenu->addAction(a);
     QToolButton *add = new QToolButton(this);
     add->setDefaultAction(a);
     toolBar_2->addWidget(add);
-    a = new QAction(tr("Убрать"),tb);
+    a = new QAction(tr("РЈР±СЂР°С‚СЊ"),tb);
     connect(a,SIGNAL(triggered()),this,SLOT(slotRemoveRecordsId()));
     //tbMenu->addAction(a);
     QToolButton *del = new QToolButton(this);
@@ -681,10 +681,10 @@ void MainWindow::calcCountRecords()
     QueryPage *page = curQueryPage();
     if(page)
     {
-        s = QString(tr("Запросов: %1")).arg(page->queryView->model()->rowCount());
+        s = QString(tr("Р—Р°РїСЂРѕСЃРѕРІ: %1")).arg(page->queryView->model()->rowCount());
         QObjectList list = page->selectedRecords();
         if(list.count())
-            s = QString(tr("Выделено: %1 ")).arg(list.count()) + s;
+            s = QString(tr("Р’С‹РґРµР»РµРЅРѕ: %1 ")).arg(list.count()) + s;
     }
     statusLine->setText(s);
 }
@@ -810,15 +810,15 @@ void MainWindow::readQueries(TQAbstractProject *prj)
     TQProjectTree *prjTree = new TQProjectTree(this);
     prjTree->setProject(prj, prj->defaultRecType());
 
-    prjTree->appendSourceModel(folders,tr("Личные папки"));
+    prjTree->appendSourceModel(folders,tr("Р›РёС‡РЅС‹Рµ РїР°РїРєРё"));
 
     TrkQryFilter *userModel = new TrkQryFilter(this);
     userModel->setSourceQueryModel(prj->queryModel(prj->defaultRecType()),TrkQryFilter::UserOnly);
-    prjTree->appendSourceModel(userModel,tr("Личные выборки"));
+    prjTree->appendSourceModel(userModel,tr("Р›РёС‡РЅС‹Рµ РІС‹Р±РѕСЂРєРё"));
 
     TrkQryFilter *publicModel = new TrkQryFilter(this);
     publicModel->setSourceQueryModel(prj->queryModel(prj->defaultRecType()),TrkQryFilter::PublicOnly);
-    prjTree->appendSourceModel(publicModel,tr("Общие выборки"));
+    prjTree->appendSourceModel(publicModel,tr("РћР±С‰РёРµ РІС‹Р±РѕСЂРєРё"));
 
     prjTree->setMaxColCount(1);
     ProjectModel m;
@@ -1101,7 +1101,7 @@ void MainWindow::readSelectedTreeItem()
         QString folderName = index.sibling(index.row(),0).data().toString();
         int folderId = index.sibling(index.row(),1).data().toInt();
         if(folderName.isEmpty())
-            folderName = tr("Папка");
+            folderName = tr("РџР°РїРєР°");
         if(!page || !reuse)
             page = createNewPage(folderName);
         page->openFolder(trkproject,folderModel->folder(index));
@@ -1165,12 +1165,12 @@ void MainWindow::showPlanTask(const QString &fileName, int taskNum)
 
 void MainWindow::readFilters()
 {
-    //toolBox->addItem(new FilterPage(this), tr("Фильтры"));
+    //toolBox->addItem(new FilterPage(this), tr("Р¤РёР»СЊС‚СЂС‹"));
 }
 
 void MainWindow::readModifications()
 {
-    //toolBox->addItem(modifyPanel, tr("Свойства"));
+    //toolBox->addItem(modifyPanel, tr("РЎРІРѕР№СЃС‚РІР°"));
     modifyPanel = new ModifyPanel(this);
     connect(modifyPanel,SIGNAL(applyButtonPressed()),this,SLOT(applyChanges()));
     connect(modifyPanel,SIGNAL(repeatButtonClicked()),this,SLOT(repeatLastChanges()));
@@ -1254,8 +1254,8 @@ void MainWindow::closeCurTab()
 
 void MainWindow::about()
 {
-    QMessageBox::about(this, tr("О программе"),
-                       tr("Работает..."));
+    QMessageBox::about(this, tr("Рћ РїСЂРѕРіСЂР°РјРјРµ"),
+                       tr("Р Р°Р±РѕС‚Р°РµС‚..."));
 }
 
 int MainWindow::addProjectItem(const QString &connectString)
@@ -1392,11 +1392,11 @@ void MainWindow::addPlanFile()
 {
 	QString selectedFilter;
 	QStringList fileNames= QFileDialog::getOpenFileNames(this,
-		tr("Добавить план"), 
+		tr("Р”РѕР±Р°РІРёС‚СЊ РїР»Р°РЅ"), 
 		".", 
 		tr(
-			"Проекты Microsoft Project (*.mpp);;"
-			"Книги Microsoft Excel (*.xls)"
+			"РџСЂРѕРµРєС‚С‹ Microsoft Project (*.mpp);;"
+			"РљРЅРёРіРё Microsoft Excel (*.xls)"
 		),
 		&selectedFilter
 		);
@@ -1509,7 +1509,7 @@ void MainWindow::openCurItem(bool reuse)
             QString folderName = selectedTreeItem.folderIndex.sibling(index.row(),0).data().toString();
 //            int folderId = index.sibling(index.row(),1).data().toInt();
             if(folderName.isEmpty())
-                folderName = tr("Папка");
+                folderName = tr("РџР°РїРєР°");
             if(!page || !reuse)
                 page = createNewPage(folderName);
             page->openFolder(selectedTreeItem.prj, selectedTreeItem.folderModel->folder(selectedTreeItem.folderIndex), selectedTreeItem.recordType);
@@ -1553,7 +1553,7 @@ void MainWindow::openCurItem(bool reuse)
             QString folderName = index.sibling(index.row(),0).data().toString();
             int folderId = index.sibling(index.row(),1).data().toInt();
             if(folderName.isEmpty())
-                folderName = tr("Папка");
+                folderName = tr("РџР°РїРєР°");
             if(!page || !reuse)
                 page = createNewPage(folderName);
             page->openFolder(trkproject,folderModel->folder(index));
@@ -1701,7 +1701,7 @@ void MainWindow::on_actionPasteNumbers_triggered()
 void MainWindow::on_actionNewQueryTab_triggered()
 {
     QueryPage *qpage = curQueryPage();
-    QueryPage *newpage = createNewPage(tr("Новая вкладка"));
+    QueryPage *newpage = createNewPage(tr("РќРѕРІР°СЏ РІРєР»Р°РґРєР°"));
     if(!qpage)
         return;
     //newpage->openIds(qpage->tmodel->prj);
@@ -1720,7 +1720,7 @@ void MainWindow::on_actionOpenSelected_triggered()
     TQAbstractProject *prj = currentProject();
     if(!prj)
         return;
-    QueryPage *newpage = createNewPage(tr("Отмеченные"));
+    QueryPage *newpage = createNewPage(tr("РћС‚РјРµС‡РµРЅРЅС‹Рµ"));
     newpage->openModel(prj, prj->selectedModel(prj->defaultRecType()));
 
 }
@@ -1839,11 +1839,11 @@ void MainWindow::on_actionNewFolder_triggered()
     if(!selectedTreeItem.isFolderSelected && !selectedTreeItem.isFoldersGroupSelected)
         return;
     QPersistentModelIndex pIndex(selectedTreeItem.folderIndex);
-    QString title = tr("Новая папка");
+    QString title = tr("РќРѕРІР°СЏ РїР°РїРєР°");
     bool ok;
     title = QInputDialog::getText(this,
-                                          tr("Создание новой папки"),
-                                          tr("Название новой папки"),
+                                          tr("РЎРѕР·РґР°РЅРёРµ РЅРѕРІРѕР№ РїР°РїРєРё"),
+                                          tr("РќР°Р·РІР°РЅРёРµ РЅРѕРІРѕР№ РїР°РїРєРё"),
                                           QLineEdit::Normal,
                                           title,
                                           &ok).trimmed();
@@ -1866,8 +1866,8 @@ void MainWindow::on_actionNewFolder_triggered()
         return;
     bool ok;
     QString title = QInputDialog::getText(this,
-                                          tr("Создание новой папки"),
-                                          tr("Название новой папки"),
+                                          tr("РЎРѕР·РґР°РЅРёРµ РЅРѕРІРѕР№ РїР°РїРєРё"),
+                                          tr("РќР°Р·РІР°РЅРёРµ РЅРѕРІРѕР№ РїР°РїРєРё"),
                                           QLineEdit::Normal,
                                           "",
                                           &ok);
@@ -1891,8 +1891,8 @@ void MainWindow::on_actionDeleteFolder_triggered()
         return;
     QString folderTitle = selectedTreeItem.folderIndex.data().toString();
     if(QMessageBox::Ok != QMessageBox::question(this,
-                                                tr("Удаление папки"),
-                                                tr("Удалить папку '%1'?").arg(folderTitle),
+                                                tr("РЈРґР°Р»РµРЅРёРµ РїР°РїРєРё"),
+                                                tr("РЈРґР°Р»РёС‚СЊ РїР°РїРєСѓ '%1'?").arg(folderTitle),
                                                 QMessageBox::Ok,QMessageBox::Cancel))
         return;
     selectedTreeItem.folderModel->removeRow(selectedTreeItem.folderIndex.row());
@@ -1919,8 +1919,8 @@ void MainWindow::on_actionRenameFolder_triggered()
     QString folderTitle = selectedTreeItem.folderIndex.data().toString();
     bool ok;
     QString title = QInputDialog::getText(this,
-                                          tr("Переименовать папку"),
-                                          tr("Новое название"),
+                                          tr("РџРµСЂРµРёРјРµРЅРѕРІР°С‚СЊ РїР°РїРєСѓ"),
+                                          tr("РќРѕРІРѕРµ РЅР°Р·РІР°РЅРёРµ"),
                                           QLineEdit::Normal,
                                           folderTitle,
                                           &ok);
@@ -1943,8 +1943,8 @@ void MainWindow::on_actionRenameFolder_triggered()
         return;
     bool ok;
     QString title = QInputDialog::getText(this,
-                                          tr("Переименовать папку"),
-                                          tr("Новое название"),
+                                          tr("РџРµСЂРµРёРјРµРЅРѕРІР°С‚СЊ РїР°РїРєСѓ"),
+                                          tr("РќРѕРІРѕРµ РЅР°Р·РІР°РЅРёРµ"),
                                           QLineEdit::Normal,
                                           index.data().toString(),
                                           &ok);
@@ -2243,7 +2243,7 @@ void MainWindow::on_actionDelete_Project_triggered()
 //    readSelectedTreeItem();
     TQOneProjectTree *tree = selectedTreeItem.prjModel;
     QString prjTitle = tree->projectTitle();
-    if(QMessageBox::Ok == QMessageBox::question(this, tr("Удаление проекта"), tr("Удалить проект '%1'").arg(prjTitle),
+    if(QMessageBox::Ok == QMessageBox::question(this, tr("РЈРґР°Р»РµРЅРёРµ РїСЂРѕРµРєС‚Р°"), tr("РЈРґР°Р»РёС‚СЊ РїСЂРѕРµРєС‚ '%1'").arg(prjTitle),
                           QMessageBox::Ok | QMessageBox::Cancel))
     {
         if(tree->isOpened())
@@ -2258,8 +2258,8 @@ void MainWindow::on_actionRename_Item_triggered()
     if(selectedTreeItem.isQuerySelected)
     {
         QString newName = QInputDialog::getText(this,
-                                                tr("Переименовать выборку..."),
-                                                tr("Новое имя"),
+                                                tr("РџРµСЂРµРёРјРµРЅРѕРІР°С‚СЊ РІС‹Р±РѕСЂРєСѓ..."),
+                                                tr("РќРѕРІРѕРµ РёРјСЏ"),
                                                 QLineEdit::Normal,
                                                 selectedTreeItem.queryName);
         if(!newName.isEmpty() && newName != selectedTreeItem.queryName)
