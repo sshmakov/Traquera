@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0" language="ru_RU" sourcelanguage="ru_RU">
+<TS version="2.0" language="ru_RU">
+<defaultcodec>UTF-8</defaultcodec>
 <context>
     <name>QObject</name>
     <message>
         <location filename="trkview.cpp" line="41"/>
         <source>TRK_E_VERSION_MISMATCH</source>
-        <translation type="unfinished">Несоответствие версии PVCS Tracker и базы данных</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkview.cpp" line="42"/>
@@ -333,22 +334,22 @@
     <name>TrkChangeCond</name>
     <message>
         <location filename="trkcond.cpp" line="1231"/>
-        <source>Ëþáîå èçìåíåíèå</source>
+        <source>Любое изменение</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkcond.cpp" line="1234"/>
-        <source>Äîáàâëåíèå</source>
+        <source>Добавление</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkcond.cpp" line="1237"/>
-        <source>Ðåäàêòèðîâàíèå</source>
+        <source>Редактирование</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkcond.cpp" line="1240"/>
-        <source>Óäàëåíèå</source>
+        <source>Удаление</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -363,62 +364,62 @@
     </message>
     <message>
         <location filename="trkcond.cpp" line="1249"/>
-        <source>Ïðèñâîåíèå ìåòêè</source>
+        <source>Присвоение метки</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkcond.cpp" line="1258"/>
-        <source>Èçìåíåíèå ïîëÿ %1</source>
+        <source>Изменение поля %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkcond.cpp" line="1260"/>
-        <source>Èçìåíåíèå ëþáîãî ïîëÿ</source>
+        <source>Изменение любого поля</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkcond.cpp" line="1263"/>
-        <source>&lt;ïóñòî&gt;</source>
+        <source>&lt;пусто&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkcond.cpp" line="1282"/>
-        <source> ñî çíà÷åíèÿ (%1)</source>
+        <source> со значения (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkcond.cpp" line="1284"/>
-        <source> íà çíà÷åíèå (%1)</source>
+        <source> на значение (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkcond.cpp" line="1288"/>
-        <source>%1 çàïèñè</source>
+        <source>%1 записи</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkcond.cpp" line="1292"/>
-        <source>%1 ôàéëà &quot;%2&quot;</source>
+        <source>%1 файла &quot;%2&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkcond.cpp" line="1294"/>
-        <source>%1 ëþáîãî ôàéëà</source>
+        <source>%1 любого файла</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkcond.cpp" line="1298"/>
-        <source>%1 íîòû (%2)</source>
+        <source>%1 ноты (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkcond.cpp" line="1300"/>
-        <source>%1 ëþáîé íîòû</source>
+        <source>%1 любой ноты</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkcond.cpp" line="1303"/>
-        <source>%1 ìîäóëÿ</source>
+        <source>%1 модуля</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -428,7 +429,7 @@
     </message>
     <message>
         <location filename="trkcond.cpp" line="1308"/>
-        <source> äíåé íàçàä</source>
+        <source> дней назад</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -439,22 +440,22 @@
     </message>
     <message>
         <location filename="trkcond.cpp" line="1322"/>
-        <source> ìåæäó %1 è %2%3</source>
+        <source> между %1 и %2%3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkcond.cpp" line="1325"/>
-        <source> äî %1 è ïîñëå %2%3</source>
+        <source> до %1 и после %2%3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkcond.cpp" line="1328"/>
-        <source> ïîñëå %1%2</source>
+        <source> после %1%2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkcond.cpp" line="1331"/>
-        <source> äî %1%2</source>
+        <source> до %1%2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -464,268 +465,256 @@
     </message>
     <message>
         <location filename="trkcond.cpp" line="1340"/>
-        <source> ïîëüçîâàòåëåì %1</source>
+        <source> пользователем %1</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>TrkChangeCondDialog</name>
-    <message utf8="true">
+    <message>
         <location filename="trkchangedlg.ui" line="20"/>
         <source>Поиск по изменениям</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <location filename="trkchangedlg.ui" line="28"/>
         <source>Наименование</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <location filename="trkchangedlg.ui" line="52"/>
         <source>Изменение значения</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <location filename="trkchangedlg.ui" line="75"/>
         <source>старое значение</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <location filename="trkchangedlg.ui" line="82"/>
         <source>новое значение</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <location filename="trkchangedlg.ui" line="107"/>
         <source>Какое изменение</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <location filename="trkchangedlg.ui" line="135"/>
         <location filename="trkchangedlg.ui" line="191"/>
         <source>Поле</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <location filename="trkchangedlg.ui" line="154"/>
         <source>Автор изменений</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <location filename="trkchangedlg.ui" line="175"/>
         <source>Что изменено</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <location filename="trkchangedlg.ui" line="181"/>
         <source>Запись</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <location filename="trkchangedlg.ui" line="198"/>
         <source>Нота</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <location filename="trkchangedlg.ui" line="205"/>
         <source>Модуль</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <location filename="trkchangedlg.ui" line="212"/>
         <source>Файл</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <location filename="trkchangedlg.ui" line="269"/>
         <source>Заголовок ноты</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <location filename="trkchangedlg.ui" line="278"/>
         <source>Другой...</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <location filename="trkchangedlg.ui" line="314"/>
         <source>Дата и время изменений</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <location filename="trkchangedlg.ui" line="323"/>
         <source>между</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <location filename="trkchangedlg.ui" line="350"/>
+        <location filename="trkcondwidgets.cpp" line="677"/>
+        <location filename="trkcondwidgets.cpp" line="722"/>
+        <location filename="trkcondwidgets.cpp" line="768"/>
         <source>и</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <location filename="trkchangedlg.ui" line="360"/>
         <source>днями назад</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <location filename="trkchangedlg.ui" line="385"/>
         <location filename="trkchangedlg.ui" line="436"/>
         <source>до</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <location filename="trkchangedlg.ui" line="397"/>
         <location filename="trkchangedlg.ui" line="414"/>
         <location filename="trkchangedlg.ui" line="448"/>
         <location filename="trkchangedlg.ui" line="585"/>
+        <location filename="trkcondwidgets.cpp" line="683"/>
+        <location filename="trkcondwidgets.cpp" line="696"/>
+        <location filename="trkcondwidgets.cpp" line="703"/>
+        <location filename="trkcondwidgets.cpp" line="710"/>
         <source>дней назад</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <location filename="trkchangedlg.ui" line="404"/>
+        <location filename="trkcondwidgets.cpp" line="689"/>
+        <location filename="trkcondwidgets.cpp" line="736"/>
+        <location filename="trkcondwidgets.cpp" line="782"/>
         <source>и после</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <location filename="trkchangedlg.ui" line="470"/>
         <source>после</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <location filename="trkchangedlg.ui" line="513"/>
         <source>Относительно текущего дня</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <location filename="trkchangedlg.ui" line="542"/>
         <source>Дата</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <location filename="trkchangedlg.ui" line="568"/>
         <source>Дата и время</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkcondwidgets.cpp" line="212"/>
-        <source>-- Ëþáîå ïîëå --</source>
+        <source>-- Любое поле --</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkcondwidgets.cpp" line="237"/>
-        <source>Ëþáîå èçìåíåíèå,0;Íîòà äîáàâëåíà,1;Íîòà èçìåíåíà,2;Íîòà óäàëåíà,3</source>
+        <source>Любое изменение,0;Нота добавлена,1;Нота изменена,2;Нота удалена,3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkcondwidgets.cpp" line="238"/>
-        <source>Ëþáîå èçìåíåíèå,0;Ôàéë äîáàâëåí,1;Ôàéë óäàëåí,3</source>
+        <source>Любое изменение,0;Файл добавлен,1;Файл удален,3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkcondwidgets.cpp" line="239"/>
-        <source>Ëþáîå èçìåíåíèå,0;Ìîäóëü äîáàâëåí,1;Ìîäóëü èçìåíåí,2;Ìîäóëü óäàëåí,3;Ìîäóëü check-in,4;Ìîäóëü check-out,5;Ìîäóëþ ïðèñâîåíà ìåòêà âåðñèè,6</source>
+        <source>Любое изменение,0;Модуль добавлен,1;Модуль изменен,2;Модуль удален,3;Модуль check-in,4;Модуль check-out,5;Модулю присвоена метка версии,6</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkcondwidgets.cpp" line="405"/>
         <location filename="trkcondwidgets.cpp" line="409"/>
-        <source>&lt;Ïóñòî&gt;</source>
+        <source>&lt;Пусто&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkcondwidgets.cpp" line="453"/>
-        <source>Ââåäèòå ñâîé çàãîëîâîê</source>
+        <source>Введите свой заголовок</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkcondwidgets.cpp" line="454"/>
-        <source>Çàãîëîâîê</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="trkcondwidgets.cpp" line="677"/>
-        <location filename="trkcondwidgets.cpp" line="722"/>
-        <location filename="trkcondwidgets.cpp" line="768"/>
-        <source>è</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="trkcondwidgets.cpp" line="683"/>
-        <location filename="trkcondwidgets.cpp" line="696"/>
-        <location filename="trkcondwidgets.cpp" line="703"/>
-        <location filename="trkcondwidgets.cpp" line="710"/>
-        <source>äíåé íàçàä</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="trkcondwidgets.cpp" line="689"/>
-        <location filename="trkcondwidgets.cpp" line="736"/>
-        <location filename="trkcondwidgets.cpp" line="782"/>
-        <source>è ïîñëå</source>
+        <source>Заголовок</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>TrkDateCondDialog</name>
-    <message utf8="true">
+    <message>
         <location filename="trkdatesdlg.ui" line="14"/>
         <source>Условие</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <location filename="trkdatesdlg.ui" line="26"/>
         <source>Поле с датой...</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <location filename="trkdatesdlg.ui" line="70"/>
         <source>текущей дате</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <location filename="trkdatesdlg.ui" line="77"/>
         <source>указанной дате</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <location filename="trkdatesdlg.ui" line="84"/>
         <source>не заполнено</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <location filename="trkdatesdlg.ui" line="100"/>
         <source>до</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <location filename="trkdatesdlg.ui" line="128"/>
         <location filename="trkdatesdlg.ui" line="235"/>
         <source>текущей даты</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <location filename="trkdatesdlg.ui" line="141"/>
         <location filename="trkdatesdlg.ui" line="222"/>
         <source>указанной даты</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <location filename="trkdatesdlg.ui" line="164"/>
         <location filename="trkdatesdlg.ui" line="255"/>
         <source>и</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <location filename="trkdatesdlg.ui" line="171"/>
         <location filename="trkdatesdlg.ui" line="265"/>
         <source>дней назад</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <location filename="trkdatesdlg.ui" line="301"/>
         <source>после</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <location filename="trkdatesdlg.ui" line="308"/>
         <source>равно</source>
         <translation type="unfinished"></translation>
@@ -735,27 +724,27 @@
     <name>TrkHistory</name>
     <message>
         <location filename="trkview.cpp" line="3336"/>
-        <source>Âûáîðêà</source>
+        <source>Выборка</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkview.cpp" line="3337"/>
-        <source>Òèï</source>
+        <source>Тип</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkview.cpp" line="3338"/>
-        <source>Çàïèñè</source>
+        <source>Записи</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkview.cpp" line="3339"/>
-        <source>Òèï çàïèñåé</source>
+        <source>Тип записей</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkview.cpp" line="3340"/>
-        <source>Âðåìÿ</source>
+        <source>Время</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -763,52 +752,52 @@
     <name>TrkKeywordCond</name>
     <message>
         <location filename="trkcond.cpp" line="1094"/>
-        <source>Ïîèñê òåêñòà &quot;%1&quot; %2%3%4%5%6%7</source>
+        <source>Поиск текста &quot;%1&quot; %2%3%4%5%6%7</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkcond.cpp" line="1095"/>
-        <source> È </source>
+        <source> И </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkcond.cpp" line="1095"/>
-        <source> ÈËÈ </source>
+        <source> ИЛИ </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkcond.cpp" line="1096"/>
-        <source>ñ ó÷åòîì ðåãèñòðà</source>
+        <source>с учетом регистра</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkcond.cpp" line="1096"/>
-        <source>áåç ó÷åòà ðåãèñòðà</source>
+        <source>без учета регистра</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkcond.cpp" line="1097"/>
-        <source>, â çàãîëîâêå</source>
+        <source>, в заголовке</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkcond.cpp" line="1098"/>
-        <source>, â îïèñàíèè</source>
+        <source>, в описании</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkcond.cpp" line="1099"/>
-        <source>, â çàãîëîâêàõ íîò</source>
+        <source>, в заголовках нот</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkcond.cpp" line="1100"/>
-        <source>, âî âñåõ íîòàõ</source>
+        <source>, во всех нотах</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkcond.cpp" line="1101"/>
-        <source>, òîëüêî â íîòå &apos;%1&apos;</source>
+        <source>, только в ноте &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -846,12 +835,12 @@
     </message>
     <message>
         <location filename="trkcondwidgets.cpp" line="131"/>
-        <source>ÈËÈ</source>
+        <source>ИЛИ</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkcondwidgets.cpp" line="132"/>
-        <source>È</source>
+        <source>И</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -859,7 +848,7 @@
     <name>TrkModuleCond</name>
     <message>
         <location filename="trkcond.cpp" line="1142"/>
-        <source>&lt;Ìîäóëè&gt;</source>
+        <source>&lt;Модули&gt;</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -867,17 +856,17 @@
     <name>TrkQueryDef</name>
     <message>
         <location filename="trkcond.cpp" line="40"/>
-        <source>Äîáàâèòü òåêñòîâûé ïîèñê...</source>
+        <source>Добавить текстовый поиск...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkcond.cpp" line="41"/>
-        <source>Äîáàâèòü ïîèñê ïî èçìåíåíèÿì...</source>
+        <source>Добавить поиск по изменениям...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkcond.cpp" line="42"/>
-        <source>Äîáàâèòü ïîèñê â ìîäóëÿõ...</source>
+        <source>Добавить поиск в модулях...</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -886,12 +875,12 @@
     <message>
         <location filename="trkview.cpp" line="632"/>
         <location filename="trkview.cpp" line="635"/>
-        <source>Îøèáêà îòêðûòèÿ ïðîåêòà %1 (%2)</source>
+        <source>Ошибка открытия проекта %1 (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkview.cpp" line="634"/>
-        <source>Îøèáêà ïîäêëþ÷åíèÿ</source>
+        <source>Ошибка подключения</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -899,17 +888,17 @@
     <name>TrkToolQryModel</name>
     <message>
         <location filename="trkview.cpp" line="3429"/>
-        <source>Íàçâàíèå âûáîðêè</source>
+        <source>Название выборки</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkview.cpp" line="3430"/>
-        <source>Ïóáëè÷íàÿ</source>
+        <source>Публичная</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkview.cpp" line="3431"/>
-        <source>Òèï çàïèñè</source>
+        <source>Тип записи</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

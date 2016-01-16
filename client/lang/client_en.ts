@@ -206,7 +206,6 @@
     </message>
     <message utf8="both">
         <location filename="../ui/tracksmain.ui" line="498"/>
-        <location filename="../mainwindow.cpp" line="307"/>
         <source>Открыть</source>
         <translation type="unfinished"></translation>
     </message>
@@ -217,7 +216,6 @@
     </message>
     <message utf8="both">
         <location filename="../ui/tracksmain.ui" line="509"/>
-        <location filename="../mainwindow.cpp" line="318"/>
         <source>Открыть в новой вкладке</source>
         <translation type="unfinished"></translation>
     </message>
@@ -248,7 +246,6 @@
     </message>
     <message utf8="both">
         <location filename="../ui/tracksmain.ui" line="546"/>
-        <location filename="../mainwindow.cpp" line="1704"/>
         <source>Новая вкладка</source>
         <translation type="unfinished"></translation>
     </message>
@@ -280,13 +277,11 @@
     </message>
     <message utf8="both">
         <location filename="../ui/tracksmain.ui" line="572"/>
-        <location filename="../mainwindow.cpp" line="1842"/>
         <source>Новая папка</source>
         <translation type="unfinished"></translation>
     </message>
     <message utf8="both">
         <location filename="../ui/tracksmain.ui" line="577"/>
-        <location filename="../mainwindow.cpp" line="1922"/>
         <source>Переименовать папку</source>
         <translation type="unfinished"></translation>
     </message>
@@ -398,107 +393,132 @@
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="164"/>
-        <source>Сеть</source>
+        <source>РЎРµС‚СЊ</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="164"/>
-        <source>Прокси</source>
+        <source>РџСЂРѕРєСЃРё</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="301"/>
-        <source>&amp;Id или текст: </source>
+        <source>&amp;Id РёР»Рё С‚РµРєСЃС‚: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="307"/>
+        <source>РћС‚РєСЂС‹С‚СЊ</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="318"/>
+        <source>РћС‚РєСЂС‹С‚СЊ РІ РЅРѕРІРѕР№ РІРєР»Р°РґРєРµ</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="324"/>
-        <source>Добавить</source>
+        <source>Р”РѕР±Р°РІРёС‚СЊ</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="330"/>
-        <source>Убрать</source>
+        <source>РЈР±СЂР°С‚СЊ</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="684"/>
+        <source>Р—Р°РїСЂРѕСЃРѕРІ: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="687"/>
+        <source>Р’С‹РґРµР»РµРЅРѕ: %1 </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1257"/>
+        <source>Рћ РїСЂРѕРіСЂР°РјРјРµ</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1258"/>
+        <source>Р Р°Р±РѕС‚Р°РµС‚...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1512"/>
+        <source>РџР°РїРєР°</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1704"/>
+        <source>РќРѕРІР°СЏ РІРєР»Р°РґРєР°</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1723"/>
+        <source>РћС‚РјРµС‡РµРЅРЅС‹Рµ</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1842"/>
+        <source>РќРѕРІР°СЏ РїР°РїРєР°</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1845"/>
+        <source>РЎРѕР·РґР°РЅРёРµ РЅРѕРІРѕР№ РїР°РїРєРё</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1846"/>
+        <source>РќР°Р·РІР°РЅРёРµ РЅРѕРІРѕР№ РїР°РїРєРё</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1894"/>
+        <source>РЈРґР°Р»РµРЅРёРµ РїР°РїРєРё</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1895"/>
+        <source>РЈРґР°Р»РёС‚СЊ РїР°РїРєСѓ &apos;%1&apos;?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1922"/>
+        <source>РџРµСЂРµРёРјРµРЅРѕРІР°С‚СЊ РїР°РїРєСѓ</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1923"/>
+        <source>РќРѕРІРѕРµ РЅР°Р·РІР°РЅРёРµ</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="2246"/>
+        <source>РЈРґР°Р»РµРЅРёРµ РїСЂРѕРµРєС‚Р°</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="2246"/>
+        <source>РЈРґР°Р»РёС‚СЊ РїСЂРѕРµРєС‚ &apos;%1&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="2261"/>
+        <source>РџРµСЂРµРёРјРµРЅРѕРІР°С‚СЊ РІС‹Р±РѕСЂРєСѓ...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="2262"/>
+        <source>РќРѕРІРѕРµ РёРјСЏ</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="604"/>
         <source>Search</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="684"/>
-        <source>Запросов: %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="687"/>
-        <source>Выделено: %1 </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="1257"/>
-        <source>О программе</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="1258"/>
-        <source>Работает...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="1512"/>
-        <source>Папка</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="1723"/>
-        <source>Отмеченные</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="1845"/>
-        <source>Создание новой папки</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="1846"/>
-        <source>Название новой папки</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="1894"/>
-        <source>Удаление папки</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="1895"/>
-        <source>Удалить папку &apos;%1&apos;?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="1923"/>
-        <source>Новое название</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="2246"/>
-        <source>Удаление проекта</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="2246"/>
-        <source>Удалить проект &apos;%1&apos;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="2261"/>
-        <source>Переименовать выборку...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="2262"/>
-        <source>Новое имя</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -687,12 +707,12 @@
     <name>QObject</name>
     <message>
         <location filename="../proxyoptions.cpp" line="113"/>
-        <source>Нет</source>
+        <source>РќРµС‚</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../proxyoptions.cpp" line="114"/>
-        <source>Системный</source>
+        <source>РЎРёСЃС‚РµРјРЅС‹Р№</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -715,68 +735,68 @@
     <name>QueryPage</name>
     <message>
         <location filename="../querypage.cpp" line="158"/>
-        <source>Текст</source>
+        <source>РўРµРєСЃС‚</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../querypage.cpp" line="160"/>
-        <source>Файлы</source>
+        <source>Р¤Р°Р№Р»С‹</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../querypage.cpp" line="192"/>
-        <source>Файл</source>
+        <source>Р¤Р°Р№Р»</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../querypage.cpp" line="193"/>
-        <source>Изменен</source>
+        <source>Р?Р·РјРµРЅРµРЅ</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../querypage.cpp" line="194"/>
-        <source>Путь</source>
+        <source>РџСѓС‚СЊ</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../querypage.cpp" line="299"/>
-        <source>Любое поле</source>
+        <source>Р›СЋР±РѕРµ РїРѕР»Рµ</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../querypage.cpp" line="544"/>
-        <source>Настройка столбцов...</source>
+        <source>РќР°СЃС‚СЂРѕР№РєР° СЃС‚РѕР»Р±С†РѕРІ...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../querypage.cpp" line="763"/>
         <location filename="../querypage.cpp" line="773"/>
-        <source>Ошибка</source>
+        <source>РћС€РёР±РєР°</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../querypage.cpp" line="764"/>
-        <source>Нет доступа к Outlook</source>
+        <source>РќРµС‚ РґРѕСЃС‚СѓРїР° Рє Outlook</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../querypage.cpp" line="774"/>
-        <source>Не создается письмо в Outlook</source>
+        <source>РќРµ СЃРѕР·РґР°РµС‚СЃСЏ РїРёСЃСЊРјРѕ РІ Outlook</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../querypage.cpp" line="786"/>
-        <source>Запрос %1. %2</source>
+        <source>Р—Р°РїСЂРѕСЃ %1. %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../querypage.cpp" line="790"/>
-        <source>Запросы </source>
+        <source>Р—Р°РїСЂРѕСЃС‹ </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../querypage.cpp" line="1813"/>
-        <source>Отмеченные запросы</source>
+        <source>РћС‚РјРµС‡РµРЅРЅС‹Рµ Р·Р°РїСЂРѕСЃС‹</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1000,7 +1020,6 @@
     </message>
     <message utf8="both">
         <location filename="../tqconnectwidget.ui" line="86"/>
-        <location filename="../tqconnectwidget.cpp" line="39"/>
         <source>Сервер</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1011,25 +1030,21 @@
     </message>
     <message utf8="both">
         <location filename="../tqconnectwidget.ui" line="103"/>
-        <location filename="../tqconnectwidget.cpp" line="36"/>
         <source>Проект</source>
         <translation type="unfinished"></translation>
     </message>
     <message utf8="both">
         <location filename="../tqconnectwidget.ui" line="110"/>
-        <location filename="../tqconnectwidget.cpp" line="37"/>
         <source>Система</source>
         <translation type="unfinished"></translation>
     </message>
     <message utf8="both">
         <location filename="../tqconnectwidget.ui" line="117"/>
-        <location filename="../tqconnectwidget.cpp" line="40"/>
         <source>Логин</source>
         <translation type="unfinished"></translation>
     </message>
     <message utf8="both">
         <location filename="../tqconnectwidget.ui" line="124"/>
-        <location filename="../tqconnectwidget.cpp" line="41"/>
         <source>Пароль</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1066,28 +1081,53 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../tqconnectwidget.cpp" line="36"/>
+        <source>РџСЂРѕРµРєС‚</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tqconnectwidget.cpp" line="37"/>
+        <source>РЎРёСЃС‚РµРјР°</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../tqconnectwidget.cpp" line="38"/>
-        <source>Тип БД</source>
+        <source>РўРёРї Р‘Р”</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tqconnectwidget.cpp" line="39"/>
+        <source>РЎРµСЂРІРµСЂ</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tqconnectwidget.cpp" line="40"/>
+        <source>Р›РѕРіРёРЅ</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tqconnectwidget.cpp" line="41"/>
+        <source>РџР°СЂРѕР»СЊ</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../tqconnectwidget.cpp" line="42"/>
-        <source>Интегрированная авторизация</source>
+        <source>Р?РЅС‚РµРіСЂРёСЂРѕРІР°РЅРЅР°СЏ Р°РІС‚РѕСЂРёР·Р°С†РёСЏ</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../tqconnectwidget.cpp" line="43"/>
-        <source>Логин к БД</source>
+        <source>Р›РѕРіРёРЅ Рє Р‘Р”</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../tqconnectwidget.cpp" line="44"/>
-        <source>Пароль к БД</source>
+        <source>РџР°СЂРѕР»СЊ Рє Р‘Р”</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../tqconnectwidget.cpp" line="45"/>
-        <source>Автологин</source>
+        <source>РђРІС‚РѕР»РѕРіРёРЅ</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1095,7 +1135,7 @@
     <name>TQDateTimeEdit</name>
     <message>
         <location filename="../ttdelegate.cpp" line="353"/>
-        <source>пусто</source>
+        <source>РїСѓСЃС‚Рѕ</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1103,27 +1143,27 @@
     <name>TQHistory</name>
     <message>
         <location filename="../tqhistory.cpp" line="10"/>
-        <source>Выборка</source>
+        <source>Р’С‹Р±РѕСЂРєР°</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../tqhistory.cpp" line="11"/>
-        <source>Тип</source>
+        <source>РўРёРї</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../tqhistory.cpp" line="12"/>
-        <source>Записи</source>
+        <source>Р—Р°РїРёСЃРё</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../tqhistory.cpp" line="13"/>
-        <source>Тип записей</source>
+        <source>РўРёРї Р·Р°РїРёСЃРµР№</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../tqhistory.cpp" line="14"/>
-        <source>Время</source>
+        <source>Р’СЂРµРјСЏ</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1159,17 +1199,17 @@
     <name>TQOneProjectTree</name>
     <message>
         <location filename="../projecttree.cpp" line="182"/>
-        <source>Личные папки</source>
+        <source>Р›РёС‡РЅС‹Рµ РїР°РїРєРё</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../projecttree.cpp" line="187"/>
-        <source>Личные выборки</source>
+        <source>Р›РёС‡РЅС‹Рµ РІС‹Р±РѕСЂРєРё</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../projecttree.cpp" line="192"/>
-        <source>Общие выборки</source>
+        <source>РћР±С‰РёРµ РІС‹Р±РѕСЂРєРё</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1289,12 +1329,12 @@
     <name>TTFolderModel</name>
     <message>
         <location filename="../ttfolders.cpp" line="207"/>
-        <source>Папка</source>
+        <source>РџР°РїРєР°</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ttfolders.cpp" line="220"/>
-        <source>Папка %1(%2)</source>
+        <source>РџР°РїРєР° %1(%2)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1432,22 +1472,22 @@
     </message>
     <message>
         <location filename="../ttrecwindow.cpp" line="49"/>
-        <source>Запрос был изменен</source>
+        <source>Р—Р°РїСЂРѕСЃ Р±С‹Р» РёР·РјРµРЅРµРЅ</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ttrecwindow.cpp" line="50"/>
-        <source>Хотите записать изменения?</source>
+        <source>РҐРѕС‚РёС‚Рµ Р·Р°РїРёСЃР°С‚СЊ РёР·РјРµРЅРµРЅРёСЏ?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ttrecwindow.cpp" line="113"/>
-        <source>Тема:</source>
+        <source>РўРµРјР°:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ttrecwindow.cpp" line="139"/>
-        <source>Запрос %1 %2</source>
+        <source>Р—Р°РїСЂРѕСЃ %1 %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1457,7 +1497,7 @@
     </message>
     <message>
         <location filename="../ttrecwindow.cpp" line="602"/>
-        <source>Свойства</source>
+        <source>РЎРІРѕР№СЃС‚РІР°</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1742,12 +1782,12 @@
     <name>TrkDecorator</name>
     <message>
         <location filename="../trkdecorator.cpp" line="368"/>
-        <source>Основные</source>
+        <source>РћСЃРЅРѕРІРЅС‹Рµ</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../trkdecorator.cpp" line="374"/>
-        <source>Другие</source>
+        <source>Р”СЂСѓРіРёРµ</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

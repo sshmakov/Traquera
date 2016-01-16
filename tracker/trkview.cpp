@@ -1,4 +1,4 @@
-#include <tqplug.h>
+﻿#include <tqplug.h>
 //#include "tracker.h"
 #include "trkview.h"
 #ifdef CLIENT_APP
