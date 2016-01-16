@@ -8,6 +8,7 @@ class TRACKERSHARED_EXPORT TrkPlugin: public QObject
 {
     Q_OBJECT
 public:
+    QString pluginModule;
     TrkPlugin();
     Q_INVOKABLE void initPlugin(QObject *obj, const QString &modulePath);
     Q_INVOKABLE bool saveSettings();

@@ -214,6 +214,7 @@ signals:
 
 public slots:
     void trustChanged(int State);
+    void idEntered();
     void idEntered(int flag);
     void slotAppendRecordsId();
     void slotRemoveRecordsId();

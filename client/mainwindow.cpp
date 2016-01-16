@@ -407,6 +407,11 @@ void MainWindow::saveIdsToList(const QString &list)
     openIdEdit->clearEditText();
 }
 
+void MainWindow::idEntered()
+{
+    idEntered(1);
+}
+
 void MainWindow::idEntered(int flag)
 {
     bool reusePage = flag!=0;
@@ -843,6 +848,8 @@ QueryPage *MainWindow::openQuery(TQAbstractProject *project, const QString &quer
     {
         QObject *w = tabWidget->currentWidget();
         page = qobject_cast<QueryPage *>(w);
+        if(page && page->project() != project)
+            page = 0;
     }
     if(page)
         tabWidget->setTabText(tabWidget->currentIndex(),minTitle(title));

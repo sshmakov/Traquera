@@ -228,6 +228,16 @@ static int findColumn(QHeaderView *hv, const QString &label)
     return -1;
 }
 
+static const TQAbstractRecordTypeDef::TQFieldRole basicRoles[6] = {
+    TQAbstractRecordTypeDef::IdField,
+    TQAbstractRecordTypeDef::StateField,
+    TQAbstractRecordTypeDef::SubmitDateTimeField,
+    TQAbstractRecordTypeDef::SubmitterField,
+    TQAbstractRecordTypeDef::OwnerField,
+    TQAbstractRecordTypeDef::TitleField
+};
+
+
 void TrkDecorator::loadViewDef(QueryPage *page)
 {
     const QString KEY = Settings_Grid;
@@ -254,23 +264,14 @@ void TrkDecorator::loadViewDef(QueryPage *page)
         QDomDocument dom;
         if(!dom.setContent(&source,false))
         {
-            const TQAbstractRecordTypeDef::TQFieldRole roles[] = {
-                TQAbstractRecordTypeDef::IdField,
-                TQAbstractRecordTypeDef::TitleField,
-                TQAbstractRecordTypeDef::StateField,
-                TQAbstractRecordTypeDef::SubmitDateTimeField,
-                TQAbstractRecordTypeDef::SubmitterField,
-                TQAbstractRecordTypeDef::OwnerField,
-                TQAbstractRecordTypeDef::IdFriendlyField
-            };
 
             const TQAbstractRecordTypeDef *def = page->recordTypeDef();
             if(def)
             {
                 int nextCol = 0;
-                for(int i=0; i<sizeof(roles); i++)
+                for(int i=0; i<6; i++)
                 {
-                    int vid = def->roleVid(roles[i]);
+                    int vid = def->roleVid(basicRoles[i]);
                     if(vid != TQ::TQ_NO_VID)
                     {
                         QString flabel = def->fieldName(vid);
@@ -346,17 +347,46 @@ bool TrkDecorator::saveState(QueryPage *page)
 
 FieldGroupsDef TrkDecorator::loadGroups(const TQAbstractRecordTypeDef *recDef)
 {
+    FieldGroupsDef res = loadGroupsXML(recDef);
+    if(res.isValid())
+        return res;
+    QString fname;
+    QStringList fieldList = recDef->fieldNames();
+    QStringList baseList = recDef->project()->baseRecordFields(recDef->recordType()).values();
+    QStringList flist;
+    for(int i=0; i<6; i++)
+    {
+        int vid = recDef->roleVid(basicRoles[i]);
+        if(vid != TQ::TQ_NO_VID)
+        {
+            QString flabel = recDef->fieldName(vid);
+            flist.append(flabel);
+            baseList.removeAll(flabel);
+        }
+    }
+    flist += baseList;
+    res.groups.append(tr("Основные"));
+    res.fieldsByGroup.append(flist);
+    QSet<QString> fieldSet = fieldList.toSet();
+    QSet<QString> baseSet = flist.toSet();
+    fieldList = (fieldSet - baseSet).toList();
+    qSort(fieldList);
+    res.groups.append(tr("Другие"));
+    res.fieldsByGroup.append(fieldList);
+    return res;
+}
+
+FieldGroupsDef TrkDecorator::loadGroupsXML(const TQAbstractRecordTypeDef *recDef)
+{
     FieldGroupsDef res;
-//    QXmlSimpleReader xmlReader;
-    QIODevice *file = recDef->defineSource(); /*new QFile("data/tracker.xml");*/
-    QXmlInputSource *source = new QXmlInputSource(file);
+    QScopedPointer<QIODevice> file(recDef->defineSource()); /*new QFile("data/tracker.xml");*/
+    QScopedPointer<QXmlInputSource> source(new QXmlInputSource(file.data()));
     QDomDocument dom;
-    if(!dom.setContent(source,false))
+    if(!dom.setContent(source.data(),false))
         return res;
     QDomElement doc = dom.documentElement();
     if(doc.isNull())
         return res;
-
     QStringList fieldList = recDef->fieldNames();
     QDomElement panels = doc.firstChildElement("panels");
     if(!panels.isNull())
@@ -398,8 +428,6 @@ FieldGroupsDef TrkDecorator::loadGroups(const TQAbstractRecordTypeDef *recDef)
             }
         }
     }
-    delete source;
-    delete file;
     return res;
 }
 

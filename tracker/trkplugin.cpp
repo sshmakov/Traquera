@@ -22,7 +22,10 @@ void TrkPlugin::initPlugin(QObject *obj, const QString &modulePath)
 //    mainWindow = 0;
 //    QMetaObject::invokeMethod(globalObject, "mainWindow", Qt::DirectConnection,
 //                                  Q_RETURN_ARG(QMainWindow *, mainWindow));
-//    QFileInfo fi(modulePath);
+
+
+
+    //    QFileInfo fi(modulePath);
 //    pluginModule = fi.absoluteFilePath();
 //    QDir pDir;
 //    pDir = fi.absoluteDir();
@@ -44,10 +47,25 @@ void TrkPlugin::initPlugin(QObject *obj, const QString &modulePath)
 //    if(!settings)
 //        settings = new QSettings("AllRecall","JiraPlugin",this);
 //    loadSettings();
-    TQAbstractDB::registerDbClass("PVCS Tracker", newTrkToolDB);
 //    QMetaObject::invokeMethod(globalObject, "registerOptionsWidget", Qt::DirectConnection,
 //                              Q_ARG(const QString &,"Plugins/Jira"),
 //                              Q_ARG(void *, getJiraOptionsWidget));
+
+    TQAbstractDB::registerDbClass("PVCS Tracker", newTrkToolDB);
+
+    QFileInfo fi(modulePath);
+    pluginModule = fi.absoluteFilePath();
+    /*
+    QDir pDir;
+    pDir = pluginModule; //fi.absoluteDir();
+    if(pDir.dirName().compare("debug",Qt::CaseInsensitive) == 0)
+    {
+        pDir = QDir(pDir.filePath(".."));
+        pDir.makeAbsolute();
+    }
+    pluginDir = pDir;
+    dataDir = QDir(pDir.filePath("data"));
+    */
 }
 
 bool TrkPlugin::saveSettings()

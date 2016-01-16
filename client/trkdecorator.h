@@ -52,9 +52,19 @@ class FieldGroupsDef
 public:
     QStringList groups;
     QList<QStringList> fieldsByGroup;
-    FieldGroupsDef() : groups(), fieldsByGroup() { groups.clear(); fieldsByGroup.clear(); }
-    FieldGroupsDef(const FieldGroupsDef &src) : groups(src.groups), fieldsByGroup(src.fieldsByGroup) {}
-    bool isValid() { return !fieldsByGroup.isEmpty(); }
+    FieldGroupsDef()
+        : groups(), fieldsByGroup()
+    {
+        groups.clear();
+        fieldsByGroup.clear();
+    }
+    FieldGroupsDef(const FieldGroupsDef &src)
+        : groups(src.groups), fieldsByGroup(src.fieldsByGroup)
+    {}
+    bool isValid()
+    {
+        return !fieldsByGroup.isEmpty();
+    }
     FieldGroupsDef &operator=(const FieldGroupsDef &src)
     {
         groups = src.groups;
@@ -79,6 +89,7 @@ public:
     bool saveState(QueryPage *page);
     FieldGroupsDef loadGroups(const TQAbstractRecordTypeDef *recDef);
 protected:
+    FieldGroupsDef loadGroupsXML(const TQAbstractRecordTypeDef *recDef);
     void clearEdits(QTabWidget *tabs, EditDefList &def);
     
 signals:

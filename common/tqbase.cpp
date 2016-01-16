@@ -732,7 +732,10 @@ QDomDocument TQRecord::toXML()
         QDomElement note = xml.createElement("note");
         //const TrkNote &tn = notesCol.at(i);
         note.setAttribute("title", tn.title);
-        note.setAttribute("author", project()->userFullName(tn.author));
+        QString fullName = tn.authorFullName;
+        if(fullName.isEmpty())
+            fullName = project()->userFullName(tn.author);
+        note.setAttribute("author", fullName);
         note.setAttribute("cdatetime", tn.crdate.toString(Qt::ISODate));
         note.setAttribute("createdate", tn.crdate.toString(def->dateTimeFormat()));
         note.setAttribute("mdatetime", tn.mddate.toString(Qt::ISODate));

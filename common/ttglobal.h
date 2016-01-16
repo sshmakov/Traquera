@@ -91,6 +91,11 @@ public:
     QScriptEngine *newScriptEngine();
     QAxScriptManager *newAxScriptManager();
 protected:
+    void initLibraryPath();
+    void addLibraryPath(const QString &path);
+
+protected:
+    QStringList libDirs;
     TQOAuth *m_oauth;
 public slots:
     void handleEvent(const QString &event,

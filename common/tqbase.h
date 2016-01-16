@@ -51,6 +51,7 @@ struct TQNote
 {
     QString title;
     QString author;
+    QString authorFullName;
     QString text;
     QDateTime crdate;
     QDateTime mddate;

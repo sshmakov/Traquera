@@ -25,8 +25,31 @@
 
 #ifdef Q_WS_WIN
 //#include <shlobj.h>
+#include <windows.h>
 #endif
 
+#ifdef Q_WS_WIN
+
+#define DONT_RESOLVE_DLL_REFERENCES         0x00000001
+#define LOAD_LIBRARY_AS_DATAFILE            0x00000002
+// reserved for internal LOAD_PACKAGED_LIBRARY: 0x00000004
+#define LOAD_WITH_ALTERED_SEARCH_PATH       0x00000008
+#define LOAD_IGNORE_CODE_AUTHZ_LEVEL        0x00000010
+#define LOAD_LIBRARY_AS_IMAGE_RESOURCE      0x00000020
+#define LOAD_LIBRARY_AS_DATAFILE_EXCLUSIVE  0x00000040
+#define LOAD_LIBRARY_REQUIRE_SIGNED_TARGET  0x00000080
+#define LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR    0x00000100
+#define LOAD_LIBRARY_SEARCH_APPLICATION_DIR 0x00000200
+#define LOAD_LIBRARY_SEARCH_USER_DIRS       0x00000400
+#define LOAD_LIBRARY_SEARCH_SYSTEM32        0x00000800
+#define LOAD_LIBRARY_SEARCH_DEFAULT_DIRS    0x00001000
+
+typedef  void *   (WINAPI *FuncAddDllDirectory)(/*_In_*/ PCWSTR NewDirectory);
+typedef  BOOL (WINAPI *FuncSetDefaultDllDirectories)(_In_ DWORD DirectoryFlags);
+
+static FuncAddDllDirectory AddDllDirectory = 0;
+static FuncSetDefaultDllDirectories SetDefaultDllDirectories = 0;
+#endif
 
 /*
 static TTGlobal *ttGlobal=0;
@@ -65,6 +88,7 @@ public:
         {
             instance = 0;
             qDebug() << "Not loaded" << library;
+            qDebug() << "Error" << loader->errorString();
         }
         return res;
     }
@@ -111,6 +135,7 @@ TTGlobal::TTGlobal(QObject *parent) :
     d->initFileName = "data/init.xml";
     setObjectName("Global");
     readInitSettings();
+    initLibraryPath();
 }
 
 QSqlDatabase TTGlobal::userDatabase()
@@ -540,6 +565,14 @@ void TTGlobal::loadPlugins()
     {
         loadSinglePlugin(path);
     }
+#ifdef NOQ_WS_WIN
+    SetDllDirectoryW(0);
+
+    if(SetDefaultDllDirectories)
+        SetDefaultDllDirectories( 0);
+
+#endif
+
 }
 
 /*void TTGlobal::loadPlugins()
@@ -562,6 +595,39 @@ void TTGlobal::loadPlugins()
     }
 }
 */
+
+
+void TTGlobal::initLibraryPath()
+{
+#ifdef Q_WS_WIN
+    AddDllDirectory = (FuncAddDllDirectory)QLibrary::resolve("kernel32", "AddDllDirectory");
+//    SetDefaultDllDirectories =(FuncSetDefaultDllDirectories)QLibrary::resolve("kernel32", "SetDefaultDllDirectories");
+    BOOL res;
+    if(SetDefaultDllDirectories)
+        res = SetDefaultDllDirectories( 0
+                    | LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR
+//                    | LOAD_LIBRARY_SEARCH_APPLICATION_DIR
+                    | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS
+//                    | LOAD_LIBRARY_SEARCH_SYSTEM32
+                    | LOAD_LIBRARY_SEARCH_USER_DIRS
+                    );
+#endif
+}
+
+void TTGlobal::addLibraryPath(const QString &path)
+{
+    QCoreApplication::addLibraryPath(path);
+#ifdef Q_WS_WIN
+    QString winPath = QDir::toNativeSeparators(path);
+
+    if(AddDllDirectory)
+        AddDllDirectory((LPCWSTR)winPath.unicode());
+    else
+        SetDllDirectoryW((LPCWSTR)winPath.unicode());
+
+#endif
+    qDebug() << "Added library path" << path;
+}
 
 bool TTGlobal::loadSinglePlugin(const QDir &dir)
 {
@@ -593,7 +659,7 @@ bool TTGlobal::loadSinglePlugin(const QDir &dir)
     info.ini = ini;
     info.library = dll;
     QString curLib;
-    QCoreApplication::addLibraryPath(dir.absolutePath());
+    addLibraryPath(dir.absolutePath());
     if(!ini.isEmpty())
     {
         QSettings set(ini,QSettings::IniFormat);
@@ -606,26 +672,35 @@ bool TTGlobal::loadSinglePlugin(const QDir &dir)
             foreach(path, list)
             {
                 path = dir.absoluteFilePath(path);
-                QCoreApplication::addLibraryPath(path);
+                addLibraryPath(path);
             }
         }
         set.beginGroup("LIBS");
         foreach(QString key, set.allKeys())
         {
             QString libFile=set.value(key).toString();
+#ifdef Q_WS_WIN
+            LoadLibraryExW((LPCWSTR)libFile.unicode(), 0, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+#else
             if(QLibrary::isLibrary(libFile))
             {
                 QLibrary lib;
                 lib.setFileName(libFile);
-                lib.setLoadHints(QLibrary::ExportExternalSymbolsHint);
+                lib.setLoadHints(QLibrary::ExportExternalSymbolsHint
+                                 |  QLibrary::ResolveAllSymbolsHint);
                 if(lib.load())
                     qDebug() << "Loaded" << libFile;
                 else
+                {
                     qDebug() << "Not loaded" << libFile;
+                    qDebug() << "Error" << lib.errorString();
+                }
             }
+#endif
         }
     }
     curLib = QCoreApplication::libraryPaths().join(";");
+//    qDebug() << curLib;
     if(!info.load())
         return false;
     d->plugins.append(info);
@@ -744,4 +819,5 @@ QAxScriptManager *TTGlobal::newAxScriptManager()
     man->addObject(this);
     return man;
 }
+
 

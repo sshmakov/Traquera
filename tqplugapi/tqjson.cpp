@@ -38,13 +38,20 @@ void TQJson::reset()
         delete d->engine;
         d->engine = 0;
     }
-    d->engine = new QScriptEngine(this);
-    d->engine->evaluate("function toString() { return JSON.stringify(this) }");
-    d->codec = QTextCodec::codecForLocale();
+    try {
+        d->engine = new QScriptEngine(this);
+        d->engine->evaluate("function toString() { return JSON.stringify(this) }");
+        d->codec = QTextCodec::codecForLocale();
+    }
+    catch(...) {
+        d->engine = 0;
+    }
 }
 
 QString TQJson::toString(const QVariant &value)
 {
+    if(!d->engine)
+        return QString();
     QScriptValue toString = d->engine->globalObject().property("toString");
     QScriptValue obj = d->engine->toScriptValue(value);
     return toString.call(obj).toString();
@@ -65,6 +72,8 @@ QVariant TQJson::toVariant(const QString &string)
 
 QVariant TQJson::toVariant(const QByteArray &buf)
 {
+    if(!d->engine)
+        return QVariant();
     QString string = d->codec->toUnicode(buf);
     QScriptValue val = d->engine->evaluate("("+string+")");
     return val.toVariant();
@@ -73,11 +82,15 @@ QVariant TQJson::toVariant(const QByteArray &buf)
 
 bool TQJson::isError() const
 {
+    if(!d->engine)
+        return true;
     return d->engine->hasUncaughtException();
 }
 
 QString TQJson::errorString() const
 {
+    if(!d->engine)
+        return tr("Not initialized");
     QScriptValue v = d->engine->uncaughtException();
     return v.toString();
 }

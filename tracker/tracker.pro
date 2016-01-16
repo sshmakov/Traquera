@@ -47,3 +47,8 @@ win32: LIBS += -L$$PWD/../trktool/lib/ -ltrktooln -lshell32 -lshlwapi -L../lib -
 
 DEFINES += CLIENT_APP
 DESTDIR = ../plugins/tracker
+
+TRANSLATIONS = tracker_ru.ts
+
+OTHER_FILES += \
+    tracker_ru.ts

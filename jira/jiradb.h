@@ -115,6 +115,7 @@ private:
 };
 
 class JiraRecTypeDef;
+class JiraRecord;
 
 class JiraProject: public TQBaseProject
 {
@@ -155,7 +156,9 @@ public:
 protected:
 //    TQAbstractRecordTypeDef *loadRecordTypeDef(int recordType);
     void loadRecordTypes();
+    TQChoiceList loadChoiceTables(JiraRecTypeDef *rdef, const QString &url);
     void loadQueries();
+    void storeReadedField(JiraRecord *rec, JiraRecTypeDef *rdef, const QString &fid, const QVariant &value);
 
     friend class JiraDB;
 };
@@ -207,6 +210,7 @@ protected:
     QMap<QString, int> systemNames;
     QMap<QString, int> vids;
     QMap<int, QString> roleFields;
+    QStringList systemChoices;
 //    QHash<int,int> fIndexByVid;
     QStringList schemaTypes;
     QMap<QString, int> nativeTypes; // schema type to native type
@@ -266,6 +270,8 @@ protected:
 class JiraRecord: public TQRecord
 {
     Q_OBJECT
+    Q_PROPERTY(QString key READ jiraKey)
+    Q_PROPERTY(int internalId READ recordInternalId)
 protected:
     QMap<int, QVariant> values;
     QMap<int, QVariant> displayValues;
@@ -273,12 +279,15 @@ protected:
     QString desc;
     QString key;
     JiraRecTypeDef *def;
+    int internalId;
 public:
     JiraRecord();
     JiraRecord(TQAbstractProject *prj, int rtype, int id);
     JiraRecord(const TQRecord &src);
-    Q_INVOKABLE QString jiraKey();
+    Q_INVOKABLE QString jiraKey() const;
+    Q_INVOKABLE int recordInternalId() const;
     QVariant value(int vid, int role = Qt::DisplayRole) const ;
+    bool setValue(int vid, const QVariant &newValue, int role);
     TQNotesCol notes() const;
 
     friend class JiraProject;

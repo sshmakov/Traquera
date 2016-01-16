@@ -357,6 +357,8 @@ void TQConnectWidget::on_btnDBMS_clicked()
     connect(typesMapper.data(),SIGNAL(mapped(QString)),SLOT(setDBType(QString)));
     QString dbClass = ui->dbClassLabel->text();
     QScopedPointer<TQAbstractDB> db(TQAbstractDB::createDbClass(dbClass));
+    if(db.isNull())
+        return;
     QStringList types = db->dbmsTypes();
     QScopedPointer<QMenu> menu(new QMenu());
     for(int i = 0; i< types.count(); i++)
@@ -375,6 +377,8 @@ void TQConnectWidget::setDBType(const QString &type)
     if(dbClass.isEmpty())
         return;
     QScopedPointer<TQAbstractDB> db(TQAbstractDB::createDbClass(dbClass));
+    if(db.isNull())
+        return;
     db->setDbmsType(type);
     QString dsn = db->dbmsServer();
     ui->serverEdit->setText(dsn);
@@ -395,6 +399,8 @@ void TQConnectWidget::on_btnProjects_clicked()
     if(dbClass.isEmpty())
         return;
     QScopedPointer<TQAbstractDB> db(TQAbstractDB::createDbClass(dbClass));
+    if(db.isNull())
+        return;
     db->setDbmsServer(dbServer);
     db->setDbmsUser(ui->sqlUserEdit->text().trimmed(), ui->sqlPassEdit->text().trimmed());
     QStringList projects = db->projects(dbType, ui->userEdit->text(), ui->passwordEdit->text());
