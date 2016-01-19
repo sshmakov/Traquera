@@ -14,6 +14,7 @@ SUBDIRS += \
     jira \
     client \
     trindex \
+    install
 
 msplans.depends = client
 client.depends = tqplugapi
@@ -23,3 +24,5 @@ CONFIG += ordered
 
 TARGET = traquera
 TRANSLATIONS =
+CODECFORTR = utf-8
+

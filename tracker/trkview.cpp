@@ -1639,7 +1639,7 @@ QString TrkToolProject::doGetDesc(TRK_RECORD_HANDLE recHandle) const
             res = TrkGetDescriptionData(recHandle,sizeof(buf),buf,&remain);
             if(res != TRK_SUCCESS && res != TRK_E_DATA_TRUNCATED)
                 break;
-            result += buf;
+            result += QString::fromLocal8Bit(buf);
         }
         return filterUtf16(result);
     }
