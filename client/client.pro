@@ -167,3 +167,4 @@ win32:INCLUDEPATH += C:/OpenSSL-Win32/include
 win32:LIBS += -LC:/OpenSSL-Win32/bin
 LIBS += -L../lib -ltqplugapi -ltqcondapi
 
+
