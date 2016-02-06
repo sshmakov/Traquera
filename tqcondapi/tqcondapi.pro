@@ -12,12 +12,14 @@ DEFINES += TQCONDAPI_LIBRARY
 
 SOURCES += tqcondapi.cpp \
     ../common/tqcondwidgets.cpp \
-    ../common/tqcond.cpp
+    ../common/tqcond.cpp \
+    ../common/tqqrywid.cpp
 
 HEADERS += tqcondapi.h\
     ../common/tqcondwidgets.h \
     ../common/tqcond.h \
-    ../common/tqcondapi_global.h
+    ../common/tqcondapi_global.h \
+    ../common/tqqrywid.h
 
 unix:!symbian {
     maemo5 {
@@ -32,3 +34,9 @@ INCLUDEPATH += \
         ../common
 win32:LIBS += -L../lib -ltqplugapi
 DESTDIR = ../lib
+
+FORMS += \
+    tqqrywid.ui
+
+RESOURCES += \
+    ../client/resources/tracks.qrc

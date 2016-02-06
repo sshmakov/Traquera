@@ -15,8 +15,9 @@
 
 TrkDecorator *decorator;
 
-TrkDecorator::TrkDecorator(QObject *parent) :
-    QObject(parent), prj(0)
+TrkDecorator::TrkDecorator(QObject *parent)
+    : QObject(parent)
+//    , prj(0)
 {
 }
 
@@ -243,8 +244,9 @@ void TrkDecorator::loadViewDef(QueryPage *page)
     const QString KEY = Settings_Grid;
     //QXmlSimpleReader xmlReader;
     TQAbstractProject *newPrj = page->project();
-    if(prj == newPrj)
-        return;
+//    if(prj == newPrj)
+//        return;
+//    prj = newPrj;
 
     QHeaderView *hv = page->queryView->horizontalHeader();
     TQScopeSettings sets = newPrj->projectSettings();

@@ -31,13 +31,13 @@ FORMS += ui/tracksmain.ui ui/querypage.ui ui/trklogin.ui ui/filters.ui ui/scrwid
     notewidget.ui \
     tqcolsdialog.ui \
     tqconnectwidget.ui \
-    tqqrywid.ui \
     ../tracker/trkchangedlg.ui \
     ../tracker/trkdatesdlg.ui \
     optionsform.ui \
     proxyoptions.ui \
     tqlogindlg.ui \
     tqprjoptdlg.ui
+#    tqqrywid.ui \
 #    ui/planfilesform.ui \
 #    ui/projectpage.ui
 
@@ -67,7 +67,6 @@ HEADERS += \
     projecttree.h \
     tqcolsdialog.h \
     tqconnectwidget.h \
-    tqqrywid.h \
     tqproxyrecmodel.h \
     optionsform.h \
     proxyoptions.h \
@@ -108,7 +107,6 @@ SOURCES += database.cpp main.cpp mainwindow.cpp querypage.cpp \
     projecttree.cpp \
     tqcolsdialog.cpp \
     tqconnectwidget.cpp \
-    tqqrywid.cpp \
     tqproxyrecmodel.cpp \
     optionsform.cpp \
     proxyoptions.cpp \

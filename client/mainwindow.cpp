@@ -846,8 +846,7 @@ QueryPage *MainWindow::openQuery(TQAbstractProject *project, const QString &quer
     QueryPage *page=NULL; // = qobject_cast<QueryPage *>(w);
     if(reusePage)
     {
-        QObject *w = tabWidget->currentWidget();
-        page = qobject_cast<QueryPage *>(w);
+        page = curQueryPage();
         if(page && page->project() != project)
             page = 0;
     }
@@ -1483,17 +1482,6 @@ void MainWindow::on_actionPrevious_triggered()
 
 void MainWindow::openCurItem(bool reuse)
 {
-    /*
-    if(queriesView->isVisible())
-    {
-        QItemSelectionModel *selmodel = queriesView->selectionModel();
-        QModelIndexList list = selmodel->selectedIndexes();
-        if(!list.count())
-            return;
-        openQuery(list.at(0), true);
-        return;
-    }
-    */
     if(treeView->isVisible())
     {
         readSelectedTreeItem();
@@ -1525,41 +1513,6 @@ void MainWindow::openCurItem(bool reuse)
             if(i>=0)
                 tabWidget->setTabIcon(i,selectedTreeItem.icon);
         }
-        /*
-        QModelIndex index = treeView->currentIndex();
-        if(!index.isValid())
-            return;
-        bool isMainGroup = !index.parent().isValid();
-        QAbstractItemModel *model = treeModel->sourceModel(index);
-        TQProjectTree *prjmodel = qobject_cast<TQProjectTree*>(model);
-        QModelIndex prjIndex = treeModel->mapToSource(index);
-        if(!prjmodel)
-            return;
-        QAbstractItemModel *grpmodel = prjmodel->sourceModel(prjIndex);
-        TrkQryFilter *qryModel = qobject_cast<TrkQryFilter*>(grpmodel);
-        TTFolderModel *folderModel = qobject_cast<TTFolderModel*>(grpmodel);
-        if(qryModel && !isMainGroup)
-        {
-            openQuery(index, reuse);
-            return;
-        }
-        if(folderModel && !isMainGroup)
-        {
-            index = treeModel->mapToSource(index);
-            if(!index.isValid())
-                return;
-
-            QueryPage *page = curQueryPage(); // = qobject_cast<QueryPage *>(w);
-            QString folderName = index.sibling(index.row(),0).data().toString();
-            int folderId = index.sibling(index.row(),1).data().toInt();
-            if(folderName.isEmpty())
-                folderName = tr("Папка");
-            if(!page || !reuse)
-                page = createNewPage(folderName);
-            page->openFolder(trkproject,folderModel->folder(index));
-            tabWidget->setTabText(tabWidget->currentIndex(),folderName);
-        }
-        */
     }
 }
 
@@ -1575,13 +1528,6 @@ void MainWindow::on_queriesView_customContextMenuRequested(const QPoint &pos)
 void MainWindow::on_actionOpen_QueryInNew_triggered()
 {
     openCurItem(false);
-    /*
-    QItemSelectionModel *selmodel = queriesView->selectionModel();
-    QModelIndexList list = selmodel->selectedIndexes();
-    if(!list.count())
-        return;
-    openQuery(list.at(0), false);
-    */
 }
 
 void MainWindow::on_changedQuery(const QString & /*projectName*/, const QString & queryName)
@@ -1643,36 +1589,11 @@ void MainWindow::on_btnDBMS_clicked()
 
 void MainWindow::on_journalView_doubleClicked(const QModelIndex &index)
 {
-    /*
-    if(!index.isValid())
-        return;
-    const TrkHistory *model = qobject_cast<const TrkHistory *>(index.model());
-    if(!model)
-        return;
-    const TrkHistoryItem &item = model->at(index.row());
-    QueryPage *qpage = curQueryPage();
-    TQAbstractProject *prj = trkdb->getProject(item.projectName);
-    if(!prj)
-        return;
-    if(!qpage)
-        qpage = createNewPage(item.queryName);
-    if(item.isQuery)
-        qpage->openQuery(prj, item.queryName, item.rectype);
-    else
-        qpage->openIds(prj, item.queryName,  item.queryName, item.rectype);
-    tabWidget->setTabText(tabWidget->currentIndex(),item.queryName);
-    */
 }
 
 void MainWindow::on_tabWidget_currentChanged(QWidget *arg1)
 {
     refreshSelection();
-    /*
-    QueryPage *qpage = qobject_cast<QueryPage *>(arg1);
-    if(!qpage)
-        return;
-    modifyPanel->setQueryPage(qpage);
-    */
 }
 
 void MainWindow::on_actionPasteNumbers_triggered()
@@ -1773,37 +1694,6 @@ void MainWindow::on_treeView_customContextMenuRequested(const QPoint &pos)
         menu.addAction(actionDelete_Project);
     }
     menu.exec(gPos);
-
-    /*
-    QueryPage *qpage = curQueryPage();
-    QModelIndex index = treeView->indexAt(pos);
-    if(!index.isValid())
-        return;
-    bool isMainGroup = !index.parent().isValid();
-    QAbstractItemModel *model = treeModel->sourceModel(index);
-    TrkQryFilter *qryModel = qobject_cast<TrkQryFilter*>(model);
-    TTFolderModel *folderModel = qobject_cast<TTFolderModel*>(model);
-    QMenu menu;
-    if(!isMainGroup)
-    {
-        menu.addAction(actionOpen_Query);
-        menu.addAction(actionOpen_QueryInNew);
-        menu.addSeparator();
-    }
-    if(folderModel)
-    {
-        if(!isMainGroup)
-        {
-            menu.addAction(actionAddToFolder);
-            menu.addAction(actionEditContents);
-            menu.addSeparator();
-        }
-        menu.addAction(actionNewFolder);
-        menu.addAction(actionDeleteFolder);
-        menu.addAction(actionRenameFolder);
-    }
-    menu.exec(gPos);
-    */
 }
 
 void MainWindow::on_actionAddToFolder_triggered()
@@ -1811,16 +1701,6 @@ void MainWindow::on_actionAddToFolder_triggered()
     QueryPage *qpage = curQueryPage();
     if(!qpage)
         return;
-    /*
-    QModelIndex index = treeView->currentIndex();
-    if(!index.isValid())
-        return;
-    bool isMainGroup = !index.parent().isValid();
-    if(isMainGroup)
-        return;
-    QAbstractItemModel *model = treeModel->sourceModel(index);
-    TTFolderModel *folderModel = qobject_cast<TTFolderModel*>(model);
-    */
     readSelectedTreeItem();
     TTFolderModel *folderModel = selectedTreeItem.folderModel;
     if(!folderModel)
@@ -1856,32 +1736,6 @@ void MainWindow::on_actionNewFolder_triggered()
     selectedTreeItem.folderModel->setData(nIndex,title);
     treeView->setCurrentIndex(tIndex);
 
-    /*
-    QModelIndex index = treeView->currentIndex();
-    if(!index.isValid())
-        return;
-    QAbstractItemModel *model = treeModel->sourceModel(index);
-    TTFolderModel *folderModel = qobject_cast<TTFolderModel*>(model);
-    if(!folderModel)
-        return;
-    bool ok;
-    QString title = QInputDialog::getText(this,
-                                          tr("Создание новой папки"),
-                                          tr("Название новой папки"),
-                                          QLineEdit::Normal,
-                                          "",
-                                          &ok);
-    if(!ok)
-        return;
-    QModelIndex fIndex = treeModel->mapToSource(index);
-    QPersistentModelIndex pIndex(fIndex);
-    if(!folderModel->insertRow(0,fIndex))
-        return;
-    QModelIndex nIndex = folderModel->index(0,0,pIndex);
-    treeView->setCurrentIndex(treeModel->mapFromSource(nIndex));
-    if(!title.isEmpty())
-        folderModel->setData(nIndex,title);
-    */
 }
 
 void MainWindow::on_actionDeleteFolder_triggered()
@@ -1896,19 +1750,6 @@ void MainWindow::on_actionDeleteFolder_triggered()
                                                 QMessageBox::Ok,QMessageBox::Cancel))
         return;
     selectedTreeItem.folderModel->removeRow(selectedTreeItem.folderIndex.row());
-    /*
-    QModelIndex index = treeView->currentIndex();
-    if(!index.isValid())
-        return;
-    bool isMainGroup = !index.parent().isValid();
-    if(isMainGroup)
-        return;
-    QAbstractItemModel *model = treeModel->sourceModel(index);
-    TTFolderModel *folderModel = qobject_cast<TTFolderModel*>(model);
-    if(!folderModel)
-        return;
-    treeModel->removeRow(index.row(),index.parent());
-    */
 }
 
 void MainWindow::on_actionRenameFolder_triggered()
@@ -1929,31 +1770,6 @@ void MainWindow::on_actionRenameFolder_triggered()
     if(title.isEmpty())
         return;
     selectedTreeItem.folderModel->setData(selectedTreeItem.folderIndex,title);
-
-/*
-    QModelIndex index = treeView->currentIndex();
-    if(!index.isValid())
-        return;
-    bool isMainGroup = !index.parent().isValid();
-    if(isMainGroup)
-        return;
-    QAbstractItemModel *model = treeModel->sourceModel(index);
-    TTFolderModel *folderModel = qobject_cast<TTFolderModel*>(model);
-    if(!folderModel)
-        return;
-    bool ok;
-    QString title = QInputDialog::getText(this,
-                                          tr("Переименовать папку"),
-                                          tr("Новое название"),
-                                          QLineEdit::Normal,
-                                          index.data().toString(),
-                                          &ok);
-    if(!ok)
-        return;
-    if(title.isEmpty())
-        return;
-    treeModel->setData(index,title);
-    */
 }
 
 void MainWindow::on_actionOpenIds_triggered()

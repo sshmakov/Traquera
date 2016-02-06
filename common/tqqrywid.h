@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <tqbase.h>
+#include <tqcondapi_global.h>
 #include <tqcond.h>
 
 namespace Ui {
@@ -11,7 +12,7 @@ class TQQueryWidget;
 
 class QListWidgetItem;
 
-class TQQueryWidget : public QDialog
+class TQCONDAPISHARED_EXPORT TQQueryWidget : public QDialog
 {
     Q_OBJECT
 protected:

@@ -15,20 +15,20 @@ OTHER_FILES += \
 
 
 win32:CONFIG(release, debug|release): {
-INNO = "C:\\Program Files (x86)\\Inno Setup 5\\iscc.exe"
-ASPROTECT = "C:\\Program Files (x86)\\ASProtect 2.11 SKE\\ASProtect.exe"
+    INNO = "C:\\Program Files (x86)\\Inno Setup 5\\iscc.exe"
+    ASPROTECT = "C:\\Program Files (x86)\\ASProtect 2.11 SKE\\ASProtect.exe"
 
-aspr.target = ..\\client\\release\\traquera-protect.exe
-aspr.commands = $$ASPROTECT -process $$replace(PWD,/,\\)\\TraQuera.aspr2
-aspr.depends = ..\\client\\release\\traquera.exe
+    aspr.target = ..\\client\\release\\traquera-protect.exe
+    aspr.commands = $$ASPROTECT -process $$replace(PWD,/,\\)\\TraQuera.aspr2
+    aspr.depends = ..\\client\\release\\traquera.exe
 
-iss.target  = $(DESTDIR)\\$${SETUP}.exe
-iss.commands = $$INNO /O"$(DESTDIR)"  $$replace(PWD,/,\\)\\$$ISS_FILES /dOutputBaseFilename=$$SETUP
-iss.depends = $$aspr.target
+    iss.target  = $(DESTDIR)\\$${SETUP}.exe
+    iss.commands = $$INNO /O"$(DESTDIR)"  $$replace(PWD,/,\\)\\$$ISS_FILES /dOutputBaseFilename=$$SETUP
+    iss.depends = $$aspr.target
 
-QMAKE_EXTRA_TARGETS += aspr iss
-QMAKE_EXTRA_COMPILERS +=
+    QMAKE_EXTRA_TARGETS += aspr iss
+    QMAKE_EXTRA_COMPILERS +=
 
-OBJECTS = $$iss.target
+    OBJECTS = $$iss.target
 }
 

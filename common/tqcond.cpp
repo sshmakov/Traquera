@@ -3,6 +3,7 @@
 
 #include <QtGui>
 #include "tqcondwidgets.h"
+#include <tqqrywid.h>
 
 TQCond::TQCond(TQQueryDef *parent) :
     QObject(parent), queryDef(parent), m_flags(0), m_mask(0)
@@ -620,6 +621,14 @@ QString TQQueryDef::name()
 void TQQueryDef::setName(const QString &name)
 {
     m_name = name;
+}
+
+TQQueryWidget *TQQueryDef::createQueryWidget()
+{
+    TQQueryWidget *widget =  new TQQueryWidget();
+    widget->setQueryName(name());
+    widget->setQueryDefinition(this);
+    return widget;
 }
 
 void TQQueryDef::miscActionTriggered(const QString &actionText)

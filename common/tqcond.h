@@ -204,6 +204,7 @@ public:
 
 class TQAbstractProject;
 class TQAbstractRecordTypeDef;
+class TQQueryWidget;
 
 class TQCONDAPISHARED_EXPORT TQQueryDef: public QObject
 {
@@ -233,6 +234,7 @@ public:
     virtual QStringList miscActions();
     virtual QString name();
     virtual void setName(const QString &name);
+    virtual TQQueryWidget *createQueryWidget();
 public slots:
     void miscActionTriggered(const QString &actionText);
 signals:

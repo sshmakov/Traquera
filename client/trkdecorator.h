@@ -79,7 +79,7 @@ class TrkDecorator : public QObject
 {
     Q_OBJECT
 protected:
-    TQAbstractProject *prj;
+//    TQAbstractProject *prj;
 public:
     explicit TrkDecorator(QObject *parent = 0);
     void fillEditPanels(QTabWidget *tabs, const TQAbstractRecordTypeDef *recDef, EditDefList &def, bool onlyView = true);
