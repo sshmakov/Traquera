@@ -54,3 +54,11 @@ CODECFORTR = utf-8
 
 OTHER_FILES += \
     tracker_ru.ts
+
+redistribute.source = redistribute/tracker
+redistribute.target = ../plugins
+DEPLOYMENTFOLDERS = redistribute
+
+include(deploy.pri)
+qtcAddDeployment()
+

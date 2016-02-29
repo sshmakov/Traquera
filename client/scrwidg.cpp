@@ -7,6 +7,7 @@
 #include <QFormLayout>
 #include <QXmlSimpleReader>
 #include <QScrollArea>
+#include <filespage.h>
 
 ScrWidget::ScrWidget(const TQAbstractRecordTypeDef *typeDef, QWidget *parent)
 :QMainWindow(parent), record(NULL)
@@ -17,6 +18,8 @@ ScrWidget::ScrWidget(const TQAbstractRecordTypeDef *typeDef, QWidget *parent)
     //editRecordButton->setDefaultAction(actionEdit_Record);
     btnCommitNote->setDefaultAction(actionCommit_Note_Changes);
     btnRevertNote->setDefaultAction(actionRevert_Note_Changes);
+    filesPage = new FilesPage();
+    tabPanels->addTab(filesPage, "Files!");
     initEdits(typeDef);
 }
 
@@ -46,6 +49,7 @@ void ScrWidget::setRecord(TQRecord *newrec)
 		this,SLOT(updateEditState()));
     readRecord();
     updateEditState();
+    filesPage->setRecord(record);
 }
 
 void ScrWidget::readRecord()

@@ -10,12 +10,15 @@
 
 class TrkToolRecord;
 
+class FilesPage;
+
 class ScrWidget : public QMainWindow, private Ui::ScrWidgForm
 {
 	Q_OBJECT
 protected:
     EditDefList fieldEdits;
     TQNotesCol notes;
+    FilesPage *filesPage;
 public:
     ScrWidget(const TQAbstractRecordTypeDef *typeDef, QWidget *parent = 0);
     virtual ~ScrWidget();

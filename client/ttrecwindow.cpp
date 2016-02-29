@@ -9,6 +9,7 @@
 
 #include <QtWebKit>
 #include <QtXmlPatterns>
+#include <filespage.h>
 //#include "tqplanswidget.h"
 
 const QString TTRecordState = "TTRecWinState";
@@ -124,6 +125,7 @@ void TTRecordWindow::setRecord(TQRecord *rec)
 {
     a_record = rec;
     factory->setRecord(rec);
+    filesPage->setRecord(rec);
     refreshValues();
     /*
     props->fillValues(a_record);
@@ -636,6 +638,10 @@ void TTRecordWindow::initWidgets()
 //    QBoxLayout *lay = qobject_cast<QBoxLayout *>(ui->tabPlaceWidget->layout());
 //    lay->insertWidget(0,tabBar);
     ui->tabWidget->setCurrentIndex(0);
+
+    filesPage = new FilesPage();
+    ui->tabWidget->addTab(filesPage, "Files!");
+
 }
 
 void TTRecordWindow::on_cancelNoteButton_clicked()

@@ -192,8 +192,14 @@ void QueryPage::initWidgets()
     filesTable->horizontalHeaderItem(0)->setText(tr("Файл"));
     filesTable->horizontalHeaderItem(1)->setText(tr("Изменен"));
     filesTable->horizontalHeaderItem(2)->setText(tr("Путь"));
+    filesTable->setContextMenuPolicy(Qt::ActionsContextMenu);
+    QAction *a;
+    a = new QAction(tr("Сохранить файл..."),filesTable);
+    connect(a, SIGNAL(triggered()), SLOT(openFileSystem()));
+    filesTable->addAction(a);
+
     subLay->addWidget(filesTable);
-    connect(filesTable,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(slotFilesTable_doubleClicked(QModelIndex)));
+    connect(filesTable,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(openFileSystem(QModelIndex)));
     connect(filesTable,SIGNAL(clicked(QModelIndex)),this,SLOT(slotFilesTable_pressed(QModelIndex)));
     connect(filesTable,SIGNAL(itemSelectionChanged()),SLOT(slotCurrentFileChanged()));
     connect(tabBar,SIGNAL(currentChanged(int)),this,SLOT(slotTabChanged(int)));
@@ -1847,15 +1853,18 @@ void QueryPage::on_actionDeleteFromFolder_triggered()
         d->folder.deleteRecordId(id);
 }
 
-void QueryPage::slotFilesTable_doubleClicked(const QModelIndex &index)
+void QueryPage::openFileSystem(const QModelIndex &index)
 {
+    QModelIndex fileIndex = index;
+    if(!fileIndex.isValid())
+        fileIndex = filesTable->currentIndex();
     d->previewTimer->stop();
     TQRecord *rec = recordOnIndex(queryView->currentIndex());
-    if(!rec || !index.isValid())
+    if(!rec || !fileIndex.isValid())
         return;
-    QString fileName = filesTable->item(index.row(),0)->text();
+    QString fileName = filesTable->item(fileIndex.row(),0)->text();
     QString tempFile = QDir::temp().absoluteFilePath(fileName);
-    rec->saveFile(index.row(), tempFile);
+    rec->saveFile(fileIndex.row(), tempFile);
     tempFile = QDir::toNativeSeparators(tempFile);
     //QUrl url = QUrl::fromUserInput(tempFile);
     QUrl url = QUrl::fromLocalFile(tempFile);

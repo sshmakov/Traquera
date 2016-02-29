@@ -59,7 +59,9 @@ void ProjectPage::openProject(const QString& file)
 {
 	isInteractive=false;
 	if(!prjmodel.openProject(file))
+    {
 		return;
+    }
 	if(!isDefLoaded)
 		loadDefinition();
 	isInteractive=true;

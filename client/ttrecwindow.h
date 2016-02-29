@@ -18,6 +18,7 @@ class TTRecordWindow;
 class ModifyPanel;
 class TrkToolRecord;
 class ScrPluginFactory;
+class FilesPage;
 
 class TTRecordWindow : public QMainWindow
 {
@@ -63,6 +64,7 @@ signals:
 
 protected:
     ModifyPanel *props;
+    FilesPage *filesPage;
     TQAbstractRecordTypeDef *recDef;
     TQRecord *a_record;
     ScrPluginFactory *factory;

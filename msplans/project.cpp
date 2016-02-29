@@ -238,6 +238,8 @@ bool PrjItemModel::open(const QString &file, bool readOnly)
 	tasks=NULL;
     app.setControl("MSProject.Application"); // {36D27C48-A1E8-11D3-BA55-00C04F72F325}
     IDispatch *disp=0;
+    if(app.isNull())
+        return false;
     app.queryInterface(IID_IDispatch, (void**)&disp);
     if(!disp)
         return false;
@@ -285,7 +287,11 @@ bool PrjItemModel::open(const QString &file, bool readOnly)
 		}
 	}
 	else
+    {
 		prj = app.querySubObject("ActiveProject");
+        if(!prj)
+            return false;
+    }
     tasks = prj->querySubObject("Tasks");
 #ifdef QT_DEBUG
 	saveDoc("data/tasks.htm",tasks);

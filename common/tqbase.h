@@ -70,6 +70,10 @@ struct TQToolFile
 {
     QString fileName;
     QDateTime createDateTime;
+    bool isValid()
+    {
+        return fileName.isEmpty();
+    }
 };
 
 struct TQUser

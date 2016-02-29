@@ -665,9 +665,10 @@ bool TrkToolProject::readQueryList()
 		return false;
 	char buf[256];
 	TRK_RECORD_TYPE recType;
+    QTextCodec *codec = QTextCodec::codecForLocale();
     while(TRK_SUCCESS == TrkGetNextQueryName(handle, 256, buf, &recType))
 	{
-		QString name(buf);
+        QString name =  codec->toUnicode(buf);
         if(!qList.contains(recType))
             qList.insert(recType, QStringList());
         qList[recType].append(name);
@@ -688,7 +689,7 @@ bool TrkToolProject::refreshQueryList()
     TRK_RECORD_TYPE recType=0;
     while(TRK_SUCCESS == TrkGetNextQueryName(handle, 256, buf, &recType))
     {
-        QString name(buf);
+        QString name = QString::fromLocal8Bit(buf);
         TrkGetQueryRecordType(handle, buf, &recType);
         if(!newQList.contains(recType))
             newQList[recType] = QStringList();
@@ -931,7 +932,7 @@ void TrkToolProject::readNoteTitles()
         TRK_UINT type; // 1 - user title, 2 - system title
         while(TRK_SUCCESS == TrkGetNextNoteTitle(*noteHandle, sizeof(buf), buf, &type))
         {
-            noteTitles.append(buf);
+            noteTitles.append(QString::fromLocal8Bit(buf));
         }
     }
 //    TrkRecordCancelTransaction(*recHandle);
@@ -1088,7 +1089,7 @@ QString TrkToolProject::userFullName(const QString &login)
         char buf[256];
         buf[0]=0;
         if(TRK_SUCCESS == TrkGetUserFullName(handle,login.toLocal8Bit().constData(),sizeof(buf),buf))
-            res = buf;
+            res = QString::fromLocal8Bit(buf);
         if(res.isEmpty())
             return login;
     }

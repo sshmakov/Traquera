@@ -153,7 +153,7 @@ private slots:
     void on_actionDeleteFromList_triggered();
     void on_queryView_customContextMenuRequested(const QPoint &pos);
     void on_actionDeleteFromFolder_triggered();
-    void slotFilesTable_doubleClicked(const QModelIndex &index);
+    void openFileSystem(const QModelIndex &index = QModelIndex());
     void slotFilesTable_pressed(const QModelIndex &index);
     void slotFilePreview();
     void slotCurrentFileChanged();

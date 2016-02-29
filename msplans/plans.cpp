@@ -374,10 +374,13 @@ PrjItemModel *PlanModel::addPrjFile(const QString &fileName, bool readOnly)
 	PrjItemModel *prj=new PrjItemModel(this);
     if(!prj->open(fileName, readOnly))
 	{
-		delete prj;
+        QMessageBox::critical(0, tr("Ошибка MSPlans"),
+                              tr("Не открылся проект '%1'").arg(fileName));
+        delete prj;
 		return NULL;
 	}
-	addPrjModel(prj);
+//    QMessageBox::information(0, tr("MSPlans"), tr("Открыт проект '%1'").arg(fileName));
+    addPrjModel(prj);
 	return prj;
 }
 

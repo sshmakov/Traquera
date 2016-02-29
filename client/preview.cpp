@@ -223,11 +223,31 @@ PreviewTxt::PreviewTxt(QWidget *parent)
     : Preview(parent)
 {
     QVBoxLayout *lay = new QVBoxLayout();
+    lay->setContentsMargins(0, 3, 0, 0);
     setLayout(lay);
+    encSelector = new QComboBox(this);
+    QList<QByteArray> codecs = QTextCodec::availableCodecs();
+    QMap<QString,QString> codecNames;
+    foreach(const QByteArray &buf, codecs)
+    {
+        QString codec = QString::fromUtf8(buf.constData());
+        codecNames.insert(codec.toLower(), codec);
+    }
+    encSelector->addItems(codecNames.values());
+    int i = codecNames.values().indexOf(QTextCodec::codecForLocale()->name());
+    encSelector->setCurrentIndex(i);
+    QHBoxLayout *toolLay = new QHBoxLayout();
+    toolLay->setContentsMargins(3,0,3,0);
+    toolLay->addWidget(new QLabel(tr("кодировка"),this));
+    toolLay->addWidget(encSelector);
+    toolLay->addStretch();
+    lay->addLayout(toolLay);
     editor = new QPlainTextEdit(this);
+    editor->setReadOnly(true);
     highlighter = new Highlighter(editor->document());
     lay->addWidget(editor);
     //layout()->addWidget(editor);
+    connect(encSelector, SIGNAL(currentIndexChanged(QString)), SLOT(encodingChange(QString)));
     setVisible(true);
 }
 
@@ -240,8 +260,8 @@ bool PreviewTxt::setSourceFile(const QString &fileName)
     QFile file(fileName);
     if(!file.open(QIODevice::ReadOnly))
         return false;
-    QString buf(file.readAll());
-    editor->setPlainText(buf);
+    buf = file.readAll();
+    editor->setPlainText(QTextCodec::codecForName(encSelector->currentText().toLatin1())->toUnicode(buf));
     return true;
 }
 
@@ -253,6 +273,14 @@ void PreviewTxt::clear()
 void PreviewTxt::setSyntax(const QString &syntax)
 {
     highlighter->setSyntax(syntax);
+}
+
+void PreviewTxt::encodingChange(const QString &newCodecName)
+{
+    if(newCodecName.isEmpty())
+        return;
+    editor->setPlainText(QTextCodec::codecForName(encSelector->currentText().toLatin1())->toUnicode(buf));
+//    editor->set
 }
 
 // MasterPreview

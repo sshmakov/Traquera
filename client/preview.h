@@ -92,6 +92,7 @@ protected slots:
 
 class QTextEdit;
 class Highlighter;
+class QComboBox;
 
 class PreviewTxt : public Preview
 {
@@ -99,6 +100,8 @@ class PreviewTxt : public Preview
 private:
     QPlainTextEdit *editor;
     Highlighter *highlighter;
+    QComboBox *encSelector;
+    QByteArray buf;
 public:
     explicit PreviewTxt(QWidget *parent = 0);
     ~PreviewTxt();
@@ -106,6 +109,8 @@ public:
     bool setSourceFile(const QString &fileName);
     void clear();
     void setSyntax(const QString &syntax);
+private slots:
+    void encodingChange(const QString &newCodecName);
 };
 
 class PreviewImage : public Preview
