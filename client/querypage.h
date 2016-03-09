@@ -32,8 +32,9 @@ struct TrkHistoryItem
 */
 
 class TQProxyRecModel;
-
+class FilesPage;
 class QueryPagePrivate;
+
 
 class QueryPage : public QWidget, public Ui::queryForm
 {
@@ -44,9 +45,11 @@ protected:
     QueryPagePrivate *d;
     QTreeView *planTreeView;
     QTabBar *tabBar;
-    QTableWidget *filesTable;
-    QStackedLayout *subLay;
-    Preview *previewWidget;
+    FilesPage *filesPage;
+//    QTableWidget *filesTable;
+    QStackedLayout *topStackLay;
+    QVBoxLayout *pageLayout;
+//    Preview *previewWidget;
 public:
 	//TrkModel trkmodel;
     //QAbstractItemModel *tmodel;
@@ -119,13 +122,14 @@ public slots:
     void refreshQuery();
     void openRecordId(int id);
     //void showCurrentTaskInPlan();
-    void previewFile(const QString &filePath);
+//    void previewFile(const QString &filePath);
     void popupScrMenu(int id);
     void execColumnsEditor();
 protected slots:
 	void selectionChanged(const QItemSelection & selected, const QItemSelection & deselected);
     void currentChanged ( const QModelIndex & topLeft, const QModelIndex &  bottomRight);
     void slotTabChanged(int index);
+    void slotTabTitleChanged(int index);
     //void slotPlanContextMenuRequested ( const QPoint & pos );
     void populateJavaScriptWindowObject();
     void slotUnsupportedContent(QNetworkReply *reply);
@@ -168,6 +172,9 @@ private slots:
     void on_actionCopyMarkedRecords_triggered();
 public slots:
     void addDetailTab(QWidget *tab, const QString &title, const QIcon &icon = QIcon());
+    void addDetailWidgets(QWidget *topWidget, QWidget *pageWidget=0, const QString &title=QString(), const QIcon &icon = QIcon());
+protected:
+    void doAddTab(int pageIndex);
 };
 
 

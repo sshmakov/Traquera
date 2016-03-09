@@ -450,6 +450,9 @@ public: //protected: // Project specific data
     virtual QList<TQToolFile> fileList();
     Q_INVOKABLE virtual bool saveFile(int fileIndex, const QString &dest);
     Q_INVOKABLE virtual bool hasFiles();
+    Q_INVOKABLE virtual int appendFile(const QString &filePath); // return new file index or -1
+    Q_INVOKABLE virtual bool removeFile(int fileIndex);
+
 
     virtual TQAbstractProject *project() const;
     virtual const TQAbstractRecordTypeDef *typeDef() const;

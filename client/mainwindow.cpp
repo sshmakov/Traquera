@@ -1691,6 +1691,8 @@ void MainWindow::on_treeView_customContextMenuRequested(const QPoint &pos)
             menu.addAction(actionClose_Project);
         else
             menu.addAction(actionOpen_Project);
+        menu.addAction(actionEditProject);
+        menu.addSeparator();
         menu.addAction(actionDelete_Project);
     }
     menu.exec(gPos);
@@ -2005,9 +2007,47 @@ void MainWindow::on_actionOpen_Project_triggered()
     }
 }
 
+
 void MainWindow::on_actionEditProject_triggered()
 {
     TQOneProjectTree *tree = selectedTreeItem.prjModel;
+    if(!tree)
+        return;
+    TQAbstractDB *db = tree->item().data.db;
+    if(!db)
+    {
+        QString dbClass = tree->item().data.dbClass;
+        db = TQAbstractDB::createDbClass(dbClass, this);
+    }
+    if(!db)
+        return;
+    QDialog *dlg;
+    QWidget *connWidget;
+    dlg = db->createConnectDialog();
+    if(!dlg)
+    {
+        dlg = new QDialog();
+        QHBoxLayout *lay = new QHBoxLayout(dlg);
+        QWidget *w = db->createConnectWidget();
+        if(!w)
+        {
+            w = new TQConnectWidget();
+        }
+        lay->addWidget(w);
+        connWidget = w;
+    }
+    else
+        connWidget = dlg;
+    connWidget->setProperty("connectString", tree->connectString());
+    if(dlg->exec())
+    {
+        QString connString = connWidget->property("connectString").toString();
+        QString saveString = connWidget->property("connectSaveString").toString();
+        tree->setConnectString(saveString);
+        saveProjectTree();
+    }
+    delete dlg;
+
 }
 
 void MainWindow::slotNewDBConnect(const QString &dbClass)

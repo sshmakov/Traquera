@@ -629,6 +629,18 @@ bool TQRecord::hasFiles()
     return fileList().count() != 0;
 }
 
+int TQRecord::appendFile(const QString &filePath)
+{
+    Q_UNUSED(filePath)
+    return -1;
+}
+
+bool TQRecord::removeFile(int fileIndex)
+{
+    Q_UNUSED(fileIndex)
+    return false;
+}
+
 TQAbstractProject *TQRecord::project() const
 {
     return m_prj;

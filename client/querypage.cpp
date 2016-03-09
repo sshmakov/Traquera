@@ -38,7 +38,17 @@
 #include "tqcolsdialog.h"
 #include "tqproxyrecmodel.h"
 #include <QAxScriptManager>
+#include <filespage.h>
 //#include <Shlwapi.h>
+
+
+struct DetailPages
+{
+    QString title;
+    QIcon icon;
+    QWidget *topWidget;
+    QWidget *pageWidget;
+};
 
 class QueryPagePrivate
 {
@@ -62,6 +72,9 @@ public:
     QList<QAction*> headerActions;
     QTimer *detailsTimer;
     QTimer *previewTimer;
+    QList<DetailPages> pages;
+    QMap<int, int> topIndex;
+    QMap<int, int> pageIndex;
 };
 
 QueryPage::QueryPage(QWidget *parent)
@@ -89,41 +102,14 @@ QueryPage::QueryPage(QWidget *parent)
     d->previewTimer->setSingleShot(true);
     connect(d->previewTimer,SIGNAL(timeout()),this,SLOT(slotFilePreview()));
 
-    QVBoxLayout * v = new QVBoxLayout(pageWithPreview);
-    v->setContentsMargins(0, 0, 0, 0);
-    v->setObjectName(QString::fromUtf8("verticalLayout"));
-
-    previewWidget = new MasterPreview(pageWithPreview);
-    previewWidget->setObjectName("previewWidget");
-    v->addWidget(previewWidget);
-
-    stackedWidget->setCurrentIndex(0);
-
-//	planModel=NULL;
     d->curHistoryPos=0;
     d->isDefLoaded=false;
-	//isInteractive=false;
     d->linkField="Id";
     queryView->setModel(d->qryFilterModel);
 
     projectTabWidget->hide();
-    /* to plugin
-    projectTabWidget->hide();
-    planTreeView->setModel(&planViewModel);
-	connect(projectTabWidget,SIGNAL(tabCloseRequested(int)),this,SLOT(closeTab(int)));
 
-	QAction *a;
-    a = new QAction(QString::fromLocal8Bit("Добавить в план"),this);
-	connect(a,SIGNAL(triggered(bool)),this,SLOT(addScrTasks()));
-	planTreeView->addAction(a);
-
-    planTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(planTreeView,SIGNAL(customContextMenuRequested(QPoint)),this,SLOT(slotPlanContextMenuRequested(QPoint)));
-    */
-
-    //connect(queryView,SIGNAL(activated(const QModelIndex &)),this,SLOT(recordOpen(const QModelIndex &)));
     connect(queryView,SIGNAL(activated(const QModelIndex &)),actionTest,SLOT(trigger()));
-//    connect(this, SIGNAL(openingModel(const QAbstractItemModel*)),&history,SLOT(openedModel(const QAbstractItemModel *)),Qt::DirectConnection);
 
     QShortcut *shortcut;
 
@@ -134,9 +120,10 @@ QueryPage::QueryPage(QWidget *parent)
     shortcut = new QShortcut(QKeySequence(Qt::Key_Enter),filterComboBox,0,0,Qt::WidgetShortcut);
     connect(shortcut,SIGNAL(activated()),this,SLOT(newFilterString()));
 
-    //connect(filterComboBox,SIGNAL(currentIndexChanged(QString)),this,SLOT(newFilterString(QString)));
+    /*
     filesTable->horizontalHeader()->setResizeMode(0,QHeaderView::ResizeToContents);
     filesTable->horizontalHeader()->setResizeMode(1,QHeaderView::ResizeToContents);
+    */
     queryView->addAction(actionSelectTrigger);
     queryView->addAction(actionDeleteFromList);
     tabBar->setCurrentIndex(0);
@@ -148,60 +135,30 @@ QueryPage::QueryPage(QWidget *parent)
 QueryPage::~QueryPage()
 {
     delete d;
-//    QSettings *settings = ttglobal()->settings();
-//    settings->setValue(Settings_ScrPlanView,planTreeView->header()->saveState());
 }
 
 void QueryPage::initWidgets()
 {
     tabBar = new QTabBar(tabPlaceWidget);
     tabBar->addTab(QIcon(":/images/file.png"),tr("Текст"));
-    //tabBar->addTab(QIcon(":/images/plan.png"),tr("Планы"));
-    tabBar->addTab(tr("Файлы"));
+//    tabBar->addTab(tr("Файлы"));
 
     QBoxLayout *lay = qobject_cast<QBoxLayout *>(tabPlaceWidget->layout());
     lay->insertWidget(0,tabBar);
     horizontalSpacer->changeSize(10,20,QSizePolicy::Expanding);
-    subLay = new QStackedLayout(subViewWidget);
+    topStackLay = new QStackedLayout(subViewWidget);
 
-//    planTreeView = new QTreeView(subViewWidget);
-//    planTreeView->setObjectName(QString::fromUtf8("planTreeView"));
-//    planTreeView->setSelectionMode(QAbstractItemView::ContiguousSelection);
-//    planTreeView->setSelectionBehavior(QAbstractItemView::SelectRows);
-//    planTreeView->setIndentation(5);
-//    subLay->addWidget(planTreeView);
+    pageLayout = new QVBoxLayout(pageWithPreview);
+    pageLayout->setContentsMargins(0, 0, 0, 0);
+    pageLayout->setObjectName(QString::fromUtf8("verticalLayout"));
 
-    filesTable = new QTableWidget(subViewWidget);
-    filesTable->setObjectName("filesTable");
-    filesTable->setColumnCount(3);
-    QTableWidgetItem *__qtablewidgetitem = new QTableWidgetItem();
-    filesTable->setHorizontalHeaderItem(0, __qtablewidgetitem);
-    QTableWidgetItem *__qtablewidgetitem1 = new QTableWidgetItem();
-    filesTable->setHorizontalHeaderItem(1, __qtablewidgetitem1);
-    QTableWidgetItem *__qtablewidgetitem2 = new QTableWidgetItem();
-    filesTable->setHorizontalHeaderItem(2, __qtablewidgetitem2);
-    filesTable->setObjectName(QString::fromUtf8("filesTable"));
-    filesTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    filesTable->setTabKeyNavigation(false);
-    filesTable->setSelectionBehavior(QAbstractItemView::SelectRows);
-    filesTable->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
-    filesTable->horizontalHeader()->setHighlightSections(false);
-    filesTable->horizontalHeader()->setStretchLastSection(true);
-    filesTable->verticalHeader()->setVisible(false);
-    filesTable->verticalHeader()->setDefaultSectionSize(19);
-    filesTable->horizontalHeaderItem(0)->setText(tr("Файл"));
-    filesTable->horizontalHeaderItem(1)->setText(tr("Изменен"));
-    filesTable->horizontalHeaderItem(2)->setText(tr("Путь"));
-    filesTable->setContextMenuPolicy(Qt::ActionsContextMenu);
-    QAction *a;
-    a = new QAction(tr("Сохранить файл..."),filesTable);
-    connect(a, SIGNAL(triggered()), SLOT(openFileSystem()));
-    filesTable->addAction(a);
 
-    subLay->addWidget(filesTable);
-    connect(filesTable,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(openFileSystem(QModelIndex)));
-    connect(filesTable,SIGNAL(clicked(QModelIndex)),this,SLOT(slotFilesTable_pressed(QModelIndex)));
-    connect(filesTable,SIGNAL(itemSelectionChanged()),SLOT(slotCurrentFileChanged()));
+    filesPage = new FilesPage(subViewWidget);
+
+    addDetailWidgets(0, filesPage, tr("Файлы"));
+
+    stackedWidget->setCurrentIndex(0);
+
     connect(tabBar,SIGNAL(currentChanged(int)),this,SLOT(slotTabChanged(int)));
     connect(webView_2->page()->mainFrame(), SIGNAL(javaScriptWindowObjectCleared()),
             this, SLOT(populateJavaScriptWindowObject()));
@@ -226,8 +183,73 @@ void QueryPage::initWidgets()
 
 void QueryPage::addDetailTab(QWidget *tab, const QString &title, const QIcon &icon)
 {
+    DetailPages item;
+    item.title = title;
+    item.icon = icon;
+    item.topWidget = tab;
+    item.pageWidget = 0;
+    d->pages.append(item);
+    int index = d->pages.size()-1;
+    doAddTab(index);
+
+    /*
     tabBar->addTab(icon, title);
-    subLay->addWidget(tab);
+    int i = topStackLay->addWidget(tab);
+    */
+}
+
+void QueryPage::addDetailWidgets(QWidget *topWidget, QWidget *pageWidget, const QString &title, const QIcon &icon)
+{
+    DetailPages item;
+    item.title = title;
+    item.topWidget = topWidget;
+    item.pageWidget = pageWidget;
+    d->pages.append(item);
+    int index = d->pages.size()-1;
+    doAddTab(index);
+}
+
+static QByteArray notifySignature(QObject *object, const char *property)
+{
+    const QMetaObject *meta = object->metaObject();
+    int index = meta->indexOfProperty(property);
+    QMetaProperty prop = meta->property(index);
+    if(!prop.hasNotifySignal())
+        return QByteArray();
+    QMetaMethod method = prop.notifySignal();
+    return QByteArray(method.signature());
+}
+
+
+void QueryPage::doAddTab(int pageIndex)
+{
+    if(d->pages.size()<pageIndex+1 || pageIndex<0)
+        return;
+    DetailPages item = d->pages.value(pageIndex);
+    QWidget *titleWidget = item.topWidget ? item.topWidget : item.pageWidget;
+    if(!titleWidget)
+        return;
+    QString title = item.title;
+    if(title.isEmpty())
+        title = titleWidget->property("title").toString();
+    if(title.isEmpty())
+        title = tr("Инфо %1").arg(pageIndex);
+    int tabIndex = tabBar->addTab(item.icon, title);
+    if(item.topWidget)
+    {
+        int i = topStackLay->addWidget(item.topWidget);
+        d->topIndex.insert(tabIndex, i);
+    }
+    if(item.pageWidget)
+    {
+        int i = stackedWidget->addWidget(item.pageWidget);
+        d->pageIndex.insert(tabIndex,i);
+    }
+    QByteArray titleSignal = notifySignature(titleWidget,"title");
+    if(!titleSignal.isEmpty())
+    {
+
+    }
 }
 
 bool QueryPage::hasMarked()
@@ -248,30 +270,7 @@ void QueryPage::closeTab(int index)
 	delete w;
 	if(!projectTabWidget->count())
 		projectTabWidget->hide();
-	//projectTabWidget->removeTab(index);
 }
-
-/*
-void QueryPage::setQuery(int id, TrkDb *trkdb)
-{
-	isInteractive=false;
-	trkmodel.setQuery(id,trkdb);
-	queryView->setModel(trkmodel.model);
-	if(!isDefLoaded)
-		loadDefinition();
-	isInteractive=true;
-}
-
-void QueryPage::setQueryById(const QString& numbers, TrkDb *trkdb)
-{
-	isInteractive=false;
-	trkmodel.setQueryById(numbers,trkdb);
-	queryView->setModel(trkmodel.model);
-	if(!isDefLoaded)
-		loadDefinition();
-	isInteractive=true;
-}
-*/
 
 void QueryPage::setQueryModel(TQAbstractProject *prj, TQRecModel *model)
 {
@@ -294,8 +293,6 @@ void QueryPage::setQueryModel(TQAbstractProject *prj, TQRecModel *model)
     if(!d->tmodel->isSystemModel())
         d->tmodel->setParent(this);
     d->proxy->setSourceModel(d->tmodel);
-//    d->qryFilterModel->setSourceModel(d->tmodel);
-//    queryView->setModel(d->tmodel);
     loadDefinition();
 #ifdef DECORATOR
     fieldEdits.clear();
@@ -314,13 +311,6 @@ void QueryPage::setQueryModel(TQAbstractProject *prj, TQRecModel *model)
         filterFieldComboBox->addItem(hi.key(),hi.value());
     }
     filterFieldComboBox->setCurrentIndex(0);
-    /*
-	connect(
-		queryView->selectionModel(), 
-		SIGNAL(currentRowChanged(const QModelIndex &, const QModelIndex &)),
-		this, 
-		SLOT(changedView(const QModelIndex &, const QModelIndex &)));
-        */
 	connect(
 		queryView->selectionModel(), 
 		SIGNAL(selectionChanged ( const QItemSelection & , const QItemSelection &  )),
@@ -360,24 +350,6 @@ void QueryPage::setQueryModel(TQAbstractProject *prj, TQRecModel *model)
     queryView->selectRow(0);
 }
 
-/*
-void QueryPage::setPlanModel(PlanModel *newmodel)
-{
-	if(newmodel == planModel)
-		return;
-    planViewModel.setSourceModel(newmodel);
-	planModel=newmodel;
-    if(planModel)
-    {
-        planModel->setFieldHeaders(planTreeView->header());
-        QSettings *settings = ttglobal()->settings();
-        QVariant value = settings->value(Settings_ScrPlanView);
-        if(value.isValid() && value.type() == QVariant::ByteArray)
-            planTreeView->header()->restoreState(value.toByteArray());
-    }
-}
-*/
-
 QModelIndex QueryPage::mapIndexToModel(const QModelIndex &index) const
 {
     QModelIndex qryIndex;
@@ -403,38 +375,11 @@ void QueryPage::changedView(const QModelIndex &index, const QModelIndex &prev)
     decorator->readValues(record, fieldEdits);
 #endif
 
-    /*
-	for(QList<EditDef>::const_iterator i=fieldEdits.constBegin();
-		i<fieldEdits.constEnd(); i++)
-	{
-		if(QLineEdit *ed=qobject_cast<QLineEdit *>(i->edit))
-		{
-			ed->setText(qryIndex.sibling(qryIndex.row(), i->fieldcol).data().toString());
-			ed->setCursorPosition(0);
-		}
-	}
-    */
     drawNotes(qryIndex);
 }
 
 void QueryPage::selectionChanged(const QItemSelection & /* selected */, const QItemSelection & /*deselected*/)
 {
-    /*
-	int linkCol=getColNum(linkField);
-	QStringList keys;
-	QModelIndexList list=selected.indexes();
-	for(int i=0; i<list.count(); i++)
-	{
-		QModelIndex index = list[i];
-		QModelIndex link = index.sibling(index.row(),linkCol);
-		QString key = link.data().toString();
-		if(!key.isEmpty())
-			keys.append(key);
-	}
-	//proxyModel.setFilterRegExp(keys.join("|"));
-	proxyModel.setFilterSCR(keys.join(","));
-	planTreeView->expandAll();
-    */
     d->detailsTimer->start(250);
     emit selectionRecordsChanged();
 }
@@ -449,61 +394,53 @@ void QueryPage::currentChanged(const QModelIndex &topLeft, const QModelIndex &bo
 
 void QueryPage::slotTabChanged(int index)
 {
-    subViewWidget->setVisible(index != 0);
-    if(index)
-        subLay->setCurrentIndex(index-1);
-    if(index && subLay->currentWidget() == filesTable)
-        stackedWidget->setCurrentWidget(pageWithPreview);
-    else
+    if(!index)
     {
+        subViewWidget->setVisible(false);
         stackedWidget->setCurrentWidget(pageWithWeb);
-        previewWidget->clear();
+        return;
     }
+    int topIndex = d->topIndex.value(index,-1);
+    int pageIndex = d->pageIndex.value(index, -1);
+    if(topIndex >= 0)
+    {
+        topStackLay->setCurrentIndex(topIndex);
+        subViewWidget->setVisible(true);
+    }
+    else
+        subViewWidget->setVisible(false);
+    if(pageIndex >= 0)
+    {
+//        stackedWidget->setCurrentWidget(pageWithPreview);
+        stackedWidget->setCurrentIndex(pageIndex);
+    }
+    else
+        stackedWidget->setCurrentWidget(pageWithWeb);
 }
 
-/* to plugin
-void QueryPage::slotPlanContextMenuRequested(const QPoint &pos)
+void QueryPage::slotTabTitleChanged(int index)
 {
-    QItemSelectionModel *sm = planTreeView->selectionModel();
-    QModelIndexList list = sm->selectedRows();
-    bool isTasksSelected=false;
-    bool isGroupSelected=false;
-    foreach(const QModelIndex &i, list)
+    if(!index)
+        return;
+    int topIndex = d->topIndex.value(index,-1);
+    int pageIndex = d->pageIndex.value(index, -1);
+    QWidget *widget = 0;
+    if(topIndex >= 0)
+        widget = topStackLay->widget(topIndex);
     {
-        if(i.parent().isValid())
-            isTasksSelected = true;
-        else
-            isGroupSelected = true;
-        QModelIndex si = planViewModel.mapToSource(i);
-        //PrjItemModel *prj=planModel->prjModel(si);
-        //selectedPlans.insert(prj);
+        topStackLay->setCurrentIndex(topIndex);
+        subViewWidget->setVisible(true);
     }
-    QMenu menu;
-    if(isTasksSelected || isGroupSelected)
+    else
+        subViewWidget->setVisible(false);
+    if(pageIndex >= 0)
     {
-        menu.addAction(tr("Копировать номера запросов из задач"),this,SLOT(copyScrFromTasks()));
-        menu.addAction(tr("Показать запросы из задач"),this,SLOT(showScrFromTasks()));
+//        stackedWidget->setCurrentWidget(pageWithPreview);
+        stackedWidget->setCurrentIndex(pageIndex);
     }
-    if(isTasksSelected)
-    {
-        menu.addAction(tr("Отметить запланированные запросы"),this,SLOT(slotCheckPlannedIds()));
-        menu.addAction(tr("Отметить незапланированные запросы"),this,SLOT(slotCheckNoPlannedIds()));
-        menu.addSeparator();
-        menu.addAction(tr("Перейти на задачу в плане"),this,SLOT(showCurrentTaskInPlan()));
-
-    }
-    if(isTasksSelected && isGroupSelected)
-    {
-        menu.addSeparator();
-    }
-    if(isGroupSelected)
-    {
-        menu.addAction(tr("Добавить выделенные запросы в план"),this,SLOT(addScrTasks()));
-    }
-    QPoint gPos = planTreeView->mapToGlobal(pos);
-    menu.exec(gPos);
+    else
+        stackedWidget->setCurrentWidget(pageWithWeb);
 }
-*/
 
 void QueryPage::populateJavaScriptWindowObject()
 {
@@ -538,8 +475,6 @@ void QueryPage::headerChanged()
     if(d->isInteractive)
     {
         decorator->saveState(this);
-//        QSettings *settings = ttglobal()->settings();
-//        settings->setValue(Settings_Grid, queryView->horizontalHeader()->saveState());
     }
 }
 
@@ -550,32 +485,6 @@ void QueryPage::initPopupMenu()
     QAction *action = new QAction(tr("Настройка столбцов..."),this);
     connect(action,SIGNAL(triggered()),this,SLOT(execColumnsEditor()));
     hv->addAction(action);
-
-    /*
-    QHash<QString, int> fieldPos;
-    QStringList labels;
-    for(int i=0; i<hv->count(); i++)
-    {
-        QString label = queryView->model()->headerData(i,Qt::Horizontal).toString().trimmed();
-        fieldPos[label] = i;
-        labels << label;
-    }
-    labels.sort();
-    for(int i=0; i<labels.count(); i++)
-	{
-        QString label = labels[i];
-        int pos = fieldPos[label];
-        QAction *action = new QAction(label,this);
-		action->setCheckable(true);
-        action->setChecked(!hv->isSectionHidden(pos));
-        action->setProperty("HeaderPos", pos);
-		connect(action,SIGNAL(toggled(bool)),this,SLOT(headerToggled(bool)));
-		//hv->addAction(action);
-		headerActions.append(action);
-	}
-    hv->addActions(headerActions);
-    */
-
 	hv->setContextMenuPolicy(Qt::ActionsContextMenu);
 }
 
@@ -588,7 +497,6 @@ void QueryPage::headerToggled(bool checked)
         int i = a->property("HeaderPos").toInt(&ok);
         if(!ok)
             return;
-        //int i = headerActions.indexOf(a);
 		if(i>=0)
             if(checked)
             {
@@ -634,58 +542,16 @@ QString QueryPage::makeRecordPage(const QModelIndex &qryIndex, const QString& xq
     query.setMessageHandler(sysMessager);
 
 	QString page;
-	//QString src=xml.toString();
 	QByteArray ba=xml.toByteArray();
 	QBuffer buf;
 	buf.setData(ba);
 	buf.open(QIODevice::ReadOnly);
 	query.bindVariable("scrdoc",&buf);
 	query.setQuery(&xq);
-	//query.setQuery(&xq, QUrl::fromLocalFile(xq.fileName()));
 	query.evaluateTo(&page);
 	return page;
 	
 }
-
-/*QString QueryPage::makeRecordsPage(const QModelIndexList &records, const QString& xqCodeFile)
-{
-    QDomDocument xml("scr");
-    QDomElement root=xml.createElement("scrs");
-    xml.appendChild(root);
-    for(int ii=0; ii<records.count(); ii++)
-    {
-        QModelIndex rec;
-        rec = mapIndexToModel(records[ii]);
-        const TrkToolModel *model = qobject_cast<const TrkToolModel *>(rec.model());
-        if(model)
-        {
-            QDomDocument scr = model->recordXml(rec.row());
-            root.appendChild(scr);
-        }
-    }
-
-    QFile testXml("!testPrint.xml");
-    testXml.open(QIODevice::WriteOnly | QIODevice::Text);
-    QTextStream textOut(&testXml);
-    xml.save(textOut,4);
-    QFile xq(xqCodeFile);
-    xq.open(QIODevice::ReadOnly);
-
-    QXmlQuery query;
-
-    QString page;
-    //QString src=xml.toString();
-    QByteArray ba=xml.toByteArray();
-    QBuffer buf;
-    buf.setData(ba);
-    buf.open(QIODevice::ReadOnly);
-    query.bindVariable("scrdoc",&buf);
-    query.setQuery(&xq);
-    //query.setQuery(&xq, QUrl::fromLocalFile(xq.fileName()));
-    query.evaluateTo(&page);
-    return page;
-}
-*/
 
 QString QueryPage::makeRecordsPage(const QObjectList &records, const QString &xqCodeFile)
 {
@@ -749,8 +615,6 @@ void QueryPage::drawNotes(const QModelIndex &qryIndex)
     //QTextStream textOutHTML(&testRes);
     testRes.write(page.toLocal8Bit());
 #endif
-    //QUrl baseURL = QUrl::fromLocalFile(base);
-    //QString u = baseURL.toString();
     webView_2->setHtml(page,QUrl(base));
 }
 
@@ -805,22 +669,6 @@ void QueryPage::sendEmail(const QObjectList &records)
     mail->setProperty("Subject", subject);
 
 	mail->dynamicCall("Display(QVariant)", true);
-
-
-	/*
-    Dim olApp As Outlook.Application
-    Dim objMail As MailItem
-    Set olApp = Outlook.Application
-    'Create mail item
-    Set objMail = olApp.CreateItem(olMailItem)
-
-    With objMail
-       'Set body format to HTML
-       .BodyFormat = olFormatHTML
-       .HTMLBody = "<HTML><H2>The body of this message will appear in HTML.</H2><BODY>Type the message text here. </BODY></HTML>"
-       .Display
-    End With
-    */
 }
 
 
@@ -866,225 +714,9 @@ void QueryPage::sendEmail2(const QObjectList &records)
     engine->evaluate(script,fileName);
 }
 
-/* to plugin
-void QueryPage::addScrTask(PrjItemModel *prj)
-{
-	QXmlSimpleReader xmlReader;
-	QFile file("data/scr2prj.xml");
-	QXmlInputSource *source = new QXmlInputSource(&file);
-	QDomDocument dom;
-	if(!dom.setContent(source,false))
-		return;
-	QDomElement doc = dom.documentElement();
-	if(doc.isNull()) return;
-	QDomElement fields = doc.firstChildElement("fields");
-
-	QItemSelectionModel *is=queryView->selectionModel();
-	QModelIndexList ii = is->selectedRows();
-	for(QModelIndexList::const_iterator i=ii.constBegin();
-		i!=ii.constEnd();
-		++i)
-	{
-		PrjRecord rec;
-
-		for(QDomElement field = fields.firstChildElement("field");
-			!field.isNull();
-			field = field.nextSiblingElement("field"))
-		{
-			QString ftitle = field.attribute("title");
-			QString src = field.attribute("src");
-			if(ftitle.isEmpty() || src.isEmpty())
-				continue;
-			int col = getColNum(src);
-			if(col<0)
-				continue;
-			QModelIndex srcIndex = i->sibling(i->row(),col);
-			QVariant val = srcIndex.data();
-			rec[ftitle] = val;
-		}
-		prj->addTask(rec);
-	}
-}
-
-void QueryPage::addScrTasks()
-{
-    QItemSelectionModel *sm = planTreeView->selectionModel();
-    QModelIndexList list = sm->selectedRows();
-    QSet<PrjItemModel *>selectedPlans;
-    foreach(const QModelIndex &i, list)
-    {
-        QModelIndex si = planViewModel.mapToSource(i);
-        PrjItemModel *prj=planModel->prjModel(si);
-        if(prj)
-          selectedPlans.insert(prj);
-    }
-    foreach(PrjItemModel *prj, selectedPlans)
-    {
-        addScrTask(prj);
-    }
-
-}
-
-void QueryPage::copyScrFromTasks()
-{
-    ScrSet res;
-    QItemSelectionModel *sm = planTreeView->selectionModel();
-    QModelIndexList list = sm->selectedRows();
-    foreach(const QModelIndex &i, list)
-    {
-        res += planViewModel.taskScrSet(i);
-    }
-    QString slist = intListToString(res.toList());
-    QApplication::clipboard()->setText(slist);
-}
-
-void QueryPage::showScrFromTasks()
-{
-    ScrSet res;
-    QItemSelectionModel *sm = planTreeView->selectionModel();
-    QModelIndexList list = sm->selectedRows();
-    foreach(const QModelIndex &i, list)
-    {
-        res += planViewModel.taskScrSet(i);
-    }
-    emit openRecordsClicked(res);
-}
-*/
-
 void QueryPage::loadDefinition()
 {
     decorator->loadViewDef(this);
-	/*
-	QXmlSimpleReader xmlReader;
-	QFile *file = new QFile("data/tracker.xml");
-	QXmlInputSource *source = new QXmlInputSource(file);
-	QDomDocument dom;
-	if(!dom.setContent(source,false))
-		return;
-	QDomElement doc = dom.documentElement();
-	if(doc.isNull()) return;
-	QHeaderView *hv=queryView->horizontalHeader();
-	QVariant gridSet = settings->value("TrackerGrid");
-	bool isGridRestored=false;
-	if(gridSet.isValid()) 
-		isGridRestored = hv->restoreState(gridSet.toByteArray());
-	if(!isGridRestored)
-	{
-		QDomElement grid = doc.firstChildElement("grid");
-		if(!grid.isNull())
-		{
-			int nextCol=0;
-			for(QDomElement col = grid.firstChildElement("col");
-				!col.isNull();
-				col = col.nextSiblingElement("col"))
-			{
-				QString flabel = col.attribute("field");
-				int colNum = findColumn(hv, flabel);
-				if(colNum>=0)
-				{
-					int from = hv->visualIndex(colNum);
-					hv->moveSection(from, nextCol++);
-					bool ok;
-					int size = col.attribute("size").toInt(&ok);
-					if(ok)
-						hv->resizeSection(colNum,size);
-				}
-			}
-			for(; nextCol<hv->count(); nextCol++)
-			{
-				int log=hv->logicalIndex(nextCol);
-				hv->hideSection(log);
-			}
-		}
-	}
-	hv->setMovable(true);
-	hv->setDefaultAlignment(Qt::AlignLeft);
-	settings->setValue("TrackerGrid", hv->saveState());
-	QDomElement panels = doc.firstChildElement("panels");
-	if(!panels.isNull())
-	{
-		QStringList used;
-		for(QDomElement panel = panels.firstChildElement("panel");
-			!panel.isNull();
-			panel = panel.nextSiblingElement("panel"))
-		{
-			QWidget *p = new QWidget();
-			QHBoxLayout *hbox = new QHBoxLayout(p);
-			//p->setLayout(hbox);
-			QScrollArea *scr = new QScrollArea(p);
-			scr->setWidgetResizable(true);
-			QWidget *inp = new QWidget();
-			inp->setGeometry(QRect(0, 0, 295, 200));
-			QGridLayout *grid=new QGridLayout(inp);
-			QFormLayout *lay = new QFormLayout();
-			int fields=0;
-			int gridcol=0;
-			//scr->setWidget(inp);
-			if(panel.attribute("type") != "other")
-			{
-				for(QDomElement field = panel.firstChildElement("field");
-					!field.isNull();
-					field = field.nextSiblingElement("field"))
-				{
-					EditDef f;
-					f.edit = new QLineEdit(inp);
-					f.title = field.attribute("name");
-					f.fieldcol = getColNum(f.title);
-					if(f.fieldcol == -1)
-						continue;
-					if(fields && !(fields % 4))
-					{
-						grid->addLayout(lay,0,gridcol++,1,1);
-						lay = new QFormLayout();
-					}
-					fields++;
-					lay->addRow(f.title,f.edit);
-					fieldEdits.append(f);
-					used.append(f.title);
-				}
-			}
-			else
-			{
-				QHash<int, TrkField>::ConstIterator ff;
-				for(ff = trkmodel.trkdb->flds.constBegin();
-					ff != trkmodel.trkdb->flds.constEnd();
-					ff++)
-				{
-					QString fname = ff.value().fldLabel.trimmed();
-					if(!used.contains(fname))
-					{
-						EditDef f;
-						f.edit = new QLineEdit();
-						f.title = fname;
-						f.fieldcol = getColNum(f.title);
-						if(f.fieldcol == -1)
-							continue;
-						if(fields && !(fields % 4))
-						{
-							grid->addLayout(lay,0,gridcol++);
-							lay = new QFormLayout();
-						}
-						fields++;
-						lay->addRow(f.title,f.edit);
-						fieldEdits.append(f);
-						used.append(f.title);
-					}
-				}
-			}
-			grid->addLayout(lay,0,gridcol);
-			scr->setWidget(inp);
-			scr->setFrameShape(QFrame::NoFrame);
-			hbox->addWidget(scr);
-			hbox->setContentsMargins(2,2,2,2);
-			tabPanels->addTab(p, panel.attribute("title"));
-			//scr->setWidget(p);
-		}
-		isDefLoaded = true;
-	}
-	isDefLoaded = true;
-	delete source;
-	delete file;
-	*/
     d->isDefLoaded = true;
 }
 
@@ -1092,12 +724,6 @@ void QueryPage::recordOpen(const QModelIndex & index)
 {
 	if(!index.isValid())
 		return;
-    /*
-    const TrkToolModel *model = qobject_cast<const TrkToolModel *>(mapIndexToModel(index).model());
-	if(!model)
-		return;
-    TQRecord *rec = model->at(index.row());
-    */
     TQRecord *rec = currentRecord();
     if(!rec)
         return;
@@ -1116,16 +742,6 @@ void QueryPage::openQuery(TQAbstractProject *prj, const QString &queryName, int 
     emit openingModel(newmodel);
     emit modelChanged(newmodel);
     addHistoryPoint();
-    //TrkHistoryItem item;
-    //item.isQuery = true;
-    //item.projectName = prj->name;
-    //item.prj = prj;
-    //item.queryName = queryName;
-    //item.recType = recType;
-    //for(int i=history.count()-1; i>curHistoryPos; i--)
-    //	history.removeLast();
-    //history.append(item);
-//    curHistoryPos = history.rowCount()-1;
     emit changedQuery(prj->projectName(), queryName);
 }
 
@@ -1141,19 +757,6 @@ void QueryPage::openIds(TQAbstractProject *prj, const QString &ids, const QStrin
     emit modelChanged(newmodel);
     addHistoryPoint();
 
-    /*
-	TrkHistoryItem item;
-	item.isQuery = false;
-    //item.projectName = prj->name;
-    //item.prj = prj;
-	item.queryName = ids;
-    item.rectype = recType;
-    item.foundIds = intListToString(idlist);
-    for(int i=history.rowCount()-1; i>curHistoryPos; i--)
-		history.removeLast();
-	history.append(item);
-    */
-//    curHistoryPos = history.rowCount()-1;
     QString newTitle;
     if(title.isEmpty())
         newTitle = ids;
@@ -1172,7 +775,6 @@ void QueryPage::openIds(TQAbstractProject *prj, const QList<int> &idlist, const 
     emit openingModel(newmodel);
     emit modelChanged(newmodel);
     addHistoryPoint();
-//    curHistoryPos = history.rowCount()-1;
 
     QString newTitle;
     if(title.isEmpty())
@@ -1279,13 +881,6 @@ void QueryPage::printPreview()
     connect(&ppd,SIGNAL(paintRequested(QPrinter*)),&web,SLOT(print(QPrinter*)));
     ppd.exec();
 
-    // old
-    /*
-    QPrintPreviewDialog *ppd = new QPrintPreviewDialog();
-    connect(ppd,SIGNAL(paintRequested(QPrinter*)),webView_2,SLOT(print(QPrinter*)));
-    ppd->exec();
-    delete ppd;
-    */
 }
 
 
@@ -1501,16 +1096,6 @@ void QueryPage::removeIds(const QList<int> &ids)
     updateHistoryPoint();
 }
 
-//void QueryPage::appendId(int id)
-//{
-//    tmodel->appendRecordId(id);
-//}
-
-//void QueryPage::removeId(int id)
-//{
-//    tmodel->removeRecordId(id);
-//}
-
 void QueryPage::setIdChecked(int id, bool checked)
 {
     int row = d->tmodel->rowOfRecordId(id);
@@ -1538,25 +1123,13 @@ void QueryPage::openRecordId(int id)
     }
 }
 
-/* to plugin
-void QueryPage::showCurrentTaskInPlan()
-{
-    QModelIndex cur = planTreeView->currentIndex();
-    if(!cur.isValid())
-        return;
-    QModelIndex taskIndex = cur.sibling(cur.row(),0);
-    int task = taskIndex.data().toInt();
-    QModelIndex planIndex = planViewModel.mapToSource(cur);
-    PrjItemModel *model = planModel->prjModel(planIndex);
-    emit showTaskInPlanClicked(model->fileName,task);
-}
-*/
-
+/*
 void QueryPage::previewFile(const QString &filePath)
 {
     stackedWidget->setCurrentWidget(pageWithPreview);
     previewWidget->setSourceFile(filePath);
 }
+*/
 
 void QueryPage::popupScrMenu(int id)
 {
@@ -1602,12 +1175,6 @@ void QueryPage::updateDetails()
         if(!key.isEmpty())
             keys.append(key);
     }
-    /* to plugin
-    planViewModel.setFilterSCR(keys.join(","));
-    planTreeView->expandAll();
-    for(int r=0; r<planViewModel.rowCount(); r++)
-        planTreeView->setFirstColumnSpanned(r,QModelIndex(),true);
-    */
     QModelIndex qryIndex = mapIndexToModel(queryView->currentIndex());
     if(!qryIndex.isValid())
         return;
@@ -1618,6 +1185,8 @@ void QueryPage::updateDetails()
 #endif
     drawNotes(qryIndex);
 
+    filesPage->setRecord(record);
+    /*
     QList<TQToolFile> files = record->fileList();
     filesTable->clearContents();
     filesTable->setRowCount(0);
@@ -1632,7 +1201,7 @@ void QueryPage::updateDetails()
         filesTable->setItem(row,2,new QTableWidgetItem(f.dir().path()));
         row++;
     }
-
+    */
     //emit selectionRecordsChanged(selectedRecords());
 }
 
@@ -1684,14 +1253,6 @@ void QueryPage::on_actionCopyRecords_triggered()
     data->setHtml(page);
     QClipboard *clipboard = QApplication::clipboard();
     clipboard->setMimeData(data);
-
-    // old
-    /*
-    QPrintPreviewDialog *ppd = new QPrintPreviewDialog();
-    connect(ppd,SIGNAL(paintRequested(QPrinter*)),webView_2,SLOT(print(QPrinter*)));
-    ppd->exec();
-    delete ppd;
-    */
 }
 
 void QueryPage::on_actionSelectRecords_triggered()
@@ -1700,14 +1261,6 @@ void QueryPage::on_actionSelectRecords_triggered()
     {
         ((TQRecord *)rec)->setSelected(true);
     }
-    /*
-    foreach(QModelIndex index, queryView->selectionModel()->selectedRows())
-    {
-        QModelIndex srcIndex = mapIndexToModel(index);
-        srcIndex = srcIndex.sibling(srcIndex.row(), tmodel->idColumn());
-        tmodel->setData(srcIndex,QVariant::fromValue<int>(Qt::Checked),Qt::CheckStateRole);
-    }
-    */
 }
 
 void QueryPage::on_actionDeselectRecords_triggered()
@@ -1717,10 +1270,6 @@ void QueryPage::on_actionDeselectRecords_triggered()
         TQRecord *rec = (TQRecord *)obj;
         rec->setSelected(false);
     }
-    /*
-    foreach(QModelIndex index, queryView->selectionModel()->selectedRows())
-        queryView->model()->setData(index,QVariant::fromValue<int>(Qt::Unchecked),Qt::CheckStateRole);
-        */
 }
 
 void QueryPage::on_actionCopyMarkedId_triggered()
@@ -1855,6 +1404,7 @@ void QueryPage::on_actionDeleteFromFolder_triggered()
 
 void QueryPage::openFileSystem(const QModelIndex &index)
 {
+    /*
     QModelIndex fileIndex = index;
     if(!fileIndex.isValid())
         fileIndex = filesTable->currentIndex();
@@ -1866,21 +1416,8 @@ void QueryPage::openFileSystem(const QModelIndex &index)
     QString tempFile = QDir::temp().absoluteFilePath(fileName);
     rec->saveFile(fileIndex.row(), tempFile);
     tempFile = QDir::toNativeSeparators(tempFile);
-    //QUrl url = QUrl::fromUserInput(tempFile);
     QUrl url = QUrl::fromLocalFile(tempFile);
-    //tempFile = url.toString();
     QDesktopServices::openUrl(url);
-//    wchar_t *buf = new wchar_t[tempFile.length()+1];
-//    tempFile.toWCharArray(buf);
-//    ShellExecuteW(0,"open",buf,0,0,SW_SHOWNORMAL);
-//    delete buf;
-    /*
-    QString newFile = QFileDialog::getSaveFileName(this,
-                                                   tr("Сохранить файл"),
-                                                   fileName);
-    if(newFile.isEmpty())
-        return;
-    rec->saveFile(index.row(), newFile);
     */
 }
 
@@ -1891,6 +1428,7 @@ void QueryPage::slotFilesTable_pressed(const QModelIndex &index)
 
 void QueryPage::slotFilePreview()
 {
+    /*
     QModelIndex recIndex = queryView->currentIndex();
     QTableWidgetItem *fileItem = filesTable->currentItem();
     if(recIndex.isValid() && fileItem && fileItem->isSelected())
@@ -1906,13 +1444,16 @@ void QueryPage::slotFilePreview()
         }
     }
     previewWidget->clear();
+    */
 }
 
 void QueryPage::slotCurrentFileChanged()
 {
+    /*
     QTableWidgetItem *fileItem = filesTable->currentItem();
     if(!fileItem || !fileItem->isSelected())
         previewWidget->clear();
+        */
 }
 
 void QueryPage::on_actionTest_triggered()
@@ -1933,39 +1474,6 @@ void QueryPage::on_actionSelectTrigger_triggered()
     }
     queryView->selectRow(queryView->currentIndex().row()+1);
 }
-
-/* to plugin
-void QueryPage::slotCheckPlannedIds()
-{
-    ScrSet res;
-    QItemSelectionModel *sm = planTreeView->selectionModel();
-    QModelIndexList list = sm->selectedRows();
-    foreach(const QModelIndex &i, list)
-    {
-        res += planViewModel.taskScrSet(i);
-    }
-    foreach(int id, res)
-        setIdChecked(id,true);
-}
-
-void QueryPage::slotCheckNoPlannedIds()
-{
-    ScrSet res;
-    QItemSelectionModel *sm = planTreeView->selectionModel();
-    QModelIndexList list = sm->selectedRows();
-    foreach(const QModelIndex &i, list)
-    {
-        res += planViewModel.taskScrSet(i);
-    }
-    for(int row=0; row<tmodel->rowCount(); row++)
-    {
-        int id = tmodel->rowId(row);
-        if(!res.contains(id))
-            setIdChecked(id,true);
-    }
-}
-*/
-
 
 void QueryPage::addHistoryPoint()
 {
@@ -1995,10 +1503,6 @@ void QueryPage::updateHistoryPoint()
         item.projectName = d->modelProject->projectName();
         if(d->tmodel)
         {
-//            item.isQuery = tmodel->isQuery();
-//            item.queryName = tmodel->queryName();
-//            item.rectype = tmodel->recordType();
-//            item.foundIds = intListToString(tmodel->getIdList());
             item.addedIds = intListToString(d->tmodel->addedIdList());
             item.removedIds = intListToString(d->tmodel->deletedIdList());
         }

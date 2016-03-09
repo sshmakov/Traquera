@@ -5,6 +5,7 @@
 #include "ttfileiconprovider.h"
 #include <QFileDialog>
 #include <QDesktopServices>
+#include <QMessageBox>
 
 class FilesPagePrivate
 {
@@ -14,6 +15,7 @@ public:
     QTimer previewTimer;
     int curFileIndex;
     bool modifyEnabled;
+    QString title;
     FilesPagePrivate()
         : rec(0), def(0), modifyEnabled(false), curFileIndex(-1)
     {
@@ -46,6 +48,7 @@ FilesPage::FilesPage(QWidget *parent) :
     ui->previewFrame->layout()->addWidget(previewWidget);
 //    ui->prevewLayout->addWidget(previewWidget);
     connect(&d->previewTimer, SIGNAL(timeout()), SLOT(previewCurrentFile()));
+    d->title = tr("Файлы (%1)");
 }
 
 FilesPage::~FilesPage()
@@ -62,6 +65,25 @@ void FilesPage::setModifyEnabled(bool value)
 bool FilesPage::isModifyEnabled() const
 {
     return d->modifyEnabled;
+}
+
+QList<int> FilesPage::currentRows() const
+{
+    QList<int> rows;
+    QList<QTableWidgetItem *> items = ui->filesTable->selectedItems();
+    if(items.isEmpty())
+        return rows;
+    QSet<int> rowSet;
+    foreach(QTableWidgetItem *item, items)
+        rowSet.insert(item->row());
+    rows = rowSet.toList();
+    qSort(rows);
+    return rows;
+}
+
+QString FilesPage::title() const
+{
+    return d->title.arg(ui->filesTable->rowCount());
 }
 
 void FilesPage::setRecord(TQRecord *record)
@@ -86,6 +108,7 @@ void FilesPage::setRecord(TQRecord *record)
             row++;
         }
     }
+    emit onTitleChange();
 }
 
 void FilesPage::previewCurrentFile()
@@ -129,13 +152,10 @@ void FilesPage::openCurrentFile()
 
 void FilesPage::saveCurrentFiles()
 {
-    QList<QTableWidgetItem *> items = ui->filesTable->selectedItems();
-    if(items.isEmpty())
-        return;
-    if(items.count() == 1)
+    QList<int> rows = currentRows();
+    if(rows.count() == 1)
     {
-        QTableWidgetItem *item = items.value(0);
-        item = ui->filesTable->item(item->row(), FP_NAME);
+        QTableWidgetItem *item = ui->filesTable->item(rows.first(), FP_NAME);
         if(!item)
             return;
         QString fileName = item->text();
@@ -146,11 +166,6 @@ void FilesPage::saveCurrentFiles()
             d->rec->saveFile(item->row(), fileName);
         return;
     }
-    QSet<int> rowSet;
-    foreach(QTableWidgetItem *item, items)
-        rowSet.insert(item->row());
-    QList<int> rows = rowSet.toList();
-    qSort(rows);
     QString path = QFileDialog::getExistingDirectory(this);
     if(path.isEmpty())
         return;
@@ -176,7 +191,34 @@ void FilesPage::appendFiles()
         return;
     foreach(QString filePath, list)
     {
+        if(!d->rec->appendFile(filePath))
+            break;
+    }
+}
 
+void FilesPage::deleteCurrentFiles()
+{
+    QList<int> rows = currentRows();
+    if(!rows.size())
+        return;
+    QStringList files;
+    QString text;
+    if(rows.size()==1)
+    {
+        QTableWidgetItem *item = ui->filesTable->item(rows.first(), FP_NAME);
+        text = tr("Удалить файл '%1'?").arg(item->text());
+    }
+    else
+        text = tr("Удалить файл: %1").arg(rows.size());
+
+    if(QMessageBox::Ok == QMessageBox::question(this, tr("Удаление файлов"),text))
+    {
+        qSort(rows.begin(), rows.end(), qGreater<int>());
+        foreach(int row, rows)
+        {
+            if(!d->rec->removeFile(row))
+                break;
+        }
     }
 }
 
@@ -194,11 +236,6 @@ void FilesPage::stopPreview()
 void FilesPage::on_actionSaveFileAs_triggered()
 {
     saveCurrentFiles();
-}
-
-void FilesPage::on_viewBtn_clicked()
-{
-    startPreview();
 }
 
 void FilesPage::on_tabWidget_currentChanged(QWidget *arg1)
@@ -233,3 +270,24 @@ void FilesPage::on_filesTable_currentItemChanged(QTableWidgetItem *current, QTab
     else
         ui->fileDescrEdit->clear();
 }
+
+void FilesPage::on_viewBtn_clicked()
+{
+    startPreview();
+}
+
+void FilesPage::on_addBtn_clicked()
+{
+    appendFiles();
+}
+
+void FilesPage::on_saveBtn_clicked()
+{
+    saveCurrentFiles();
+}
+
+void FilesPage::on_delBtn_clicked()
+{
+
+}
+

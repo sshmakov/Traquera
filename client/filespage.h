@@ -15,6 +15,7 @@ class QTableWidgetItem;
 class FilesPage : public QWidget
 {
     Q_OBJECT
+    Q_PROPERTY(QString title READ title NOTIFY onTitleChange)
 private:
     FilesPagePrivate *d;
     Preview *previewWidget;
@@ -23,6 +24,10 @@ public:
     ~FilesPage();
     void setModifyEnabled(bool value);
     bool isModifyEnabled() const;
+    QList<int> currentRows() const;
+    QString title() const;
+signals:
+    void onTitleChange();
 
 public slots:
     void setRecord(TQRecord *record);
@@ -30,6 +35,7 @@ public slots:
     void openCurrentFile();
     void saveCurrentFiles();
     void appendFiles();
+    void deleteCurrentFiles();
     void startPreview();
     void stopPreview();
 
@@ -42,6 +48,12 @@ private slots:
     void on_filesTable_entered(const QModelIndex &index);
 
     void on_filesTable_currentItemChanged(QTableWidgetItem *current, QTableWidgetItem *previous);
+
+    void on_addBtn_clicked();
+
+    void on_saveBtn_clicked();
+
+    void on_delBtn_clicked();
 
 private:
     Ui::FilesPage *ui;
