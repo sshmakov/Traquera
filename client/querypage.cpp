@@ -48,6 +48,8 @@ struct DetailPages
     QIcon icon;
     QWidget *topWidget;
     QWidget *pageWidget;
+    QObject *titleObj;
+    int tabIndex;
 };
 
 class QueryPagePrivate
@@ -129,7 +131,6 @@ QueryPage::QueryPage(QWidget *parent)
     tabBar->setCurrentIndex(0);
     subViewWidget->hide();
     splitter->setChildrenCollapsible(true);
-
 }
 
 QueryPage::~QueryPage()
@@ -209,47 +210,65 @@ void QueryPage::addDetailWidgets(QWidget *topWidget, QWidget *pageWidget, const 
     doAddTab(index);
 }
 
-static QByteArray notifySignature(QObject *object, const char *property)
+static QMetaMethod notifyMethod(QObject *object, const char *property)
 {
     const QMetaObject *meta = object->metaObject();
     int index = meta->indexOfProperty(property);
     QMetaProperty prop = meta->property(index);
-    if(!prop.hasNotifySignal())
-        return QByteArray();
-    QMetaMethod method = prop.notifySignal();
+    return prop.notifySignal();
+}
+
+
+static QByteArray notifySignature(QObject *object, const char *property)
+{
+    QMetaMethod method = notifyMethod(object, property);
     return QByteArray(method.signature());
 }
 
+static bool isMethodValid(const QMetaMethod &method)
+{
+    return !QByteArray(method.signature()).isEmpty();
+}
 
 void QueryPage::doAddTab(int pageIndex)
 {
     if(d->pages.size()<pageIndex+1 || pageIndex<0)
         return;
     DetailPages item = d->pages.value(pageIndex);
-    QWidget *titleWidget = item.topWidget ? item.topWidget : item.pageWidget;
-    if(!titleWidget)
+    item.titleObj = item.topWidget ? item.topWidget : item.pageWidget;
+    if(!item.titleObj)
         return;
     QString title = item.title;
     if(title.isEmpty())
-        title = titleWidget->property("title").toString();
+        title = item.titleObj->property("title").toString();
     if(title.isEmpty())
         title = tr("Инфо %1").arg(pageIndex);
-    int tabIndex = tabBar->addTab(item.icon, title);
+    item.tabIndex = tabBar->addTab(item.icon, title);
     if(item.topWidget)
     {
         int i = topStackLay->addWidget(item.topWidget);
-        d->topIndex.insert(tabIndex, i);
+        d->topIndex.insert(item.tabIndex, i);
     }
     if(item.pageWidget)
     {
         int i = stackedWidget->addWidget(item.pageWidget);
-        d->pageIndex.insert(tabIndex,i);
+        d->pageIndex.insert(item.tabIndex,i);
     }
-    QByteArray titleSignal = notifySignature(titleWidget,"title");
+    d->pages[pageIndex] = item;
+    QMetaMethod titleSignal = notifyMethod(item.titleObj,"title");
+    if(isMethodValid(titleSignal))
+    {
+        int i = this->metaObject()->indexOfSlot("slotTabTitleChanged()");
+        QMetaMethod slot = this->metaObject()->method(i);
+        connect(item.titleObj, titleSignal, this, slot);
+    }
+    /*
+    QByteArray titleSignal = notifySignature(item.titleObj,"title");
     if(!titleSignal.isEmpty())
     {
-
+        connect(item.titleObj, titleSignal.constData(), this, SLOT(slotTabTitleChanged()));
     }
+    */
 }
 
 bool QueryPage::hasMarked()
@@ -418,28 +437,20 @@ void QueryPage::slotTabChanged(int index)
         stackedWidget->setCurrentWidget(pageWithWeb);
 }
 
-void QueryPage::slotTabTitleChanged(int index)
+void QueryPage::slotTabTitleChanged()
 {
-    if(!index)
-        return;
-    int topIndex = d->topIndex.value(index,-1);
-    int pageIndex = d->pageIndex.value(index, -1);
-    QWidget *widget = 0;
-    if(topIndex >= 0)
-        widget = topStackLay->widget(topIndex);
+    QObject *obj = sender();
+    foreach(const DetailPages &item, d->pages)
     {
-        topStackLay->setCurrentIndex(topIndex);
-        subViewWidget->setVisible(true);
+        if(obj == item.titleObj)
+        {
+            QVariant v = item.titleObj->property("title");
+            QString title = v.toString();
+            if(!title.isEmpty())
+                tabBar->setTabText(item.tabIndex,title);
+            return;
+        }
     }
-    else
-        subViewWidget->setVisible(false);
-    if(pageIndex >= 0)
-    {
-//        stackedWidget->setCurrentWidget(pageWithPreview);
-        stackedWidget->setCurrentIndex(pageIndex);
-    }
-    else
-        stackedWidget->setCurrentWidget(pageWithWeb);
 }
 
 void QueryPage::populateJavaScriptWindowObject()

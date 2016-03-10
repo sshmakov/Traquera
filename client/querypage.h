@@ -129,7 +129,7 @@ protected slots:
 	void selectionChanged(const QItemSelection & selected, const QItemSelection & deselected);
     void currentChanged ( const QModelIndex & topLeft, const QModelIndex &  bottomRight);
     void slotTabChanged(int index);
-    void slotTabTitleChanged(int index);
+    void slotTabTitleChanged();
     //void slotPlanContextMenuRequested ( const QPoint & pos );
     void populateJavaScriptWindowObject();
     void slotUnsupportedContent(QNetworkReply *reply);
