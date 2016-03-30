@@ -616,9 +616,10 @@ void PlansPlugin::onViewOpened(QWidget *widget, TQViewController* controller)
     TQPlansWidget *tab = new TQPlansWidget(widget);
     tab->setParentObject(widget);
     tab->setPlanModel(loadedPlans);
-    connect(controller,SIGNAL(selectedRecordsChanged()),tab,SLOT(selectingRecordsChanged()));
+    tab->controller = controller;
+    connect(tab->controller,SIGNAL(selectedRecordsChanged()),tab,SLOT(selectingRecordsChanged()));
     QString title = "Plans";
-    controller->addDetailTab(tab, title);
+    tab->controller->addDetailTab(tab, title);
 //    QMetaObject::invokeMethod(widget,"addDetailTab",
 //                              Q_ARG(QWidget *,tab),
 //                              Q_ARG(QString,title));

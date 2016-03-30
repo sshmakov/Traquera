@@ -936,10 +936,8 @@ QueryPage *MainWindow::createNewPage(const QString &title)
     tabWidget->setCurrentIndex(tabWidget->insertTab(tabWidget->count()-1, page, QIcon(":/images/trackerTable.png"), title));
     //page->setPlanModel(&planModel);
 	connect(page,SIGNAL(changedQuery(QString,QString)),this,SLOT(on_changedQuery(QString,QString)));
-    connect(page,SIGNAL(selectionRecordsChanged()),this,SLOT(curSelectionChanged()));
+    connect(page,SIGNAL(selectedRecordsChanged()),this,SLOT(curSelectionChanged()));
     connect(page,SIGNAL(openRecordsClicked(ScrSet)),this,SLOT(slotOpenRecordsClicked(ScrSet)));
-    //connect(page,SIGNAL(showTaskInPlanClicked(QString,int)),this,SLOT(showPlanTask(QString,int)));
-    //connect(page,SIGNAL(selectionRecordsChanged(QList<TrkToolRecord*>)),this,SLOT(refreshSelection()));
     return page;
 }
 

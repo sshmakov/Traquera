@@ -52,7 +52,6 @@ void ModifyPanel::setQueryPage(QueryPage *page)
             fillValues(queryPage->selectedRecords());
         connect(queryPage,SIGNAL(destroyed(QObject*)),this,SLOT(queryPageDestroyed(QObject*)),Qt::DirectConnection);
         //connect(queryPage,SIGNAL(modelChanged(TrkToolModel*)),this,SLOT(modelChanged(TrkToolModel*)));
-        //connect(queryPage,SIGNAL(selectionRecordsChanged(QList<TrkToolRecord*>)),this,SLOT(selectedRecordsChanged(QList<TrkToolRecord*>)));
     }
 }
 */

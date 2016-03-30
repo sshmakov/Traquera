@@ -402,7 +402,7 @@ void TTRecordWindow::commit()
 void TTRecordWindow::addDetailTab(QWidget *tab, const QString &title, const QIcon &icon)
 {
     ui->tabWidget->addTab(tab,icon,title);
-    connect(this,SIGNAL(recordChanged(TQRecord*)),tab,SLOT(setRecord(TQRecord*)));
+//    connect(this,SIGNAL(recordChanged(TQRecord*)),tab,SLOT(setRecord(TQRecord*)));
     /*
     QVBoxLayout *lay = new QVBoxLayout();
     TQPlansWidget *plans = new TQPlansWidget(this);

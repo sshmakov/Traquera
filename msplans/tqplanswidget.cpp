@@ -5,6 +5,7 @@
 //#include "ttutils.h"
 //#include "settings.h"
 //#include "ttglobal.h"
+#include <tqviewcontroller.h>
 
 TQPlansWidget::TQPlansWidget(QWidget *parent) :
     TQPluginWidget(parent),
@@ -84,10 +85,10 @@ void TQPlansWidget::contextMenuRequested(const QPoint &pos)
 
 void TQPlansWidget::selectingRecordsChanged()
 {
-    QObjectList records;
-    QMetaObject::invokeMethod(parentObject, "selectedRecords", Qt::DirectConnection,
-                              Q_RETURN_ARG(QObjectList,records));
-    curRecords = records;
+//    QObjectList records;
+//    QMetaObject::invokeMethod(parentObject, "selectedRecords", Qt::DirectConnection,
+//                              Q_RETURN_ARG(QObjectList,records));
+    curRecords = controller->selectedRecords();
     detailsTimer->start(250);
 }
 

@@ -6,6 +6,8 @@
 #include "planproxy.h"
 #include <QTreeView>
 
+class TQViewController;
+
 class TQPlansWidget : public TQPluginWidget
 {
     Q_OBJECT
@@ -15,6 +17,7 @@ protected:
     QTreeView *planTreeView;
     QObject *parentObject;
     QTimer *detailsTimer;
+    TQViewController *controller;
 
 public:
     explicit TQPlansWidget(QWidget *parent = 0);
@@ -51,6 +54,8 @@ protected slots:
     void slotCheckPlannedIds();
     void slotCheckNoPlannedIds();
     void headerChanged();
+
+    friend class PlansPlugin;
 };
 
 #endif // TQPLANSWIDGET_H

@@ -24,9 +24,6 @@ TQViewController::TQViewController(QObject *parent) :
     QObject(parent)
 {
     qRegisterMetaType<TQViewController*>("TQViewController*");
-    QWidget *widget = qobject_cast<QWidget*>(parent);
-//    connect(widget,SIGNAL(selectionRecordsChanged()),SLOT(onSelectionRecordsChanged()));
-//    connect(this,SIGNAL(detailTabTitleChanged(QWidget*,QString)),widget,SLOT(setDetailTabTitle(QWidget*,QString)));
 }
 
 TQViewController::~TQViewController()
@@ -46,7 +43,7 @@ TQRecord *TQViewController::currentRecord() const
     return rec;
 }
 
-QObjectList TQViewController::selectionRecords() const
+QObjectList TQViewController::selectedRecords() const
 {
     QObjectList list;
     QMetaObject::invokeMethod(view(), "selectedRecords",
@@ -97,7 +94,7 @@ void TQViewController::addDetailWidgets(QWidget *topWidget, QWidget *pageWidget,
                               Q_ARG(const QIcon &, icon));
 }
 
-void TQViewController::onSelectionRecordsChanged()
+void TQViewController::onSelectedRecordsChanged()
 {
     emit selectedRecordsChanged();
 }

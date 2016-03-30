@@ -23,6 +23,7 @@ public:
     TTRecordWindow *recView() const;
     virtual const TQAbstractRecordTypeDef* recordDef() const;
     TQRecord *currentRecord() const;
+    QObjectList selectedRecords() const;
 private slots:
     void onViewRecordChanged(TQRecord *record);
 

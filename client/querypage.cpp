@@ -85,7 +85,7 @@ QueryPage::QueryPage(QWidget *parent)
     :QWidget(parent), d(new QueryPagePrivate())
 {
     d->controller = new TQQueryViewController(this);
-    connect(this,SIGNAL(selectionRecordsChanged()),d->controller,SLOT(onSelectionRecordsChanged()));
+    connect(this,SIGNAL(selectedRecordsChanged()),d->controller,SLOT(onSelectedRecordsChanged()));
     connect(d->controller,SIGNAL(detailTabTitleChanged(QWidget*,QString)),this,SLOT(slotTabTitleChanged(QWidget*,QString)));
     d->modelProject = 0;
     d->tmodel = 0;
@@ -415,7 +415,7 @@ void QueryPage::changedView(const QModelIndex &index, const QModelIndex &prev)
 void QueryPage::selectionChanged(const QItemSelection & /* selected */, const QItemSelection & /*deselected*/)
 {
     d->detailsTimer->start(250);
-    emit selectionRecordsChanged();
+    emit selectedRecordsChanged();
 }
 
 void QueryPage::currentChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight)
@@ -423,7 +423,7 @@ void QueryPage::currentChanged(const QModelIndex &topLeft, const QModelIndex &bo
     if(d->detailsTimer->isActive())
         return;
     d->detailsTimer->start(100);
-    emit selectionRecordsChanged();
+    emit selectedRecordsChanged();
 }
 
 void QueryPage::slotTabChanged(int index)

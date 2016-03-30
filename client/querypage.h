@@ -144,7 +144,7 @@ signals:
     void changedQuery(const QString & projectName, const QString & queryName);
     void openingModel(const QAbstractItemModel *model);
     void modelChanged(QAbstractItemModel *model);
-    void selectionRecordsChanged();
+    void selectedRecordsChanged();
     void openRecordsClicked(ScrSet set);
     void showTaskInPlanClicked(const QString &prjName, int taskNum);
 private:

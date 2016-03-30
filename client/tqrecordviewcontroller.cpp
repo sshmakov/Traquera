@@ -42,9 +42,18 @@ TQRecord *TQRecordViewController::currentRecord() const
     return recView()->record();
 }
 
+QObjectList TQRecordViewController::selectedRecords() const
+{
+    TQRecord *record = currentRecord();
+    if(record)
+        return QObjectList() << record;
+    return QObjectList();
+}
+
 void TQRecordViewController::onViewRecordChanged(TQRecord *record)
 {
     emit currentRecordChanged(record);
+    emit selectedRecordsChanged();
 }
 
 /*

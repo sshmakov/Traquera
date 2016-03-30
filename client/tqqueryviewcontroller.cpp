@@ -70,7 +70,7 @@ void TQQueryViewController::addDetailWidgets(QWidget *topWidget, QWidget *pageWi
                               Q_ARG(const QIcon &, icon));
 }
 
-void TQQueryViewController::onSelectionRecordsChanged()
+void TQQueryViewController::onSelectedRecordsChanged()
 {
     emit selectedRecordsChanged();
 }

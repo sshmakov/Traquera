@@ -15,7 +15,7 @@ class TQPLUGIN_SHARED TQViewController : public QObject
     Q_OBJECT
     Q_PROPERTY(QWidget *view READ view)
     Q_PROPERTY(TQRecord *currentRecord READ currentRecord NOTIFY currentRecordChanged)
-    Q_PROPERTY(QObjectList selectionRecords READ selectionRecords NOTIFY selectedRecordsChanged)
+    Q_PROPERTY(QObjectList selectedRecords READ selectedRecords NOTIFY selectedRecordsChanged)
 private:
 //    TQVCPrivate *d;
 public:
@@ -23,7 +23,7 @@ public:
     ~TQViewController();
     virtual QWidget *view() const;
     virtual TQRecord *currentRecord() const;
-    virtual QObjectList selectionRecords() const;
+    virtual QObjectList selectedRecords() const;
     virtual QAbstractItemView *tableView() const;
     virtual bool flag(const QString &flagName) const;
     virtual const TQAbstractRecordTypeDef* recordDef() const;
@@ -40,7 +40,7 @@ public slots:
     virtual void addDetailWidgets(QWidget *topWidget, QWidget *pageWidget=0, const QString &title=QString(), const QIcon &icon = QIcon());
 private slots:
     /* receive from view */
-    virtual void onSelectionRecordsChanged();
+    virtual void onSelectedRecordsChanged();
     virtual void onDetailTitleChanged();
 //    friend class QueryView;
 };
