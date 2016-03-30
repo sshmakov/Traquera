@@ -6,6 +6,8 @@ QHash<QString, TQAbstractProject *> TQAbstractDB::projectList;
 TQAbstractDB::TQAbstractDB(QObject *parent)
     :QObject(parent)
 {
+    qRegisterMetaType<TQAbstractRecordTypeDef*>("TQAbstractRecordTypeDef*");
+    qRegisterMetaType<TQRecord>("TQRecord");
 }
 
 void TQAbstractDB::setDbmsType(const QString &dbType)

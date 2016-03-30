@@ -28,6 +28,8 @@
 #include <windows.h>
 #endif
 
+#include <tqviewcontroller.h>
+
 #ifdef Q_WS_WIN
 
 #define DONT_RESOLVE_DLL_REFERENCES         0x00000001
@@ -96,6 +98,7 @@ public:
 
 class TTGlobalPrivate {
 public:
+    TTMainProc *proc;
     QString initFileName;
     QSqlDatabase userDb;
     QString userDbType;
@@ -124,12 +127,9 @@ public:
 TTGlobal::TTGlobal(QObject *parent) :
     QObject(parent),
     d(new TTGlobalPrivate()),
-    m_oauth(0),
-    proc(0)
-//    userDb(),
-//    handlers(),
-//    plugins()
+    m_oauth(0)
 {
+    d->proc = 0;
     d->settingsObj = new QSettings(COMPANY_NAME, PRODUCT_NAME);
     //ttGlobal = this;
     d->initFileName = "data/init.xml";
@@ -138,7 +138,12 @@ TTGlobal::TTGlobal(QObject *parent) :
     initLibraryPath();
 }
 
-QSqlDatabase TTGlobal::userDatabase()
+void TTGlobal::setMainProc(TTMainProc *proc)
+{
+    d->proc = proc;
+}
+
+const QSqlDatabase &TTGlobal::userDatabase()
 {
     if(!d->userDb.isOpen())
     {
@@ -169,17 +174,17 @@ QSettings *TTGlobal::settings()
 
 QMainWindow *TTGlobal::mainWindow()
 {
-    return proc->mainWindow();
+    return d->proc->mainWindow();
 }
 
 QObject *TTGlobal::mainWindowObj()
 {
-    return proc->mainWindow();
+    return d->proc->mainWindow();
 }
 
 bool TTGlobal::addPropWidget(QWidget *prop)
 {
-    return proc->addPropWidget(prop);
+    return d->proc->addPropWidget(prop);
 }
 
 QString TTGlobal::getClipboardText() const
@@ -208,9 +213,9 @@ void TTGlobal::setClipboardHTML(const QString &text) const
 
 QString TTGlobal::curProjectName() const
 {
-    if(!proc)
+    if(!d->proc)
         return QString();
-    TQAbstractProject *prj = proc->currentProject();
+    TQAbstractProject *prj = d->proc->currentProject();
     if(!prj)
         return QString();
     return prj->projectName();
@@ -218,9 +223,9 @@ QString TTGlobal::curProjectName() const
 
 QObject *TTGlobal::getRecord(int id)
 {
-    if(!proc)
+    if(!d->proc)
         return 0;
-    TQAbstractProject *prj = proc->currentProject();
+    TQAbstractProject *prj = d->proc->currentProject();
     if(!prj)
         return 0;
     return prj->createRecordById(id,prj->defaultRecType());
@@ -266,9 +271,14 @@ QString TTGlobal::saveObjectDocumentation(QObject *object, const QString &fileNa
 
 void TTGlobal::showError(const QString &text)
 {
-    if(proc)
+    if(d->proc)
         QMessageBox::critical(mainWindow(),tr("Error"),text);
-//        mainWindow()->statusBar()->showMessage(text,10000);
+    //        mainWindow()->statusBar()->showMessage(text,10000);
+}
+
+void TTGlobal::showError(const QSqlError &error)
+{
+    showError(error.text());
 }
 
 
@@ -704,20 +714,18 @@ bool TTGlobal::loadSinglePlugin(const QDir &dir)
     if(!info.load())
         return false;
     d->plugins.append(info);
-    connect(info.instance,SIGNAL(error(QString,QString)),SLOT(pluginError(QString,QString)));
+
+    int errorSignal = info.instance->metaObject()->indexOfSignal("error(QString,QString)");
+    int errorSlot = this->metaObject()->indexOfSlot("pluginError(QString,QString)");
+    if(errorSignal != -1 && errorSlot != -1)
+    {
+        QMetaMethod signal = info.instance->metaObject()->method(errorSignal);
+        QMetaMethod slot = this->metaObject()->method(errorSlot);
+        connect(info.instance, signal, this, slot);
+    }
     QMetaObject::invokeMethod(info.instance, "initPlugin",
                               Q_ARG(QObject *,this),
                               Q_ARG(QString, dir.absolutePath()));
-    /*
-//#ifdef CLIENT_APP
-    QWidget *prop=0;
-    if(QMetaObject::invokeMethod(p, "getPropWidget",
-                                  Q_RETURN_ARG(QWidget *,prop),
-                                  Q_ARG(QWidget *, proc->mainWindow()))
-            && prop)
-        proc->addPropWidget(prop);
-//#endif
-*/
     return true;
 }
 
@@ -730,28 +738,24 @@ void TTGlobal::appendContextMenu(QMenu *menu)
     }
 }
 
-void TTGlobal::queryViewOpened(QWidget *widget, QTableView *view, const QString &recType)
+void TTGlobal::emitViewOpened(QWidget *widget, TQViewController *controller)
 {
+    if(!controller)
+        controller = new TQViewController(widget);
+    emit viewOpened(widget, controller);
+    /*
     foreach(const TTPluginInfo &info, d->plugins)
         if(info.loader->isLoaded())
             QMetaObject::invokeMethod(info.instance, "queryViewOpened",
                                       Q_ARG(QWidget *, widget),
                                       Q_ARG(QTableView *, view),
                                       Q_ARG(const QString &, recType));
-}
-
-void TTGlobal::recordOpened(QWidget *widget, const QString &recType)
-{
-    foreach(const TTPluginInfo &info, d->plugins)
-        if(info.loader->isLoaded())
-            QMetaObject::invokeMethod(info.instance, "recordOpened",
-                                      Q_ARG(QWidget *, widget),
-                                      Q_ARG(const QString &, recType));
+    */
 }
 
 bool TTGlobal::insertViewTab(QWidget *view, QWidget *tab, const QString &title)
 {
-    return proc->insertViewTab(view, tab, title);
+    return d->proc->insertViewTab(view, tab, title);
 
 }
 

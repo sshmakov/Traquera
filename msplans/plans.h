@@ -8,6 +8,7 @@
 //#include "trdefs.h"
 #include "planfiles.h"
 #include "tqplug.h"
+#include <ttglobal.h>
 
 #define Settings_ScrPlanView "ScrPlanView"
 
@@ -89,7 +90,7 @@ public:
     //QTableView *filesTableView;
     PlanFilesForm *propWidget;
     QSettings *settings;
-    QObject *globalObject;
+    TTGlobal *globalObject;
     QMainWindow *mainWindow;
     QString pluginModule;
     QDir pluginDir;
@@ -121,8 +122,8 @@ public slots:
 
 public slots:
     void appendContextMenu(QMenu *menu);
-    void queryViewOpened(QWidget *widget, QTableView *view, const QString &recType = "scr");
-    void recordOpened(QWidget *widget, QObject *record, const QString &recType = "scr");
+    void onViewOpened(QWidget *widget, TQViewController *controller);
+//    void recordOpened(QWidget *widget, QObject *record, const QString &recType = "scr");
     void slotPlanContextMenuRequested(const QPoint &pos);
 };
 

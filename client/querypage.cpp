@@ -39,6 +39,7 @@
 #include "tqproxyrecmodel.h"
 #include <QAxScriptManager>
 #include <filespage.h>
+#include <tqqueryviewcontroller.h>
 //#include <Shlwapi.h>
 
 
@@ -77,11 +78,15 @@ public:
     QList<DetailPages> pages;
     QMap<int, int> topIndex;
     QMap<int, int> pageIndex;
+    TQQueryViewController *controller;
 };
 
 QueryPage::QueryPage(QWidget *parent)
     :QWidget(parent), d(new QueryPagePrivate())
 {
+    d->controller = new TQQueryViewController(this);
+    connect(this,SIGNAL(selectionRecordsChanged()),d->controller,SLOT(onSelectionRecordsChanged()));
+    connect(d->controller,SIGNAL(detailTabTitleChanged(QWidget*,QString)),this,SLOT(slotTabTitleChanged(QWidget*,QString)));
     d->modelProject = 0;
     d->tmodel = 0;
     d->itIsFolder = false;
@@ -146,7 +151,7 @@ void QueryPage::initWidgets()
 
     QBoxLayout *lay = qobject_cast<QBoxLayout *>(tabPlaceWidget->layout());
     lay->insertWidget(0,tabBar);
-    horizontalSpacer->changeSize(10,20,QSizePolicy::Expanding);
+//    horizontalSpacer->changeSize(10,20,QSizePolicy::Expanding);
     topStackLay = new QStackedLayout(subViewWidget);
 
     pageLayout = new QVBoxLayout(pageWithPreview);
@@ -154,9 +159,9 @@ void QueryPage::initWidgets()
     pageLayout->setObjectName(QString::fromUtf8("verticalLayout"));
 
 
-    filesPage = new FilesPage(subViewWidget);
+//    filesPage = new FilesPage(subViewWidget);
 
-    addDetailWidgets(0, filesPage, tr("Файлы"));
+//    addDetailWidgets(0, filesPage, tr("Файлы"));
 
     stackedWidget->setCurrentIndex(0);
 
@@ -167,7 +172,7 @@ void QueryPage::initWidgets()
             this,SLOT(slotUnsupportedContent(QNetworkReply*)));
     webView_2->page()->setForwardUnsupportedContent(true);
     webView_2->page()->mainFrame()->setUrl(QUrl("about:blank"));
-    ttglobal()->queryViewOpened(this,queryView);
+    ttglobal()->emitViewOpened(this, controller());
 
     QAction *copyAction = webView_2->pageAction(QWebPage::Copy);
 #ifdef Q_WS_WIN
@@ -279,6 +284,16 @@ bool QueryPage::hasMarked()
 TQAbstractProject *QueryPage::project() const
 {
     return d->modelProject;
+}
+
+TQQueryViewController *QueryPage::controller()
+{
+    return d->controller;
+}
+
+QAbstractItemView *QueryPage::tableView() const
+{
+    return queryView;
 }
 
 void QueryPage::closeTab(int index)
@@ -448,6 +463,19 @@ void QueryPage::slotTabTitleChanged()
             QString title = v.toString();
             if(!title.isEmpty())
                 tabBar->setTabText(item.tabIndex,title);
+            return;
+        }
+    }
+}
+
+void QueryPage::slotTabTitleChanged(QWidget* widget, const QString & newTitle)
+{
+    foreach(const DetailPages &item, d->pages)
+    {
+        if(widget == item.titleObj)
+        {
+            if(!newTitle.isEmpty())
+                tabBar->setTabText(item.tabIndex,newTitle);
             return;
         }
     }
@@ -1128,7 +1156,7 @@ void QueryPage::openRecordId(int id)
     if(rec)
     {
         TTRecordWindow *win = new TTRecordWindow();
-        win->setTypeDef(rec->typeDef());
+        win->setRecordTypeDef(rec->typeDef());
         win->setRecord(rec);
         win->show();
     }
@@ -1196,7 +1224,9 @@ void QueryPage::updateDetails()
 #endif
     drawNotes(qryIndex);
 
-    filesPage->setRecord(record);
+//    filesPage->setRecord(record);
+    d->controller->emitCurrentRecordChanged(record);
+
     /*
     QList<TQToolFile> files = record->fileList();
     filesTable->clearContents();

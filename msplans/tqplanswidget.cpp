@@ -84,6 +84,16 @@ void TQPlansWidget::contextMenuRequested(const QPoint &pos)
 
 void TQPlansWidget::selectingRecordsChanged()
 {
+    QObjectList records;
+    QMetaObject::invokeMethod(parentObject, "selectedRecords", Qt::DirectConnection,
+                              Q_RETURN_ARG(QObjectList,records));
+    curRecords = records;
+    detailsTimer->start(250);
+}
+
+void TQPlansWidget::recordsChanged(QObjectList records)
+{
+    curRecords = records;
     detailsTimer->start(250);
 }
 
@@ -228,12 +238,9 @@ void TQPlansWidget::showScrFromTasks()
 
 void TQPlansWidget::filterForRecords()
 {
-    QObjectList records;
-    QMetaObject::invokeMethod(parentObject, "selectedRecords", Qt::DirectConnection,
-                              Q_RETURN_ARG(QObjectList,records));
     QStringList keys;
     //QList<TrkToolRecord *> selected = selectedRecords();
-    foreach(QObject *obj, records)
+    foreach(QObject *obj, curRecords)
     {
         //TrkToolRecord *rec = qobject_cast<TrkToolRecord *>(obj);
         //if(!rec)

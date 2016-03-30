@@ -11,7 +11,7 @@
 #include "planfilesform.h"
 #include "tqplanswidget.h"
 #include "projectpage.h"
-//#include <ttglobal.h>
+#include <tqviewcontroller.h>
 
 Q_EXPORT_PLUGIN2("msprojectplans", PlansPlugin)
 
@@ -439,10 +439,10 @@ PlansPlugin::~PlansPlugin()
 
 void PlansPlugin::initPlugin(QObject *obj, const QString &modulePath)
 {
-    globalObject = obj;
-    mainWindow = 0;
-    QMetaObject::invokeMethod(globalObject, "mainWindow", Qt::DirectConnection,
-                                  Q_RETURN_ARG(QMainWindow *, mainWindow));
+    globalObject = qobject_cast<TTGlobal *>(obj);
+    mainWindow = globalObject->mainWindow();
+//    QMetaObject::invokeMethod(globalObject, "mainWindow", Qt::DirectConnection,
+//                                  Q_RETURN_ARG(QMainWindow *, mainWindow));
     QFileInfo fi(modulePath);
     pluginModule = fi.absoluteFilePath();
     QDir pDir;
@@ -460,18 +460,21 @@ void PlansPlugin::initPlugin(QObject *obj, const QString &modulePath)
     initProjectModel();
     if(obj)
     {
-        QSettings *s;
-        if(QMetaObject::invokeMethod(globalObject,"settings",
-                                     Q_RETURN_ARG(QSettings *, s)))
-            settings = s;
+//        QSettings *s;
+//        if(QMetaObject::invokeMethod(globalObject,"settings",
+//                                     Q_RETURN_ARG(QSettings *, s)))
+//            settings = s;
+        settings =  globalObject->settings();
     }
     loadSettings();
     QWidget *prop = getPropWidget();
     bool res;
-    QMetaObject::invokeMethod(globalObject,"addPropWidget",
-                              Q_RETURN_ARG(bool, res),
-                              Q_ARG(QWidget *, prop))
-                                 ;
+    globalObject->addPropWidget(prop);
+//    QMetaObject::invokeMethod(globalObject,"addPropWidget",
+//                              Q_RETURN_ARG(bool, res),
+//                              Q_ARG(QWidget *, prop))
+//                                 ;
+    connect(globalObject,SIGNAL(viewOpened(QWidget*,TQViewController*)),SLOT(onViewOpened(QWidget*,TQViewController*)));
 }
 
 void PlansPlugin::initProjectModel()
@@ -608,25 +611,33 @@ void PlansPlugin::appendContextMenu(QMenu *menu)
 {
 }
 
-void PlansPlugin::queryViewOpened(QWidget *widget, QTableView *view, const QString &recType)
+void PlansPlugin::onViewOpened(QWidget *widget, TQViewController* controller)
 {
-    Q_UNUSED(view)
-    if(recType == "scr")
-    {
-        TQPlansWidget *tab = new TQPlansWidget(widget);
-        tab->setParentObject(widget);
-        tab->setPlanModel(loadedPlans);
-        connect(widget,SIGNAL(selectionRecordsChanged()),tab,SLOT(selectingRecordsChanged()));
-        QString title = "Plans";
-        QMetaObject::invokeMethod(widget,"addDetailTab",
-                                  Q_ARG(QWidget *,tab),
-                                  Q_ARG(QString,title));
-    }
+    TQPlansWidget *tab = new TQPlansWidget(widget);
+    tab->setParentObject(widget);
+    tab->setPlanModel(loadedPlans);
+    connect(controller,SIGNAL(selectedRecordsChanged()),tab,SLOT(selectingRecordsChanged()));
+    QString title = "Plans";
+    controller->addDetailTab(tab, title);
+//    QMetaObject::invokeMethod(widget,"addDetailTab",
+//                              Q_ARG(QWidget *,tab),
+//                              Q_ARG(QString,title));
 }
 
-void PlansPlugin::recordOpened(QWidget *widget, QObject *record, const QString &recType)
-{
-}
+//void PlansPlugin::recordOpened(QWidget *widget, QObject *record, const QString &recType)
+//{
+//    if(recType == "scr")
+//    {
+//        TQPlansWidget *tab = new TQPlansWidget(widget);
+//        tab->setParentObject(widget);
+//        tab->setPlanModel(loadedPlans);
+//        connect(widget,SIGNAL(RecordsChanged()),tab,SLOT(selectingRecordsChanged()));
+//        QString title = "Plans";
+//        QMetaObject::invokeMethod(widget,"addDetailTab",
+//                                  Q_ARG(QWidget *,tab),
+//                                  Q_ARG(QString,title));
+//    }
+//}
 
 QWidget *PlansPlugin::getPropWidget(QWidget *parentWidget)
 {

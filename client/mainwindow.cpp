@@ -42,6 +42,7 @@
 #include "proxyoptions.h"
 #include <tqjson.h>
 #include "trkdecorator.h"
+#include <filespage.h>
 
 extern int uniqueAlbumId;
 extern int uniqueArtistId;
@@ -77,7 +78,7 @@ MainWindow::MainWindow(QWidget *parent)
     //QSizePolicy policy = tabWidget->sizePolicy();
     //policy.setHorizontalStretch(1);
     //tabWidget->setSizePolicy(policy);
-    ttglobal()->proc = &proc;
+    ttglobal()->setMainProc(&proc);
     sysMessager = new Messager(this);
     //toolBox->setCurrentIndex(0);
     journal = 0;
@@ -96,6 +97,8 @@ MainWindow::MainWindow(QWidget *parent)
     selectionTimer->setSingleShot(true);
     selectionTimer->setInterval(0);
     connect(selectionTimer,SIGNAL(timeout()),this,SLOT(refreshSelection()));
+    connect(ttglobal(),SIGNAL(viewOpened(QWidget*,TQViewController*)),SLOT(slotViewOpened(QWidget*,TQViewController*)));
+
     ttglobal()->loadPlugins();
 	initProjectModel();
     makeMenus();
@@ -186,6 +189,8 @@ MainWindow::MainWindow(QWidget *parent)
 //    if(l)
 //        l->addStretch(0);
 //    tbNewConnect->setMenu(menuConnect);
+//    connect(ttglobal(),SIGNAL(recordOpened(QWidget*,QString)),SLOT(slotRecordWindowOpened(QWidget*,QString)));
+//    connect(ttglobal(),SIGNAL(recordOpened(TQRecordViewController*)),SLOT(slotRecordWindowOpened(TQRecordViewController*)));
     autoConnect();
 }
 
@@ -507,6 +512,22 @@ void MainWindow::showRecordInList(TQRecord *record)
     page->appendId(record->recordId());
 }
 
+//void MainWindow::slotRecordWindowOpened(TQRecordViewController *controller)
+//{
+//    if(!controller)
+//        return;
+//    FilesPage *tab = new FilesPage();
+//    controller->addDetailTab(tab, "Files");
+//}
+
+void MainWindow::slotViewOpened(QWidget *widget, TQViewController *controller)
+{
+    if(!controller)
+        return;
+    FilesPage *tab = new FilesPage();
+    controller->addDetailTab(tab, "Files");
+    connect(controller,SIGNAL(currentRecordChanged(TQRecord*)),tab,SLOT(setRecord(TQRecord*)));
+}
 
 //QString MainWindow::getTrkConnectString()
 //{
@@ -1866,7 +1887,7 @@ void MainWindow::on_actionNewRequest_triggered()
 {
     TQRecord *rec = currentProject()->newRecord(currentProject()->defaultRecType());
     TTRecordWindow *win = new TTRecordWindow();
-    win->setTypeDef(rec->typeDef());
+    win->setRecordTypeDef(rec->typeDef());
     win->setRecord(rec);
     connect(win, SIGNAL(recordAdded(TQRecord*)), SLOT(showRecordInList(TQRecord*)));
     win->show();

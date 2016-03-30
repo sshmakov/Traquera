@@ -31,6 +31,7 @@ signals:
 
 public slots:
     void setRecord(TQRecord *record);
+    void refreshFiles();
     void previewCurrentFile();
     void openCurrentFile();
     void saveCurrentFiles();
@@ -38,6 +39,7 @@ public slots:
     void deleteCurrentFiles();
     void startPreview();
     void stopPreview();
+    void detachRecord();
 
 private slots:
     void on_actionSaveFileAs_triggered();

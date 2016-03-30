@@ -215,16 +215,6 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab_3">
-       <attribute name="title">
-        <string>Файлы</string>
-       </attribute>
-      </widget>
-      <widget class="QWidget" name="tabPlans">
-       <attribute name="title">
-        <string>Планы</string>
-       </attribute>
-      </widget>
      </widget>
     </item>
    </layout>
@@ -356,6 +346,7 @@
   </customwidget>
  </customwidgets>
  <resources>
+  <include location="../resources/tracks.qrc"/>
   <include location="../resources/tracks.qrc"/>
  </resources>
  <connections/>

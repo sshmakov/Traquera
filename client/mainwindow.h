@@ -53,6 +53,7 @@ struct ProjectRec {
 
 class MainWindow;
 class MainProc;
+class TQRecordViewController;
 
 class MainWindow : public QMainWindow, private Ui::MainWindow
 {
@@ -222,6 +223,10 @@ public slots:
     void repeatLastChanges();
     void slotOpenRecordsClicked(ScrSet res);
     void showRecordInList(TQRecord *record);
+
+private slots:
+//    void slotRecordWindowOpened(TQRecordViewController *controller);
+    void slotViewOpened(QWidget *widget, TQViewController *controller);
 
 private slots:
     void on_changedQuery(const QString & projectName, const QString & queryName);

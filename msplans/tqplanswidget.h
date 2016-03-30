@@ -24,6 +24,7 @@ public:
     Q_INVOKABLE void setParentObject(QObject *obj);
     QStringList selectedSCRs();
     QList<int> selectedSCRIds();
+    QObjectList curRecords;
 signals:
     void openRecordsClicked(ScrSet set);
     void addScrTasksClicked();
@@ -34,6 +35,7 @@ protected:
 public slots:
     void contextMenuRequested(const QPoint &pos);
     void selectingRecordsChanged();
+    void recordsChanged(QObjectList records);
 
 private:
     bool isSetsLoaded;

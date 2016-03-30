@@ -34,6 +34,7 @@ struct TrkHistoryItem
 class TQProxyRecModel;
 class FilesPage;
 class QueryPagePrivate;
+class TQQueryViewController;
 
 
 class QueryPage : public QWidget, public Ui::queryForm
@@ -41,11 +42,13 @@ class QueryPage : public QWidget, public Ui::queryForm
     Q_OBJECT
     Q_PROPERTY(const TQAbstractRecordTypeDef *recordTypeDef READ recordTypeDef)
     Q_PROPERTY(int recordType READ recordType)
+    Q_PROPERTY(QAbstractItemView *tableView READ tableView)
+    Q_PROPERTY(TQQueryViewController *controller READ controller)
 protected:
     QueryPagePrivate *d;
     QTreeView *planTreeView;
     QTabBar *tabBar;
-    FilesPage *filesPage;
+//    FilesPage *filesPage;
 //    QTableWidget *filesTable;
     QStackedLayout *topStackLay;
     QVBoxLayout *pageLayout;
@@ -90,6 +93,8 @@ public:
     void initWidgets();
     bool hasMarked();
     TQAbstractProject *project() const;
+    TQQueryViewController *controller();
+    QAbstractItemView *tableView() const;
 protected:
     void initPopupMenu();
 	void loadDefinition();
@@ -130,6 +135,7 @@ protected slots:
     void currentChanged ( const QModelIndex & topLeft, const QModelIndex &  bottomRight);
     void slotTabChanged(int index);
     void slotTabTitleChanged();
+    void slotTabTitleChanged(QWidget* widget, const QString & newTitle);
     //void slotPlanContextMenuRequested ( const QPoint & pos );
     void populateJavaScriptWindowObject();
     void slotUnsupportedContent(QNetworkReply *reply);

@@ -205,6 +205,7 @@ void TQConnectWidget::setConnectString(const QString &str)
     ui->userEdit->setText(params.value(PRJPARAM_USER).toString());
     ui->passwordEdit->setText(params.value(PRJPARAM_PASSWORD).toString());
     ui->savePasswordCheck->setChecked(params.contains(PRJPARAM_PASSWORD));
+    ui->autoLoginCheck->setChecked(params.contains(PRJPARAM_AUTOLOGIN) && params.value(PRJPARAM_AUTOLOGIN).toBool());
 }
 
 void TQConnectWidget::loadSettings()

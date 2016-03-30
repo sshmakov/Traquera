@@ -64,3 +64,5 @@ OTHER_FILES += \
 RESOURCES += \
     msplans.qrc
 
+LIBS += -L../lib -ltqplugapi
+

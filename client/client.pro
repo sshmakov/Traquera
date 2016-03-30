@@ -75,7 +75,9 @@ HEADERS += \
     tqlogindlg.h \
     mainproc.h \
     tqprjoptdlg.h \
-    filespage.h
+    filespage.h \
+    tqrecordviewcontroller.h \
+    tqqueryviewcontroller.h
 
 #    plans.h planproxy.h \
 #    planfiles.h \
@@ -116,7 +118,9 @@ SOURCES += database.cpp main.cpp mainwindow.cpp querypage.cpp \
     tqlogindlg.cpp \
     mainproc.cpp \
     tqprjoptdlg.cpp \
-    filespage.cpp
+    filespage.cpp \
+    tqrecordviewcontroller.cpp \
+    tqqueryviewcontroller.cpp
 
 #    planfilesform.cpp \
 #    project.cpp projectpage.cpp plans.cpp planproxy.cpp planfiles.cpp \

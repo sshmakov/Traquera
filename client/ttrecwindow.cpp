@@ -18,15 +18,27 @@ const QString TTRecordGeometry = "TTRecWinGeometry";
 //QScriptEngine engine;
    //QScriptEngineDebugger debugger;
 
+class TTRecordWindowPrivate {
+public:
+    TQRecordViewController *controller;
+    const TQAbstractRecordTypeDef *recDef;
+};
+
+
 TTRecordWindow::TTRecordWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::TTRecordWindow)
+    ui(new Ui::TTRecordWindow),
+    d(new TTRecordWindowPrivate())
 {
     ui->setupUi(this);
     initWidgets();
+    d->controller = new TQRecordViewController(this);
+//    connect(this,SIGNAL(recordChanged(TQRecord*)),d->controller,SLOT(onViewRecordChanged(TQRecord*)));
+//    connect(d->controller,SIGNAL(detailTabTitleChanged(QWidget*,QString)),SLOT(setDetailTabTitle(QWidget*,QString)));
 
     //ui->noteTextEdit->addAction(ui->actionSaveExit);
     changed = false;
+    ttglobal()->emitViewOpened(this, d->controller);
 }
 
 TTRecordWindow::~TTRecordWindow()
@@ -38,6 +50,7 @@ TTRecordWindow::~TTRecordWindow()
         delete rec;
     }
     delete ui;
+    delete d;
 }
 
 void TTRecordWindow::closeEvent(QCloseEvent *event)
@@ -102,8 +115,9 @@ void TTRecordWindow::showNoteEditor(bool show)
 
 }
 
-void TTRecordWindow::setTypeDef(const TQAbstractRecordTypeDef *recDef)
+void TTRecordWindow::setRecordTypeDef(const TQAbstractRecordTypeDef *recDef)
 {
+    d->recDef =  recDef;
     props->setRecordDef(recDef);
     titleVid = recDef->roleVid(TQAbstractRecordTypeDef::TitleField);
     if(titleVid)
@@ -116,7 +130,12 @@ void TTRecordWindow::setTypeDef(const TQAbstractRecordTypeDef *recDef)
         ui->labelRecordTitle->setText(titleFieldName+":");
 }
 
-TQRecord *TTRecordWindow::getRecord()
+const TQAbstractRecordTypeDef *TTRecordWindow::recordTypeDef() const
+{
+    return d->recDef;
+}
+
+TQRecord *TTRecordWindow::record()
 {
     return a_record;
 }
@@ -125,7 +144,7 @@ void TTRecordWindow::setRecord(TQRecord *rec)
 {
     a_record = rec;
     factory->setRecord(rec);
-    filesPage->setRecord(rec);
+//    filesPage->setRecord(rec);
     refreshValues();
     /*
     props->fillValues(a_record);
@@ -140,6 +159,7 @@ void TTRecordWindow::setRecord(TQRecord *rec)
     refreshState();
     setWindowTitle(QString(tr("Запрос %1 %2")).arg(rec->recordId()).arg(rec->title()));
     connect(a_record, SIGNAL(changedState(int)), SLOT(refreshState()));
+    emit recordChanged(a_record);
 }
 
 bool TTRecordWindow::setNote(int index, const QString &title, const QString &text)
@@ -382,6 +402,7 @@ void TTRecordWindow::commit()
 void TTRecordWindow::addDetailTab(QWidget *tab, const QString &title, const QIcon &icon)
 {
     ui->tabWidget->addTab(tab,icon,title);
+    connect(this,SIGNAL(recordChanged(TQRecord*)),tab,SLOT(setRecord(TQRecord*)));
     /*
     QVBoxLayout *lay = new QVBoxLayout();
     TQPlansWidget *plans = new TQPlansWidget(this);
@@ -390,6 +411,14 @@ void TTRecordWindow::addDetailTab(QWidget *tab, const QString &title, const QIco
     plans->setGlobalObject(this);
     ui->tabPlans->setLayout(lay);
     */
+}
+
+void TTRecordWindow::setDetailTabTitle(QWidget *tab, const QString &title)
+{
+    int index = ui->tabWidget->indexOf(tab);
+    if(index == -1)
+        return;
+    ui->tabWidget->setTabText(index, title);
 }
 
 void TTRecordWindow::on_actionEditRecord_triggered()
@@ -480,6 +509,11 @@ void TTRecordWindow::setChanged(bool value)
 int TTRecordWindow::mode()
 {
     return editorMode;
+}
+
+TQViewController *TTRecordWindow::controller()
+{
+    return d->controller;
 }
 
 bool TTRecordWindow::startEditDescription()
@@ -619,8 +653,6 @@ void TTRecordWindow::initWidgets()
     connect(ui->noteTextEdit,SIGNAL(textChanged()),this,SLOT(valueChanged()));
     showNoteEditor(false);
 
-    ttglobal()->recordOpened(this);
-
     /* moved to plugins
     QVBoxLayout *lay = new QVBoxLayout();
     TQPlansWidget *plans = new TQPlansWidget(this);
@@ -639,8 +671,8 @@ void TTRecordWindow::initWidgets()
 //    lay->insertWidget(0,tabBar);
     ui->tabWidget->setCurrentIndex(0);
 
-    filesPage = new FilesPage();
-    ui->tabWidget->addTab(filesPage, "Files!");
+//    filesPage = new FilesPage();
+//    addDetailTab(filesPage, "Files!");
 
 }
 

@@ -4,6 +4,7 @@
 #include <QMainWindow>
 //#include <trkview.h>
 #include "tqbase.h"
+#include <tqrecordviewcontroller.h>
 
 namespace Ui {
 class TTRecordWindow;
@@ -18,20 +19,26 @@ class TTRecordWindow;
 class ModifyPanel;
 class TrkToolRecord;
 class ScrPluginFactory;
-class FilesPage;
+//class FilesPage;
+class TTRecordWindowPrivate;
 
 class TTRecordWindow : public QMainWindow
 {
     Q_OBJECT
-    Q_PROPERTY(TQRecord *record READ getRecord)
+    Q_PROPERTY(TQRecord *record READ record)
     Q_PROPERTY(QString description READ description WRITE setDescription)
     Q_PROPERTY(bool changed READ isChanged WRITE setChanged)
     Q_PROPERTY(int mode READ mode NOTIFY modeChanged)
+    Q_PROPERTY(TQViewController *controller READ controller)
+    Q_PROPERTY(const TQAbstractRecordTypeDef *recordTypeDef READ recordTypeDef WRITE setRecordTypeDef)
+private:
+    TTRecordWindowPrivate *d;
 public:
     explicit TTRecordWindow(QWidget *parent = 0);
     ~TTRecordWindow();
-    void setTypeDef(const TQAbstractRecordTypeDef *recDef);
-    Q_INVOKABLE TQRecord *getRecord();
+    void setRecordTypeDef(const TQAbstractRecordTypeDef *recDef);
+    const TQAbstractRecordTypeDef *recordTypeDef() const;
+    Q_INVOKABLE TQRecord *record();
     void setRecord(TQRecord *rec);
     Q_INVOKABLE QString noteTitle(int index);
     Q_INVOKABLE QString noteText(int index);
@@ -45,6 +52,7 @@ public:
     bool isChanged();
     void setChanged(bool value);
     int mode();
+    TQViewController *controller();
 
 public slots:
     bool setDescription(const QString &desc);
@@ -60,11 +68,12 @@ signals:
     void noteStateChanged(int index, const QString &newState);
     void recordAdded(TQRecord *record);
     void recordModified(TQRecord *record);
+    void recordChanged(TQRecord *newRecord);
     void modeChanged(int mode);
 
 protected:
     ModifyPanel *props;
-    FilesPage *filesPage;
+//    FilesPage *filesPage;
     TQAbstractRecordTypeDef *recDef;
     TQRecord *a_record;
     ScrPluginFactory *factory;
@@ -113,7 +122,8 @@ public slots:
     void populateJavaScriptWindowObject();
     void cancel();
     void commit();
-    void addDetailTab(QWidget *tab, const QString &title, const QIcon &icon);
+    void addDetailTab(QWidget *tab, const QString &title, const QIcon &icon = QIcon());
+    void setDetailTabTitle(QWidget *tab, const QString &title);
 
 
 private:

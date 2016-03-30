@@ -193,7 +193,7 @@
                <item>
                 <widget class="QStackedWidget" name="stackedWidget">
                  <property name="currentIndex">
-                  <number>1</number>
+                  <number>0</number>
                  </property>
                  <widget class="QWidget" name="pageWithWeb">
                   <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -225,12 +225,6 @@
        </layout>
       </widget>
       <widget class="QTabWidget" name="projectTabWidget">
-       <property name="minimumSize">
-        <size>
-         <width>249</width>
-         <height>0</height>
-        </size>
-       </property>
        <property name="currentIndex">
         <number>-1</number>
        </property>

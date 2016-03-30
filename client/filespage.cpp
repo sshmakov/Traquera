@@ -88,13 +88,28 @@ QString FilesPage::title() const
 
 void FilesPage::setRecord(TQRecord *record)
 {
-    ui->filesTable->clearContents();
-    ui->filesTable->setRowCount(0);
+//    ui->filesTable->clearContents();
+//    ui->filesTable->setRowCount(0);
     d->def = 0;
+    if(d->rec)
+        disconnect(d->rec,0, this, 0);
     d->rec = record;
     if(d->rec)
     {
         d->def = d->rec->recordDef();
+        connect(d->rec, SIGNAL(changed(int)), SLOT(refreshFiles()));
+        connect(d->rec, SIGNAL(destroyed()), SLOT(detachRecord()));
+    }
+    refreshFiles();
+}
+
+void FilesPage::refreshFiles()
+{
+    stopPreview();
+    ui->filesTable->clearContents();
+    if(d->rec)
+    {
+        ui->filesTable->setRowCount(0);
         QList<TQToolFile> files = d->rec->fileList();
         TTFileIconProvider prov;
         int row=0;
@@ -231,6 +246,15 @@ void FilesPage::stopPreview()
 {
     d->previewTimer.stop();
     previewWidget->clear();
+}
+
+void FilesPage::detachRecord()
+{
+    disconnect(d->rec, 0, this, 0);
+    stopPreview();
+    d->def = 0;
+    d->rec = 0;
+    ui->filesTable->clearContents();
 }
 
 void FilesPage::on_actionSaveFileAs_triggered()

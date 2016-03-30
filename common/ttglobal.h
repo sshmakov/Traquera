@@ -2,28 +2,35 @@
 #define TTGLOBAL_H
 
 #include <QtCore>
-#include <QSqlDatabase>
-#include <QSqlError>
+//#include <QSqlDatabase>
+//#include <QSqlError>
 #include <QString>
 #include <tqplugui.h>
 #include <tqplugin_global.h>
 
+
 class QMainWindow;
-class MainWindow;
-class TrkToolProject;
-class TQAbstractProject;
 class QSettings;
 class QTableView;
 class QMenu;
 class QWidget;
 class QNetworkAccessManager;
 
+class MainWindow;
+class TrkToolProject;
+class TQAbstractProject;
 class TTGlobalPrivate;
 class TQOAuth;
+class QueryPage;
+class TTRecordWindow;
+class TQViewController;
+
 class QScriptEngine;
 class QAxScriptManager;
 class QAxScript;
 class QAxObject;
+class QSqlDatabase;
+class QSqlError;
 
 class TTMainProc
 {
@@ -49,11 +56,11 @@ class TQPLUGIN_SHARED TTGlobal : public QObject
 private:
     TTGlobalPrivate *d;
 public:
-    TTMainProc *proc;
     //TrkToolProject *currentProject;
     explicit TTGlobal(QObject *parent = 0);
 //    static TTGlobal *global();
-    QSqlDatabase userDatabase();
+    void setMainProc(TTMainProc *proc);
+    const QSqlDatabase &userDatabase();
     Q_INVOKABLE QString toOemString(const QString &s);
     Q_INVOKABLE QSettings *settings();
     Q_INVOKABLE QMainWindow *mainWindow();
@@ -78,6 +85,7 @@ signals:
     
 public slots:
     void showError(const QString &text);
+    void showError(const QSqlError &error);
     void statusBarMessage(const QString& text);
     void shell(const QString &command);
     int shellLocale(const QString &command, const QString &locale = QString());
@@ -93,6 +101,7 @@ public:
 protected:
     void initLibraryPath();
     void addLibraryPath(const QString &path);
+    bool loadSinglePlugin(const QDir &dir);
 
 protected:
     QStringList libDirs;
@@ -107,18 +116,25 @@ public slots:
                      QGenericArgument val8 = QGenericArgument(), QGenericArgument val9 = QGenericArgument());
 
     /* Plugins */
-public slots:
+public:
     void loadPlugins();
-    bool loadSinglePlugin(const QDir &dir);
+protected:
     void appendContextMenu(QMenu *menu);
-    void queryViewOpened(QWidget *widget, QTableView *view, const QString &recType = "scr");
-    void recordOpened(QWidget *widget, const QString &recType = "scr");
+    void emitViewOpened(QWidget *widget, TQViewController *controller = 0);
+public slots:
     bool insertViewTab(QWidget *view, QWidget *tab, const QString &title = "");
     void pluginError(const QString &pluginName, const QString &msg);
 protected slots:
     void axScriptError( QAxScript * script, int code, const QString & description, int sourcePosition, const QString & sourceText );
+signals:
+//    void queryViewOpened(QWidget *widget, QTableView *view, const QString &recType);
+    void viewOpened(QWidget *widget, TQViewController *controller);
+//    void recordOpened(QWidget *widget, const QString &recType);
+    void recordOpened(TQViewController *controller);
+    friend class MainWindow;
+    friend class QueryPage;
+    friend class TTRecordWindow;
 };
-
 
 TQPLUGIN_SHARED TTGlobal *ttglobal();
 
@@ -130,7 +146,7 @@ inline void ttShowError(const QString &error)
 
 inline void SQLError(const QSqlError &error)
 {
-    ttglobal()->showError(error.text());
+    ttglobal()->showError(error);
 }
 
 inline void Error(const QString& text)

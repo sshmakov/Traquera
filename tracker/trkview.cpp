@@ -2460,7 +2460,7 @@ TrkToolRecord &TrkToolRecord::operator =(const TrkToolRecord &src)
 
 TrkToolRecord::~TrkToolRecord()
 {
-    disconnect();
+//    disconnect();
     links=0;
     if(mode() != TQRecord::View)
         cancel();

@@ -91,9 +91,13 @@ void JiraLogin::setConnectString(const QString &string)
     TQJson parser;
     QVariantMap params = parser.toVariant(string).toMap();
     ui->cbServerLink->setEditText(params.value(DBPARAM_SERVER).toString());
+    ui->cbMethod->setCurrentIndex(params.value("ConnectMethod").toInt());
     ui->leUser->setText(params.value(DBPARAM_USER).toString());
     ui->lePassword->setText(params.value(DBPARAM_PASSWORD).toString());
-    ui->cSavePass->setChecked(params.contains(DBPARAM_PASSWORD));}
+    ui->cSavePass->setChecked(params.contains(DBPARAM_PASSWORD));
+    ui->cbProject->setEditText(params.value(PRJPARAM_NAME).toString());
+    ui->cAutoLogin->setChecked(params.contains(PRJPARAM_AUTOLOGIN) && params.value(PRJPARAM_AUTOLOGIN).toBool());
+}
 
 QStringList JiraLogin::readProjects()
 {
