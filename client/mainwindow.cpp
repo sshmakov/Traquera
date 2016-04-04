@@ -1347,12 +1347,23 @@ void MainWindow::saveProjectTree()
 
 void MainWindow::autoConnect()
 {
+    QProgressDialog prog(tr("Соединение..."),
+                         tr("Прервать"),
+                         0, treeModel->sourceModels().size()
+                         );
+    prog.setWindowTitle(tr("Соединение с проектами..."));
+
     TQOneProjectTree *cur = 0;
+    int counter=0;
     foreach(QAbstractItemModel *m, treeModel->sourceModels())
     {
         TQOneProjectTree *pm = qobject_cast<TQOneProjectTree *>(m);
+        if(prog.wasCanceled())
+            break;
+        prog.setValue(++counter);
         if(!pm || pm->isOpened() || !pm->isAutoOpen())
             continue;
+        prog.setLabelText(tr("Соединение с проектом %1").arg(pm->projectTitle()));
         pm->open();
         if(!cur && pm->isOpened())
             cur = pm;
