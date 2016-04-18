@@ -1899,13 +1899,15 @@ bool TrkToolProject::setFieldValue(TQRecord *record, const QString &fname, const
     TQAbstractFieldType def = recordDef[rectype]->getFieldType(vid);
     QString s;
     QDateTime dt;
+    bool res = false;
     switch(def.nativeType())
     {
     case TRK_FIELD_TYPE_DATE:
         dt = value.toDateTime();
         s = dt.toString(TT_DATETIME_FORMAT);
-        return isTrkOK(TrkSetStringFieldValue(*recHandle, fname.toLocal8Bit().constData(), //buf
+        res = isTrkOK(TrkSetStringFieldValue(*recHandle, fname.toLocal8Bit().constData(), //buf
                                           s.toLocal8Bit().constData()));
+        break;
         //case TRK_FIELD_TYPE_NONE:
     case TRK_FIELD_TYPE_CHOICE:
     case TRK_FIELD_TYPE_SUBMITTER:
@@ -1915,13 +1917,17 @@ bool TrkToolProject::setFieldValue(TQRecord *record, const QString &fname, const
     case TRK_FIELD_TYPE_STATE:
     case TRK_FIELD_TYPE_STRING:
         s = value.toString();
-        return isTrkOK(TrkSetStringFieldValue(*recHandle, fname.toLocal8Bit().constData(), //buf
+        res = isTrkOK(TrkSetStringFieldValue(*recHandle, fname.toLocal8Bit().constData(), //buf
                                                  s.toLocal8Bit().constData()));
+        break;
     case TRK_FIELD_TYPE_NUMBER:
         TRK_UINT uint = value.toUInt();
-        return isTrkOK(TrkSetNumericFieldValue(*recHandle, fname.toLocal8Bit().constData(), uint));
+        res = isTrkOK(TrkSetNumericFieldValue(*recHandle, fname.toLocal8Bit().constData(), uint));
+        break;
     }
-    return false;
+    if(res)
+        record->setModified(true);
+    return res;
 }
 
 /*
@@ -2087,6 +2093,54 @@ bool TrkToolProject::saveFileFromRecord(TQRecord *record, int fileIndex, const Q
     TrkAttachedFileHandleFree(&attHandle);
 //    if(ch)
 //        TrkRecordHandleFree(&handle);
+    return res;
+}
+
+int TrkToolProject::attachFileToRecord(TQRecord *record, const QString &filePath)
+{
+    TrkToolRecord *trec = qobject_cast<TrkToolRecord *>(record);
+    if(!trec)
+        return -1;
+    TrkScopeRecHandle recHandle(this, trec);
+    TRK_ATTFILE_HANDLE attHandle;
+    if(!isTrkOK(TrkAttachedFileHandleAlloc(*recHandle, &attHandle)))
+        return -1;
+    int res = -1;
+    int nextIndex = 0;
+    if(isTrkOK(TrkInitAttachedFileList(attHandle)))
+    {
+        while(TRK_SUCCESS == TrkGetNextAttachedFile(attHandle))
+            nextIndex++;
+    }
+    if(isTrkOK(TrkAddNewAttachedFile(attHandle, filePath.toLocal8Bit(), TRK_FILE_BINARY)))
+        res = nextIndex;
+    TrkAttachedFileHandleFree(&attHandle);
+    if(res != -1)
+        record->setModified(true);
+    return res;
+}
+
+bool TrkToolProject::removeFileFromRecord(TQRecord *record, int fileIndex)
+{
+    TrkToolRecord *trec = qobject_cast<TrkToolRecord *>(record);
+    if(!trec)
+        return -1;
+    TrkScopeRecHandle recHandle(this, trec);
+    TRK_ATTFILE_HANDLE attHandle;
+    if(!isTrkOK(TrkAttachedFileHandleAlloc(*recHandle, &attHandle)))
+        return -1;
+    int res = false;
+    int nextIndex = 0;
+    if(isTrkOK(TrkInitAttachedFileList(attHandle)))
+        while(TRK_SUCCESS == TrkGetNextAttachedFile(attHandle))
+            if(nextIndex++ == fileIndex)
+            {
+                res = isTrkOK(TrkDeleteAttachedFile(attHandle));
+                break;
+            }
+    TrkAttachedFileHandleFree(&attHandle);
+    if(res)
+        record->setModified(true);
     return res;
 }
 
@@ -2740,6 +2794,11 @@ QList<TQToolFile> TrkToolRecord::fileList()
 bool TrkToolRecord::saveFile(int fileIndex, const QString &dest)
 {
     return prj->saveFileFromRecord(this, fileIndex, dest);
+}
+
+int TrkToolRecord::appendFile(const QString &filePath)
+{
+    return prj->attachFileToRecord(this, filePath);
 }
 
 void TrkToolRecord::refresh()

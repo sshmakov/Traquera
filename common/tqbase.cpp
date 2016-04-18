@@ -350,6 +350,20 @@ bool TQBaseProject::saveFileFromRecord(TQRecord *record, int fileIndex, const QS
     return false;
 }
 
+int TQBaseProject::attachFileToRecord(TQRecord *record, const QString &filePath)
+{
+    Q_UNUSED(record)
+    Q_UNUSED(filePath)
+    return -1;
+}
+
+bool TQBaseProject::removeFileFromRecord(TQRecord *record, int fileIndex)
+{
+    Q_UNUSED(record)
+    Q_UNUSED(fileIndex)
+    return false;
+}
+
 TQQueryDef *TQBaseProject::queryDefinition(const QString &queryName, int rectype)
 {
     Q_UNUSED(queryName)
@@ -413,18 +427,18 @@ TQGroupList TQBaseProject::userGroups()
 
 //========================= TQRecord ==================================
 TQRecord::TQRecord()
-    :QObject(0), m_prj(0), recType(0), recMode(TQRecord::View), recId(0), links(0)
+    :QObject(0), m_prj(0), recType(0), recMode(TQRecord::View), recId(0), links(0), modified(false)
 {
 }
 
 
 TQRecord::TQRecord(TQAbstractProject *prj, int rtype, int id)
-    :QObject(prj), m_prj(prj), recType(rtype), recMode(TQRecord::View), recId(id), links(0)
+    :QObject(prj), m_prj(prj), recType(rtype), recMode(TQRecord::View), recId(id), links(0), modified(false)
 {
 }
 
 TQRecord::TQRecord(const TQRecord &src)
-    :QObject(), m_prj(src.m_prj), recType(src.recType), recMode(src.recMode), recId(src.recId), links(0)
+    :QObject(), m_prj(src.m_prj), recType(src.recType), recMode(src.recMode), recId(src.recId), links(0), modified(false)
 {
 }
 
@@ -499,6 +513,16 @@ bool TQRecord::cancel()
     if(!isValid())
         return false;
     return project()->cancelRecord(this);
+}
+
+void TQRecord::setModified(bool value)
+{
+    modified = value;
+}
+
+bool TQRecord::isModified() const
+{
+    return modified;
 }
 
 QString TQRecord::title() const
@@ -633,14 +657,18 @@ bool TQRecord::hasFiles()
 
 int TQRecord::appendFile(const QString &filePath)
 {
-    Q_UNUSED(filePath)
-    return -1;
+    TQAbstractProject *p = project();
+    if(!p)
+        return -1;
+    return p->attachFileToRecord(this, filePath);
 }
 
 bool TQRecord::removeFile(int fileIndex)
 {
-    Q_UNUSED(fileIndex)
-    return false;
+    TQAbstractProject *p = project();
+    if(!p)
+        return false;
+    return p->removeFileFromRecord(this, fileIndex);
 }
 
 TQAbstractProject *TQRecord::project() const

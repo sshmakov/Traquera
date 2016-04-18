@@ -272,6 +272,8 @@ public:
     virtual bool cancelRecord(TQRecord *record) = 0;
     virtual QList<TQToolFile> attachedFiles(TQRecord *record) = 0;
     virtual bool saveFileFromRecord(TQRecord *record, int fileIndex, const QString &dest) = 0;
+    virtual int attachFileToRecord(TQRecord *record, const QString &filePath) = 0;
+    virtual bool removeFileFromRecord(TQRecord *record, int fileIndex) = 0;
     virtual QStringList historyList(TQRecord *record) = 0;
     virtual QHash<int,QString> baseRecordFields(int rectype) = 0;
     virtual bool isSystemModel(QAbstractItemModel *model) const = 0;
@@ -337,6 +339,8 @@ public:
     QAbstractItemModel *queryModel(int type);
     virtual QList<TQToolFile> attachedFiles(TQRecord *record);
     virtual bool saveFileFromRecord(TQRecord *record, int fileIndex, const QString &dest);
+    virtual int attachFileToRecord(TQRecord *record, const QString &filePath);
+    virtual bool removeFileFromRecord(TQRecord *record, int fileIndex);
     virtual TQQueryDef *queryDefinition(const QString &queryName, int rectype);
     virtual TQQueryDef *createQueryDefinition(int rectype);
     virtual bool saveQueryDefinition(TQQueryDef *queryDefinition, const QString &queryName, int rectype);
@@ -387,6 +391,7 @@ protected:
     int recMode;
     int recId;
     int links;
+    bool modified;
 
     /*
     //QHash<QString, QVariant> values;
@@ -429,10 +434,16 @@ public: //protected: // Project specific data
     Q_INVOKABLE virtual void setMode(int newMode);
     Q_INVOKABLE virtual bool isEditing() const;
 
-    Q_INVOKABLE virtual bool updateBegin();
-    Q_INVOKABLE virtual bool commit();
-    Q_INVOKABLE virtual bool cancel();
+public slots:
+    virtual bool updateBegin();
+    virtual bool commit();
+    virtual bool cancel();
+    virtual void setModified(bool value);
 
+public:
+    virtual bool isModified() const;
+
+public:
     Q_INVOKABLE virtual QString title() const;
     Q_INVOKABLE virtual bool setTitle(const QString &newTitle);
 

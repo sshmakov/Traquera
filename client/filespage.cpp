@@ -46,7 +46,7 @@ FilesPage::FilesPage(QWidget *parent) :
     previewWidget = new MasterPreview(this);
     previewWidget->setObjectName("previewWidget");
     ui->previewFrame->layout()->addWidget(previewWidget);
-//    ui->prevewLayout->addWidget(previewWidget);
+//    ui->hLay->addWidget(new FileListWidget());
     connect(&d->previewTimer, SIGNAL(timeout()), SLOT(previewCurrentFile()));
     d->title = tr("Файлы (%1)");
 }
@@ -99,6 +99,7 @@ void FilesPage::setRecord(TQRecord *record)
         d->def = d->rec->recordDef();
         connect(d->rec, SIGNAL(changed(int)), SLOT(refreshFiles()));
         connect(d->rec, SIGNAL(destroyed()), SLOT(detachRecord()));
+        connect(d->rec, SIGNAL(changedState(int)), SLOT(recordChangedState()));
     }
     refreshFiles();
 }
@@ -122,7 +123,10 @@ void FilesPage::refreshFiles()
             ui->filesTable->setItem(row,FP_ORIGINALPATH,new QTableWidgetItem(f.dir().path()));
             row++;
         }
+        setModifyEnabled(d->rec->mode() != TQRecord::View);
     }
+    else
+        setModifyEnabled(false);
     emit onTitleChange();
 }
 
@@ -209,6 +213,7 @@ void FilesPage::appendFiles()
         if(!d->rec->appendFile(filePath))
             break;
     }
+    refreshFiles();
 }
 
 void FilesPage::deleteCurrentFiles()
@@ -235,6 +240,7 @@ void FilesPage::deleteCurrentFiles()
                 break;
         }
     }
+    refreshFiles();
 }
 
 void FilesPage::startPreview()
@@ -255,6 +261,11 @@ void FilesPage::detachRecord()
     d->def = 0;
     d->rec = 0;
     ui->filesTable->clearContents();
+}
+
+void FilesPage::recordChangedState()
+{
+    setModifyEnabled(d->rec->mode() != TQRecord::View);
 }
 
 void FilesPage::on_actionSaveFileAs_triggered()
@@ -312,6 +323,80 @@ void FilesPage::on_saveBtn_clicked()
 
 void FilesPage::on_delBtn_clicked()
 {
-
+    deleteCurrentFiles();
 }
 
+// ======================== FileListWidget ===============================
+FileListWidget::FileListWidget(QWidget *parent) :
+    QListWidget(parent)
+{
+    setAcceptDrops(true);
+    setSelectionMode(QAbstractItemView::SingleSelection);
+    setDropIndicatorShown(true);
+    setDragDropMode(QAbstractItemView::InternalMove);
+    setAlternatingRowColors(true);
+}
+
+void FileListWidget::dragEnterEvent(QDragEnterEvent *e)
+{
+    if (e->mimeData()->hasUrls() && e->source() != this)
+        e->acceptProposedAction();
+}
+
+
+void FileListWidget::dropEvent(QDropEvent *event)
+{
+    if (event->mimeData()->hasUrls() && event->source() != this) {
+        QList<QUrl> urls = event->mimeData()->urls();
+        foreach (QUrl url, urls)
+            newCurrentItem = (new QListWidgetItem(url.toLocalFile(), this));
+        event->setDropAction(Qt::CopyAction);
+        event->accept();
+    }
+}
+
+void FileListWidget::setNewCurrentItem()
+{
+    setCurrentItem(newCurrentItem);
+}
+
+// new methods:
+
+void FileListWidget::mousePressEvent(QMouseEvent *e)
+{
+    if (e->button() == Qt::LeftButton)
+        startPos = e->pos();
+    QListWidget::mousePressEvent(e);
+}
+
+void FileListWidget::mouseMoveEvent(QMouseEvent *e)
+{
+    if (e->buttons() & Qt::LeftButton) {
+        int distance = (e->pos() - startPos).manhattanLength();
+        if (distance >= QApplication::startDragDistance())
+            startDrag();
+    }
+    QListWidget::mouseMoveEvent(e);
+}
+
+void FileListWidget::dragMoveEvent(QDragMoveEvent *e)
+{
+    if (e->mimeData()->hasUrls())
+        e->acceptProposedAction();
+}
+
+
+void FileListWidget::startDrag()
+{
+    QListWidgetItem *item = currentItem();
+    if (item) {
+        QFileInfo fi(item->text());
+        QUrl url = QUrl::fromLocalFile(fi.absoluteFilePath());
+        QMimeData *mimeData = new QMimeData;
+        mimeData->setUrls(QList<QUrl>() << url);
+
+        QDrag *drag = new QDrag(this);
+        drag->setMimeData(mimeData);
+        drag->exec(Qt::CopyAction | Qt::MoveAction, Qt::CopyAction);
+    }
+}

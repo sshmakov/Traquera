@@ -32,7 +32,7 @@ struct TrkHistoryItem
 */
 
 class TQProxyRecModel;
-class FilesPage;
+//class FilesPage;
 class QueryPagePrivate;
 class TQQueryViewController;
 

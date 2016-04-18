@@ -95,7 +95,7 @@ public:
     void setConnectMethod(JiraConnectMethod method);
     virtual TQAbstractProject *openConnection(const QString &connectString);
     void setConnectString(const QString &connectString);
-    QVariant sendRequest(const QString &dbmsServer, const QString &method, const QString &query, const QString &body = QString());
+    QVariant sendRequest(const QString &dbmsServer, const QString &method, const QString &query, const QByteArray &body = QByteArray());
     QVariant parseValue(const QVariant &source, const QString &path);
     static TQAbstractDB *createJiraDB(QObject *parent);
     QVariant sendSimpleRequest(const QString &dbmsType, const QString &method, const QString &query, const QString &body = QString());
@@ -103,6 +103,7 @@ public:
     bool oauthLogin();
     QNetworkReply *sendWait(const QString &method, QNetworkRequest &request, const QByteArray &body = QByteArray());
     QNetworkReply *sendWait(QNetworkAccessManager::Operation op, QNetworkRequest &request, const QByteArray &body  = QByteArray());
+    TQJson *jsonParser();
 protected:
     QList<QNetworkReply*> readyReplies;
     bool waitReply(QNetworkReply *reply);
@@ -149,6 +150,7 @@ public:
     bool updateRecordBegin(TQRecord *record);
     bool commitRecord(TQRecord *record);
     bool cancelRecord(TQRecord *record);
+    TQRecord *newRecord(int rectype);
     QStringList historyList(TQRecord *record);
     QHash<int,QString> baseRecordFields(int rectype);
     bool isSystemModel(QAbstractItemModel *model) const;

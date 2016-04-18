@@ -562,6 +562,8 @@ protected:
     QStringList historyList(TQRecord *record);
     QHash<int,QString> baseRecordFields(int rectype);
     bool saveFileFromRecord(TQRecord *record, int fileIndex, const QString &dest);
+    int attachFileToRecord(TQRecord *record, const QString &filePath);
+    bool removeFileFromRecord(TQRecord *record, int fileIndex);
     //    bool saveFileFromRecord(TrkToolRecord *record, int fileIndex, const QString &dest);
 private:
     // Tracker specific
@@ -767,6 +769,7 @@ public:
     TQNotesCol notes() const;
     QList<TQToolFile> fileList();
     bool saveFile(int fileIndex, const QString &dest);
+    int appendFile(const QString &filePath);
     TrkToolProject *project() const
     {
         return prj;

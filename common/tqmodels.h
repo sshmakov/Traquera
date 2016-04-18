@@ -223,6 +223,8 @@ public:
     bool openScrs(const QStringList &lines);
     bool openScrs(const QString &line);
     void close();*/
+    void append(const PTQRecord &rec);
+    void append(const QList<PTQRecord> &list);
     void appendRecordIds(const QList<int> &ids);
     void removeRecordIds(const QList<int> &ids);
     void appendRecordId(int id);
@@ -235,6 +237,7 @@ protected:
     virtual bool setEditColData(const PTQRecord & rec, int col, const QVariant & value);
 protected slots:
     void recordChanged(int id);
+    void recordDestroyed(QObject *rec);
 
     friend class TrkHistory;
     friend class TrkToolProject;

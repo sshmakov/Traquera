@@ -83,7 +83,7 @@ private:
 
 //    TQAbstractDB *trkdb;
 //    TQAbstractProject * trkproject;
-    TQAbstractProject * activePrj;
+    TQAbstractProject * currentPrj;
     TQConnectWidget *connectWidget;
 
 //    typedef QPair<QString,QString> src_type; //class, source
@@ -228,6 +228,13 @@ private slots:
 //    void slotRecordWindowOpened(TQRecordViewController *controller);
     void slotViewOpened(QWidget *widget, TQViewController *controller);
 
+private:
+    bool openProjectTree(TQOneProjectTree *pm, const QString &connString = QString());
+    bool closeProjectTree(TQOneProjectTree *pm);
+    bool deleteProjectTree(TQOneProjectTree *pm);
+    bool setCurrentProjectTree(TQOneProjectTree *pm);
+
+
 private slots:
     void on_changedQuery(const QString & projectName, const QString & queryName);
     void on_tabChanged(int tab);
@@ -274,6 +281,7 @@ private slots:
     void on_actionDeleteQuery_triggered();
     void on_actionEditProject_triggered();
     void on_actionMakeActive_triggered();
+    void on_cbCurrentProjectName_currentIndexChanged(int index);
 };
 
 

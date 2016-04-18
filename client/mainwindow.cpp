@@ -49,7 +49,7 @@ extern int uniqueArtistId;
 
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), activePrj(0), proc(this)
+    : QMainWindow(parent), currentPrj(0), proc(this)
 {
     //qRegisterMetaType<MainWindow>("QMainWindow");
     setupUi(this);
@@ -529,6 +529,63 @@ void MainWindow::slotViewOpened(QWidget *widget, TQViewController *controller)
     connect(controller,SIGNAL(currentRecordChanged(TQRecord*)),tab,SLOT(setRecord(TQRecord*)));
 }
 
+bool MainWindow::openProjectTree(TQOneProjectTree *pm, const QString &connString)
+{
+    if(pm->isOpened())
+        return false;
+    bool res = pm->open(connString);
+    if(res)
+    {
+        TQAbstractProject *prj = pm->project();
+        cbCurrentProjectName->addItem(prj->projectName(), (int)prj);
+        setCurrentProjectTree(pm);
+    }
+    return res;
+}
+
+bool MainWindow::closeProjectTree(TQOneProjectTree *pm)
+{
+    if(!pm->isOpened())
+        return true;
+    TQAbstractProject *prj = pm->project();
+    if(prj)
+    {
+        int index = cbCurrentProjectName->findData((int)prj);
+        if(index != -1)
+        {
+            cbCurrentProjectName->removeItem(index);
+//            index = cbCurrentProjectName->currentIndex();
+//            if(index != -1)
+//                nextprj = qobject_cast< TQAbstractProject *>((QObject*)cbCurrentProjectName->itemData(index).toInt());
+        }
+    }
+    pm->close();
+    return true;
+}
+
+bool MainWindow::deleteProjectTree(TQOneProjectTree *pm)
+{
+    if(pm->isOpened())
+        closeProjectTree(pm);
+    treeModel->removeProject(pm);
+    return true;
+}
+
+bool MainWindow::setCurrentProjectTree(TQOneProjectTree *pm)
+{
+    TQAbstractProject *prj = pm->project();
+    if(prj)
+    {
+        int index = cbCurrentProjectName->findData((int)prj);
+        if(index != -1)
+        {
+            cbCurrentProjectName->setCurrentIndex(index);
+            setCurrentProject(prj);
+        }
+    }
+    return true;
+}
+
 //QString MainWindow::getTrkConnectString()
 //{
 //	QString dsn = "Driver={SQL Server};Server="+serverEdit->text()+";";
@@ -868,11 +925,11 @@ QueryPage *MainWindow::openQuery(TQAbstractProject *project, const QString &quer
     if(reusePage)
     {
         page = curQueryPage();
-        if(page && page->project() != project)
+        if(!page || page->project() != project || page->recordType() != recordType)
             page = 0;
     }
     if(page)
-        tabWidget->setTabText(tabWidget->currentIndex(),minTitle(title));
+        tabWidget->setTabText(tabWidget->currentIndex(), minTitle(title));
     else
         page = createNewPage(minTitle(title));
 
@@ -905,6 +962,8 @@ void MainWindow::openQueryById(const QString &numbers, int recordType, bool reus
     QueryPage *page=NULL; // = qobject_cast<QueryPage *>(w);
     QObject *w = tabWidget->currentWidget();
     page = qobject_cast<QueryPage *>(w);
+    if(!page || page->project() != prj || page->recordType() != recordType)
+        page = 0;
     if(page && reusePage)
         tabWidget->setTabText(tabWidget->currentIndex(),minTitle(numbers));
     else
@@ -921,6 +980,8 @@ void MainWindow::openQueryById(const QList<int> &idList, const QString &title, i
     QString newTitle = title;
     if(newTitle.isEmpty())
         newTitle = intListToString(idList);
+    if(!page || page->project() != prj || page->recordType() != recordType)
+        page = 0;
     if(!page || !reusePage)
         page = createNewPage(minTitle(newTitle));
     else
@@ -1197,17 +1258,21 @@ void MainWindow::readModifications()
 
 TQAbstractProject *MainWindow::currentProject()
 {
-    if(activePrj)
-        return activePrj;
+    if(currentPrj)
+        return currentPrj;
     for(int row = 0; row < treeModel->rowCount(); row++)
     {
         TQOneProjectTree *prjTree = qobject_cast<TQOneProjectTree *>(treeModel->sourceModel(row));
         if(prjTree && prjTree->project())
         {
+            setCurrentProjectTree(prjTree);
+            return prjTree->project();
+            /*
             activePrj = prjTree->project();
             treeModel->setSelectedModel(treeModel->sourceModel(row));
-            lCurrentProjectName->setText(activePrj->projectName());
+            cbCurrentProjectName->setEditText(activePrj->projectName());
             return activePrj;
+            */
         }
     }
     return 0;
@@ -1215,7 +1280,7 @@ TQAbstractProject *MainWindow::currentProject()
 
 void MainWindow::setCurrentProject(TQAbstractProject *prj)
 {
-    activePrj = prj;
+    currentPrj = prj;
     int row = projectTreeRow(prj);
     if(row == -1)
         treeModel->setSelectedModel(0);
@@ -1230,10 +1295,11 @@ void MainWindow::setCurrentProject(TQAbstractProject *prj)
         if(!p || p->project() != prj)
             tabWidget->setCurrentWidget(tabHomePage);
     }
+    /*
     if(activePrj)
-        lCurrentProjectName->setText(activePrj->projectName());
+        cbCurrentProjectName->setEditText(activePrj->projectName());
     else
-        lCurrentProjectName->setText("");
+        cbCurrentProjectName->setEditText("");*/
 }
 
 int MainWindow::projectTreeRow(TQAbstractProject *prj)
@@ -1347,11 +1413,11 @@ void MainWindow::saveProjectTree()
 
 void MainWindow::autoConnect()
 {
-    QProgressDialog prog(tr("Соединение..."),
+    QProgressDialog prog(tr("Соединение с проектами..."),
                          tr("Прервать"),
                          0, treeModel->sourceModels().size()
                          );
-    prog.setWindowTitle(tr("Соединение с проектами..."));
+    prog.setWindowTitle(tr("Соединение"));
 
     TQOneProjectTree *cur = 0;
     int counter=0;
@@ -1364,15 +1430,18 @@ void MainWindow::autoConnect()
         if(!pm || pm->isOpened() || !pm->isAutoOpen())
             continue;
         prog.setLabelText(tr("Соединение с проектом %1").arg(pm->projectTitle()));
-        pm->open();
-        if(!cur && pm->isOpened())
+        if(openProjectTree(pm) && !cur)
             cur = pm;
+//        pm->open();
+//        if(!cur && pm->isOpened())
+//            cur = pm;
     }
     if(cur)
     {
-        setCurrentProject(cur->project());
-        int row = treeModel->sourceModelIndex(cur);
-        treeView->expand(treeModel->index(row,0));
+        setCurrentProjectTree(cur);
+//        setActiveProject(cur->project());
+//        int row = treeModel->sourceModelIndex(cur);
+//        treeView->expand(treeModel->index(row,0));
     }
 
 }
@@ -1528,7 +1597,7 @@ void MainWindow::openCurItem(bool reuse)
 //            int folderId = index.sibling(index.row(),1).data().toInt();
             if(folderName.isEmpty())
                 folderName = tr("Папка");
-            if(!page || !reuse)
+            if(!page || page->project() != selectedTreeItem.prj || page->recordType() != selectedTreeItem.recordType || !reuse)
                 page = createNewPage(folderName);
             page->openFolder(selectedTreeItem.prj, selectedTreeItem.folderModel->folder(selectedTreeItem.folderIndex), selectedTreeItem.recordType);
             tabWidget->setTabText(tabWidget->currentIndex(),folderName);
@@ -1895,6 +1964,8 @@ void MainWindow::on_actionPlansDialog_triggered()
 void MainWindow::on_actionNewRequest_triggered()
 {
     TQRecord *rec = currentProject()->newRecord(currentProject()->defaultRecType());
+    if(!rec)
+        return;
     TTRecordWindow *win = new TTRecordWindow();
     win->setRecordTypeDef(rec->typeDef());
     win->setRecord(rec);
@@ -1958,7 +2029,8 @@ void MainWindow::on_actionClose_Project_triggered()
     readSelectedTreeItem();
     if(selectedTreeItem.isProjectSelected)
     {
-        selectedTreeItem.prjModel->close();
+        closeProjectTree(selectedTreeItem.prjModel);
+//        selectedTreeItem.prjModel->close();
         /*
         int row = projects.indexOf(selectedTreeItem.prj);
         if(row == -1)
@@ -2028,13 +2100,16 @@ void MainWindow::on_actionSettings_triggered()
 void MainWindow::on_actionOpen_Project_triggered()
 {
     TQOneProjectTree *tree = selectedTreeItem.prjModel;
-    if(tree->isOpened())
+    if(!tree || tree->isOpened())
         return;
-    if(tree->open())
-    {
-        treeView->expand(selectedTreeItem.curIndex);
-        setCurrentProject(tree->project());
-    }
+    openProjectTree(tree);
+//    if(tree->open())
+//    {
+//        treeView->expand(selectedTreeItem.curIndex);
+//        TQAbstractProject *prj = tree->project();
+//        cbCurrentProjectName->addItem(prj->projectName(), QVariant((int)prj));
+//        setActiveProject(prj);
+//    }
 }
 
 
@@ -2111,15 +2186,17 @@ void MainWindow::slotNewDBConnect(const QString &dbClass)
         TQOneProjectTree *tree = qobject_cast<TQOneProjectTree *>(treeModel->sourceModel(row));
         treeView->setCurrentIndex(treeModel->index(row,0));
         readSelectedTreeItem();
-        if(tree->open(connString))
-        {
+        openProjectTree(tree, connString);
+//        if(tree->open(connString))
+//        {
 
-            treeView->expand(selectedTreeItem.curIndex);
-            setCurrentProject(tree->project());
-        }
+//            treeView->expand(selectedTreeItem.curIndex);
+//            TQAbstractProject *prj = tree->project();
+//            cbCurrentProjectName->addItem(prj->projectName(), QVariant((int)prj));
+//            setActiveProject(prj);
+//        }
 //        actionOpen_Project->trigger();
         saveProjectTree();
-//        TQAbstractProject *project = db->openConnection(connString);
     }
     delete dlg;
 }
@@ -2127,15 +2204,31 @@ void MainWindow::slotNewDBConnect(const QString &dbClass)
 void MainWindow::on_actionDelete_Project_triggered()
 {
 //    readSelectedTreeItem();
+    TQAbstractProject *nextprj=0;
     TQOneProjectTree *tree = selectedTreeItem.prjModel;
     QString prjTitle = tree->projectTitle();
     if(QMessageBox::Ok == QMessageBox::question(this, tr("Удаление проекта"), tr("Удалить проект '%1'").arg(prjTitle),
                           QMessageBox::Ok | QMessageBox::Cancel))
     {
-        if(tree->isOpened())
-            tree->close();
-        treeModel->removeProject(tree);
+        deleteProjectTree(tree);
+//        TQAbstractProject *prj = tree->project();
+//        if(prj)
+//        {
+//            int index = cbCurrentProjectName->findData((int)prj);
+//            if(index != -1)
+//            {
+//                cbCurrentProjectName->removeItem(index);
+//                index = cbCurrentProjectName->currentIndex();
+//                if(index != -1)
+//                    nextprj = qobject_cast< TQAbstractProject *>((QObject*)cbCurrentProjectName->itemData(index).toInt());
+//            }
+//        }
+//        if(tree->isOpened())
+//            tree->close();
+//        treeModel->removeProject(tree);
     }
+    if(nextprj)
+        setCurrentProject(nextprj);
 }
 
 void MainWindow::on_actionRename_Item_triggered()
@@ -2181,4 +2274,11 @@ void MainWindow::on_actionMakeActive_triggered()
     readSelectedTreeItem();
     TQAbstractProject *prj = selectedTreeItem.prj;
     setCurrentProject(prj);
+}
+
+void MainWindow::on_cbCurrentProjectName_currentIndexChanged(int index)
+{
+    TQAbstractProject *prj = qobject_cast<TQAbstractProject *>((QObject*)cbCurrentProjectName->itemData(index).toInt());
+    if(prj)
+        setCurrentProject(prj);
 }

@@ -265,7 +265,7 @@ void JiraDB::setConnectString(const QString &connectString)
     setConnectMethod((JiraConnectMethod)method);
 }
 
-QVariant JiraDB::sendRequest(const QString &dbmsServer, const QString &method, const QString &query, const QString &body)
+QVariant JiraDB::sendRequest(const QString &dbmsServer, const QString &method, const QString &query, const QByteArray &body)
 {
     QString link(dbmsServer + "rest/api/2/" + query);
     QUrl url(link);
@@ -280,7 +280,7 @@ QVariant JiraDB::sendRequest(const QString &dbmsServer, const QString &method, c
     {
         QByteArray v = QByteArray("Basic ") + QString(dbmsUser() + ":" + dbmsPass()).toLocal8Bit().toBase64();
         req.setRawHeader("Authorization", v);
-        r = sendWait(method, req, body.toLocal8Bit());
+        r = sendWait(method, req, body);
     }
     QScopedPointer<QNetworkReply> reply(r);
     /*
@@ -293,12 +293,19 @@ QVariant JiraDB::sendRequest(const QString &dbmsServer, const QString &method, c
     }
     readyReplies.removeAll(reply.data());
     */
+    QString contType = reply->header(QNetworkRequest::ContentTypeHeader).toString();
+    if(contType.contains(';'))
+        contType = contType.split(';').value(0);
+    contType = contType.trimmed();
     if(reply->error() != QNetworkReply::NoError)
     {
         qDebug() << "Error:" << reply->error()
                  << reply->errorString();
-        qDebug() << reply->readAll();
-        return QVariant();
+        foreach(const QNetworkReply::RawHeaderPair &pair, reply->rawHeaderPairs())
+        {
+            qDebug() << pair.first << pair.second;
+        }
+//        qDebug() << reply->header(QNetworkRequest::ContentTypeHeader).toString();
     }
 
     QByteArray buf = reply->readAll();
@@ -310,7 +317,9 @@ QVariant JiraDB::sendRequest(const QString &dbmsServer, const QString &method, c
 
     bool success;
 //    QVariant  obj = QtJson::parse(s, success);
-    QVariant obj = parser->toVariant(buf);
+    QVariant obj;
+    if(!contType.compare("application/json",Qt::CaseInsensitive))
+        obj = parser->toVariant(buf);
     return obj;
 }
 
@@ -363,6 +372,11 @@ QNetworkReply *JiraDB::sendWait(QNetworkAccessManager::Operation op, QNetworkReq
     }
     waitReply(reply);
     return reply;
+}
+
+TQJson *JiraDB::jsonParser()
+{
+    return parser;
 }
 
 bool JiraDB::waitReply(QNetworkReply *reply)
@@ -714,6 +728,12 @@ QVariant JiraProject::getFieldValue(const TQRecord *record, int vid, bool *ok)
 
 bool JiraProject::setFieldValue(TQRecord *record, const QString &fname, const QVariant &value)
 {
+    int vid = record->recordDef()->fieldVid(fname);
+    if(vid)
+    {
+        record->setValue(vid, value);
+        return true;
+    }
     return false; // !!!
 }
 
@@ -728,12 +748,74 @@ bool JiraProject::updateRecordBegin(TQRecord *record)
 
 bool JiraProject::commitRecord(TQRecord *record)
 {
-    return false;
+    if(record->mode() == TQRecord::View)
+        return false;
+    JiraRecord *jRec = qobject_cast<JiraRecord*>(record);
+    if(!jRec)
+        return false;
+    TQAbstractRecordTypeDef *recDef = jRec->recordDef();
+    QVariantMap issue;
+    QVariantMap fields;
+    foreach(int vid, jRec->values.keys())
+    {
+        QString fname = recDef->fieldName(vid);
+//        fields.insert(fname, jRec->value(vid, Qt::EditRole));
+    }
+    QVariantMap v2;
+    v2.insert("key", projectKey);
+    fields.insert("project", v2);
+    v2.clear();
+    v2.insert("name", jRec->def->recTypeName);
+    fields.insert("issuetype", v2);
+    v2.clear();
+    fields.insert("summary",jRec->title());
+    fields.insert("description",jRec->description());
+    issue.insert("fields", fields);
+    QVariantList comments;
+    foreach(const TQNote &note, jRec->notes())
+    {
+        if(note.isAdded)
+        {
+            QVariantMap com;
+            com.insert("body", note.text);
+        }
+    }
+    issue.insert("comments", comments);
+//    QString bodyStr = db->jsonParser()->toByteArray(issue);
+    QByteArray body = db->jsonParser()->toByteArray(issue);
+    qDebug() << "Post body:" << body;
+    QVariantMap res = db->sendRequest(dbmsServer,"POST",QString("issue"),body).toMap();
+    if(!res.contains("id"))
+    {
+        QString error;
+        QVariantList elist = res.value("errorMessages").toList();
+        foreach(QVariant e, elist)
+            error += e.toString() + "\n";
+        error = error.trimmed();
+        if(error.isEmpty())
+            error = tr("Ошибка вставки issue");
+        QMessageBox::critical(0, "Jira error", error);
+        return false;
+    }
+    jRec->internalId = res.value("id").toInt();
+    jRec->key = res.value("key").toString();
+    jRec->setMode(TQRecord::View);
+    jRec->refresh();
+    return true;
 }
 
 bool JiraProject::cancelRecord(TQRecord *record)
 {
-    return false;
+    if(record->mode() == TQRecord::View)
+        return false;
+    record->setMode(TQRecord::View);
+}
+
+TQRecord *JiraProject::newRecord(int rectype)
+{
+    JiraRecord *rec = new JiraRecord(this, rectype, 0);
+    rec->setMode(TQRecord::Insert);
+    return rec;
 }
 
 QStringList JiraProject::historyList(TQRecord *record)
@@ -1372,7 +1454,7 @@ bool JiraRecord::setValue(int vid, const QVariant &newValue, int role)
         desc = newValue.toString();
         return true;
     }
-    if(!values.contains(vid))
+    if(!def->fields.contains(vid))
         return false;
     values.insert(vid, newValue);
     displayValues.insert(vid, def->valueToDisplay(vid, newValue));

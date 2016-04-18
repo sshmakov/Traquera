@@ -207,6 +207,11 @@ void TQRecModel::recordChanged(int id)
     emit dataChanged(index(row,0),index(row,columnCount()-1));
 }
 
+void TQRecModel::recordDestroyed(QObject *rec)
+{
+    TQRecord *prec = qobject_cast<TQRecord*>(rec);
+}
+
 QDomDocument TQRecModel::recordXml(int row) const
 {
     TQRecord * rec = at(row);
@@ -306,6 +311,20 @@ QList<int> TQRecModel::deletedIdList() const
 bool TQRecModel::isSystemModel()
 {
     return prj->isSystemModel(this);
+}
+
+void TQRecModel::append(const PTQRecord &rec)
+{
+    BaseRecModel<PTQRecord>::append(rec);
+    TQRecord *prec = rec;
+    connect(prec,SIGNAL(destroyed(QObject*)),SLOT(recordDestroyed(QObject*)));
+}
+
+void TQRecModel::append(const QList<PTQRecord> &list)
+{
+    BaseRecModel<PTQRecord>::append(list);
+    foreach(TQRecord *prec, list)
+        connect(prec,SIGNAL(destroyed(QObject*)),SLOT(recordDestroyed(QObject*)));
 }
 
 

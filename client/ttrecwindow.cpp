@@ -498,7 +498,7 @@ bool TTRecordWindow::writeDraftChanges()
 
 bool TTRecordWindow::isChanged()
 {
-    return changed;
+    return changed || (record() && record()->isModified());
 }
 
 void TTRecordWindow::setChanged(bool value)

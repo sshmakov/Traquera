@@ -99,20 +99,7 @@
               <property name="title">
                <string/>
               </property>
-              <layout class="QGridLayout" name="gridLayout_2" rowstretch="0,1">
-               <item row="0" column="1">
-                <widget class="QLabel" name="lCurrentProjectName">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="text">
-                  <string>TextLabel</string>
-                 </property>
-                </widget>
-               </item>
+              <layout class="QGridLayout" name="gridLayout_2" rowstretch="0,0">
                <item row="1" column="0">
                 <widget class="QLabel" name="label_2">
                  <property name="sizePolicy">
@@ -142,10 +129,13 @@
                  </property>
                 </widget>
                </item>
-               <item row="0" column="2">
+               <item row="0" column="3">
                 <spacer name="horizontalSpacer_3">
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeType">
+                  <enum>QSizePolicy::Preferred</enum>
                  </property>
                  <property name="sizeHint" stdset="0">
                   <size>
@@ -155,8 +145,11 @@
                  </property>
                 </spacer>
                </item>
-               <item row="1" column="1" colspan="2">
+               <item row="1" column="1" colspan="3">
                 <layout class="QHBoxLayout" name="layDBClasses"/>
+               </item>
+               <item row="0" column="1" colspan="2">
+                <widget class="QComboBox" name="cbCurrentProjectName"/>
                </item>
               </layout>
              </widget>
@@ -397,7 +390,7 @@
   </action>
   <action name="actionOpen_Project">
    <property name="text">
-    <string>Открыть проект...</string>
+    <string>Открыть проект</string>
    </property>
   </action>
   <action name="actionClose_Project">
@@ -697,11 +690,15 @@
   </action>
   <action name="actionMakeActive">
    <property name="text">
-    <string>Сделать активным</string>
+    <string>Сделать текущим</string>
+   </property>
+   <property name="toolTip">
+    <string>Сделать текущим</string>
    </property>
   </action>
  </widget>
  <resources>
+  <include location="../resources/tracks.qrc"/>
   <include location="../resources/tracks.qrc"/>
  </resources>
  <connections/>
