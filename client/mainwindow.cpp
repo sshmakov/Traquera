@@ -2177,7 +2177,7 @@ void MainWindow::slotNewDBConnect(const QString &dbClass)
     }
     else
         connWidget = dlg;
-    connWidget->setProperty("connectString", QString("{%1: \"%2\"").arg(DBPARAM_CLASS,dbClass));
+    connWidget->setProperty("connectString", QString("{%1: \"%2\"}").arg(DBPARAM_CLASS,dbClass));
     if(dlg->exec())
     {
         QString connString = connWidget->property("connectString").toString();

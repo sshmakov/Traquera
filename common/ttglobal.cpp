@@ -272,7 +272,7 @@ QString TTGlobal::saveObjectDocumentation(QObject *object, const QString &fileNa
 void TTGlobal::showError(const QString &text)
 {
     if(d->proc)
-        QMessageBox::critical(mainWindow(),tr("Error"),text);
+        QMessageBox::critical(0,tr("Error"),text);
     //        mainWindow()->statusBar()->showMessage(text,10000);
 }
 
@@ -673,9 +673,10 @@ bool TTGlobal::loadSinglePlugin(const QDir &dir)
     if(!ini.isEmpty())
     {
         QSettings set(ini,QSettings::IniFormat);
-        if(set.contains("path"))
+        set.beginGroup("Init");
+        if(set.contains("LibPath"))
         {
-            QString path = set.value("path").toString().trimmed();
+            QString path = set.value("LibPath").toString().trimmed();
             QStringList list;
             if(!path.isEmpty())
                 list=path.split(";");
@@ -685,6 +686,7 @@ bool TTGlobal::loadSinglePlugin(const QDir &dir)
                 addLibraryPath(path);
             }
         }
+        set.endGroup();
         set.beginGroup("LIBS");
         foreach(QString key, set.allKeys())
         {

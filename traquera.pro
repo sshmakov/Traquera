@@ -4,6 +4,8 @@
 
 TEMPLATE = subdirs
 
+CONFIG += ordered
+
 # Directories
 SUBDIRS += \
     tqplugapi \
@@ -18,8 +20,6 @@ SUBDIRS += \
 
 msplans.depends = client
 client.depends = tqplugapi
-
-CONFIG += ordered
 
 
 TARGET = traquera

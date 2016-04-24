@@ -28,6 +28,9 @@
 #define QTDIR "C:\Qt\4.8.4"
 #endif
 
+#ifndef VARIANT
+#define VARIANT "ALL"
+#endif
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -49,7 +52,9 @@ SolidCompression=yes
 [Components]
 Name: "main"; Description: "{cm:NameAndVersion,{#AppName},{#AppVer}}"; Types: full custom compact; Flags: fixed
 Name: "plugins"; Description: "{cm:Plugins}"; Types: full custom
+#if VARIANT != "RS"
 Name: "plugins/jira"; Description: "{cm:PluginFor,Atlassian JIRA}"; Types: full custom
+#endif
 Name: "plugins/tracker"; Description: "{cm:PluginFor,PVCS Tracker 7.x}"; Types: full custom
 Name: "plugins/msplans"; Description: "{cm:PluginFor,Microsoft Project}"; Types: full custom
 
@@ -58,20 +63,30 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 0,6.1
 
 [Files]
+#ifdef ProtectFile
 Source: "{#BuildPath}\client\release\traquera-protect.exe"; DestName: "traquera.exe"; DestDir: "{app}"; Components: main; Flags: ignoreversion
-Source: "{#BuildPath}\lib\*.dll"; DestDir: "{app}"; Components: main; Flags: ignoreversion 
+#else
+Source: "{#BuildPath}\client\release\traquera.exe"; DestName: "traquera.exe"; DestDir: "{app}"; Components: main; Flags: ignoreversion
+#endif
+Source: "{#BuildPath}\lib\*.dll"; DestDir: "{app}"; Components: main; Flags: ignoreversion
 Source: "redistribute\*"; DestDir: "{app}"; Components: main; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#QTDIR}\plugins\imageformats\*"; DestDir: "{app}\imageformats"; Components: main; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#QTDIR}\plugins\sqldrivers\*"; DestDir: "{app}\sqldrivers"; Components: main; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\client\data\*"; DestDir: "{app}\data"; Components: main; Flags: ignoreversion recursesubdirs createallsubdirs 
+#if VARIANT != "RS"
 ; Jira
 Source: "{#BuildPath}\plugins\jira\jira.dll"; DestDir: "{app}\plugins\jira"; Components: "plugins/jira"
+#endif
 ; Tracker
 Source: "{#BuildPath}\plugins\tracker\tracker.dll"; DestDir: "{app}\plugins\tracker"; Components: "plugins/tracker"
 Source: "{#BuildPath}\plugins\tracker\plugin.ini"; DestDir: "{app}\plugins\tracker"; Components: "plugins/tracker"
 Source: "{#BuildPath}\plugins\tracker\data\*"; DestDir: "{app}\plugins\tracker\data"; Components: "plugins/tracker"
 ; MSProject
 Source: "{#BuildPath}\plugins\msplans\msplans.dll"; DestDir: "{app}\plugins\msplans"; Components: "plugins/msplans"
+
+#if VARIANT == "RS"
+Source: "RS\*"; DestDir: "{app}\data"; Components: main; Flags: ignoreversion recursesubdirs createallsubdirs 
+#endif
 
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
@@ -123,15 +138,18 @@ end;
 function GetTrackerPath(Param: String): String;
 var
   Path : String;
+  Res: String;
 begin
-  Result := ExpandConstant('{pf32}\PVCS\Tracker\nt');
-  Path := FileSearch('trktooln.dll', Result);
-  if Path <> '' then
-    Exit;
-  Path := Result;
-  if BrowseForFolder(cm('SelectTrkFolder'), Path, false) then
-    Result := Path;
-  
+  Res := ExpandConstant('{pf32}\PVCS\Tracker\nt');
+  Path := FileSearch('trktooln.dll', Res);
+  if Path = '' then
+  begin
+    Path := Res;
+    if BrowseForFolder(cm('SelectTrkFolder'), Path, false) then
+      Res :=  Path;
+  end;
+  StringChangeEx(Res, '\', '/', True);  
+  Result := Res;
 end;
 
 (*
