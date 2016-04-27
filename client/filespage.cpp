@@ -111,10 +111,10 @@ void FilesPage::refreshFiles()
     if(d->rec)
     {
         ui->filesTable->setRowCount(0);
-        QList<TQToolFile> files = d->rec->fileList();
+        QList<TQAttachedFile> files = d->rec->fileList();
         TTFileIconProvider prov;
         int row=0;
-        foreach(const TQToolFile &file, files)
+        foreach(const TQAttachedFile &file, files)
         {
             QFileInfo f(file.fileName);
             ui->filesTable->insertRow(row);
@@ -296,7 +296,7 @@ void FilesPage::on_filesTable_currentItemChanged(QTableWidgetItem *current, QTab
     }
     else if(current && d->rec)
     {
-        TQToolFile file = d->rec->fileList().value(current->row());
+        TQAttachedFile file = d->rec->fileList().value(current->row());
         ui->fileDescrEdit->setText(
                     tr("Файл: %1\nИзменен: %2")
                     .arg(file.fileName)

@@ -336,10 +336,10 @@ QAbstractItemModel *TQBaseProject::queryModel(int type)
     return 0;
 }
 
-QList<TQToolFile> TQBaseProject::attachedFiles(TQRecord *record)
+QList<TQAttachedFile> TQBaseProject::attachedFiles(TQRecord *record)
 {
     Q_UNUSED(record)
-    return QList<TQToolFile>();
+    return QList<TQAttachedFile>();
 }
 
 bool TQBaseProject::saveFileFromRecord(TQRecord *record, int fileIndex, const QString &dest)
@@ -635,11 +635,11 @@ int TQRecord::addNote(const QString &noteTitle, const QString &noteText)
     return 0;
 }
 
-QList<TQToolFile> TQRecord::fileList()
+QList<TQAttachedFile> TQRecord::fileList()
 {
     TQAbstractProject *p = project();
     if(!p)
-        return QList<TQToolFile>();
+        return QList<TQAttachedFile>();
     return p->attachedFiles(this);
 }
 

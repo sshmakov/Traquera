@@ -558,7 +558,7 @@ protected:
     bool updateRecordBegin(TQRecord *record);
     bool commitRecord(TQRecord *record);
     bool cancelRecord(TQRecord *record);
-    QList<TQToolFile> attachedFiles(TQRecord *record);
+    QList<TQAttachedFile> attachedFiles(TQRecord *record);
     QStringList historyList(TQRecord *record);
     QHash<int,QString> baseRecordFields(int rectype);
     bool saveFileFromRecord(TQRecord *record, int fileIndex, const QString &dest);
@@ -636,6 +636,7 @@ protected:
     bool isTemp;
     bool isOk;
     bool fromPrj;
+    bool fromRec;
     TrkToolProject *project;
     TRK_RECORD_HANDLE handle;
     TrkRecHandler *pRecHandler;
@@ -686,6 +687,9 @@ protected:
     //NotesCol addedNotes;
 //    QList<int> deletedNotes;
 //    QHash<int, TrkNote> addedNotes;
+    TRK_RECORD_HANDLE trkHandle;
+    bool handleAllocated;
+
     TQNotesCol notesList;
     bool textsReaded;
     QString desc;
@@ -695,6 +699,10 @@ protected:
     bool readed;
     bool historyReaded;
     QStringList historyListMem;
+    bool filesReaded;
+    QList<TQAttachedFile> files, filesAdded;
+//    QList<TQAttachedFile> filesAdded;
+
     void readFullRecord();
     virtual void init();
 public:
@@ -767,7 +775,7 @@ public:
 //    void addLink();
 //    void removeLink(const QObject *receiver=0);
     TQNotesCol notes() const;
-    QList<TQToolFile> fileList();
+    QList<TQAttachedFile> fileList();
     bool saveFile(int fileIndex, const QString &dest);
     int appendFile(const QString &filePath);
     TrkToolProject *project() const
@@ -789,6 +797,7 @@ signals:
     friend class TrkToolRecordSet;
     //friend class TrkToolModel;
     friend class TrkToolProject;
+    friend class TrkScopeRecHandle;
 };
 
 //TrkToolRecord & operator =(const TrkToolRecord &src);

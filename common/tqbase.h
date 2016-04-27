@@ -66,7 +66,7 @@ struct TQNote
 typedef QList<TQNote> TQNotesCol;
 
 
-struct TQToolFile
+struct TQAttachedFile
 {
     QString fileName;
     QDateTime createDateTime;
@@ -74,6 +74,9 @@ struct TQToolFile
     {
         return fileName.isEmpty();
     }
+    bool isAdded;
+    bool isDeleted;
+    bool isChanged;
 };
 
 struct TQUser
@@ -270,7 +273,7 @@ public:
     virtual bool updateRecordBegin(TQRecord *record) = 0;
     virtual bool commitRecord(TQRecord *record) = 0;
     virtual bool cancelRecord(TQRecord *record) = 0;
-    virtual QList<TQToolFile> attachedFiles(TQRecord *record) = 0;
+    virtual QList<TQAttachedFile> attachedFiles(TQRecord *record) = 0;
     virtual bool saveFileFromRecord(TQRecord *record, int fileIndex, const QString &dest) = 0;
     virtual int attachFileToRecord(TQRecord *record, const QString &filePath) = 0;
     virtual bool removeFileFromRecord(TQRecord *record, int fileIndex) = 0;
@@ -337,7 +340,7 @@ public:
     virtual QDomDocument recordTypeDefDoc(int recType);
     virtual void initQueryModel(int recType);
     QAbstractItemModel *queryModel(int type);
-    virtual QList<TQToolFile> attachedFiles(TQRecord *record);
+    virtual QList<TQAttachedFile> attachedFiles(TQRecord *record);
     virtual bool saveFileFromRecord(TQRecord *record, int fileIndex, const QString &dest);
     virtual int attachFileToRecord(TQRecord *record, const QString &filePath);
     virtual bool removeFileFromRecord(TQRecord *record, int fileIndex);
@@ -458,7 +461,7 @@ public:
     Q_INVOKABLE virtual bool setNote(int index, const QString &newTitle, const QString &newText);
     Q_INVOKABLE virtual int addNote(const QString &noteTitle, const QString &noteText);
 
-    virtual QList<TQToolFile> fileList();
+    virtual QList<TQAttachedFile> fileList();
     Q_INVOKABLE virtual bool saveFile(int fileIndex, const QString &dest);
     Q_INVOKABLE virtual bool hasFiles();
     Q_INVOKABLE virtual int appendFile(const QString &filePath); // return new file index or -1

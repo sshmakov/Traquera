@@ -1133,8 +1133,14 @@ TQRecord *TrkToolProject::newRecord(int rectype)
     }
 
 
-    rec->recMode = TrkToolRecord::Insert;
+    rec->handleAllocated = isTrkOK(TrkRecordHandleAlloc(handle, &rec->trkHandle));
+    if(!rec->handleAllocated || !isTrkOK(TrkNewRecordBegin(rec->trkHandle, rectype)))
+    {
+        delete rec;
+        return 0;
+    }
     //rec->commit();
+    rec->recMode = TrkToolRecord::Insert;
     return rec;
 }
 
@@ -2007,29 +2013,33 @@ bool TrkToolProject::cancelRecord(TQRecord *record)
 //    return true;
 }
 
-QList<TQToolFile> TrkToolProject::attachedFiles(TQRecord *record)
+QList<TQAttachedFile> TrkToolProject::attachedFiles(TQRecord *record)
 {
-    QList<TQToolFile> res;
+    QList<TQAttachedFile> res;
 //    return res;
     TrkToolRecord *trec = qobject_cast<TrkToolRecord *>(record);
     if(!trec)
-        return QList<TQToolFile>();
+        return QList<TQAttachedFile>();
     TrkScopeRecHandle recHandle(this, trec);
     if(!recHandle.isValid())
         return res;
     TRK_ATTFILE_HANDLE attHandle;
-    if(isTrkOK(TrkAttachedFileHandleAlloc(*recHandle,&attHandle))
-            && isTrkOK(TrkInitAttachedFileList(attHandle)))
+    if(!isTrkOK(TrkAttachedFileHandleAlloc(*recHandle,&attHandle)))
+        return QList<TQAttachedFile>();
+    if(isTrkOK(TrkInitAttachedFileList(attHandle)))
     {
         while(TRK_SUCCESS == TrkGetNextAttachedFile(attHandle))
         {
-            TQToolFile file;
+            TQAttachedFile file;
             char buf[1024];
             if(TRK_SUCCESS == TrkGetAttachedFileName(attHandle,sizeof(buf),buf))
                 file.fileName = QString::fromLocal8Bit(buf);
             TRK_TIME time;
             if(TRK_SUCCESS == TrkGetAttachedFileTime(attHandle, &time))
                 file.createDateTime = QDateTime::fromTime_t(time);
+            file.isAdded = false;
+            file.isChanged = false;
+            file.isDeleted = false;
             /*
                 TRK_FILE_STORAGE_MODE mode;
                 TRK_UINT sz;
@@ -2107,11 +2117,12 @@ int TrkToolProject::attachFileToRecord(TQRecord *record, const QString &filePath
         return -1;
     int res = -1;
     int nextIndex = 0;
-    if(isTrkOK(TrkInitAttachedFileList(attHandle)))
-    {
-        while(TRK_SUCCESS == TrkGetNextAttachedFile(attHandle))
-            nextIndex++;
-    }
+    if(trec->recMode != TQRecord::Insert)
+        if(isTrkOK(TrkInitAttachedFileList(attHandle)))
+        {
+            while(TRK_SUCCESS == TrkGetNextAttachedFile(attHandle))
+                nextIndex++;
+        }
     if(isTrkOK(TrkAddNewAttachedFile(attHandle, filePath.toLocal8Bit(), TRK_FILE_BINARY)))
         res = nextIndex;
     TrkAttachedFileHandleFree(&attHandle);
@@ -2146,9 +2157,9 @@ bool TrkToolProject::removeFileFromRecord(TQRecord *record, int fileIndex)
 
 bool TrkToolProject::doCommitInsert(TrkToolRecord *record)
 {
-    TrkScopeRecHandle recHandle(this);
-    if(!isTrkOK(TrkNewRecordBegin(*recHandle,record->recordType())))
-        return false;
+    TrkScopeRecHandle recHandle(this, record);
+//    if(!isTrkOK(TrkNewRecordBegin(*recHandle,record->recordType())))
+//        return false;
     if(!doSaveFields(record, *recHandle))
         return false;
     if(!doSaveNotes(record, *recHandle))
@@ -2158,6 +2169,11 @@ bool TrkToolProject::doCommitInsert(TrkToolRecord *record)
     {
         record->lastTransaction = last;
         record->setRecordId(doGetRecordId(*recHandle, record->recordType()));
+        if(record->handleAllocated)
+        {
+            TrkRecordHandleFree(&record->trkHandle);
+            record->handleAllocated = false;
+        }
         record->recMode = TrkToolRecord::View;
         record->readFullRecord();
         record->somethingChanged();
@@ -2476,7 +2492,10 @@ TrkToolRecord::TrkToolRecord(TrkToolProject *parent, TRK_RECORD_TYPE rtype)
       //rectype(rtype),
       //lockHandle(0),
       fieldList(), //links(0),
-      textsReaded(false)
+      textsReaded(false),
+      filesReaded(false),
+      handleAllocated(false),
+      files()
 {
     fieldList = prj->recordTypeDef(recType)->fieldNames();
     init();
@@ -2487,7 +2506,10 @@ TrkToolRecord::TrkToolRecord(const TrkToolRecord &src)
       //rectype(src.rectype), recMode(View),
       //lockHandle(0),
       fieldList(), //links(0),
-      textsReaded(false)
+      textsReaded(false),
+      filesReaded(false),
+      handleAllocated(false),
+      files()
 {
     fieldList = prj->recordTypeDef(recType)->fieldNames();
     init();
@@ -2519,12 +2541,10 @@ TrkToolRecord::~TrkToolRecord()
     if(mode() != TQRecord::View)
         cancel();
 
-    //!!!!!!!!!!!!!!
-//	if(lockHandle)
-//	{
-//		TrkRecordHandleFree(&lockHandle);
-//		lockHandle=0;
-//	}
+    if(handleAllocated)
+    {
+        TrkRecordHandleFree(&trkHandle);
+    }
 }
 
 QVariant TrkToolRecord::value(const QString& fieldName, int role) const
@@ -2784,11 +2804,19 @@ void TrkToolRecord::init()
     descChanged = false;
     textsReaded = false;
     historyReaded = false;
+    filesReaded = false;
 }
 
-QList<TQToolFile> TrkToolRecord::fileList()
+QList<TQAttachedFile> TrkToolRecord::fileList()
 {
-    return prj->attachedFiles(this);
+//    if(recMode == TQRecord::Insert)
+//        return filesAdded;
+    if(!filesReaded)
+    {
+        files = prj->attachedFiles(this);
+        filesReaded = true;
+    }
+    return files;
 }
 
 bool TrkToolRecord::saveFile(int fileIndex, const QString &dest)
@@ -2798,7 +2826,9 @@ bool TrkToolRecord::saveFile(int fileIndex, const QString &dest)
 
 int TrkToolRecord::appendFile(const QString &filePath)
 {
-    return prj->attachFileToRecord(this, filePath);
+    if(isEditing())
+        return prj->attachFileToRecord(this, filePath);
+    return -1;
 }
 
 void TrkToolRecord::refresh()
@@ -4080,7 +4110,7 @@ TrkScopeRecHandle::TrkScopeRecHandle(TRK_HANDLE prjHandle, TRK_RECORD_HANDLE rec
 */
 
 TrkScopeRecHandle::TrkScopeRecHandle(TrkToolProject *prj, TRK_RECORD_HANDLE recHandle, TRK_UINT recId, TRK_RECORD_TYPE rectype)
-    :handle(0), isOk(true), fromPrj(true), isTemp(true), project(prj)
+    :handle(0), isOk(true), fromPrj(true), isTemp(true), project(prj), fromRec(false)
 {
     if(recHandle)
     {
@@ -4098,7 +4128,22 @@ TrkScopeRecHandle::TrkScopeRecHandle(TrkToolProject *prj, TRK_RECORD_HANDLE recH
 TrkScopeRecHandle::TrkScopeRecHandle(TrkToolProject *prj, const TrkToolRecord *record)
     :handle(0), isOk(true), fromPrj(true), isTemp(true), project(prj)
 {
-    pRecHandler = prj->allocRecHandler(record->recordId(), record->recordType());
+    if(record->handleAllocated)
+    {
+        pRecHandler = new TrkRecHandler();
+        pRecHandler->handle = record->trkHandle;
+        pRecHandler->isInsert = record->mode() == TQRecord::Insert;
+        pRecHandler->isModify = record->mode() == TQRecord::Edit;
+        pRecHandler->recType = record->recordType();
+        pRecHandler->id = record->recordId();
+        fromPrj = false;
+        fromRec = true;
+    }
+    else
+    {
+        pRecHandler = prj->allocRecHandler(record->recordId(), record->recordType());
+        fromRec = false;
+    }
     handle = pRecHandler ? pRecHandler->handle : 0;
     isOk = handle != 0;
 }
@@ -4113,7 +4158,8 @@ TrkScopeRecHandle::~TrkScopeRecHandle()
             handle = 0;
         }
         else
-            TrkRecordHandleFree(&handle);
+            if(!fromRec)
+                TrkRecordHandleFree(&handle);
 }
 
 TRK_RECORD_HANDLE &TrkScopeRecHandle::nativeHandle()
