@@ -287,6 +287,9 @@ TQUserCond::TQUserCond(TQQueryDef *parent)
     isDeletedIncluded = false;
     isNullIncluded = false;
     isCurrentIncluded = false;
+    isCheckStatusAvailable = true;
+    isCurrentAvailable = true;
+    isNullAvailable = true;
 }
 
 TQCond &TQUserCond::operator =(const TQCond &src)
@@ -300,6 +303,8 @@ TQCond &TQUserCond::operator =(const TQCond &src)
         isDeletedIncluded = usrc->isDeletedIncluded;
         isNullIncluded = usrc->isNullIncluded;
         isCurrentIncluded = usrc->isCurrentIncluded;
+        isCurrentAvailable = usrc->isCurrentAvailable;
+        isNullAvailable = usrc->isNullAvailable;
         ids = usrc->ids;
     }
     return *this;

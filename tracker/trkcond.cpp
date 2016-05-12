@@ -754,6 +754,11 @@ bool TrkQueryDef::parseFields(QString &str)
                         {
                             i--;
                             ucond->isGroups = id & 0x1;
+                            if(ucond->isGroups)
+                            {
+                                ucond->isCurrentAvailable = false;
+                                ucond->isNullAvailable = false;
+                            }
                             ucond->isActiveIncluded = id & 0x2;
                             ucond->isDeletedIncluded = id & 0x4;
                             continue;

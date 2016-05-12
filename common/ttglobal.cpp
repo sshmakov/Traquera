@@ -221,7 +221,12 @@ QString TTGlobal::curProjectName() const
     return prj->projectName();
 }
 
-QObject *TTGlobal::getRecord(int id)
+QObject *TTGlobal::project(const QString &projectName) const
+{
+    return 0;
+}
+
+QObject *TTGlobal::getRecord(int id, const QString &projectName)
 {
     if(!d->proc)
         return 0;

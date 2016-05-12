@@ -147,6 +147,9 @@ public:
     bool isDeletedIncluded;
     bool isNullIncluded;
     bool isCurrentIncluded;
+    bool isCheckStatusAvailable;
+    bool isCurrentAvailable;
+    bool isNullAvailable;
     QList<uint> ids;
     explicit TQUserCond(TQQueryDef *parent = 0);
     TQCond &operator = (const TQCond &src);

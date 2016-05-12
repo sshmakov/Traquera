@@ -188,19 +188,31 @@ TQUserCondDialog::TQUserCondDialog(QWidget *parent)
     : TQAbstractCondDialog(parent)
 {
     QVBoxLayout *vLay = new QVBoxLayout(this);
-    box = new QGroupBox();
-    QVBoxLayout *boxLay = new QVBoxLayout(box);
-    rbActive = new QRadioButton(tr("Active only"));
-    boxLay->addWidget(rbActive);
-    rbDeleted = new QRadioButton(tr("Deleted"));
-    boxLay->addWidget(rbDeleted);
-    rbAny = new QRadioButton(tr("Any"));
-    boxLay->addWidget(rbAny);
-    vList = new QListWidget();
-    vLay->addWidget(box);
+    QGroupBox *grbox = new QGroupBox();
+    QHBoxLayout *grLay = new QHBoxLayout(grbox);
+    rbUsers = new QRadioButton(tr("Пользователи"));
+    grLay->addWidget(rbUsers);
+    rbGroups = new QRadioButton(tr("Группы"));
+    grLay->addWidget(rbGroups);
+    vLay->addWidget(grbox);
+    connect(rbUsers,SIGNAL(clicked()), SLOT(usersChecked()));
+    connect(rbGroups,SIGNAL(clicked()), SLOT(groupsChecked()));
+
+
+
     vList = new QListWidget();
     vList->setSelectionMode(QAbstractItemView::MultiSelection);
     vLay->addWidget(vList);
+
+    statebox = new QGroupBox();
+    QVBoxLayout *boxLay = new QVBoxLayout(statebox);
+    rbActive = new QRadioButton(tr("Только активные"));
+    boxLay->addWidget(rbActive);
+    rbDeleted = new QRadioButton(tr("Только удаленные"));
+    boxLay->addWidget(rbDeleted);
+    rbAny = new QRadioButton(tr("Любые"));
+    boxLay->addWidget(rbAny);
+    vLay->addWidget(statebox);
 
     QDialogButtonBox *box = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
     box->setOrientation(Qt::Horizontal);
@@ -224,25 +236,67 @@ void TQUserCondDialog::setCondition(const TQCond &condition)
 {
     QMutexLocker locker(&mutex);
     cond = condition;
-    QString chTable = cond.queryDef->recordDef()->fieldChoiceTable(cond.vid());
-    TQChoiceList choices = cond.queryDef->recordDef()->choiceTable(chTable);
-    vList->clear();
-    foreach(const TQChoiceItem &item, choices)
-    {
-        QListWidgetItem *line = new QListWidgetItem(vList);
-        line->setText(item.displayText);
-        line->setData(Qt::UserRole, item.id);
-        if(cond.ids.contains(item.id))
-            line->setSelected(true);
-    }
-    rbActive->setChecked(cond.isActiveIncluded && !cond.isDeletedIncluded);
-    rbAny->setChecked(cond.isActiveIncluded && cond.isDeletedIncluded);
-    rbDeleted->setChecked(!cond.isActiveIncluded && cond.isDeletedIncluded);
+    refresh();
 }
 
 TQCond &TQUserCondDialog::condition()
 {
     return cond;
+}
+
+void TQUserCondDialog::refresh()
+{
+    vList->clear();
+    QListWidgetItem *line;
+    if(cond.isGroups)
+    {
+        rbGroups->setChecked(true);
+        rbUsers->setChecked(false);
+        TQGroupList groups =  cond.queryDef->recordDef()->project()->userGroups();
+        foreach(const TQGroup &item, groups)
+        {
+            line = new QListWidgetItem(vList);
+            line->setText(item.name);
+            line->setData(Qt::UserRole, item.id);
+            if(cond.ids.contains(item.id))
+                line->setSelected(true);
+        }
+    }
+    else
+    {
+        rbGroups->setChecked(false);
+        rbUsers->setChecked(true);
+        if(cond.isCurrentAvailable)
+        {
+            line = new QListWidgetItem(vList);
+            line->setText(tr("<Текущий>"));
+            line->setData(Qt::UserRole, -1);
+            if(cond.isCurrentIncluded)
+                line->setSelected(true);
+        }
+        if(cond.isNullAvailable)
+        {
+            line = new QListWidgetItem(vList);
+            line->setText(tr("<Пустой>"));
+            line->setData(Qt::UserRole, -2);
+            if(cond.isNullIncluded)
+                line->setSelected(true);
+        }
+        QString chTable = cond.queryDef->recordDef()->fieldChoiceTable(cond.vid());
+        TQChoiceList choices = cond.queryDef->recordDef()->choiceTable(chTable);
+        foreach(const TQChoiceItem &item, choices)
+        {
+            line = new QListWidgetItem(vList);
+            line->setText(item.displayText);
+            line->setData(Qt::UserRole, item.id);
+            if(cond.ids.contains(item.id))
+                line->setSelected(true);
+        }
+    }
+    rbActive->setChecked(cond.isActiveIncluded && !cond.isDeletedIncluded);
+    rbDeleted->setChecked(!cond.isActiveIncluded && cond.isDeletedIncluded);
+    rbAny->setChecked((cond.isActiveIncluded && cond.isDeletedIncluded)
+                      || (!cond.isActiveIncluded && !cond.isDeletedIncluded));
 }
 
 void TQUserCondDialog::stateChecked(int state)
@@ -262,8 +316,31 @@ void TQUserCondDialog::selectionChanged()
     foreach(QListWidgetItem *line, vList->selectedItems())
     {
         int id = line->data(Qt::UserRole).toInt();
-        cond.ids.append(id);
+        if(id == -1)
+            cond.isCurrentIncluded = true;
+        else if(id == -2)
+            cond.isNullIncluded = true;
+        else
+            cond.ids.append(id);
     }
+    mutex.unlock();
+}
+
+void TQUserCondDialog::usersChecked()
+{
+    if(!mutex.tryLock())
+        return;
+    cond.isGroups = false;
+    refresh();
+    mutex.unlock();
+}
+
+void TQUserCondDialog::groupsChecked()
+{
+    if(!mutex.tryLock())
+        return;
+    cond.isGroups = true;
+    refresh();
     mutex.unlock();
 }
 

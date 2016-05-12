@@ -29,7 +29,8 @@ SOURCES += tqplugapi.cpp \
     ../common/ttglobal.cpp \
     tqjson.cpp \
     activefactory.cpp \
-    ../common/tqviewcontroller.cpp
+    ../common/tqviewcontroller.cpp \
+    tqnetaccessmanager.cpp
 
 HEADERS += tqplugapi.h\
     ../common/tqplugin_global.h \
@@ -41,7 +42,8 @@ HEADERS += tqplugapi.h\
     ../common/ttglobal.h \
     ../common/tqjson.h \
     activefactory.h \
-    ../common/tqviewcontroller.h
+    ../common/tqviewcontroller.h \
+    tqnetaccessmanager.h
 
 unix:!symbian {
     maemo5 {

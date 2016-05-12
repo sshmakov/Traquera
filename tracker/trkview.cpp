@@ -872,21 +872,24 @@ void TrkToolProject::readUserList()
             else
                 item.fullName = item.login;
             item.displayName = item.fullName;
+            item.id = 0;
+            item.isDeleted = false;
             m_userList.insert(item.login,item);
             loginByName.insert(item.fullName, item.login);
         }
     }
     if(isTrkOK(TrkInitUserList(handle)))
     {
-        char userName[1024];
+        char buf[1024];
         TRK_UINT id = 0;
         TRK_UINT deleted = 0;
         index = 0;
-        while(TRK_SUCCESS == TrkGetNextUserInternal(handle, sizeof(userName), userName, &id, &deleted)) //fullname + id +
+        while(TRK_SUCCESS == TrkGetNextUserInternal(handle, sizeof(buf), buf, &id, &deleted)) //fullname + id +
         {
-            if(loginByName.contains(userName))
+            QString userFullName = QString::fromLocal8Bit(buf);
+            if(loginByName.contains(userFullName))
             {
-                QString login = loginByName.value(userName);
+                QString login = loginByName.value(userFullName);
                 TQUser item = m_userList.value(login);
                 item.id = id;
                 item.isDeleted = deleted;
@@ -2028,6 +2031,7 @@ QList<TQAttachedFile> TrkToolProject::attachedFiles(TQRecord *record)
         return QList<TQAttachedFile>();
     if(isTrkOK(TrkInitAttachedFileList(attHandle)))
     {
+        int id = 0;
         while(TRK_SUCCESS == TrkGetNextAttachedFile(attHandle))
         {
             TQAttachedFile file;
@@ -2040,6 +2044,7 @@ QList<TQAttachedFile> TrkToolProject::attachedFiles(TQRecord *record)
             file.isAdded = false;
             file.isChanged = false;
             file.isDeleted = false;
+            file.id = id++;
             /*
                 TRK_FILE_STORAGE_MODE mode;
                 TRK_UINT sz;

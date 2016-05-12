@@ -2,6 +2,7 @@
 #include "ui_webform.h"
 #include <QtCore>
 #include <QNetworkRequest>
+#include <QNetworkCookieJar>
 
 class WebFormPrivate {
 public:
@@ -30,6 +31,7 @@ WebForm::WebForm(QWidget *parent) :
     connect(ui->webView,SIGNAL(linkClicked(QUrl)),SLOT(onLinkClicked(QUrl)));
     connect(ui->webView,SIGNAL(urlChanged(QUrl)),SLOT(onLinkClicked(QUrl)));
     ui->webView->page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
+    setWindowModality(Qt::WindowModal);
 //    connect(ui->webView->page(),SIGNAL(downloadRequested(QNetworkRequest)),SLOT(onDownReq(QNetworkRequest)));
 //    setWindowModality(Qt::ApplicationModal);
 }
@@ -54,27 +56,43 @@ bool WebForm::openUrl(const QUrl &url)
 
 bool WebForm::request(const QUrl &url, const QRegExp &callbackUrl)
 {
+    static QEventLoop eventLoop;
     if(d->eventLoop)
         return false;
     checkedLink = callbackUrl;
     d->callbackPressed = false;
     execMode = true;
+
     show();
     ui->webView->load(url);
-    QEventLoop eventLoop;
     d->eventLoop = &eventLoop;
     QPointer<WebForm> guard = this;
     (void) eventLoop.exec(QEventLoop::DialogExec);
-    if (guard.isNull())
-        return false;
+    bool res = false;
+    if (!guard.isNull())
+        res = d->callbackPressed;
     hide();
     d->eventLoop = 0;
-    return d->callbackPressed;
+    return res;
 }
 
 QUrl WebForm::foundUrl() const
 {
     return d->foundUrl;
+}
+
+QList<QNetworkCookie> WebForm::cookies(const QUrl &url)
+{
+    QWebPage *page = ui->webView->page();
+    if(!page)
+        return QList<QNetworkCookie>();
+    QNetworkAccessManager *man = page->networkAccessManager();
+    if(!man)
+        return QList<QNetworkCookie>();
+    QNetworkCookieJar *jar = man->cookieJar();
+    if(!jar)
+        return QList<QNetworkCookie>();
+    return jar->cookiesForUrl(url);
 }
 
 void WebForm::closeEvent(QCloseEvent *event)
@@ -87,7 +105,8 @@ void WebForm::closeEvent(QCloseEvent *event)
 void WebForm::onLinkClicked(const QUrl &url)
 {
     QString newUrl = url.toString();
-    if(newUrl.contains(checkedLink)) // checkedLink)
+    qDebug() << newUrl;
+    if(newUrl.contains(checkedLink))
     {
         d->callbackPressed = true;
         d->foundUrl = url;

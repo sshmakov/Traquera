@@ -10,6 +10,7 @@ class TQProxyRecModel : public QAbstractProxyModel
 private:
     int parentRows, parentCols;
     bool isActual;
+    bool isFileColumnAdded;
     TQRecModel *recModel;
 public:
     explicit TQProxyRecModel(QObject *parent = 0);

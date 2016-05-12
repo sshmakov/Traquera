@@ -74,17 +74,21 @@ class TQCONDAPISHARED_EXPORT TQUserCondDialog : public TQAbstractCondDialog
 protected:
     TQUserCond cond;
 
-    QGroupBox *box;
-    QRadioButton *rbActive, *rbDeleted, *rbAny;
+    QGroupBox *statebox;
+    QRadioButton *rbActive, *rbDeleted, *rbAny, *rbUsers, *rbGroups;
     QListWidget *vList;
     QMutex mutex;
 public:
     explicit TQUserCondDialog(QWidget *parent = 0);
     void setCondition(const TQCond &condition);
     TQCond &condition();
+protected:
+    void refresh();
 protected slots:
     void stateChecked(int state);
     void selectionChanged();
+    void usersChecked();
+    void groupsChecked();
 };
 
 class TQCONDAPISHARED_EXPORT TQStringCondDialog : public TQAbstractCondDialog

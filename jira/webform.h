@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QtGui>
 #include <QWebPage>
+#include <QNetworkCookie>
 
 namespace Ui {
 class WebForm;
@@ -44,6 +45,7 @@ public:
 //    void setCheckedLink(const QString &link);
     bool request(const QUrl &url, const QRegExp &callbackUrl);
     QUrl foundUrl() const;
+    QList<QNetworkCookie> cookies(const QUrl &url);
 protected:
     void closeEvent(QCloseEvent *event);
 //    static authorize()

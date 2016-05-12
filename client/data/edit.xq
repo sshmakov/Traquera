@@ -262,7 +262,10 @@ function resetNote(index)
 function init()
 {
   if(record.isInsertMode())
+  {
     initNoteWidget(-1);
+  }
+  descEdit();
 }
 
 function descEdit()

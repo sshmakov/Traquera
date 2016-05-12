@@ -77,6 +77,9 @@ struct TQAttachedFile
     bool isAdded;
     bool isDeleted;
     bool isChanged;
+    int id;
+    QVariant data;
+    int size;
 };
 
 struct TQUser

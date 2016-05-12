@@ -107,6 +107,7 @@ protected slots:
     bool addNewNote(const QString &title, const QString &text);
     void postCurValue();
     void titleChanged(const QString &value);
+    void fullReload();
 
 private slots:
     void on_actionEditRecord_triggered();
@@ -117,6 +118,8 @@ private slots:
     void on_actionSaveExit_triggered();
     void on_newNoteButton_clicked();
     void on_cancelNoteButton_clicked();
+
+    void on_actionRefresh_triggered();
 
 public slots:
     void populateJavaScriptWindowObject();

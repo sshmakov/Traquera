@@ -71,7 +71,8 @@ public:
     Q_INVOKABLE QString getClipboardHTML() const;
     Q_INVOKABLE void setClipboardHTML(const QString &text) const;
     Q_INVOKABLE QString curProjectName() const;
-    Q_INVOKABLE QObject *getRecord(int id);
+    Q_INVOKABLE QObject *project(const QString &projectName) const;
+    Q_INVOKABLE QObject *getRecord(int id, const QString &projectName = QString());
     Q_INVOKABLE bool registerOptionsWidget(const QString &path, void *funcPtr);
     Q_INVOKABLE QNetworkAccessManager *networkManager() const;
     QMap<QString, GetOptionsWidgetFunc> optionsWidgets() const;

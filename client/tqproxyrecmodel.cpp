@@ -3,6 +3,7 @@
 TQProxyRecModel::TQProxyRecModel(QObject *parent) :
     QAbstractProxyModel(parent), isActual(false), recModel(0)
 {
+    isFileColumnAdded = false;
 }
 
 void TQProxyRecModel::actualize()
@@ -28,7 +29,7 @@ int TQProxyRecModel::columnCount(const QModelIndex &parent) const
     if(!recModel)
         return 0;
     QModelIndex sourceParent = mapToSource(parent);
-    return recModel->columnCount(sourceParent)+1;
+    return recModel->columnCount(sourceParent)+ (isFileColumnAdded ? 1 : 0);
 }
 
 QVariant TQProxyRecModel::data(const QModelIndex &proxyIndex, int role) const
@@ -37,7 +38,7 @@ QVariant TQProxyRecModel::data(const QModelIndex &proxyIndex, int role) const
         return QVariant();
     if(!recModel)
         return QAbstractProxyModel::data(proxyIndex, role);
-    if(proxyIndex.column() == 0)
+    if(isFileColumnAdded && proxyIndex.column() == 0)
     {
 //        QModelIndex sourceIndex = mapToSource(index(proxyIndex.row(), 1, proxyIndex.parent()));
 //        if(!sourceIndex.isValid())
@@ -68,7 +69,7 @@ QVariant TQProxyRecModel::data(const QModelIndex &proxyIndex, int role) const
 
 Qt::ItemFlags TQProxyRecModel::flags(const QModelIndex &index) const
 {
-    if(index.column() == 0)
+    if(isFileColumnAdded && index.column() == 0)
         return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
     return QAbstractProxyModel::flags(index);
 }
@@ -79,6 +80,8 @@ QVariant TQProxyRecModel::headerData(int section, Qt::Orientation orientation, i
         return QVariant();
     if(orientation != Qt::Horizontal)
         return QAbstractProxyModel::headerData(section, orientation, role);
+    if(!isFileColumnAdded)
+        return recModel->headerData(section, orientation, role);
     if(section!=0)
         return recModel->headerData(section-1, orientation, role);
     if(role != Qt::DisplayRole)
@@ -98,7 +101,7 @@ QModelIndex TQProxyRecModel::mapFromSource(const QModelIndex &sourceIndex) const
     QModelIndex parent = sourceIndex.parent();
     if(parent.isValid())
         parent = mapFromSource(parent);
-    return index(sourceIndex.row(), sourceIndex.column()+1, parent);
+    return index(sourceIndex.row(), sourceIndex.column()+(isFileColumnAdded ? 1 : 0), parent);
 }
 
 QModelIndex TQProxyRecModel::mapToSource(const QModelIndex &proxyIndex) const
@@ -110,7 +113,7 @@ QModelIndex TQProxyRecModel::mapToSource(const QModelIndex &proxyIndex) const
         return recModel->index(proxyIndex.row(), 0, parent);
     if(parent.isValid())
         parent = mapToSource(parent);
-    return recModel->index(proxyIndex.row(), proxyIndex.column()-1, parent);
+    return recModel->index(proxyIndex.row(), proxyIndex.column()-(isFileColumnAdded ? 1 : 0), parent);
 }
 
 QModelIndex TQProxyRecModel::parent(const QModelIndex &child) const

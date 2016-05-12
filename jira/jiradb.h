@@ -66,6 +66,7 @@ class /*JIRASHARED_EXPORT*/ JiraDB: public TQAbstractDB
 public:
     enum JiraConnectMethod {
         BaseAuth = 0,
+        CookieAuth,
         OAuth
     };
 private:
@@ -96,6 +97,7 @@ public:
     virtual TQAbstractProject *openConnection(const QString &connectString);
     void setConnectString(const QString &connectString);
     QVariant sendRequest(const QString &dbmsServer, const QString &method, const QString &query, const QByteArray &body = QByteArray());
+    QNetworkReply *sendRequestNative(const QUrl &url, const QString &method, const QByteArray &body = QByteArray());
     QVariant parseValue(const QVariant &source, const QString &path);
     static TQAbstractDB *createJiraDB(QObject *parent);
     QVariant sendSimpleRequest(const QString &dbmsType, const QString &method, const QString &query, const QString &body = QString());
@@ -106,8 +108,15 @@ public:
     TQJson *jsonParser();
 protected:
     QList<QNetworkReply*> readyReplies;
+    QList<QNetworkCookie> cookies;
     bool waitReply(QNetworkReply *reply);
     JiraPrjInfoList getProjectList(const QString& serverUrl);
+    bool showLoginPage(const QString &server,
+                     const QString &user = QString(),
+                     const QString &pass = QString());
+    bool loginCookie(const QString &server,
+                     const QString &user = QString(),
+                     const QString &pass = QString());
 protected slots:
     void	replyFinished(QNetworkReply * reply);
     void callbackClicked();
@@ -151,6 +160,8 @@ public:
     bool commitRecord(TQRecord *record);
     bool cancelRecord(TQRecord *record);
     TQRecord *newRecord(int rectype);
+    QList<TQAttachedFile> attachedFiles(TQRecord *record);
+    bool saveFileFromRecord(TQRecord *record, int fileIndex, const QString &dest);
     QStringList historyList(TQRecord *record);
     QHash<int,QString> baseRecordFields(int rectype);
     bool isSystemModel(QAbstractItemModel *model) const;
@@ -282,6 +293,7 @@ protected:
     QString key;
     JiraRecTypeDef *def;
     int internalId;
+    QList<TQAttachedFile> files;
 public:
     JiraRecord();
     JiraRecord(TQAbstractProject *prj, int rtype, int id);

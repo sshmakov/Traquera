@@ -103,17 +103,18 @@ QStringList JiraLogin::readProjects()
 {
     QScopedPointer<JiraDB> db(new JiraDB(this));
     db->setConnectString(connectString());
-    return db->projects(db->dbmsType());
+    return db->projects(db->dbmsType(), ui->leUser->text(), ui->lePassword->text());
 }
 
 void JiraLogin::on_cbMethod_currentIndexChanged(int index)
 {
     bool isBase = index == 0;
-    ui->leUser->setEnabled(isBase);
-    ui->lePassword->setEnabled(isBase);
+    bool isCookie = index == 1;
+    ui->leUser->setEnabled(isBase || isCookie);
+    ui->lePassword->setEnabled(isBase || isCookie);
 }
 
-void JiraLogin::on_lePassword_editingFinished()
+void JiraLogin::on_tbRefreshProjects_clicked()
 {
     QString text = ui->cbProject->currentText();
     QStringList projects = readProjects();

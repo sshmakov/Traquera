@@ -645,8 +645,12 @@ QList<TQAttachedFile> TQRecord::fileList()
 
 bool TQRecord::saveFile(int fileIndex, const QString &dest)
 {
-    Q_UNUSED(fileIndex)
-    Q_UNUSED(dest)
+    TQAbstractProject *p = project();
+    if(!p)
+        return false;
+    return p->saveFileFromRecord(this, fileIndex, dest);
+//    Q_UNUSED(fileIndex)
+//    Q_UNUSED(dest)
     return false;
 }
 

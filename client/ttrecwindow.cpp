@@ -38,6 +38,42 @@ TTRecordWindow::TTRecordWindow(QWidget *parent) :
 
     //ui->noteTextEdit->addAction(ui->actionSaveExit);
     changed = false;
+
+    QAction *action;
+    action = ui->webView->pageAction(QWebPage::Copy);
+    if(action)
+    {
+#ifdef Q_WS_WIN
+        action->setShortcuts(QList<QKeySequence>()
+                             << QKeySequence("Ctrl+Insert")
+                             << QKeySequence("Ctrl+C")
+                             );
+#else
+        action->setShortcut(QKeySequence::Copy);
+#endif
+        ui->webView->addAction(action);
+    }
+    action = ui->webView->pageAction(QWebPage::Reload);
+    if(action)
+    {
+        action->setShortcut(QKeySequence("F5"));
+        ui->webView->addAction(action);
+    }
+    /*
+    action = ui->webView->pageAction(QWebPage::ReloadAndBypassCache);
+    if(action)
+    {
+        action->setShortcut(QKeySequence("Ctrl+F5"));
+        ui->webView->addAction(action);
+    }
+    */
+    /*
+#ifdef QT_DEBUG
+    action = new QAction("Refresh", this);
+    ui->webView->addAction(action);
+    connect(action, SIGNAL(triggered()), SLOT(fullReload()));
+#endif
+    */
     ttglobal()->emitViewOpened(this, d->controller);
 }
 
@@ -311,6 +347,21 @@ void TTRecordWindow::refreshValues()
     ui->recordTitleEdit->blockSignals(false);
     QString html = xmlToHTML(a_record->toXML(),"data/edit.xq");
     ui->webView->setHtml(html);
+
+/*
+    QAction *action = ui->webView->pageAction(QWebPage::Copy);
+#ifdef Q_WS_WIN
+    copyAction->setShortcuts(QList<QKeySequence>()
+                             << QKeySequence("Ctrl+Insert")
+                             << QKeySequence("Ctrl+C")
+                             );
+#else
+    copyAction->setShortcut(QKeySequence::Copy);
+#endif
+    ui->webView->addAction(copyAction);
+    ui->webView->addAction(ui->webView->pageAction(QWebPage::Reload));
+*/
+
     ui->titleBox->clear();
     const TQAbstractRecordTypeDef *def = a_record->typeDef();
     if(def)
@@ -366,6 +417,22 @@ void TTRecordWindow::titleChanged(const QString &value)
         props->setFieldValue(titleFieldName, value);
         props->blockSignals(false);
     }
+}
+
+void TTRecordWindow::fullReload()
+{
+    QWebPage *page = ui->webView->page();
+    if(page)
+    {
+        QNetworkAccessManager *man = page->networkAccessManager();
+        if(man)
+        {
+            QAbstractNetworkCache *cache = man->cache();
+            if(cache)
+                cache->clear();
+        }
+    }
+    refreshValues();
 }
 
 void TTRecordWindow::cancel()
@@ -679,4 +746,9 @@ void TTRecordWindow::initWidgets()
 void TTRecordWindow::on_cancelNoteButton_clicked()
 {
     endEditNote(false);
+}
+
+void TTRecordWindow::on_actionRefresh_triggered()
+{
+    fullReload();
 }

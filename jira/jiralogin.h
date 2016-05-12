@@ -25,8 +25,7 @@ public:
     QStringList readProjects();
 private slots:
     void on_cbMethod_currentIndexChanged(int index);
-
-    void on_lePassword_editingFinished();
+    void on_tbRefreshProjects_clicked();
 
 private:
     Ui::JiraLogin *ui;
