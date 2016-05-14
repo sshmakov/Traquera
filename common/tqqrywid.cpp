@@ -283,4 +283,53 @@ void TQQueryWidget::on_buttonBox_accepted()
         accept();
 }
 
-\
+TQAbstractQWController::TQAbstractQWController(QObject *parent)
+    : QObject(parent)
+{
+}
+
+
+class TQQueryWidgetControllerPrivate
+{
+public:
+    TQQueryWidget *dlg;
+};
+
+TQQueryWidgetController::TQQueryWidgetController(QObject *parent)
+    : TQAbstractQWController(parent)
+{
+    d = new TQQueryWidgetControllerPrivate();
+    d->dlg = new TQQueryWidget();
+}
+
+TQQueryWidgetController::~TQQueryWidgetController()
+{
+    delete d->dlg;
+    delete d;
+}
+
+void TQQueryWidgetController::setQueryDefinition(TQQueryDef *def)
+{
+    d->dlg->setQueryDefinition(def);
+}
+
+TQQueryDef *TQQueryWidgetController::queryDefinition()
+{
+    return d->dlg->queryDefinition();
+}
+
+int TQQueryWidgetController::exec()
+{
+    return d->dlg->exec();
+}
+
+QString TQQueryWidgetController::queryName() const
+{
+    return d->dlg->queryName();
+}
+
+void TQQueryWidgetController::setQueryName(const QString &name)
+{
+    d->dlg->setQueryName(name);
+}
+

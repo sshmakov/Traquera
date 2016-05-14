@@ -182,15 +182,28 @@ bool TQOneProjectTree::open(const QString &connectString)
     appendSourceModel(folders,tr("Личные папки"));
 
 
-    userModel = new TQQryFilter(this);
-    userModel->setSourceQueryModel(project()->queryModel(recordType()),TQQryFilter::UserOnly);
-    appendSourceModel(userModel,tr("Личные выборки"));
-    int rows = userModel->rowCount();
+    int rows;
+    QAbstractItemModel *queries;
+    TQQryFilter *userModel, *publicModel;
+    queries = project()->queryModel(recordType());
+    if(queries)
+    {
+        userModel = new TQQryFilter(this);
+        userModel->setSourceQueryModel(queries,TQQryFilter::UserOnly);
+        appendSourceModel(userModel,tr("Личные выборки"));
+        int rows = userModel->rowCount();
+        queryModels.append(userModel);
+    }
 
-    publicModel = new TQQryFilter(this);
-    publicModel->setSourceQueryModel(project()->queryModel(recordType()),TQQryFilter::PublicOnly);
-    appendSourceModel(publicModel,tr("Общие выборки"));
-    rows = publicModel->rowCount();
+    queries = project()->queryModel(recordType());
+    if(queries)
+    {
+        publicModel = new TQQryFilter(this);
+        publicModel->setSourceQueryModel(queries,TQQryFilter::PublicOnly);
+        appendSourceModel(publicModel,tr("Общие выборки"));
+        rows = publicModel->rowCount();
+        queryModels.append(publicModel);
+    }
     setMaxColCount(1);    
     endResetModel();
 
@@ -209,18 +222,24 @@ void TQOneProjectTree::close()
         delete folders;
         folders = 0;
     }
-    if(userModel)
+    foreach(TQQryFilter *model, queryModels)
     {
-        removeSourceModel(userModel);
-        delete userModel;
-        userModel = 0;
+        removeSourceModel(model);
+        model->deleteLater();
     }
-    if(publicModel)
-    {
-        removeSourceModel(publicModel);
-        delete publicModel;
-        publicModel = 0;
-    }
+    queryModels.clear();
+//    if(userModel)
+//    {
+//        removeSourceModel(userModel);
+//        delete userModel;
+//        userModel = 0;
+//    }
+//    if(publicModel)
+//    {
+//        removeSourceModel(publicModel);
+//        delete publicModel;
+//        publicModel = 0;
+//    }
     if(info.data.prj)
     {
         delete info.data.prj;

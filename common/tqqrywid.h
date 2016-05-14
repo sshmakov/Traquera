@@ -66,4 +66,32 @@ private:
     Ui::TQQueryWidget *ui;
 };
 
+class TQCONDAPISHARED_EXPORT TQAbstractQWController : public QObject
+{
+public:
+    TQAbstractQWController(QObject *parent = 0);
+    virtual void setQueryDefinition(TQQueryDef *def) = 0;
+    virtual TQQueryDef *queryDefinition() = 0;
+    virtual int exec() = 0;
+    virtual QString queryName() const = 0;
+    virtual void setQueryName(const QString &name) = 0;
+};
+
+
+class TQQueryWidgetControllerPrivate;
+class TQCONDAPISHARED_EXPORT TQQueryWidgetController : public TQAbstractQWController
+{
+    Q_OBJECT
+public:
+    TQQueryWidgetController(QObject *parent = 0);
+    ~TQQueryWidgetController();
+    void setQueryDefinition(TQQueryDef *def);
+    TQQueryDef *queryDefinition();
+    int exec();
+    QString queryName() const;
+    void setQueryName(const QString &name);
+private:
+    TQQueryWidgetControllerPrivate *d;
+};
+
 #endif // TQQRYWID_H

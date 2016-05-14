@@ -16,14 +16,18 @@ SOURCES += jiradb.cpp \
     qt-json/json.cpp \
     jiraoptions.cpp \
     webform.cpp \
-    jiralogin.cpp
+    jiralogin.cpp \
+    jiraquerydialog.cpp \
+    jiraqry.cpp
 
 HEADERS += jiradb.h\
         jira_global.h \
     qt-json/json.h \
     jiraoptions.h \
     webform.h \
-    jiralogin.h
+    jiralogin.h \
+    jiraquerydialog.h \
+    jiraqry.h
 
 INCLUDEPATH += ../common
 
@@ -36,13 +40,14 @@ unix:!symbian {
     INSTALLS += target
 }
 
-win32:LIBS += -L../lib -ltqplugapi
+win32:LIBS += -L../lib -ltqplugapi -ltqcondapi
 DESTDIR = ../plugins/jira
 
 FORMS += \
     jiraoptions.ui \
     webform.ui \
-    jiralogin.ui
+    jiralogin.ui \
+    jiraquerydialog.ui
 
 OTHER_FILES += \
     mykey.pub \

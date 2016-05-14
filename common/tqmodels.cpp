@@ -317,6 +317,7 @@ void TQRecModel::append(const PTQRecord &rec)
 {
     BaseRecModel<PTQRecord>::append(rec);
     TQRecord *prec = rec;
+    connect(prec, SIGNAL(recordChanged(int)), SLOT(recordChanged(int)));
     connect(prec,SIGNAL(destroyed(QObject*)),SLOT(recordDestroyed(QObject*)));
 }
 
@@ -324,7 +325,10 @@ void TQRecModel::append(const QList<PTQRecord> &list)
 {
     BaseRecModel<PTQRecord>::append(list);
     foreach(TQRecord *prec, list)
+    {
+        connect(prec, SIGNAL(recordChanged(int)), SLOT(recordChanged(int)));
         connect(prec,SIGNAL(destroyed(QObject*)),SLOT(recordDestroyed(QObject*)));
+    }
 }
 
 

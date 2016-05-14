@@ -2061,6 +2061,21 @@ void MainWindow::on_actionEditQuery_triggered()
     readSelectedTreeItem();
     if(selectedTreeItem.isQuerySelected)
     {
+        QScopedPointer<TQAbstractQWController> dlgContr(selectedTreeItem.prj->queryWidgetController(selectedTreeItem.recordType));
+        if(!dlgContr.isNull())
+        {
+            dlgContr->setQueryDefinition(selectedTreeItem.prj->queryDefinition(selectedTreeItem.queryName, selectedTreeItem.recordType));
+            dlgContr->setQueryName(selectedTreeItem.queryName);
+            if(dlgContr->exec() == QDialog::Accepted)
+            {
+                selectedTreeItem.prj->saveQueryDefinition(dlgContr->queryDefinition(), dlgContr->queryName(), selectedTreeItem.recordType);
+                selectedTreeItem.prj->refreshModel(selectedTreeItem.qryModel->sourceModel());
+            }
+        }
+    }
+    /*
+    if(selectedTreeItem.isQuerySelected)
+    {
         TQQueryWidget dlg;
         dlg.setQueryDefinition(selectedTreeItem.prj->queryDefinition(selectedTreeItem.queryName, selectedTreeItem.recordType));
         dlg.setQueryName(selectedTreeItem.queryName);
@@ -2070,6 +2085,7 @@ void MainWindow::on_actionEditQuery_triggered()
             selectedTreeItem.prj->refreshModel(selectedTreeItem.qryModel->sourceModel());
         }
     }
+    */
 }
 
 void MainWindow::on_actionNewQuery_triggered()

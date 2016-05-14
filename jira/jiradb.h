@@ -5,6 +5,7 @@
 
 #include <tqbase.h>
 #include <tqplug.h>
+#include <tqmodels.h>
 
 #include "jira_global.h"
 #include <QtNetwork>
@@ -126,6 +127,14 @@ private:
 
 class JiraRecTypeDef;
 class JiraRecord;
+struct JiraFilter {
+    QString name;
+    QString jql;
+    bool isSystem;
+    bool isServerStored;
+};
+
+class JiraFilterModel;
 
 class JiraProject: public TQBaseProject
 {
@@ -136,8 +145,8 @@ protected:
     QMap<int,JiraRecTypeDef *> recordDefs;
     QString projectKey;
     int projectId;
-    QMap<QString, QString> favSearch;
-
+    QMap<QString, int> favSearch;
+    JiraFilterModel *filters;
 public:
     JiraProject(TQAbstractDB *db);
     void loadDefinition();
@@ -146,6 +155,7 @@ public:
     int defaultRecType() const;
     TQRecModel *openQueryModel(const QString &queryName, int recType, bool emitEvent = true);
     QAbstractItemModel *openIdsModel(const IntList &ids, int recType, bool emitEvent = true);
+    TQRecord *createRecordById(int id, int rectype);
     void refreshModel(QAbstractItemModel *model);
     TQRecord *recordOfIndex(const QModelIndex &index);
     QList<int> getQueryIds(const QString &name, int type, qint64 afterTransId = 0);
@@ -166,6 +176,10 @@ public:
     QHash<int,QString> baseRecordFields(int rectype);
     bool isSystemModel(QAbstractItemModel *model) const;
     QSettings *projectSettings() const;
+    QAbstractItemModel *queryModel(int type);
+    TQQueryDef *queryDefinition(const QString &queryName, int rectype);
+    TQAbstractQWController *queryWidgetController(int rectype);
+    void initFilterList();
 protected:
 //    TQAbstractRecordTypeDef *loadRecordTypeDef(int recordType);
     void loadRecordTypes();
@@ -294,6 +308,7 @@ protected:
     JiraRecTypeDef *def;
     int internalId;
     QList<TQAttachedFile> files;
+    bool isFieldsReaded, isTextsReaded;
 public:
     JiraRecord();
     JiraRecord(TQAbstractProject *prj, int rtype, int id);
@@ -305,6 +320,18 @@ public:
     TQNotesCol notes() const;
 
     friend class JiraProject;
+};
+
+class JiraFilterModel: public BaseRecModel<JiraFilter>
+{
+    Q_OBJECT
+public:
+    JiraFilterModel(QObject *parent = 0);
+//    void appendFilter(const QString &filterName, bool isServerStored=false, int rectype = TRK_SCR_TYPE);
+//    void appendFilter(const QStringList &queryList, bool isPublic=false, TRK_UINT rectype = TRK_SCR_TYPE);
+//    void removeFilter(const QString &queryName, TRK_UINT rectype = TRK_SCR_TYPE);
+protected:
+    virtual QVariant displayColData(const JiraFilter &rec, int col) const;
 };
 
 #endif // JIRADB_H

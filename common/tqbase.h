@@ -223,6 +223,7 @@ public:
 
 
 class TQQueryDef;
+class TQAbstractQWController;
 
 class TQAbstractProjectPrivate;
 
@@ -285,6 +286,7 @@ public:
     virtual bool isSystemModel(QAbstractItemModel *model) const = 0;
     virtual TQQueryDef *queryDefinition(const QString &queryName, int rectype) = 0;
     virtual TQQueryDef *createQueryDefinition(int rectype) = 0;
+    virtual TQAbstractQWController *queryWidgetController(int rectype) = 0;
     virtual bool saveQueryDefinition(TQQueryDef *queryDefinition, const QString &queryName, int rectype) = 0;
     virtual QStringList userNames() = 0;
     virtual QMap<QString, TQUser> userList() = 0;
@@ -349,6 +351,7 @@ public:
     virtual bool removeFileFromRecord(TQRecord *record, int fileIndex);
     virtual TQQueryDef *queryDefinition(const QString &queryName, int rectype);
     virtual TQQueryDef *createQueryDefinition(int rectype);
+    virtual TQAbstractQWController *queryWidgetController(int rectype);
     virtual bool saveQueryDefinition(TQQueryDef *queryDefinition, const QString &queryName, int rectype);
     virtual QStringList userNames();
     virtual QMap<QString, TQUser> userList();

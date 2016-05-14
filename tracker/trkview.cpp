@@ -4,6 +4,7 @@
 #ifdef CLIENT_APP
 #include "settings.h"
 #include "ttglobal.h"
+#include <tqqrywid.h>
 #ifdef TRKVIEE_NEED
 #include "trkdecorator.h"
 #include <QHeaderView>
@@ -1307,6 +1308,15 @@ TQQueryDef *TrkToolProject::createQueryDefinition(int rectype)
         return 0;
     TrkQueryDef *qDef = new TrkQueryDef(this, rDef);
     return qDef;
+}
+
+TQAbstractQWController *TrkToolProject::queryWidgetController(int rectype)
+{
+#ifdef CLIENT_APP
+    return new TQQueryWidgetController(this);
+#else
+    return 0;
+#endif
 }
 
 bool TrkToolProject::saveQueryDefinition(TQQueryDef *queryDefinition, const QString &queryName, int rectype)

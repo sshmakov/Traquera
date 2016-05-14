@@ -8,6 +8,9 @@
 #include "webform.h"
 #include <tqjson.h>
 #include "jiralogin.h"
+#include <tqcond.h>
+#include "jiraqry.h"
+#include "jiraquerydialog.h"
 
 Q_EXPORT_PLUGIN2("jira", JiraPlugin)
 
@@ -654,7 +657,7 @@ void JiraDB::callbackClicked()
 
 // ======================== JiraProject ==================================
 JiraProject::JiraProject(TQAbstractDB *db)
-    : TQBaseProject(db)
+    : TQBaseProject(db), filters(new JiraFilterModel(this))
 {
     this->db = qobject_cast<JiraDB *>(db);
 }
@@ -681,7 +684,9 @@ TQRecModel *JiraProject::openQueryModel(const QString &queryName, int recType, b
 {
     if(!favSearch.contains(queryName))
         return 0;
-    QString jql = favSearch.value(queryName);
+    int index = favSearch.value(queryName);
+    const JiraFilter &fitem = filters->at(index);
+    QString jql = fitem.jql;
     QVariantMap map = db->sendRequest(dbmsServer,"GET",QString("rest/api/2/search?jql=%1").arg(jql)).toMap();
     QVariantList issueList = map.value("issues").toList();
     TQRecModel *model = new TQRecModel(this, recType, this);
@@ -729,6 +734,16 @@ QAbstractItemModel *JiraProject::openIdsModel(const IntList &ids, int recType, b
     return model;
 }
 
+TQRecord *JiraProject::createRecordById(int id, int rectype)
+{
+    JiraRecord *rec = new JiraRecord(this, rectype, id);
+    rec->key = projectKey + "-" + QString::number(id);
+    rec->internalId = 0;
+    connect(rec, SIGNAL(changed(int)), this, SIGNAL(recordChanged(int)));
+    readRecordFields(rec);
+    return rec;
+}
+
 void JiraProject::refreshModel(QAbstractItemModel *model)
 {
 }
@@ -763,6 +778,7 @@ bool JiraProject::readRecordWhole(TQRecord *record)
     rec->displayValues.clear();
     for(i = fields.begin(); i!=fields.end(); i++)
         storeReadedField(rec, rdef, i.key(), i.value());
+    rec->isFieldsReaded = true;
     QVariantList comments = fields.value("comment").toMap().value("comments").toList();
     rec->notesCol.clear();
     foreach(QVariant c, comments)
@@ -778,6 +794,8 @@ bool JiraProject::readRecordWhole(TQRecord *record)
         note.mddate = QDateTime::fromString(com.value("updated").toString(), Qt::ISODate);
         rec->notesCol.append(note);
     }
+    rec->isTextsReaded = true;
+
     rec->files.clear();
     if(fields.contains("attachment"))
     {
@@ -794,6 +812,7 @@ bool JiraProject::readRecordWhole(TQRecord *record)
             rec->files.append(file);
         }
     }
+    emit rec->changed(rec->recordId());
     return true;
 }
 
@@ -806,10 +825,16 @@ bool JiraProject::readRecordFields(TQRecord *record)
     if(!rdef)
         return false;
     QVariantMap issue = db->sendRequest(dbmsServer,"GET",QString("rest/api/2/issue/%1?fields=*all,-description,-comment").arg(rec->jiraKey())).toMap();
+    if(!issue.contains("id"))
+        return false;
+    rec->internalId = issue.value("id").toInt();
     QVariantMap fields = issue.value("fields").toMap();
     QVariantMap::iterator i;
     for(i = fields.begin(); i!=fields.end(); i++)
         storeReadedField(rec, rdef, i.key(), i.value());
+    rec->isFieldsReaded = true;
+    emit rec->changed(rec->recordId());
+    return true;
 }
 
 bool JiraProject::readRecordTexts(TQRecord *record)
@@ -832,7 +857,8 @@ bool JiraProject::readRecordTexts(TQRecord *record)
         note.mddate = QDateTime::fromString(com.value("updated").toString(), Qt::ISODate);
         rec->notesCol.append(note);
     }
-
+    rec->isTextsReaded = true;
+    emit rec->changed(rec->recordId());
     return true;
 }
 
@@ -851,6 +877,8 @@ bool JiraProject::readRecordBase(TQRecord *record)
     QVariantMap::iterator i;
     for(i = fields.begin(); i!=fields.end(); i++)
         storeReadedField(rec, rdef, i.key(), i.value());
+    emit rec->changed(rec->recordId());
+    return true;
 }
 
 QVariant JiraProject::getFieldValue(const TQRecord *record, const QString &fname, bool *ok)
@@ -1037,6 +1065,29 @@ QSettings *JiraProject::projectSettings() const
     return sets;
 }
 
+QAbstractItemModel *JiraProject::queryModel(int type)
+{
+    if(recordTypes.contains(type))
+        return filters;
+    return 0;
+}
+
+TQQueryDef *JiraProject::queryDefinition(const QString &queryName, int rectype)
+{
+    int index = favSearch.value(queryName, -1);
+    if(index<0)
+        return 0;
+    JiraQry *def = new JiraQry(this, rectype);
+    def->setName(queryName);
+    def->setQueryLine(filters->at(index).jql);
+    return def;
+}
+
+TQAbstractQWController *JiraProject::queryWidgetController(int rectype)
+{
+    return new JiraQueryDialogController(this);
+}
+
 /*TQAbstractRecordTypeDef *JiraProject::loadRecordTypeDef(int recordType)
 {
     JiraRecTypeDef *rdef = new JiraRecTypeDef(this);
@@ -1190,6 +1241,7 @@ void JiraProject::loadRecordTypes()
             }
         }
         recordDefs.insert(recordType, rdef);
+        recordTypes.insert(rdef->recType, rdef->recTypeName);
     }
 }
 
@@ -1212,6 +1264,7 @@ TQChoiceList JiraProject::loadChoiceTables(JiraRecTypeDef *rdef, const QString &
     }
     return list;
 }
+typedef QPair<QString,QString> QStringPair;
 
 void JiraProject::loadQueries()
 {
@@ -1219,7 +1272,43 @@ void JiraProject::loadQueries()
     foreach(QVariant v, favs)
     {
         QVariantMap favMap = v.toMap();
-        favSearch.insert(favMap.value("name").toString(), favMap.value("jql").toString());
+        JiraFilter item;
+        item.name = favMap.value("name").toString();
+        item.jql = favMap.value("jql").toString();
+        item.isServerStored = true;
+        item.isSystem = false;
+        filters->append(item);
+        favSearch.insert(item.name, filters->rowCount()-1);
+    }
+    QList<QStringPair > preDef;
+    preDef
+            << qMakePair(tr("Мои открытые запросы"),
+                         QString("assignee = currentUser() AND resolution = Unresolved ORDER BY updatedDate DESC"))
+            << qMakePair(tr("Созданные мной"),
+                         QString("reporter = currentUser() ORDER BY createdDate DESC"))
+//            << qMakePair(tr("Последние просмотренные"),
+//                         QString("issuekey in issueHistory() ORDER BY lastViewed DESC"))
+            << qMakePair(tr("Все запросы"),
+                         QString("ORDER BY createdDate DESC"))
+            << qMakePair(tr("Открытые запросы"),
+                         QString("resolution = Unresolved order by priority DESC,updated DESC"))
+            << qMakePair(tr("Добавленные недавно"),
+                         QString("created >= -1w order by created DESC"))
+            << qMakePair(tr("Решенные недавно"),
+                         QString("resolutiondate >= -1w order by updated DESC"))
+            << qMakePair(tr("Обновленные недавно"),
+                         QString("updated >= -1w order by updated DESC"))
+               ;
+
+    foreach(const QStringPair &def, preDef)
+    {
+        JiraFilter item;
+        item.name = def.first;
+        item.jql = def.second;
+        item.isServerStored = false;
+        item.isSystem = true;
+        filters->append(item);
+        favSearch.insert(item.name, filters->rowCount()-1);
     }
 }
 
@@ -1572,11 +1661,15 @@ int JiraRecTypeDef::schemaToSimpleType(const QString &schemaType)
 JiraRecord::JiraRecord()
     : TQRecord(), def(0)
 {
+    isFieldsReaded = false;
+    isTextsReaded = false;
 }
 
 JiraRecord::JiraRecord(TQAbstractProject *prj, int rtype, int id)
     : TQRecord(prj, rtype, id)
 {
+    isFieldsReaded = false;
+    isTextsReaded = false;
     if(prj)
         def = dynamic_cast<JiraRecTypeDef*>(prj->recordTypeDef(rtype));
 }
@@ -1584,6 +1677,8 @@ JiraRecord::JiraRecord(TQAbstractProject *prj, int rtype, int id)
 JiraRecord::JiraRecord(const TQRecord &src)
     : TQRecord(src)
 {
+    isFieldsReaded = false;
+    isTextsReaded = false;
     if(project())
         def = dynamic_cast<JiraRecTypeDef*>(project()->recordTypeDef(recordType()));
 }
@@ -1615,6 +1710,11 @@ QVariant JiraRecord::value(int vid, int role) const
 #ifdef QT_DEBUG
     QString fname = def->fieldName(vid);
 #endif
+    if(!isFieldsReaded)
+    {
+        TQRecord *rec = const_cast<JiraRecord *>(this);
+        project()->readRecordFields(rec);
+    }
     if(role != Qt::DisplayRole && role != Qt::EditRole)
         return QVariant();
     if(def && vid == def->descVid)
@@ -1654,6 +1754,11 @@ bool JiraRecord::setValue(int vid, const QVariant &newValue, int role)
 
 TQNotesCol JiraRecord::notes() const
 {
+    if(!isTextsReaded)
+    {
+        JiraRecord *rec = const_cast<JiraRecord *>(this);
+        project()->readRecordTexts(rec);
+    }
     return notesCol;
 }
 
@@ -1661,4 +1766,25 @@ TQNotesCol JiraRecord::notes() const
 void JiraDB::setConnectMethod(JiraDB::JiraConnectMethod method)
 {
     connectMethod = method;
+}
+
+
+JiraFilterModel::JiraFilterModel(QObject *parent)
+    : BaseRecModel(parent)
+{
+    headers
+            << tr("Имя фильтра")
+            << tr("Общий");
+}
+
+QVariant JiraFilterModel::displayColData(const JiraFilter &rec, int col) const
+{
+    switch(col)
+    {
+    case 0:
+        return rec.name;
+    case 1:
+        return rec.isSystem;
+    }
+    return QVariant();
 }

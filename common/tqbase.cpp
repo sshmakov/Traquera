@@ -377,6 +377,12 @@ TQQueryDef *TQBaseProject::createQueryDefinition(int rectype)
     return 0;
 }
 
+TQAbstractQWController *TQBaseProject::queryWidgetController(int rectype)
+{
+    Q_UNUSED(rectype)
+    return 0;
+}
+
 bool TQBaseProject::saveQueryDefinition(TQQueryDef *queryDefinition, const QString &queryName, int rectype)
 {
     Q_UNUSED(queryDefinition)

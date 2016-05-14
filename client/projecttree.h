@@ -40,8 +40,9 @@ protected:
     TQProjectTreeItem info;
 public:
     TTFolderModel *folders;
-    TQQryFilter *userModel;
-    TQQryFilter *publicModel;
+    QList<TQQryFilter *> queryModels;
+//    TQQryFilter *userModel;
+//    TQQryFilter *publicModel;
 
     explicit TQOneProjectTree(QObject *parent = 0);
 //    void setProject(TQAbstractProject *prj, int recordType);
