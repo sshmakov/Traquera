@@ -179,6 +179,7 @@ public:
     QAbstractItemModel *queryModel(int type);
     TQQueryDef *queryDefinition(const QString &queryName, int rectype);
     TQAbstractQWController *queryWidgetController(int rectype);
+    QVariant optionValue(const QString &option, const QVariant &defaultValue = QVariant()) const;
     void initFilterList();
 protected:
 //    TQAbstractRecordTypeDef *loadRecordTypeDef(int recordType);

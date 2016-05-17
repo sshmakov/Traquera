@@ -78,6 +78,7 @@ public:
     QMap<QString, GetOptionsWidgetFunc> optionsWidgets() const;
     Q_INVOKABLE QVariant CreateObject(const QString &objectName);
     Q_INVOKABLE QString saveObjectDocumentation(QObject *object, const QString &fileName = QString()) const;
+    Q_INVOKABLE QVariant optionDefaultValue(const QString &option) const;
 protected:
     void readInitSettings();
     void upgradeUserDB();

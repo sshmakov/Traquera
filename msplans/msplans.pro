@@ -37,7 +37,7 @@ FORMS = \
   prjfiledlg.ui \
     projectpage.ui
 
-DESTDIR=../plugins/msplans
+DESTDIR=../client/plugins/msplans
 
 unix:!symbian {
     maemo5 {
@@ -48,7 +48,7 @@ unix:!symbian {
     INSTALLS += target
 }
 
-datafolder.source = data
+datafolder.source = redistribute
 datafolder.target = .
 DEPLOYMENTFOLDERS = datafolder
 
@@ -58,8 +58,11 @@ include(deploy.pri)
 qtcAddDeployment()
 
 OTHER_FILES += \
-    data/project.xml \
-    data/scr2prj.xml
+    redistribute/data/project.xml \
+    redistribute/data/scr2prj.xml \
+    redistribute/data/scr2prj.xml \
+    redistribute/data/project.xml \
+    redistribute/data/plugin.xml
 
 RESOURCES += \
     msplans.qrc

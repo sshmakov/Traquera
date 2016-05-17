@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>395</width>
-    <height>490</height>
+    <width>592</width>
+    <height>309</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,59 +16,116 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QTabWidget" name="tabWidget">
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
-       <string>Основное</string>
+       <string>Шаблоны страниц</string>
       </attribute>
-      <widget class="QGroupBox" name="groupBox">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>20</y>
-         <width>311</width>
-         <height>131</height>
-        </rect>
-       </property>
-       <property name="title">
-        <string>Шаблоны</string>
-       </property>
-       <layout class="QGridLayout" name="gridLayout">
-        <item row="1" column="2" colspan="2">
-         <widget class="QToolButton" name="toolButton_2">
-          <property name="text">
-           <string>...</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="2">
-         <widget class="QToolButton" name="toolButton">
-          <property name="text">
-           <string>...</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QLineEdit" name="lineEdit_2"/>
-        </item>
-        <item row="0" column="0">
-         <widget class="QLabel" name="label">
-          <property name="text">
-           <string>Просмотр в списке</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QLineEdit" name="lineEdit"/>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="label_2">
-          <property name="text">
-           <string>Редактор</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="1" column="0">
+        <widget class="QLabel" name="lEdit">
+         <property name="text">
+          <string>Редактор</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLineEdit" name="leEdit"/>
+       </item>
+       <item row="1" column="2">
+        <widget class="QToolButton" name="tbEdit">
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLineEdit" name="leEmail"/>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLineEdit" name="leView"/>
+       </item>
+       <item row="2" column="2">
+        <widget class="QToolButton" name="tbEmail">
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QToolButton" name="tbView">
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="lEmail">
+         <property name="text">
+          <string>E-mail</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="lView">
+         <property name="text">
+          <string>Просмотр в списке</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab_2">
+      <attribute name="title">
+       <string>Поля</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="0" column="1">
+        <widget class="QLineEdit" name="leGroups"/>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="lGroups">
+         <property name="text">
+          <string>Настройка групп полей</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QToolButton" name="tbGroups">
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
      </widget>
     </widget>
    </item>
@@ -84,6 +141,18 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>leView</tabstop>
+  <tabstop>tbView</tabstop>
+  <tabstop>leEdit</tabstop>
+  <tabstop>tbEdit</tabstop>
+  <tabstop>leEmail</tabstop>
+  <tabstop>tbEmail</tabstop>
+  <tabstop>buttonBox</tabstop>
+  <tabstop>leGroups</tabstop>
+  <tabstop>tbGroups</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

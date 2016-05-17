@@ -99,6 +99,7 @@ public:
 class TTGlobalPrivate {
 public:
     TTMainProc *proc;
+    QString dataDir;
     QString initFileName;
     QSqlDatabase userDb;
     QString userDbType;
@@ -132,7 +133,8 @@ TTGlobal::TTGlobal(QObject *parent) :
     d->proc = 0;
     d->settingsObj = new QSettings(COMPANY_NAME, PRODUCT_NAME);
     //ttGlobal = this;
-    d->initFileName = "data/init.xml";
+    d->dataDir = QDir().absoluteFilePath("data");
+    d->initFileName = QDir(d->dataDir).absoluteFilePath("init.xml");
     setObjectName("Global");
     readInitSettings();
     initLibraryPath();
@@ -272,6 +274,19 @@ QString TTGlobal::saveObjectDocumentation(QObject *object, const QString &fileNa
         }
     }
     return doc;
+}
+
+QVariant TTGlobal::optionDefaultValue(const QString &option) const
+{
+    if(option == TQOPTION_EDIT_TEMPLATE)
+        return QDir(d->dataDir).absoluteFilePath("edit.xq");
+    else if(option == TQOPTION_EMAIL_TEMPLATE)
+        return QDir(d->dataDir).absoluteFilePath("email.xq");
+    else if(option == TQOPTION_VIEW_TEMPLATE)
+        return QDir(d->dataDir).absoluteFilePath("scr.xq");
+    else if(option == TQOPTION_GROUP_FIELDS)
+        return QDir(d->dataDir).absoluteFilePath("tracker.xml");
+    return QVariant();
 }
 
 void TTGlobal::showError(const QString &text)

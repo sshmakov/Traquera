@@ -607,6 +607,15 @@ void TQQryFilter::setSourceQueryModel(QAbstractItemModel *sourceModel, TQQryFilt
     sort(0);
 }
 
+void TQQryFilter::setSourceQueryModel(QAbstractItemModel *sourceModel, QString value, int column)
+{
+    QSortFilterProxyModel::setSourceModel(sourceModel);
+    setFilterRegExp(value);
+    setFilterKeyColumn(column);
+    curFilter = filter;
+    sort(0);
+}
+
 QVariant TQQryFilter::data(const QModelIndex &index, int role) const
 {
     if(index.isValid() && index.column()==0 && role==Qt::DecorationRole)

@@ -26,6 +26,12 @@ HEADERS += trkplugin.h\
     tracker_global.h \
     trkcond.h
 
+TRANSLATIONS = \
+    tracker_ru.ts \
+    tracker_en.ts
+
+CODECFORTR = UTF-8
+
 unix:!symbian {
     maemo5 {
         target.path = /opt/usr/lib
@@ -43,20 +49,20 @@ INCLUDEPATH += \
         ../trktool/lib \
         ../common
 
-win32: LIBS += -L$$PWD/../trktool/lib/ -ltrktooln -lshell32 -lshlwapi -L../lib -ltqplugapi  -ltqcondapi
+win32: LIBS += -L$$PWD/../trktool/lib/ -ltrktooln -lshell32 -lshlwapi \
+    -L../lib -ltqplugapi  -ltqcondapi
 
 DEFINES += CLIENT_APP
-DESTDIR = ../plugins/tracker
-
-TRANSLATIONS = tracker_ru.ts tracker_en.ts
-
-CODECFORTR = utf-8
+DESTDIR = ../client/plugins/tracker
 
 OTHER_FILES += \
-    tracker_ru.ts
+    redistribute/tracker/tracker_ru.ts \
+    redistribute/tracker/tracker_en.ts \
+    tracker_ru.ts \
+    tracker_en.ts
 
 redistribute.source = redistribute/tracker
-redistribute.target = ../plugins
+redistribute.target = ../client/plugins
 DEPLOYMENTFOLDERS = redistribute
 
 include(deploy.pri)

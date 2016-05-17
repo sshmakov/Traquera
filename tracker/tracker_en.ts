@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0" language="ru_RU">
+<TS version="2.0" language="en_US">
 <defaultcodec>UTF-8</defaultcodec>
 <context>
     <name>QObject</name>
     <message>
         <location filename="trkview.cpp" line="42"/>
         <source>TRK_E_VERSION_MISMATCH</source>
-        <translation type="unfinished">Несоответствие версии базыданных</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkview.cpp" line="43"/>
         <source>TRK_E_OUT_OF_MEMORY</source>
-        <translation type="unfinished">Нехватка памяти</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkview.cpp" line="44"/>
@@ -335,17 +335,17 @@
     <message>
         <location filename="trkcond.cpp" line="1236"/>
         <source>Любое изменение</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Any change</translation>
     </message>
     <message>
         <location filename="trkcond.cpp" line="1239"/>
         <source>Добавление</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Submitted</translation>
     </message>
     <message>
         <location filename="trkcond.cpp" line="1242"/>
         <source>Редактирование</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Edited</translation>
     </message>
     <message>
         <location filename="trkcond.cpp" line="1245"/>
@@ -380,7 +380,7 @@
     <message>
         <location filename="trkcond.cpp" line="1268"/>
         <source>&lt;пусто&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">&lt;null&gt;</translation>
     </message>
     <message>
         <location filename="trkcond.cpp" line="1287"/>
@@ -910,12 +910,12 @@
         <location filename="trkview.cpp" line="3592"/>
         <source>Public queries</source>
         <oldsource>Public</oldsource>
-        <translation>Общие выборки</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="trkview.cpp" line="3592"/>
         <source>Private queries</source>
-        <translation>Личные выборки</translation>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>

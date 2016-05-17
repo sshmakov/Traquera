@@ -19,7 +19,7 @@ TRANSLATIONS    = \
 	lang/client_en.ts \
 	lang/client_ru.ts
 # CODECFORTR      = Latin1
-CODECFORTR = utf-8
+CODECFORTR = UTF-8
 
 # Input
 FORMS += ui/tracksmain.ui ui/querypage.ui ui/trklogin.ui ui/filters.ui ui/scrwidg.ui \

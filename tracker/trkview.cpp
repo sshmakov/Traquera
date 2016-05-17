@@ -3532,8 +3532,11 @@ TrkToolQryModel::TrkToolQryModel(QObject *parent)
 {
     headers
             << tr("Название выборки")
+            << tr("Группа")
+            << tr("Тип записи")
             << tr("Публичная")
-            << tr("Тип записи");
+               ;
+
 }
 
 void TrkToolQryModel::appendQry(const QString &queryName, bool isPublic, TRK_UINT rectype)
@@ -3581,9 +3584,11 @@ QVariant TrkToolQryModel::displayColData(const TrkQuery &rec, int col) const
     case 0:
         return rec.qryName;
     case 1:
-        return rec.isPublic;
+        return rec.isPublic ? tr("Public queries") : tr("Private queries");
     case 2:
-         return rec.qryTypeId;
+        return rec.qryTypeId;
+    case 3:
+        return rec.isPublic;
     }
     return QVariant();
 }

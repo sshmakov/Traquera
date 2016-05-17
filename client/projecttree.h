@@ -40,7 +40,7 @@ protected:
     TQProjectTreeItem info;
 public:
     TTFolderModel *folders;
-    QList<TQQryFilter *> queryModels;
+    QList<QAbstractItemModel *> queryModels;
 //    TQQryFilter *userModel;
 //    TQQryFilter *publicModel;
 

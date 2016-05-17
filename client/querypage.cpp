@@ -318,11 +318,13 @@ void QueryPage::setQueryModel(TQAbstractProject *prj, TQRecModel *model)
     }
     d->tmodel = model;
     d->modelProject = prj;
-    d->xqFile = "data/scr.xq";
+    d->xqFile = ttglobal()->optionDefaultValue(TQOPTION_VIEW_TEMPLATE).toString();
+//    d->xqFile = "data/scr.xq";
     if(prj)
     {
         TQScopeSettings sets(d->modelProject->projectSettings());
-        d->xqFile = sets->value("RecordTemplate", d->xqFile).toString();
+        d->xqFile = prj->optionValue(TQOPTION_VIEW_TEMPLATE, d->xqFile).toString();
+//        d->xqFile = sets->value("RecordTemplate", d->xqFile).toString();
     }
     if(!d->tmodel->isSystemModel())
         d->tmodel->setParent(this);

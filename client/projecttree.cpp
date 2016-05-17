@@ -184,6 +184,28 @@ bool TQOneProjectTree::open(const QString &connectString)
 
     int rows;
     QAbstractItemModel *queries;
+    TQQryFilter *groupModel;
+
+    const int grCol = 1;
+    queries = project()->queryModel(recordType());
+    if(queries)
+    {
+        QMap<QString,int> groups;
+        for(int r=0; r<queries->rowCount(); r++)
+        {
+            QVariant v = queries->index(r,grCol).data();
+            QString group = v.toString();
+            groups[group] = 1;
+        }
+        foreach(QString group, groups.keys())
+        {
+            groupModel = new TQQryFilter(this);
+            groupModel->setSourceQueryModel(queries, group, grCol);
+            appendSourceModel(groupModel, group);
+            queryModels.append(groupModel);
+        }
+    }
+    /*
     TQQryFilter *userModel, *publicModel;
     queries = project()->queryModel(recordType());
     if(queries)
@@ -204,6 +226,7 @@ bool TQOneProjectTree::open(const QString &connectString)
         rows = publicModel->rowCount();
         queryModels.append(publicModel);
     }
+    */
     setMaxColCount(1);    
     endResetModel();
 
@@ -222,7 +245,7 @@ void TQOneProjectTree::close()
         delete folders;
         folders = 0;
     }
-    foreach(TQQryFilter *model, queryModels)
+    foreach(QAbstractItemModel *model, queryModels)
     {
         removeSourceModel(model);
         model->deleteLater();

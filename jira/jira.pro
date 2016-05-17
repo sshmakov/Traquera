@@ -41,7 +41,14 @@ unix:!symbian {
 }
 
 win32:LIBS += -L../lib -ltqplugapi -ltqcondapi
-DESTDIR = ../plugins/jira
+DESTDIR = ../client/plugins/jira
+
+CODECFORTR = UTF-8
+
+TRANSLATIONS = \
+    redistribute/jira/lang/jira_ru.ts \
+    redistribute/jira/lang/jira_en.ts
+
 
 FORMS += \
     jiraoptions.ui \
@@ -53,4 +60,10 @@ OTHER_FILES += \
     mykey.pub \
     mykey.pem \
     jira.ini \
-    data/issue.xq
+    data/issue.xq \
+    redistribute/jira/lang/tracker_ru.ts \
+    redistribute/jira/lang/tracker_en.ts \
+    redistribute/jira/lang/tracker_ru.ts \
+    redistribute/jira/lang/tracker_en.ts \
+    redistribute/jira/lang/jira_ru.ts \
+    redistribute/jira/lang/jira_en.ts

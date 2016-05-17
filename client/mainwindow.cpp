@@ -43,6 +43,8 @@
 #include <tqjson.h>
 #include "trkdecorator.h"
 #include <filespage.h>
+#include "tqlogindlg.h"
+#include "tqprjoptdlg.h"
 
 extern int uniqueAlbumId;
 extern int uniqueArtistId;
@@ -163,6 +165,11 @@ MainWindow::MainWindow(QWidget *parent)
 //    connect(connectWidget,SIGNAL(connectClicked(ConnectParams)),SLOT(connectTrackerParams(ConnectParams)));
     readProjectTree();
     setCurrentProject(0);
+
+    connect(ttglobal()->networkManager(),
+            SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
+            SLOT(proxyAuthentication(QNetworkProxy,QAuthenticator*)),
+            Qt::DirectConnection);
 
     ttglobal()->registerOptionsWidget(tr("Сеть")+"/"+tr("Прокси"), ProxyOptions::proxyOptionsFunc);
     ProxyOptions::loadSettings();
@@ -751,6 +758,14 @@ void MainWindow::updateModifyPanel(const TQAbstractRecordTypeDef *typeDef, const
 {
     modifyPanel->setRecordDef(typeDef);
     modifyPanel->fillValues(records);
+}
+
+void MainWindow::proxyAuthentication(QNetworkProxy proxy, QAuthenticator *auth)
+{
+    TQLoginDlg dlg;
+    dlg.setAuthenticator(auth);
+    if(dlg.exec())
+        dlg.assignToAuthenticator(auth);
 }
 
 void MainWindow::calcCountRecords()
@@ -1784,15 +1799,22 @@ void MainWindow::on_treeView_customContextMenuRequested(const QPoint &pos)
     }
     if(selectedTreeItem.isProjectSelected)
     {
-        menu.addAction(actionMakeActive);
-        menu.addSeparator();
         if(selectedTreeItem.prj)
+        {
+            menu.addAction(actionMakeActive);
+            menu.addSeparator();
             menu.addAction(actionClose_Project);
+            menu.addAction(actionProjectOptions);
+            menu.setDefaultAction(actionMakeActive);
+        }
         else
+        {
             menu.addAction(actionOpen_Project);
-        menu.addAction(actionEditProject);
-        menu.addSeparator();
-        menu.addAction(actionDelete_Project);
+            menu.addAction(actionEditProject);
+            menu.addSeparator();
+            menu.addAction(actionDelete_Project);
+            menu.setDefaultAction(actionOpen_Project);
+        }
     }
     menu.exec(gPos);
 }
@@ -2090,6 +2112,21 @@ void MainWindow::on_actionEditQuery_triggered()
 
 void MainWindow::on_actionNewQuery_triggered()
 {
+    readSelectedTreeItem();
+    if(selectedTreeItem.isQryGroupSelected)
+    {
+        QScopedPointer<TQAbstractQWController> dlgContr(selectedTreeItem.prj->queryWidgetController(selectedTreeItem.recordType));
+        if(dlgContr.isNull())
+            return;
+        TQQueryDef *qDef = selectedTreeItem.prj->createQueryDefinition(selectedTreeItem.recordType);
+        dlgContr->setQueryDefinition(qDef);
+        if(dlgContr->exec() == QDialog::Accepted)
+        {
+            selectedTreeItem.prj->saveQueryDefinition(dlgContr->queryDefinition(), dlgContr->queryName(), selectedTreeItem.recordType);
+            selectedTreeItem.prj->refreshModel(selectedTreeItem.qryModel->sourceModel());
+        }
+    }
+    /*
     TQQueryWidget dlg;
     TQQueryDef *qDef = selectedTreeItem.prj->createQueryDefinition(selectedTreeItem.recordType);
     if(!qDef)
@@ -2100,7 +2137,7 @@ void MainWindow::on_actionNewQuery_triggered()
         selectedTreeItem.prj->saveQueryDefinition(dlg.queryDefinition(), dlg.queryName(), selectedTreeItem.recordType);
         selectedTreeItem.prj->refreshModel(selectedTreeItem.qryModel->sourceModel());
     }
-
+    */
 }
 
 void MainWindow::on_actionSettings_triggered()
@@ -2127,7 +2164,6 @@ void MainWindow::on_actionOpen_Project_triggered()
 //        setActiveProject(prj);
 //    }
 }
-
 
 void MainWindow::on_actionEditProject_triggered()
 {
@@ -2297,4 +2333,13 @@ void MainWindow::on_cbCurrentProjectName_currentIndexChanged(int index)
     TQAbstractProject *prj = qobject_cast<TQAbstractProject *>((QObject*)cbCurrentProjectName->itemData(index).toInt());
     if(prj)
         setCurrentProject(prj);
+}
+
+void MainWindow::on_actionProjectOptions_triggered()
+{
+    if(!selectedTreeItem.prj)
+        return;
+    TQProjectOptionsDialog dlg;
+    dlg.setProject(selectedTreeItem.prj);
+    dlg.exec();
 }

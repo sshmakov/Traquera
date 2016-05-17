@@ -696,6 +696,11 @@
     <string>Сделать текущим</string>
    </property>
   </action>
+  <action name="actionProjectOptions">
+   <property name="text">
+    <string>Настройки проекта</string>
+   </property>
+  </action>
  </widget>
  <resources>
   <include location="../resources/tracks.qrc"/>

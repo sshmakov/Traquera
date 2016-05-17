@@ -227,6 +227,11 @@ class TQAbstractQWController;
 
 class TQAbstractProjectPrivate;
 
+#define TQOPTION_VIEW_TEMPLATE "ViewTemplate"
+#define TQOPTION_EDIT_TEMPLATE "EditTemplate"
+#define TQOPTION_EMAIL_TEMPLATE "EmailTemplate"
+#define TQOPTION_GROUP_FIELDS "GroupFields"
+
 class TQPLUGIN_SHARED TQAbstractProject: public QObject
 {
     Q_OBJECT
@@ -296,6 +301,8 @@ public:
     virtual int userId(const QString &login) = 0;
     virtual TQGroupList userGroups() = 0;
     virtual QSettings *projectSettings() const;
+    virtual QVariant optionValue(const QString &option, const QVariant &defaultValue = QVariant()) const;
+    virtual void setOptionValue(const QString &option, const QVariant &value);
 signals:
     void openedModel(const QAbstractItemModel *model);
     void recordChanged(int id);

@@ -1,5 +1,6 @@
 #include "tqbase.h"
 #include "tqjson.h"
+#include "ttglobal.h"
 
 QHash<QString, TQAbstractProject *> TQAbstractDB::projectList;
 
@@ -172,6 +173,25 @@ QSettings *TQAbstractProject::projectSettings() const
     set->beginGroup("Projects");
     set->beginGroup(QString("%1").arg(projectName()));
     return set;
+}
+
+QVariant TQAbstractProject::optionValue(const QString &option, const QVariant &defaultValue) const
+{
+    QVariant res;
+    QSettings *sets = projectSettings();
+    if(sets)
+        res = sets->value(option, defaultValue);
+//    if(res.isNull())
+//        res = ttglobal()->optionDefaultValue(option);
+    return res;
+}
+
+void TQAbstractProject::setOptionValue(const QString &option, const QVariant &value)
+{
+    QSettings *sets = projectSettings();
+    if(!sets)
+        return;
+    sets->setValue(option, value);
 }
 
 /*  TQBaseProject  */

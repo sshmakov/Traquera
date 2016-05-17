@@ -16,6 +16,7 @@
 #include "unionmodel.h"
 #include <ttglobal.h>
 #include "projecttree.h"
+#include <QNetworkProxy>
 
 QT_BEGIN_NAMESPACE
 class QComboBox;
@@ -209,6 +210,7 @@ public slots:
     QToolBar *addToolBar(const QString &title);
     void addWidgetToDock(const QString &title, QWidget *widget, Qt::DockWidgetArea area = Qt::RightDockWidgetArea);
     void updateModifyPanel(const TQAbstractRecordTypeDef *typeDef, const QObjectList &records);
+    void proxyAuthentication(QNetworkProxy proxy ,QAuthenticator* auth);
 
 signals:
     void updatingDetails();
@@ -282,6 +284,7 @@ private slots:
     void on_actionEditProject_triggered();
     void on_actionMakeActive_triggered();
     void on_cbCurrentProjectName_currentIndexChanged(int index);
+    void on_actionProjectOptions_triggered();
 };
 
 

@@ -57,7 +57,11 @@ void TQLoginDlg::setProject(const QString &project)
 
 void TQLoginDlg::setAuthenticator(const QAuthenticator *authenticator)
 {
-    setProject(authenticator->option("project").toString());
+    QVariantHash hash = authenticator->options();
+    if(hash.contains("project"))
+        setProject(hash.value("project").toString());
+    else
+        setProject(authenticator->realm());
     setUser(authenticator->user());
     setPassword(authenticator->password());
 }

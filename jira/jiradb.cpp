@@ -11,6 +11,7 @@
 #include <tqcond.h>
 #include "jiraqry.h"
 #include "jiraquerydialog.h"
+#include <ttglobal.h>
 
 Q_EXPORT_PLUGIN2("jira", JiraPlugin)
 
@@ -25,7 +26,22 @@ JiraPlugin::JiraPlugin(QObject *parent)
     : QObject(parent)
 {
     jira = this;
-//    servers << "http://rt.allrecall.com:8081/";
+
+    QCoreApplication *app = QCoreApplication::instance();
+    QString locale = QLocale::system().name();
+    QTranslator *translator = new QTranslator();
+    for(int i=1; i<app->argc(); i++)
+    {
+        if(app->arguments().value(i).trimmed().compare("-lang") == 0)
+        {
+            if(++i<app->argc())
+                locale=app->arguments().value(i);
+            break;
+        }
+    }
+    if(!translator->load(QString("tracker_") + locale,pluginModule+"/lang"))
+        qDebug() << "Can't load tracker translator";
+    app->installTranslator(translator);
 }
 
 
@@ -132,7 +148,9 @@ JiraDB::JiraDB(QObject *parent)
 {
     d->isLogged = false;
     parser->setCharset("UTF-8");
-    man = new QNetworkAccessManager(this);
+    man =
+            //new QNetworkAccessManager(this);
+            ttglobal()->networkManager();
     connect(man, SIGNAL(finished(QNetworkReply*)), SLOT(replyFinished(QNetworkReply*)));
 
     /*QObject *obj;
@@ -1088,6 +1106,24 @@ TQAbstractQWController *JiraProject::queryWidgetController(int rectype)
     return new JiraQueryDialogController(this);
 }
 
+QVariant JiraProject::optionValue(const QString &option, const QVariant &defaultValue) const
+{
+    QVariant v = TQAbstractProject::optionValue(option);
+    if(v.isNull())
+    {
+        if(option == TQOPTION_VIEW_TEMPLATE
+                || option == TQOPTION_EDIT_TEMPLATE
+                || option == TQOPTION_EMAIL_TEMPLATE
+                )
+        {
+            v = jira->dataDir.absoluteFilePath("issue.xq");
+        }
+    }
+    if(v.isNull())
+        return defaultValue;
+    return v;
+}
+
 /*TQAbstractRecordTypeDef *JiraProject::loadRecordTypeDef(int recordType)
 {
     JiraRecTypeDef *rdef = new JiraRecTypeDef(this);
@@ -1774,7 +1810,7 @@ JiraFilterModel::JiraFilterModel(QObject *parent)
 {
     headers
             << tr("Имя фильтра")
-            << tr("Общий");
+            << tr("Группа");
 }
 
 QVariant JiraFilterModel::displayColData(const JiraFilter &rec, int col) const
@@ -1784,7 +1820,7 @@ QVariant JiraFilterModel::displayColData(const JiraFilter &rec, int col) const
     case 0:
         return rec.name;
     case 1:
-        return rec.isSystem;
+        return rec.isSystem ? tr("Системные фильтры") : rec.isServerStored ? tr ("Избранные фильтры") : tr("Локальные фильтры");
     }
     return QVariant();
 }

@@ -55,6 +55,22 @@ void TrkPlugin::initPlugin(QObject *obj, const QString &modulePath)
 
     QFileInfo fi(modulePath);
     pluginModule = fi.absoluteFilePath();
+
+    QCoreApplication *app = QCoreApplication::instance();
+    QString locale = QLocale::system().name();
+    QTranslator *translator = new QTranslator();
+    for(int i=1; i<app->argc(); i++)
+    {
+        if(app->arguments().value(i).trimmed().compare("-lang") == 0)
+        {
+            if(++i<app->argc())
+                locale=app->arguments().value(i);
+            break;
+        }
+    }
+    if(!translator->load(QString("tracker_") + locale,pluginModule+"/lang"))
+        qDebug() << "Can't load tracker translator";
+    app->installTranslator(translator);
     /*
     QDir pDir;
     pDir = pluginModule; //fi.absoluteDir();

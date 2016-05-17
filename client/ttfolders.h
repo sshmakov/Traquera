@@ -80,6 +80,7 @@ public:
     enum Filter {All, UserOnly, PublicOnly} filter;
     TQQryFilter(QObject *parent=0);
     void setSourceQueryModel(QAbstractItemModel *sourceModel, Filter filter);
+    void setSourceQueryModel(QAbstractItemModel *sourceModel, QString value, int column);
     virtual QVariant data(const QModelIndex &index, int role) const;
 private:
     Filter curFilter;
