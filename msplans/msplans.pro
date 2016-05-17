@@ -48,21 +48,19 @@ unix:!symbian {
     INSTALLS += target
 }
 
-datafolder.source = redistribute
-datafolder.target = .
-DEPLOYMENTFOLDERS = datafolder
-
 INCLUDEPATH += ../common
+
+datafolder.source = redistribute/msplans
+datafolder.target = ../client/plugins
+DEPLOYMENTFOLDERS = datafolder
 
 include(deploy.pri)
 qtcAddDeployment()
 
 OTHER_FILES += \
-    redistribute/data/project.xml \
-    redistribute/data/scr2prj.xml \
-    redistribute/data/scr2prj.xml \
-    redistribute/data/project.xml \
-    redistribute/data/plugin.xml
+    redistribute/msplans/data/scr2prj.xml \
+    redistribute/msplans/data/project.xml \
+    redistribute/msplans/data/plugin.xml
 
 RESOURCES += \
     msplans.qrc

@@ -66,4 +66,12 @@ OTHER_FILES += \
     redistribute/jira/lang/tracker_ru.ts \
     redistribute/jira/lang/tracker_en.ts \
     redistribute/jira/lang/jira_ru.ts \
-    redistribute/jira/lang/jira_en.ts
+    redistribute/jira/lang/jira_en.ts \
+    redistribute/jira/data/issue.xq
+
+datafolder.source = redistribute/jira
+datafolder.target = ../client/plugins
+DEPLOYMENTFOLDERS = datafolder
+
+include(deploy.pri)
+qtcAddDeployment()
