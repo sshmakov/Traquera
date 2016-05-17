@@ -32,8 +32,8 @@ unix:!symbian {
 
 INCLUDEPATH += \
         ../common
-win32:LIBS += -L../lib -ltqplugapi
-DESTDIR = ../lib
+win32:LIBS += -L../client -ltqplugapi
+DESTDIR = ../client
 
 FORMS += \
     tqqrywid.ui

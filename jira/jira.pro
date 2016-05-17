@@ -40,7 +40,7 @@ unix:!symbian {
     INSTALLS += target
 }
 
-win32:LIBS += -L../lib -ltqplugapi -ltqcondapi
+win32:LIBS += -L../lib -L../client -ltqplugapi -ltqcondapi
 DESTDIR = ../client/plugins/jira
 
 CODECFORTR = UTF-8

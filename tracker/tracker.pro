@@ -50,7 +50,7 @@ INCLUDEPATH += \
         ../common
 
 win32: LIBS += -L$$PWD/../trktool/lib/ -ltrktooln -lshell32 -lshlwapi \
-    -L../lib -ltqplugapi  -ltqcondapi
+    -L../lib -L../client -ltqplugapi  -ltqcondapi
 
 DEFINES += CLIENT_APP
 DESTDIR = ../client/plugins/tracker

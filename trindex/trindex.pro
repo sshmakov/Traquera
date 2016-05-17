@@ -31,8 +31,8 @@ HEADERS += \
 DEFINES += CONSOLE_APP
 INCLUDEPATH += $$PWD/../trktool/lib ../common ../tracker
 DEPENDPATH += $$PWD/../trktool/lib
-win32: LIBS += -L$$PWD/../trktool/lib -ltrktooln -lshell32 -lshlwapi -lodbc32 -L../lib -ltqplugapi   -ltqcondapi \
-    -L../plugins/tracker -ltracker
+win32: LIBS += -L$$PWD/../trktool/lib -ltrktooln -lshell32 -lshlwapi -lodbc32 -L../client -ltqplugapi   -ltqcondapi \
+    -L../client/plugins/tracker -ltracker
 
 OTHER_FILES += \
     verifyn.dll \
