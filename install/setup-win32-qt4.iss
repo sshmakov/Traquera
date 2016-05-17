@@ -68,21 +68,25 @@ Source: "{#BuildPath}\client\release\traquera-protect.exe"; DestName: "traquera.
 #else
 Source: "{#BuildPath}\client\release\traquera.exe"; DestName: "traquera.exe"; DestDir: "{app}"; Components: main; Flags: ignoreversion
 #endif
-Source: "{#BuildPath}\lib\*.dll"; DestDir: "{app}"; Components: main; Flags: ignoreversion
+Source: "{#BuildPath}\client\*.dll"; DestDir: "{app}"; Components: main; Flags: ignoreversion
 Source: "redistribute\*"; DestDir: "{app}"; Components: main; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#QTDIR}\plugins\imageformats\*"; DestDir: "{app}\imageformats"; Components: main; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#QTDIR}\plugins\sqldrivers\*"; DestDir: "{app}\sqldrivers"; Components: main; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\client\data\*"; DestDir: "{app}\data"; Components: main; Flags: ignoreversion recursesubdirs createallsubdirs 
 #if VARIANT != "RS"
 ; Jira
-Source: "{#BuildPath}\plugins\jira\jira.dll"; DestDir: "{app}\plugins\jira"; Components: "plugins/jira"
+Source: "{#BuildPath}\client\plugins\jira\jira.dll"; DestDir: "{app}\plugins\jira"; Components: "plugins/jira"
+Source: "{#BuildPath}\client\plugins\jira\data\*"; DestDir: "{app}\plugins\jira\data"; Components: "plugins/jira"
+Source: "{#BuildPath}\client\plugins\jira\lang\*.qm"; DestDir: "{app}\plugins\jira\lang"; Components: "plugins/jira"
 #endif
 ; Tracker
-Source: "{#BuildPath}\plugins\tracker\tracker.dll"; DestDir: "{app}\plugins\tracker"; Components: "plugins/tracker"
-Source: "{#BuildPath}\plugins\tracker\plugin.ini"; DestDir: "{app}\plugins\tracker"; Components: "plugins/tracker"
-Source: "{#BuildPath}\plugins\tracker\data\*"; DestDir: "{app}\plugins\tracker\data"; Components: "plugins/tracker"
+Source: "{#BuildPath}\client\plugins\tracker\tracker.dll"; DestDir: "{app}\plugins\tracker"; Components: "plugins/tracker"
+Source: "{#BuildPath}\client\plugins\tracker\plugin.ini"; DestDir: "{app}\plugins\tracker"; Components: "plugins/tracker"
+Source: "{#BuildPath}\client\plugins\tracker\data\*"; DestDir: "{app}\plugins\tracker\data"; Components: "plugins/tracker"
+Source: "{#BuildPath}\client\plugins\tracker\lang\*.qm"; DestDir: "{app}\plugins\tracker\lang"; Components: "plugins/tracker"
 ; MSProject
-Source: "{#BuildPath}\plugins\msplans\msplans.dll"; DestDir: "{app}\plugins\msplans"; Components: "plugins/msplans"
+Source: "{#BuildPath}\client\plugins\msplans\msplans.dll"; DestDir: "{app}\plugins\msplans"; Components: "plugins/msplans"
+Source: "{#BuildPath}\client\plugins\msplans\data\*"; DestDir: "{app}\plugins\msplans\data"; Components: "plugins/msplans"
 
 #if VARIANT == "RS"
 Source: "RS\*"; DestDir: "{app}\data"; Components: main; Flags: ignoreversion recursesubdirs createallsubdirs 
