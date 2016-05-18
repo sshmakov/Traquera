@@ -175,15 +175,12 @@ QSettings *TQAbstractProject::projectSettings() const
     return set;
 }
 
-QVariant TQAbstractProject::optionValue(const QString &option, const QVariant &defaultValue) const
+QVariant TQAbstractProject::optionValue(const QString &option) const
 {
-    QVariant res;
     QSettings *sets = projectSettings();
-    if(sets)
-        res = sets->value(option, defaultValue);
-//    if(res.isNull())
-//        res = ttglobal()->optionDefaultValue(option);
-    return res;
+    if(sets->contains(option))
+        return sets->value(option);
+    return ttglobal()->optionDefaultValue(option);
 }
 
 void TQAbstractProject::setOptionValue(const QString &option, const QVariant &value)

@@ -43,18 +43,19 @@ function openQueryPage(numbers)
     m.openQueryById(numbers,false);
 }
 
+
 function replaceNumbers()
 {
   //var re = /([\s\b,.])#([0-9]+)/g;
   var re1 = /^#([0-9]+)/g;
   var re2 = /([\s\b,.^])#([0-9]+)/g;
-  var pro1 = '<a href="javascript:query.openRecordId(';
+  var pro1 = '<a href="#" onclick="javascript:query.openRecordId(';
   var pro21 = ');" oncontextmenu="javascript:return menuSCR(';
   var pro22 = ', event);" >';
-  var pro3 = '<a href="javascript:query.appendId(';
+  var pro3 = '<a href="#" onclick="javascript:query.appendId(';
   var pro4 = ');">';
   var ep = '</a>';
-  var notes = document.getElementsByClassName('noteText');
+  var notes = document.getElementsByClassName('replNums'); //noteText
   for(var i = 0; i < notes.length; i++)
   {
     var s = notes[i].innerHTML;
@@ -104,16 +105,25 @@ function menuSCR(scrid, evt) {
     // Показываем собственное контекстное меню
     var menu = contextMenuId;
     var rec = global.getRecord(scrid);
-    var title = "";
+    var title = "", fix = "", state = "";
     if(rec)
+    {
         title = rec.title;
+        state = rec.value("State") + " " + rec.value("Current State");
+        fix = rec.value("Fixed In Build Eng.");
+    }
     else
         title = "<i>(не найден)</i>";
+    if(fix && fix != "0")
+    {
+	state = state + " " + fix;
+    }
     //alert(menu);
     //alert(type);
     var html = "";
     html = '<ul class="SimpleContextMenu">';
-    html += "<li>Запрос " + scrid + " "+ title +"</li>";
+    html += "<li><b>Запрос " + scrid + '</b> <span class="shortInfo">' + state +"</span><br/>"
+            + title + "</li>";
     html += '<li><a href="#" onclick="copyToClip('+scrid+'); return false;">Копировать номер</a></li>';
     html += '<li><a href="#" onclick="query.openRecordId('+scrid+'); return false;">Открыть</a></li>';
     html += '<li><a href="#" onclick="query.appendId('+scrid+'); return false;">Добавить в список</a></li>';
@@ -122,10 +132,15 @@ function menuSCR(scrid, evt) {
     // Если есть что показать - показываем
     if (html) {
         var pos = defPosition(evt);
-        //alert(pos.x + " " + pos.y + " " + html);
+        //alert(pos.x + " " + pos.y + " " + window.innerWidth + " " + html);
         menu.innerHTML = html;
         menu.style.top = pos.y;
-        menu.style.left = pos.x;
+        var x = pos.x;
+        if(x > window.innerWidth - 300)
+          x = window.innerWidth - 300;
+        if(x < 0)
+          x = 0;
+        menu.style.left = x;
         menu.style.display = "";
     }
     // Блокируем всплывание стандартного браузерного меню

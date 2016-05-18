@@ -323,7 +323,7 @@ void QueryPage::setQueryModel(TQAbstractProject *prj, TQRecModel *model)
     if(prj)
     {
         TQScopeSettings sets(d->modelProject->projectSettings());
-        d->xqFile = prj->optionValue(TQOPTION_VIEW_TEMPLATE, d->xqFile).toString();
+        d->xqFile = prj->optionValue(TQOPTION_VIEW_TEMPLATE).toString();
 //        d->xqFile = sets->value("RecordTemplate", d->xqFile).toString();
     }
     if(!d->tmodel->isSystemModel())
@@ -648,7 +648,7 @@ QString QueryPage::makeRecordsPage(const QObjectList &records, const QString &xq
 
 void QueryPage::drawNotes(const QModelIndex &qryIndex)
 {
-    QString base = qApp->applicationDirPath()+"/data/";
+    QString base = ttglobal()->dataDir()+"/record.htm";
     QString page = makeRecordPage(qryIndex, d->xqFile);
 #ifdef QT_DEBUG
     QFile testRes("!testResult.html");
@@ -729,7 +729,9 @@ void QueryPage::sendEmail3(const QObjectList &records)
     json += "]";
 
     QAxScriptManager *man = ttglobal()->newAxScriptManager();
-    QAxScript * script = man->load("C:/gits/traquera/client/data/email3.js","email");
+    QString scriptFileName = project()->optionValue(TQOPTION_EMAIL_SCRIPT).toString();
+    QAxScript * script = man->load(scriptFileName,"email");
+//    QAxScript * script = man->load("C:/gits/traquera/client/data/email3.js","email");
 //    QStringList funcs = script->functions();
 //    script->call("test", QList<QVariant>());
     delete man;
@@ -909,7 +911,8 @@ void QueryPage::printPreview()
     QObjectList records = selectedRecords();
     if(records.isEmpty())
         return;
-    QString page = makeRecordsPage(records,"data/print.xq");
+    QString page = makeRecordsPage(records,
+                                   project()->optionValue(TQOPTION_PRINT_TEMPLATE).toString());
     QWebView web(this);
     web.setHtml(page);
 #ifdef QT_DEBUG

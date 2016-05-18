@@ -65,7 +65,7 @@ else
     }
 }
 mail.Subject = subject;
-mail.Display(true);
+mail.Display(false);
 
 //var hasSent = mail.Sent;
 //app = null;

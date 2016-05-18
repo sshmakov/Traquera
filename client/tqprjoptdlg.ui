@@ -21,61 +21,30 @@
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
-       <string>Шаблоны страниц</string>
+       <string>Страницы</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_2">
-       <item row="1" column="0">
-        <widget class="QLabel" name="lEdit">
-         <property name="text">
-          <string>Редактор</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QLineEdit" name="leEdit"/>
-       </item>
-       <item row="1" column="2">
-        <widget class="QToolButton" name="tbEdit">
+       <item row="4" column="2">
+        <widget class="QToolButton" name="tbEmailScript">
          <property name="text">
           <string>...</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
-        <widget class="QLineEdit" name="leEmail"/>
+       <item row="4" column="0">
+        <widget class="QLabel" name="lEmailScript">
+         <property name="text">
+          <string>Скрипт e-mail</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QLineEdit" name="leEmailScript"/>
        </item>
        <item row="0" column="1">
         <widget class="QLineEdit" name="leView"/>
        </item>
-       <item row="2" column="2">
-        <widget class="QToolButton" name="tbEmail">
-         <property name="text">
-          <string>...</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="2">
-        <widget class="QToolButton" name="tbView">
-         <property name="text">
-          <string>...</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="lEmail">
-         <property name="text">
-          <string>E-mail</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="lView">
-         <property name="text">
-          <string>Просмотр в списке</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
+       <item row="5" column="1">
         <spacer name="verticalSpacer">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -87,6 +56,71 @@
           </size>
          </property>
         </spacer>
+       </item>
+       <item row="0" column="2">
+        <widget class="QToolButton" name="tbView">
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QLineEdit" name="leEmail"/>
+       </item>
+       <item row="1" column="2">
+        <widget class="QToolButton" name="tbEdit">
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="lEmail">
+         <property name="text">
+          <string>Шаблон e-mail</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLineEdit" name="leEdit"/>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="lView">
+         <property name="text">
+          <string>Шаблон просмотра</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="2">
+        <widget class="QToolButton" name="tbEmail">
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="lEdit">
+         <property name="text">
+          <string>Шаблон редактора</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLineEdit" name="lePrint"/>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="lPrint">
+         <property name="text">
+          <string>Шаблон печати</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="2">
+        <widget class="QToolButton" name="tbPrint">
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>
@@ -147,11 +181,15 @@
   <tabstop>tbView</tabstop>
   <tabstop>leEdit</tabstop>
   <tabstop>tbEdit</tabstop>
+  <tabstop>lePrint</tabstop>
+  <tabstop>tbPrint</tabstop>
   <tabstop>leEmail</tabstop>
   <tabstop>tbEmail</tabstop>
-  <tabstop>buttonBox</tabstop>
+  <tabstop>leEmailScript</tabstop>
+  <tabstop>tbEmailScript</tabstop>
   <tabstop>leGroups</tabstop>
   <tabstop>tbGroups</tabstop>
+  <tabstop>buttonBox</tabstop>
  </tabstops>
  <resources/>
  <connections>

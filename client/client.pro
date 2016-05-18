@@ -148,7 +148,17 @@ OTHER_FILES += \
     traquera-win.rc \
     lang/tracks_ru.ts \
     lang/tracks_en.ts \
-    baloons.ico
+    baloons.ico \
+    data/funcs3.js \
+    data/funcs2.js \
+    data/funcs.js \
+    data/e-window.js \
+    data/e-widget.js \
+    data/email.js \
+    data/e-inplace.js \
+    data/editor-common.js \
+    data/style2.css \
+    data/editor.css
 
 
 datafolder.source = data

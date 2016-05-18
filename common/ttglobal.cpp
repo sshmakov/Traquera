@@ -133,7 +133,11 @@ TTGlobal::TTGlobal(QObject *parent) :
     d->proc = 0;
     d->settingsObj = new QSettings(COMPANY_NAME, PRODUCT_NAME);
     //ttGlobal = this;
+#ifdef QT_DEBUG
     d->dataDir = QDir().absoluteFilePath("data");
+#else
+    d->dataDir = QDir(qApp->applicationDirPath()).absoluteFilePath("data");
+#endif
     d->initFileName = QDir(d->dataDir).absoluteFilePath("init.xml");
     setObjectName("Global");
     readInitSettings();
@@ -282,11 +286,20 @@ QVariant TTGlobal::optionDefaultValue(const QString &option) const
         return QDir(d->dataDir).absoluteFilePath("edit.xq");
     else if(option == TQOPTION_EMAIL_TEMPLATE)
         return QDir(d->dataDir).absoluteFilePath("email.xq");
+    else if(option == TQOPTION_PRINT_TEMPLATE)
+        return QDir(d->dataDir).absoluteFilePath("print.xq");
+    else if(option == TQOPTION_EMAIL_SCRIPT)
+        return QDir(d->dataDir).absoluteFilePath("email.js");
     else if(option == TQOPTION_VIEW_TEMPLATE)
         return QDir(d->dataDir).absoluteFilePath("scr.xq");
     else if(option == TQOPTION_GROUP_FIELDS)
         return QDir(d->dataDir).absoluteFilePath("tracker.xml");
     return QVariant();
+}
+
+QString TTGlobal::dataDir() const
+{
+    return d->dataDir;
 }
 
 void TTGlobal::showError(const QString &text)

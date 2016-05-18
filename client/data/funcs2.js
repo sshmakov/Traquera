@@ -52,7 +52,7 @@ function showPerforce(file)
 function openUrl(url)
 {
   //debug2.innerText = url;
-  global.shell('start iexplore "'+url+'"');
+  global.shell('cmd /c start iexplore "'+url+'"');
 }
 
 
@@ -60,7 +60,7 @@ function openUrl(url)
 
 function replacePerforce()
 {
-  var re1 = /(\/\/RS.+)(#[0-9]+)/g;
+  var re1 = /(\/\/RS[^<>"'\n]+)(#[0-9]+)/g;
   var pro1 = '<a href="';
   var pro2 = '" onclick="javascript:showPerforce('+"'";
   var pro3 = "'"+');">';
@@ -80,7 +80,7 @@ function replacePerforce()
 
 function replaceHTTP()
 {
-  var re1 = /(http:\/\/.+)/g;
+  var re1 = /(https*:\/\/[^ \s"']+)/g;
   //var pro1 = '<a href="javascript:openUrl('+"'";
   //var pro2 = "'"+');">';
   var pro1 = '<a href="';
