@@ -50,13 +50,6 @@ unix:!symbian {
 
 INCLUDEPATH += ../common
 
-datafolder.source = redistribute/msplans
-datafolder.target = ../client/plugins
-DEPLOYMENTFOLDERS = datafolder
-
-include(deploy.pri)
-qtcAddDeployment()
-
 OTHER_FILES += \
     redistribute/msplans/data/scr2prj.xml \
     redistribute/msplans/data/project.xml \
@@ -66,4 +59,11 @@ RESOURCES += \
     msplans.qrc
 
 LIBS += -L../lib -L../client -ltqplugapi
+
+datafolder.source = redistribute/msplans
+datafolder.target = ../client/plugins
+DEPLOYMENTFOLDERS = datafolder
+
+include(deploy.pri)
+qtcAddDeployment()
 

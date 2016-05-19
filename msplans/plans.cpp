@@ -455,8 +455,8 @@ void PlansPlugin::initPlugin(QObject *obj, const QString &modulePath)
     QString abs;
     pluginDir = pDir;
     abs = pDir.absolutePath();
-    dataDir = QDir(pluginModule).filePath("data");
-    abs = dataDir.absolutePath();
+    abs = QDir(pluginModule).filePath("data");
+    dataDir = abs;
     initProjectModel();
     if(obj)
     {

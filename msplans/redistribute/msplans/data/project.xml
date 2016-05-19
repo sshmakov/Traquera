@@ -5,8 +5,8 @@
       <!-- <field property="UniqueID" title="ID"/> -->
       <field property="ID" title="Номер задачи"/>
       <field property="Name" title="Название" size="200"/>
-      <field property="Text1" title="Фаза"/>
-      <field property="EnterpriseText2" title="SCR" type="SCR"/>
+      <field property="EnterpriseText2" title="Фаза"/>
+      <field property="Text1" title="SCR" type="SCR"/>
       <!-- <field property="Text19" title="SCR" type="SCR"/> -->
       <field property="PercentComplete" const="188743712" title="%" type="%"/>
       <field property="Start" title="Начало"/>
