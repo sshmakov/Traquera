@@ -192,8 +192,8 @@ void QueryPage::addDetailTab(QWidget *tab, const QString &title, const QIcon &ic
     DetailPages item;
     item.title = title;
     item.icon = icon;
-    item.topWidget = tab;
-    item.pageWidget = 0;
+    item.topWidget = 0;
+    item.pageWidget = tab;
     d->pages.append(item);
     int index = d->pages.size()-1;
     doAddTab(index);
