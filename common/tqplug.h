@@ -83,6 +83,7 @@ public:
 
 class TQAbstractFieldType;
 class TQAbstractProject;
+class TQAbstractRecordTypeDef;
 
 class TQAbstractRecordTypeDef
 {

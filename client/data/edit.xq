@@ -1,7 +1,6 @@
 xquery version "1.0" encoding "utf-8";
 <html>
 <head>
-<base href="file://C%3A/Program%20Files/Traquera3.4/data/record"/>
 <link rel="stylesheet" href="style.css"/>
 <link rel="stylesheet" href="editor.css"/>
 <script src="qrc:/js/jquery.js">
@@ -20,14 +19,14 @@ xquery version "1.0" encoding "utf-8";
 <!--
 -->
 </script>
-<script src="e-window1.js">
+<script src="e-window.js">
 <!--
 -->
 </script>
 <script>
 <!--
-textEditor = new InplaceEditor();
-//textEditor = new WindowEditor();
+//textEditor = new InplaceEditor();
+textEditor = new WindowEditor();
 //textEditor = new WidgetEditor();
 -->
 </script>

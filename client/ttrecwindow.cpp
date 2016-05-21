@@ -180,18 +180,7 @@ void TTRecordWindow::setRecord(TQRecord *rec)
 {
     a_record = rec;
     factory->setRecord(rec);
-//    filesPage->setRecord(rec);
     refreshValues();
-    /*
-    props->fillValues(a_record);
-    QString html = a_record->toHTML("data/edit.xq");
-    ui->webView->setHtml(html);
-    ui->titleBox->clear();
-    ui->titleBox->addItems(a_record->project()->noteTitles);
-    if(settings->contains("LastNote"))
-        ui->titleBox->setEditText(settings->value("LastNote").toString());
-    changed = false;
-    */
     refreshState();
     setWindowTitle(QString(tr("Запрос %1 %2")).arg(rec->recordId()).arg(rec->title()));
     connect(a_record, SIGNAL(changedState(int)), SLOT(refreshState()));
@@ -297,6 +286,8 @@ void TTRecordWindow::canceledEditing(int index)
     //noteInEdit.remove(index);
 }
 
+
+
 static QString xmlToHTML(const QDomDocument &xml, const QString &xqCodeFile)
 {
     QFile xq(xqCodeFile);
@@ -345,8 +336,11 @@ void TTRecordWindow::refreshValues()
     else
         ui->recordTitleEdit->clear();
     ui->recordTitleEdit->blockSignals(false);
-    QString html = xmlToHTML(a_record->toXML(),"data/edit.xq");
-    ui->webView->setHtml(html);
+
+    QString xqFile = a_record->project()->optionValue(TQOPTION_EDIT_TEMPLATE).toString();
+    QString html = xmlToHTML(a_record->toXML(), xqFile);
+    QUrl baseUrl = QUrl::fromUserInput(xqFile);
+    ui->webView->setHtml(html, baseUrl);
 
 /*
     QAction *action = ui->webView->pageAction(QWebPage::Copy);

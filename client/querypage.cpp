@@ -71,6 +71,7 @@ public:
     bool itIsFolder;
     TQAbstractProject *modelProject;
     QString xqFile;
+//    QStringList xqList;
     TQRecModel *tmodel;
     QList<QAction*> headerActions;
     QTimer *detailsTimer;
@@ -648,7 +649,8 @@ QString QueryPage::makeRecordsPage(const QObjectList &records, const QString &xq
 
 void QueryPage::drawNotes(const QModelIndex &qryIndex)
 {
-    QString base = ttglobal()->dataDir()+"/record.htm";
+    QUrl baseUrl = QUrl::fromUserInput(d->xqFile);
+//    QString base = ttglobal()->dataDir()+"/record.htm";
     QString page = makeRecordPage(qryIndex, d->xqFile);
 #ifdef QT_DEBUG
     QFile testRes("!testResult.html");
@@ -656,7 +658,7 @@ void QueryPage::drawNotes(const QModelIndex &qryIndex)
     //QTextStream textOutHTML(&testRes);
     testRes.write(page.toLocal8Bit());
 #endif
-    webView_2->setHtml(page,QUrl(base));
+    webView_2->setHtml(page, baseUrl);
 }
 
 void QueryPage::sendEmail(const QObjectList &records)
@@ -911,10 +913,11 @@ void QueryPage::printPreview()
     QObjectList records = selectedRecords();
     if(records.isEmpty())
         return;
-    QString page = makeRecordsPage(records,
-                                   project()->optionValue(TQOPTION_PRINT_TEMPLATE).toString());
+    QString xqfile = project()->optionValue(TQOPTION_PRINT_TEMPLATE).toString();
+    QString page = makeRecordsPage(records, xqfile);
     QWebView web(this);
-    web.setHtml(page);
+    QUrl baseUrl = QUrl::fromUserInput(xqfile);
+    web.setHtml(page, baseUrl);
 #ifdef QT_DEBUG
     QFile testRes("!testPrint.html");
     testRes.open(QIODevice::WriteOnly | QIODevice::Text);
@@ -1555,4 +1558,16 @@ void QueryPage::updateHistoryPoint()
         d->history.removeRow(r);
         d->history.append(item);
     }
+}
+
+void QueryPage::on_toolButton_clicked()
+{
+    QString newFile = QFileDialog::getOpenFileName(this,
+                                 tr("Выберите файл шаблона страницы"),
+                                 d->xqFile,
+                                 tr("XQuery (*.xq);;Все файлы (*.*)"));
+    if(newFile.isEmpty())
+        return;
+    d->xqFile = newFile;
+    updateDetails();
 }

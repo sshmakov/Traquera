@@ -179,13 +179,15 @@ public:
     QAbstractItemModel *queryModel(int type);
     TQQueryDef *queryDefinition(const QString &queryName, int rectype);
     TQAbstractQWController *queryWidgetController(int rectype);
-    QVariant optionValue(const QString &option, const QVariant &defaultValue = QVariant()) const;
+
+    QVariant optionValue(const QString &option) const;
     void initFilterList();
 protected:
 //    TQAbstractRecordTypeDef *loadRecordTypeDef(int recordType);
     void loadRecordTypes();
     TQChoiceList loadChoiceTables(JiraRecTypeDef *rdef, const QString &url);
     void loadQueries();
+    void loadUsers();
     void storeReadedField(JiraRecord *rec, JiraRecTypeDef *rdef, const QString &fid, const QVariant &value);
 
     friend class JiraDB;

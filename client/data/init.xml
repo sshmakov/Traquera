@@ -1,5 +1,5 @@
 <init>
-	<userdb type="QSQLITE" path="data/tracks_data" user ="" password=""/>
+        <!-- <userdb type="QSQLITE" path="data/tracks_data" user ="" password=""/> -->
         <trindex solr="http://chronos:8983/solr/collection1/select">
             <params 
 		fl="Id_i" 

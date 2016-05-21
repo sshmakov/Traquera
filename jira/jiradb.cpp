@@ -684,6 +684,7 @@ void JiraProject::loadDefinition()
 {
     loadRecordTypes();
     loadQueries();
+    loadUsers();
 }
 
 TQAbstractRecordTypeDef *JiraProject::recordTypeDef(int recordType)
@@ -1106,22 +1107,19 @@ TQAbstractQWController *JiraProject::queryWidgetController(int rectype)
     return new JiraQueryDialogController(this);
 }
 
-QVariant JiraProject::optionValue(const QString &option, const QVariant &defaultValue) const
+QVariant JiraProject::optionValue(const QString &option) const
 {
-    QVariant v = TQAbstractProject::optionValue(option);
-    if(v.isNull())
-    {
-        if(option == TQOPTION_VIEW_TEMPLATE
-                || option == TQOPTION_EDIT_TEMPLATE
-                || option == TQOPTION_EMAIL_TEMPLATE
-                )
-        {
-            v = jira->dataDir.absoluteFilePath("issue.xq");
-        }
-    }
-    if(v.isNull())
-        return defaultValue;
-    return v;
+    QSettings *sets = projectSettings();
+    if(sets->contains(option))
+        return sets->value(option);
+
+    if(option == TQOPTION_VIEW_TEMPLATE
+            || option == TQOPTION_EDIT_TEMPLATE
+            || option == TQOPTION_PRINT_TEMPLATE
+            || option == TQOPTION_EMAIL_TEMPLATE
+            )
+        return jira->dataDir.absoluteFilePath("issue.xq");
+    return ttglobal()->optionDefaultValue(option);
 }
 
 /*TQAbstractRecordTypeDef *JiraProject::loadRecordTypeDef(int recordType)
@@ -1348,9 +1346,27 @@ void JiraProject::loadQueries()
     }
 }
 
+void JiraProject::loadUsers()
+{
+    m_userList.clear();
+    QVariantList owners = db->sendRequest(dbmsServer,"GET", "rest/api/2/user/assignable/search?project="+projectKey).toList();
+    int i=1;
+    foreach(QVariant v, owners)
+    {
+        QVariantMap userMap = v.toMap();
+        TQUser user;
+        user.login = userMap.value("key").toString();
+        user.displayName = userMap.value("displayName",user.login).toString();
+        user.isDeleted = userMap.value("active").toBool() == false;
+        user.fullName = user.displayName;
+        user.id = i++;
+        m_userList.insert(user.login, user);
+    }
+}
+
 void JiraProject::storeReadedField(JiraRecord *rec, JiraRecTypeDef *rdef, const QString &fid, const QVariant &value)
 {
-    int vid = rdef->fieldVidSystem(fid);
+    int fvid = rdef->fieldVidSystem(fid);
     if(fid == "description")
         rec->desc = value.toString();
     else
@@ -1359,13 +1375,32 @@ void JiraProject::storeReadedField(JiraRecord *rec, JiraRecTypeDef *rdef, const 
         {
             int id = value.toMap().value("id").toInt();
             QString display = value.toMap().value("name").toString();
-            rec->values.insert(vid, id);
-            rec->displayValues.insert(vid, display);
+            rec->values.insert(fvid, id);
+            rec->displayValues.insert(fvid, display);
         }
         else
         {
-            rec->values.insert(vid, value);
-            rec->displayValues.insert(vid, value);
+            const JiraFieldDesc &fdef = rdef->fields[fvid];
+            if(fdef.isUser())
+            {
+                QVariantMap uMap = value.toMap();
+                QString login = uMap.value("name").toString();
+                QString displayName = uMap.value("displayName").toString();
+                rec->values.insert(fvid, login);
+                rec->displayValues.insert(fvid, displayName);
+            }
+            else if(value.type() == QVariant::Map)
+            {
+                int id = value.toMap().value("id").toInt();
+                QString display = value.toMap().value("name").toString();
+                rec->values.insert(fvid, id);
+                rec->displayValues.insert(fvid, display);
+            }
+            else
+            {
+                rec->values.insert(fvid, value);
+                rec->displayValues.insert(fvid, value);
+            }
         }
     }
 }
@@ -1378,8 +1413,11 @@ JiraRecTypeDef::JiraRecTypeDef(JiraProject *project)
     schemaToSimple.insert("array", TQ::TQ_FIELD_TYPE_CHOICE);
     schemaToSimple.insert("date", TQ::TQ_FIELD_TYPE_DATE);
     schemaToSimple.insert("datetime", TQ::TQ_FIELD_TYPE_DATE);
+    schemaToSimple.insert("group", TQ::TQ_FIELD_TYPE_CHOICE);
     schemaToSimple.insert("issuetype", TQ::TQ_FIELD_TYPE_CHOICE);
     schemaToSimple.insert("number", TQ::TQ_FIELD_TYPE_NUMBER);
+    schemaToSimple.insert("option-with-child", TQ::TQ_FIELD_TYPE_CHOICE);
+    schemaToSimple.insert("option", TQ::TQ_FIELD_TYPE_CHOICE);
     schemaToSimple.insert("priority", TQ::TQ_FIELD_TYPE_CHOICE);
     schemaToSimple.insert("progress", TQ::TQ_FIELD_TYPE_CHOICE);
     schemaToSimple.insert("project", TQ::TQ_FIELD_TYPE_STRING);
@@ -1389,6 +1427,7 @@ JiraRecTypeDef::JiraRecTypeDef(JiraProject *project)
     schemaToSimple.insert("string", TQ::TQ_FIELD_TYPE_STRING);
     schemaToSimple.insert("timetracking", TQ::TQ_FIELD_TYPE_DATE);
     schemaToSimple.insert("user", TQ::TQ_FIELD_TYPE_USER);
+    schemaToSimple.insert("votes", TQ::TQ_FIELD_TYPE_NUMBER);
     schemaToSimple.insert("issuekey", TQ::TQ_FIELD_TYPE_NUMBER);
 
     roleFields.insert(TQAbstractRecordTypeDef::IdField,"issuekey");
@@ -1497,7 +1536,7 @@ bool JiraRecTypeDef::hasChoiceList(int vid) const
 TQChoiceList JiraRecTypeDef::choiceTable(const QString &tableName) const
 {
     static const char *pref = "Table_";
-    if(tableName == "users")
+    if(tableName == "Users")
     {
         QMap<QString, TQUser> users = prj->userList();
         TQChoiceList res;

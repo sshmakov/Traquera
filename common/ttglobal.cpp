@@ -413,7 +413,8 @@ void TTGlobal::readInitSettings()
     if(doc.isNull())
         return;
 
-    QDir appDir(appDataPath());
+    QString userDataDir = appDataPath();
+    QDir appDir(userDataDir);
     if(!appDir.exists())
         appDir.mkpath(".");
     d->userDbType = "QSQLITE";
