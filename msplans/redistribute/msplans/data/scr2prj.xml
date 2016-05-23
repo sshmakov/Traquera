@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="WINDOWS-1251"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <scr2project>
     <fields>
-      <field title="Название" src="Title"/>
+      <field title="РќР°Р·РІР°РЅРёРµ" src="Title"/>
       <field title="SCR"      src="Id"/>
-      <field title="Версия"   src="MustFixedInBuild"/>
-      <field title="Клиент"   src="Client Name"/>
+      <field title="Р’РµСЂСЃРёСЏ"   src="MustFixedInBuild"/>
+      <field title="РљР»РёРµРЅС‚"   src="Client Name"/>
       <field title="Severity"   src="Severity"/>
       <field title="Request Type"   src="Request Type"/>
     </fields>

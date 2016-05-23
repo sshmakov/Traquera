@@ -169,35 +169,71 @@ public:
         return RSA_verify(nid, digest, dlen, (unsigned char*)sign.data(), sign.length(), rsa_public);
     }
 
-    void dumpRequest(QNetworkRequest *request)
+    void dumpRequest(QNetworkRequest *req, const QString &method, const QByteArray &body = QByteArray())
     {
-        if(!request)
-            return;
-        qDebug() << "-- Request --------";
-        qDebug() << "URL:" << request->url();
-        foreach(const QByteArray &h, request->rawHeaderList())
-            qDebug() << h << ": " << request->rawHeader(h);
-        qDebug() << "===";
+        qDebug() << "Request:";
+        qDebug() << method << req->url();
+        foreach(const QByteArray &header, req->rawHeaderList())
+        {
+            QByteArray value = req->rawHeader(header);
+            qDebug() << header << value;
+        }
+        qDebug() << body;
+        qDebug() << "---";
     }
 
-    void dumpReply(QNetworkReply *reply)
+    void dumpReply(QNetworkReply *reply, const QByteArray &body = QByteArray())
     {
         if(!reply)
+        {
+            qDebug() << "Response: 0";
             return;
-        qDebug() << "-- Reply ----------" << reply->error();
-        qDebug() << "Error: " << reply->error();
-        qDebug() << "Headers";
-        foreach(QNetworkReply::RawHeaderPair pair, reply->rawHeaderPairs())
-            qDebug() << QUrl::fromPercentEncoding(pair.first) << ":" << QUrl::fromPercentEncoding(pair.second);
-//        qDebug() << "--";
+        }
+        qDebug() << "Response:";
         if(reply->error() != QNetworkReply::NoError)
         {
-            qDebug() << "";
-            qDebug() << reply->readAll();
+            qDebug() << "Error:" << reply->error()
+                     << reply->errorString();
         }
-        qDebug() << "===";
-        dumpRequest(&reply->request());
+        foreach(const QNetworkReply::RawHeaderPair &pair, reply->rawHeaderPairs())
+        {
+            qDebug() << pair.first << pair.second;
+        }
+        //        qDebug() << reply->header(QNetworkRequest::ContentTypeHeader).toString();
+        qDebug() << body;
+        qDebug() << "---";
     }
+
+
+//    void dumpRequest(QNetworkRequest *request)
+//    {
+//        if(!request)
+//            return;
+//        qDebug() << "-- Request --------";
+//        qDebug() << "URL:" << request->url();
+//        foreach(const QByteArray &h, request->rawHeaderList())
+//            qDebug() << h << ": " << request->rawHeader(h);
+//        qDebug() << "===";
+//    }
+
+//    void dumpReply(QNetworkReply *reply)
+//    {
+//        if(!reply)
+//            return;
+//        qDebug() << "-- Reply ----------" << reply->error();
+//        qDebug() << "Error: " << reply->error();
+//        qDebug() << "Headers";
+//        foreach(QNetworkReply::RawHeaderPair pair, reply->rawHeaderPairs())
+//            qDebug() << QUrl::fromPercentEncoding(pair.first) << ":" << QUrl::fromPercentEncoding(pair.second);
+////        qDebug() << "--";
+//        if(reply->error() != QNetworkReply::NoError)
+//        {
+//            qDebug() << "";
+//            qDebug() << reply->readAll();
+//        }
+//        qDebug() << "===";
+//        dumpRequest(&reply->request());
+//    }
 
 /*
 int main(int argc, char *argv[])
@@ -297,23 +333,27 @@ QNetworkReply *TQOAuth::sendRequest(int operation, const QString &link, const QS
         req.setRawHeader(line.left(pos).toUtf8(),line.mid(pos+2).toUtf8());
     }
     req.setHeader(QNetworkRequest::ContentTypeHeader,"application/x-www-form-urlencoded");
-    d->dumpRequest(&req);
     QNetworkReply *reply;
     switch(operation)
     {
     case QNetworkAccessManager::HeadOperation:
+        d->dumpRequest(&req, "HEAD");
         reply = man->head(req);
         break;
     case QNetworkAccessManager::GetOperation:
+        d->dumpRequest(&req, "GET");
         reply = man->get(req);
         break;
     case QNetworkAccessManager::PutOperation:
+        d->dumpRequest(&req, "PUT");
         reply = man->put(req, body);
         break;
     case QNetworkAccessManager::PostOperation:
+        d->dumpRequest(&req, "POST");
         reply = man->post(req, body);
         break;
     case QNetworkAccessManager::DeleteOperation:
+        d->dumpRequest(&req, "DELETE");
         reply = man->deleteResource(req);
         break;
     case QNetworkAccessManager::CustomOperation:
@@ -561,7 +601,7 @@ QString TQOAuth::getAccessToken(const QString &method, const QString &link, cons
     if(!signRequest(method, &req, requestToken, pars))
         return 0;
 
-    d->dumpRequest(&req);
+    d->dumpRequest(&req, method, QByteArray());
     QScopedPointer<QNetworkReply> reply(sendWait(method, req));
     d->dumpReply(reply.data());
     QMap<QString, QString> res = parseBodyReply(reply.data());
@@ -588,7 +628,7 @@ QNetworkReply *TQOAuth::signedGet(QNetworkRequest *request)
     if(!signRequest("GET", request, d->access_token, pars))
         return 0;
 
-    d->dumpRequest(request);
+    d->dumpRequest(request, "GET");
     QNetworkReply *reply;
     reply = sendWait("GET", *request);
     d->dumpReply(reply);

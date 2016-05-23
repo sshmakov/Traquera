@@ -95,6 +95,7 @@ public:
     QString pluginModule;
     QDir pluginDir;
     QDir dataDir;
+    QString projectXml;
 
     PlansPlugin(QObject * parent = 0);
     ~PlansPlugin();

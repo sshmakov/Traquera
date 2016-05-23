@@ -22,23 +22,6 @@ PrjModel::PrjModel(PrjItemModel *projectModel, QObject *parent)
 		prjmodel = projectModel;
 	dependFilter.setSourceModel(prjmodel);
 	model = &dependFilter;
-	/*
-	static int conn = 0;
-	query = NULL;
-	prjdb = QSqlDatabase::addDatabase("QSQLITE", "prj"+QString::number(++conn));
-    prjdb.setDatabaseName(":memory:");
-    if (!prjdb.open()) {
-        QMessageBox::critical(0, qApp->tr("Cannot create project database"),
-			prjdb.lastError().text(), QMessageBox::Cancel);
-        return;
-    }
-	QSqlQuery query(prjdb);
-	query.exec("create table tasks(id int primary key, num int, name varchar(1024), scr varchar(1024), start datetime, finish datetime)");
-	dependFilter.setSourceModel(&queryModel);
-	userFilter.setSourceModel(&dependFilter);
-	model = &userFilter;
-	loadDefinition("data/project.xml");
-	*/
 }
 
 bool PrjModel::openProject(const QString &prjfile)
@@ -299,7 +282,7 @@ bool PrjItemModel::open(const QString &file, bool readOnly)
 	prjName = prj->property("Name").toString();
 	fileName = prj->property("FullName").toString();
     readOnly = prj->dynamicCall("ReadOnly").toBool();
-    loadDefinition(app, pluginObject->dataDir.absoluteFilePath("project.xml"));
+    loadDefinition(app, pluginObject->projectXml);
 	rows = tasks->dynamicCall("Count").toInt();
 	cols = fields.count();
 	saveToMemory(tasks);

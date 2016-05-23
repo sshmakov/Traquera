@@ -97,7 +97,7 @@ public:
     void setConnectMethod(JiraConnectMethod method);
     virtual TQAbstractProject *openConnection(const QString &connectString);
     void setConnectString(const QString &connectString);
-    QVariant sendRequest(const QString &dbmsServer, const QString &method, const QString &query, const QByteArray &body = QByteArray());
+    QVariant sendRequest(const QString &dbmsServer, const QString &method, const QString &query, const QVariantMap &bodyMap = QVariantMap());
     QNetworkReply *sendRequestNative(const QUrl &url, const QString &method, const QByteArray &body = QByteArray());
     QVariant parseValue(const QVariant &source, const QString &path);
     static TQAbstractDB *createJiraDB(QObject *parent);
@@ -105,7 +105,7 @@ public:
     QDialog *createConnectDialog() const;
     bool oauthLogin();
     QNetworkReply *sendWait(const QString &method, QNetworkRequest &request, const QByteArray &body = QByteArray());
-    QNetworkReply *sendWait(QNetworkAccessManager::Operation op, QNetworkRequest &request, const QByteArray &body  = QByteArray());
+    QNetworkReply *sendWaitOp(QNetworkAccessManager::Operation op, QNetworkRequest &request, const QByteArray &body  = QByteArray());
     TQJson *jsonParser();
 protected:
     QList<QNetworkReply*> readyReplies;
@@ -118,6 +118,8 @@ protected:
     bool loginCookie(const QString &server,
                      const QString &user = QString(),
                      const QString &pass = QString());
+    void dumpRequest(QNetworkRequest *req, const QString &method, const QByteArray &body);
+    void dumpReply(QNetworkReply *reply, const QByteArray &buf);
 protected slots:
     void	replyFinished(QNetworkReply * reply);
     void callbackClicked();

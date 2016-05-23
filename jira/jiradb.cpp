@@ -320,23 +320,29 @@ void JiraDB::setConnectString(const QString &connectString)
     setConnectMethod((JiraConnectMethod)method);
 }
 
-QVariant JiraDB::sendRequest(const QString &dbmsServer, const QString &method, const QString &query, const QByteArray &body)
+QVariant JiraDB::sendRequest(const QString &dbmsServer, const QString &method, const QString &query, const QVariantMap &bodyMap)
 {
     QString link(dbmsServer + query);
     QUrl url(link);
-
+    QByteArray body = parser->toByteArray(bodyMap);
     QNetworkRequest req;
     req.setUrl(url);
-    qDebug() << method << query;
     req.setHeader(QNetworkRequest::ContentTypeHeader,"application/json");
+
     QNetworkReply *r;
     if(connectMethod == OAuth)
+    {
+        dumpRequest(&req, method, body);
         r = oa->signedGet(&req);
+    }
     else if(connectMethod == CookieAuth)
     {
         QList<QNetworkCookie> list = man->cookieJar()->cookiesForUrl(dbmsServer);
         if(list.size())
             req.setHeader(QNetworkRequest::SetCookieHeader, QVariant::fromValue(list));
+        if(d->isLogged)
+
+        dumpRequest(&req, method, body);
         r = sendWait(method, req, body);
     }
     else //if(connectMethod == BaseAuth)
@@ -360,21 +366,10 @@ QVariant JiraDB::sendRequest(const QString &dbmsServer, const QString &method, c
     if(contType.contains(';'))
         contType = contType.split(';').value(0);
     contType = contType.trimmed();
-    d->lastCookies = r->header(QNetworkRequest::SetCookieHeader).value<QList<QNetworkCookie> >();
-    if(reply->error() != QNetworkReply::NoError)
-    {
-        qDebug() << "Error:" << reply->error()
-                 << reply->errorString();
-    }
-    foreach(const QNetworkReply::RawHeaderPair &pair, reply->rawHeaderPairs())
-    {
-        qDebug() << pair.first << pair.second;
-    }
-    //        qDebug() << reply->header(QNetworkRequest::ContentTypeHeader).toString();
-
-
+    d->lastCookies = r->header(QNetworkRequest::SetCookieHeader).value<QList<QNetworkCookie> >();    
     QByteArray buf = reply->readAll();
-    qDebug() << buf;
+
+    dumpReply(r, buf);
 //    QString s(buf.constData());
 //    qDebug(text.constData());
 //    QBuffer buf(&text);
@@ -392,6 +387,7 @@ QNetworkReply *JiraDB::sendRequestNative(const QUrl &url, const QString &method,
 {
     QNetworkRequest req;
     req.setUrl(url);
+    dumpRequest(&req, method, body);
     qDebug() << method << url;
     req.setHeader(QNetworkRequest::ContentTypeHeader,"application/json");
     QNetworkReply *r = 0;
@@ -410,6 +406,7 @@ QNetworkReply *JiraDB::sendRequestNative(const QUrl &url, const QString &method,
         req.setRawHeader("Authorization", v);
         r = sendWait(method, req, body);
     }
+    dumpReply(r, QByteArray());
     return r;
 }
 
@@ -432,10 +429,10 @@ static int method2op(const QString &method)
 QNetworkReply *JiraDB::sendWait(const QString &method, QNetworkRequest &request, const QByteArray &body)
 {
     int op = method2op(method);
-    return sendWait((QNetworkAccessManager::Operation)op, request, body);
+    return sendWaitOp((QNetworkAccessManager::Operation)op, request, body);
 }
 
-QNetworkReply *JiraDB::sendWait(QNetworkAccessManager::Operation op, QNetworkRequest &request, const QByteArray &body)
+QNetworkReply *JiraDB::sendWaitOp(QNetworkAccessManager::Operation op, QNetworkRequest &request, const QByteArray &body)
 {
     QNetworkReply *reply;
     switch(op)
@@ -625,7 +622,7 @@ bool JiraDB::loginCookie(const QString &server, const QString &user, const QStri
     QVariantMap reqMap;
     reqMap.insert("username", user);
     reqMap.insert("password", pass);
-    QVariantMap repMap = sendRequest(server, "POST", "rest/auth/1/session", parser->toByteArray(reqMap)).toMap();
+    QVariantMap repMap = sendRequest(server, "POST", "rest/auth/1/session", reqMap).toMap();
     /*
     "Server" "nginx/1.2.1"
     "Date" "Wed, 11 May 2016 18:52:53 GMT"
@@ -657,6 +654,40 @@ bool JiraDB::loginCookie(const QString &server, const QString &user, const QStri
     d->isLogged = true;
     d->session = item;
     return true;
+}
+
+void JiraDB::dumpRequest(QNetworkRequest *req, const QString &method, const QByteArray &body)
+{
+    qDebug() << "Request:";
+    qDebug() << method << req->url();
+    foreach(const QByteArray &header, req->rawHeaderList())
+    {
+        QByteArray value = req->rawHeader(header);
+        qDebug() << header << value;
+    }
+    qDebug() << "---";
+}
+
+void JiraDB::dumpReply(QNetworkReply *reply, const QByteArray &body)
+{
+    if(!reply)
+    {
+        qDebug() << "Response: 0";
+        return;
+    }
+    qDebug() << "Response:";
+    if(reply->error() != QNetworkReply::NoError)
+    {
+        qDebug() << "Error:" << reply->error()
+                 << reply->errorString();
+    }
+    foreach(const QNetworkReply::RawHeaderPair &pair, reply->rawHeaderPairs())
+    {
+        qDebug() << pair.first << pair.second;
+    }
+    //        qDebug() << reply->header(QNetworkRequest::ContentTypeHeader).toString();
+    qDebug() << body;
+    qDebug() << "---";
 }
 
 void JiraDB::replyFinished(QNetworkReply *reply)
@@ -970,10 +1001,9 @@ bool JiraProject::commitRecord(TQRecord *record)
         }
     }
     issue.insert("comments", comments);
-//    QString bodyStr = db->jsonParser()->toByteArray(issue);
-    QByteArray body = db->jsonParser()->toByteArray(issue);
-    qDebug() << "Post body:" << body;
-    QVariantMap res = db->sendRequest(dbmsServer,"POST",QString("rest/api/2/issue"),body).toMap();
+//    QByteArray body = db->jsonParser()->toByteArray(issue);
+//    qDebug() << "Post body:" << body;
+    QVariantMap res = db->sendRequest(dbmsServer,"POST",QString("rest/api/2/issue"),issue).toMap();
     if(!res.contains("id"))
     {
         QString error;

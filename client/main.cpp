@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 		}
 	}
     QTranslator translator;
-    translator.load(QString("tracks_") + locale,"lang");
+    translator.load(QString("tracks.") + locale,app.applicationDirPath() + "/lang");
     app.installTranslator(&translator);
 
 	 //QApplication::setStyle(new QCleanlooksStyle);

@@ -99,7 +99,7 @@ void ProjectPage::loadDefinition()
 {
     QSettings *settings = pluginObject->settings;
     QXmlSimpleReader xmlReader;
-    QFile *file = new QFile(pluginObject->dataDir.absoluteFilePath("project.xml"));
+    QFile *file = new QFile(pluginObject->projectXml);
 	QXmlInputSource *source = new QXmlInputSource(file);
 	QDomDocument dom;
     if(dom.setContent(source,false))

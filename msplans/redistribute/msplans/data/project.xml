@@ -1,20 +1,20 @@
-<?xml version="1.0" encoding="WINDOWS-1251"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <project>
   <tasks>
     <fields>
       <!-- <field property="UniqueID" title="ID"/> -->
-      <field property="ID" title="Номер задачи"/>
-      <field property="Name" title="Название" size="200"/>
-      <field property="EnterpriseText2" title="Фаза"/>
+      <field property="ID" title="РќРѕРјРµСЂ Р·Р°РґР°С‡Рё"/>
+      <field property="Name" title="РќР°Р·РІР°РЅРёРµ" size="200"/>
+      <field property="EnterpriseText2" title="Р¤Р°Р·Р°"/>
       <field property="Text1" title="SCR" type="SCR"/>
       <!-- <field property="Text19" title="SCR" type="SCR"/> -->
       <field property="PercentComplete" const="188743712" title="%" type="%"/>
-      <field property="Start" title="Начало"/>
-      <field property="Finish" title="Окончание"/>
-      <field property="ResourceNames" title="Исполнитель"/>
-      <field property="EnterpriseText6" title="Версия"/>
-      <field property="Duration" const="188743709" title="Длительность" type="min" format="hours"/>
-      <field property="Work" const="188743680" title="Т/затраты" type="min" format="hours"/>
+      <field property="Start" title="РќР°С‡Р°Р»Рѕ"/>
+      <field property="Finish" title="РћРєРѕРЅС‡Р°РЅРёРµ"/>
+      <field property="ResourceNames" title="РСЃРїРѕР»РЅРёС‚РµР»СЊ"/>
+      <field property="EnterpriseText6" title="Р’РµСЂСЃРёСЏ"/>
+      <field property="Duration" const="188743709" title="Р”Р»РёС‚РµР»СЊРЅРѕСЃС‚СЊ" type="min" format="hours"/>
+      <field property="Work" const="188743680" title="Рў/Р·Р°С‚СЂР°С‚С‹" type="min" format="hours"/>
 <!--
       <field property="Cost" const="188743685"/>
       <field property="ActualCost" const="188743687"/>
@@ -28,11 +28,11 @@
 -->
       <field property="Summary" const="188743772"/>
       <field property="OutlineLevel" const="188743765"/>
-      <field property="EnterpriseText6" title="Версия"/>
-      <field property="EnterpriseText4" title="Клиент"/>
+      <field property="EnterpriseText6" title="Р’РµСЂСЃРёСЏ"/>
+      <field property="EnterpriseText4" title="РљР»РёРµРЅС‚"/>
       <field property="Text4" title="Severity"/>
       <field property="Text5" title="Request Type"/>
-      <field property="ParentTask" const="188743815" title="Суммарная задача" display="hidden" type="parent"/>
+      <field property="ParentTask" const="188743815" title="РЎСѓРјРјР°СЂРЅР°СЏ Р·Р°РґР°С‡Р°" display="hidden" type="parent"/>
       <field property="GroupBySummary" const="188744126"/>
       <field property="TaskGUID" const="188744823"/>
       <field property="UniqueID" const="188743766"/>
@@ -842,12 +842,12 @@
     </fconsts>
   </tasks>
   <grid>
-    <col field="Номер"/>
+    <col field="РќРѕРјРµСЂ"/>
     <col field="SCR" type="SCR"/>
-    <col field="Название" size="200"/>
-    <сol field="Исполнитель"/>
-    <col field="Начало"/>
-    <col field="Окончание"/>
-    <col field="Фаза"/>
+    <col field="РќР°Р·РІР°РЅРёРµ" size="200"/>
+    <СЃol field="РСЃРїРѕР»РЅРёС‚РµР»СЊ"/>
+    <col field="РќР°С‡Р°Р»Рѕ"/>
+    <col field="РћРєРѕРЅС‡Р°РЅРёРµ"/>
+    <col field="Р¤Р°Р·Р°"/>
   </grid>
 </project>

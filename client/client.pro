@@ -16,8 +16,8 @@ CONFIG += qaxcontainer
 QT += sql xml webkit xmlpatterns network script scripttools
 # CODECFORSRC = windows-1251
 TRANSLATIONS    = \
-	lang/client_en.ts \
-	lang/client_ru.ts
+        lang/traquera.en.ts \
+        lang/traquera.ru.ts
 # CODECFORTR      = Latin1
 CODECFORTR = UTF-8
 
@@ -146,8 +146,6 @@ OTHER_FILES += \
     data/tracker.xml \
     data/style.css \
     traquera-win.rc \
-    lang/tracks_ru.ts \
-    lang/tracks_en.ts \
     baloons.ico \
     data/funcs3.js \
     data/funcs2.js \
@@ -158,7 +156,9 @@ OTHER_FILES += \
     data/e-inplace.js \
     data/editor-common.js \
     data/style2.css \
-    data/editor.css
+    data/editor.css \
+    lang/traquera.ru.ts \
+    lang/traquera.en.ts
 
 
 datafolder.source = data

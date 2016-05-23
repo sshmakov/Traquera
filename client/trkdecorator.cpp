@@ -260,13 +260,13 @@ void TrkDecorator::loadViewDef(QueryPage *page)
     {
 //        hv->restoreState(tempBuf);
 //        QString groupFile = sets->value("GroupFile", "data/tracker.xml").toString();
-        QString groupFile = newPrj->property("groupFile").toString();
+        QString groupFile = newPrj->optionValue(TQOPTION_GROUP_FIELDS).toString();
+//        QString groupFile = newPrj->property("groupFile").toString();
         QFile file(groupFile);
         QXmlInputSource source(&file);
         QDomDocument dom;
         if(!dom.setContent(&source,false))
         {
-
             const TQAbstractRecordTypeDef *def = page->recordTypeDef();
             if(def)
             {
@@ -381,7 +381,7 @@ FieldGroupsDef TrkDecorator::loadGroups(const TQAbstractRecordTypeDef *recDef)
 FieldGroupsDef TrkDecorator::loadGroupsXML(const TQAbstractRecordTypeDef *recDef)
 {
     FieldGroupsDef res;
-    QScopedPointer<QIODevice> file(recDef->defineSource()); /*new QFile("data/tracker.xml");*/
+    QScopedPointer<QIODevice> file(recDef->defineSource());
     QScopedPointer<QXmlInputSource> source(new QXmlInputSource(file.data()));
     QDomDocument dom;
     if(!dom.setContent(source.data(),false))

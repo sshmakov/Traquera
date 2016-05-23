@@ -68,7 +68,7 @@ void TrkPlugin::initPlugin(QObject *obj, const QString &modulePath)
             break;
         }
     }
-    if(!translator->load(QString("tracker_") + locale,pluginModule+"/lang"))
+    if(!translator->load(QString("tracker.") + locale,pluginModule+"/lang"))
         qDebug() << "Can't load tracker translator";
     app->installTranslator(translator);
     /*

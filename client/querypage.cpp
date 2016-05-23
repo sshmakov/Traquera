@@ -620,7 +620,7 @@ QString QueryPage::makeRecordsPage(const QObjectList &records, const QString &xq
 
     QFile xq(xqCodeFile);
     xq.open(QIODevice::ReadOnly);
-    QFile trackerXML("data/tracker.xml");
+    QFile trackerXML(project()->optionValue(TQOPTION_GROUP_FIELDS).toString()); // "data/tracker.xml");
     trackerXML.open(QIODevice::ReadOnly);
     QXmlQuery query;
     query.setMessageHandler(sysMessager);

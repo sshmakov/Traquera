@@ -288,11 +288,12 @@ void TTRecordWindow::canceledEditing(int index)
 
 
 
-static QString xmlToHTML(const QDomDocument &xml, const QString &xqCodeFile)
+static QString xmlToHTML(TQRecord *record, const QString &xqCodeFile)
 {
+    QDomDocument xml = record->toXML();
     QFile xq(xqCodeFile);
     xq.open(QIODevice::ReadOnly);
-    QFile trackerXML("data/tracker.xml");
+    QFile trackerXML(record->project()->optionValue(TQOPTION_GROUP_FIELDS).toString()); // "data/tracker.xml");
     trackerXML.open(QIODevice::ReadOnly);
     QXmlQuery query;
 //#ifdef CLIENT_APP
@@ -338,7 +339,7 @@ void TTRecordWindow::refreshValues()
     ui->recordTitleEdit->blockSignals(false);
 
     QString xqFile = a_record->project()->optionValue(TQOPTION_EDIT_TEMPLATE).toString();
-    QString html = xmlToHTML(a_record->toXML(), xqFile);
+    QString html = xmlToHTML(a_record, xqFile);
     QUrl baseUrl = QUrl::fromUserInput(xqFile);
     ui->webView->setHtml(html, baseUrl);
 

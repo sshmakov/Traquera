@@ -5,13 +5,28 @@
 <context>
     <name>JiraFilterModel</name>
     <message>
-        <location filename="../../../jiradb.cpp" line="1791"/>
+        <location filename="../../../jiradb.cpp" line="1881"/>
         <source>Имя фильтра</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../jiradb.cpp" line="1792"/>
-        <source>Общий</source>
+        <location filename="../../../jiradb.cpp" line="1882"/>
+        <source>Группа</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../../jiradb.cpp" line="1892"/>
+        <source>Системные фильтры</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../../jiradb.cpp" line="1892"/>
+        <source>Избранные фильтры</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../../jiradb.cpp" line="1892"/>
+        <source>Локальные фильтры</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -129,47 +144,47 @@
 <context>
     <name>JiraProject</name>
     <message>
-        <location filename="../../../jiradb.cpp" line="981"/>
+        <location filename="../../../jiradb.cpp" line="1015"/>
         <source>Ошибка вставки issue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../jiradb.cpp" line="1185"/>
+        <location filename="../../../jiradb.cpp" line="1234"/>
         <source> (cf)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../jiradb.cpp" line="1300"/>
+        <location filename="../../../jiradb.cpp" line="1349"/>
         <source>Мои открытые запросы</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../jiradb.cpp" line="1302"/>
+        <location filename="../../../jiradb.cpp" line="1351"/>
         <source>Созданные мной</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../jiradb.cpp" line="1306"/>
+        <location filename="../../../jiradb.cpp" line="1355"/>
         <source>Все запросы</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../jiradb.cpp" line="1308"/>
+        <location filename="../../../jiradb.cpp" line="1357"/>
         <source>Открытые запросы</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../jiradb.cpp" line="1310"/>
+        <location filename="../../../jiradb.cpp" line="1359"/>
         <source>Добавленные недавно</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../jiradb.cpp" line="1312"/>
+        <location filename="../../../jiradb.cpp" line="1361"/>
         <source>Решенные недавно</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../jiradb.cpp" line="1314"/>
+        <location filename="../../../jiradb.cpp" line="1363"/>
         <source>Обновленные недавно</source>
         <translation type="unfinished"></translation>
     </message>

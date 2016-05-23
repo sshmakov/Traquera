@@ -26,11 +26,11 @@ HEADERS += trkplugin.h\
     tracker_global.h \
     trkcond.h
 
-TRANSLATIONS = \
-    tracker_ru.ts \
-    tracker_en.ts
-
 CODECFORTR = UTF-8
+
+TRANSLATIONS = \
+    redistribute/tracker/lang/tracker.ru.ts \
+    redistribute/tracker/lang/tracker.en.ts
 
 unix:!symbian {
     maemo5 {
@@ -56,10 +56,8 @@ DEFINES += CLIENT_APP
 DESTDIR = ../client/plugins/tracker
 
 OTHER_FILES += \
-    redistribute/tracker/tracker_ru.ts \
-    redistribute/tracker/tracker_en.ts \
-    tracker_ru.ts \
-    tracker_en.ts
+    redistribute/tracker/lang/tracker.ru.ts \
+    redistribute/tracker/lang/tracker.en.ts
 
 redistribute.source = redistribute/tracker
 redistribute.target = ../client/plugins

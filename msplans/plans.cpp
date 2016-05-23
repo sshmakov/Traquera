@@ -20,11 +20,12 @@ PlansPlugin *pluginObject = 0;
 PlanModel::PlanModel(QObject *parent)
     :QAbstractItemModel(parent)
 {
-    QString xml = pluginObject->dataDir.absoluteFilePath("project.xml");
-    if(!loadDefinition(xml))
-    {
-        loadDefinition(":/msplans/data/project.xml");
-    }
+    loadDefinition(pluginObject->projectXml);
+//    QString xml = pluginObject->dataDir.absoluteFilePath("project.xml");
+//    if(!loadDefinition(xml))
+//    {
+//        loadDefinition(":/msplans/data/project.xml");
+//    }
 }
 
 PlanModel::~PlanModel()
@@ -457,6 +458,7 @@ void PlansPlugin::initPlugin(QObject *obj, const QString &modulePath)
     abs = pDir.absolutePath();
     abs = QDir(pluginModule).filePath("data");
     dataDir = abs;
+    projectXml = dataDir.absoluteFilePath("project.xml");
     initProjectModel();
     if(obj)
     {

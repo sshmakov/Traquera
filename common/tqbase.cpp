@@ -770,6 +770,10 @@ QDomDocument TQRecord::toXML()
     QList<int> vids = def->fieldVids();
     foreach(int vid, vids)
     {
+        bool ok = false;
+        TQAbstractFieldType fdef = def->getFieldType(vid, &ok);
+
+
         QString fname = def->fieldName(vid);
         QVariant ftext = value(vid,Qt::DisplayRole);
         QVariant fvalue = value(vid,Qt::EditRole);
@@ -963,46 +967,6 @@ bool TQRecord::isFieldReadOnly(const QString &field) const
         return !def->canFieldSubmit(vid);
     return true;
 }
-
-/*
-QString TQRecord::toHTML(const QString &xqCodeFile)
-{
-    QDomDocument xml=toXML();
-    QFile xq(xqCodeFile);
-    xq.open(QIODevice::ReadOnly);
-    QFile trackerXML("data/tracker.xml");
-    trackerXML.open(QIODevice::ReadOnly);
-    QXmlQuery query;
-//#ifdef CLIENT_APP
-//    query.setMessageHandler(sysMessager);
-//#endif
-
-
-    QString page;
-    //QString src=xml.toString();
-    QByteArray ba=xml.toByteArray();
-    QBuffer buf;
-    buf.setData(ba);
-    buf.open(QIODevice::ReadOnly);
-    query.bindVariable("scrdoc",&buf);
-    query.bindVariable("def",&trackerXML);
-    query.setQuery(&xq);
-    //query.setQuery(&xq, QUrl::fromLocalFile(xq.fileName()));
-    query.evaluateTo(&page);
-//#ifdef QT_DEBUG
-//    QFile testXml("!testEdit.xml");
-//    testXml.open(QIODevice::WriteOnly | QIODevice::Text);
-//    QTextStream textOut(&testXml);
-//    xml.save(textOut,4);
-
-//    QFile testRes("!testResult.html");
-//    testRes.open(QIODevice::WriteOnly | QIODevice::Text);
-//    //QTextStream textOutHTML(&testRes);
-//    testRes.write(page.toLocal8Bit());
-//#endif
-    return page;
-}
-*/
 
 void TQRecord::addLink()
 {
