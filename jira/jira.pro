@@ -46,8 +46,8 @@ DESTDIR = ../client/plugins/jira
 CODECFORTR = UTF-8
 
 TRANSLATIONS = \
-    redistribute/jira/lang/jira_ru.ts \
-    redistribute/jira/lang/jira_en.ts
+    redistribute/jira/lang/jira.ru.ts \
+    redistribute/jira/lang/jira.en.ts
 
 
 FORMS += \
@@ -61,11 +61,11 @@ OTHER_FILES += \
     mykey.pem \
     jira.ini \
     data/issue.xq \
-    redistribute/jira/lang/jira_ru.ts \
-    redistribute/jira/lang/jira_en.ts \
     redistribute/jira/data/issue.xq \
-    redistribute/jira/lang/jira_ru.qm \
-    redistribute/jira/lang/jira_en.qm
+    redistribute/jira/lang/jira.ru.qm \
+    redistribute/jira/lang/jira.en.qm \
+    redistribute/jira/lang/jira.ru.ts \
+    redistribute/jira/lang/jira.en.ts
 
 datafolder.source = redistribute/jira
 datafolder.target = ../client/plugins

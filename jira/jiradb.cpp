@@ -39,8 +39,8 @@ JiraPlugin::JiraPlugin(QObject *parent)
             break;
         }
     }
-    if(!translator->load(QString("tracker_") + locale,pluginModule+"/lang"))
-        qDebug() << "Can't load tracker translator";
+    if(!translator->load(QString("jira.") + locale,pluginModule+"/lang"))
+        qDebug() << "Can't load jira translator";
     app->installTranslator(translator);
 }
 
