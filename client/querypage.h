@@ -6,8 +6,8 @@
 #include <QTimer>
 #include <QtGui>
 #include "ui_querypage.h"
-#include "trdefs.h"
-#include "tracker.h"
+//#include "trdefs.h"
+//#include "tracker.h"
 #include "tqbase.h"
 //#include "trkview.h"
 //#include "plans.h"
@@ -145,7 +145,7 @@ signals:
     void openingModel(const QAbstractItemModel *model);
     void modelChanged(QAbstractItemModel *model);
     void selectedRecordsChanged();
-    void openRecordsClicked(ScrSet set);
+    void openRecordsClicked(QSet<int> set);
     void showTaskInPlanClicked(const QString &prjName, int taskNum);
 private:
     void addHistoryPoint();

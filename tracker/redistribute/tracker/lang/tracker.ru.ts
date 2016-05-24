@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0" language="ru_RU">
+<TS version="2.0" language="ru_RU" sourcelanguage="ru">
 <defaultcodec>UTF-8</defaultcodec>
 <context>
     <name>QObject</name>
@@ -723,27 +723,27 @@
 <context>
     <name>TrkHistory</name>
     <message>
-        <location filename="../../../trkview.cpp" line="3268"/>
+        <location filename="../../../trkview.cpp" line="3269"/>
         <source>Выборка</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../trkview.cpp" line="3269"/>
+        <location filename="../../../trkview.cpp" line="3270"/>
         <source>Тип</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../trkview.cpp" line="3270"/>
+        <location filename="../../../trkview.cpp" line="3271"/>
         <source>Записи</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../trkview.cpp" line="3271"/>
+        <location filename="../../../trkview.cpp" line="3272"/>
         <source>Тип записей</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../trkview.cpp" line="3272"/>
+        <location filename="../../../trkview.cpp" line="3273"/>
         <source>Время</source>
         <translation type="unfinished"></translation>
     </message>
@@ -873,47 +873,50 @@
 <context>
     <name>TrkToolProject</name>
     <message>
-        <location filename="../../../trkview.cpp" line="500"/>
-        <location filename="../../../trkview.cpp" line="503"/>
         <source>Ошибка открытия проекта %1 (%2)</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Ошибка открытия проекта %1 (%2)</translation>
     </message>
     <message>
-        <location filename="../../../trkview.cpp" line="502"/>
+        <location filename="../../../trkview.cpp" line="504"/>
         <source>Ошибка подключения</source>
+        <translation type="unfinished">Ошибка подключения к PVCS Tracker</translation>
+    </message>
+    <message>
+        <location filename="../../../trkview.cpp" line="500"/>
+        <source>Ошибка открытия проекта %1 (Error code %2)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>TrkToolQryModel</name>
     <message>
-        <location filename="../../../trkview.cpp" line="3361"/>
+        <location filename="../../../trkview.cpp" line="3362"/>
         <source>Название выборки</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../trkview.cpp" line="3364"/>
+        <location filename="../../../trkview.cpp" line="3365"/>
         <source>Публичная</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../trkview.cpp" line="3363"/>
+        <location filename="../../../trkview.cpp" line="3364"/>
         <source>Тип записи</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../trkview.cpp" line="3362"/>
+        <location filename="../../../trkview.cpp" line="3363"/>
         <source>Группа</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../trkview.cpp" line="3414"/>
+        <location filename="../../../trkview.cpp" line="3415"/>
         <source>Public queries</source>
         <oldsource>Public</oldsource>
         <translation>Общие выборки</translation>
     </message>
     <message>
-        <location filename="../../../trkview.cpp" line="3414"/>
+        <location filename="../../../trkview.cpp" line="3415"/>
         <source>Private queries</source>
         <translation>Личные выборки</translation>
     </message>

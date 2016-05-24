@@ -9,7 +9,7 @@
 #include <QTimer>
 #include "ui_tracksmain.h"
 #include "mainproc.h"
-#include "tracker.h"
+//#include "tracker.h"
 //#include "plans.h"
 //#include "trkview.h"
 #include "modifypanel.h"
@@ -223,7 +223,7 @@ public slots:
     void slotRemoveRecordsId();
     void applyChanges();
     void repeatLastChanges();
-    void slotOpenRecordsClicked(ScrSet res);
+    void slotOpenRecordsClicked(QSet<int> res);
     void showRecordInList(TQRecord *record);
 
 private slots:

@@ -1,4 +1,4 @@
-﻿#include <tqplug.h>
+#include <tqplug.h>
 //#include "tracker.h"
 #include "trkview.h"
 #ifdef CLIENT_APP
@@ -496,13 +496,14 @@ bool TrkToolProject::login(const QString &userName,
 		readDefs();
 	}
     else
+    {
+        QString text = tr("Ошибка открытия проекта %1 (Error code %2)").arg(project).arg(res);
 #ifdef CONSOLE_APP
-        qDebug() << tr("Ошибка открытия проекта %1 (%2)").arg(project).arg(res);
+        qDebug() << text;
 #else
-        QMessageBox::critical(0,tr("Ошибка подключения"),
-                              tr("Ошибка открытия проекта %1 (%2)")
-                              .arg(project).arg(res));
+        QMessageBox::critical(0,tr("Ошибка подключения"), text);
 #endif
+    }
 	return opened;
 }
 

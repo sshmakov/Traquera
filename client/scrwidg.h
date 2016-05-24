@@ -4,7 +4,7 @@
 #include "ui_scrwidg.h"
 #include <QMainWindow>
 #include <QWidget>
-#include "trdefs.h"
+//#include "trdefs.h"
 #include "tqbase.h"
 #include "trkdecorator.h"
 

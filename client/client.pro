@@ -7,9 +7,7 @@ TARGET = traquera
 DEPENDPATH += .
 INCLUDEPATH += .
 INCLUDEPATH += \
-	../trktool/lib \
-        ../common \
-        ../tracker
+        ../common
 
 # LIBS += -l./trktool/trktooln
 CONFIG += qaxcontainer
@@ -22,7 +20,7 @@ TRANSLATIONS    = \
 CODECFORTR = UTF-8
 
 # Input
-FORMS += ui/tracksmain.ui ui/querypage.ui ui/trklogin.ui ui/filters.ui ui/scrwidg.ui \
+FORMS += ui/tracksmain.ui ui/querypage.ui ui/filters.ui ui/scrwidg.ui \
     ui/idinput.ui \
     ui/notedialog.ui \
     ui/modifypanel.ui \
@@ -31,8 +29,6 @@ FORMS += ui/tracksmain.ui ui/querypage.ui ui/trklogin.ui ui/filters.ui ui/scrwid
     notewidget.ui \
     tqcolsdialog.ui \
     tqconnectwidget.ui \
-    ../tracker/trkchangedlg.ui \
-    ../tracker/trkdatesdlg.ui \
     optionsform.ui \
     proxyoptions.ui \
     tqlogindlg.ui \
@@ -43,7 +39,7 @@ FORMS += ui/tracksmain.ui ui/querypage.ui ui/trklogin.ui ui/filters.ui ui/scrwid
 #    ui/projectpage.ui
 
 HEADERS += \
-        mainwindow.h querypage.h trklogin.h \
+        mainwindow.h querypage.h \
         filterpage.h flowlayout.h \
 	scrwidg.h \
     idinput.h \
@@ -88,7 +84,7 @@ HEADERS += \
 #    tqplanswidget.h
 
 SOURCES += database.cpp main.cpp mainwindow.cpp querypage.cpp \
-        trklogin.cpp filterpage.cpp flowlayout.cpp \
+        filterpage.cpp flowlayout.cpp \
 	scrwidg.cpp \
     idinput.cpp \
     trkdecorator.cpp \
@@ -129,12 +125,13 @@ SOURCES += database.cpp main.cpp mainwindow.cpp querypage.cpp \
 
 RESOURCES += resources/tracks.qrc
 
-win32: LIBS += -L$$PWD/../trktool/lib/ -ltrktooln -lshell32 -lshlwapi -L../lib -ltqplugapi
+#win32: LIBS += -L$$PWD/../trktool/lib/ -ltrktooln -lshell32 -lshlwapi -L../lib -ltqplugapi
+win32: LIBS += -lshell32 -lshlwapi -L../lib -ltqplugapi
 # win32: LIBS += -lodbc32
 
 
-INCLUDEPATH += $$PWD/../trktool
-DEPENDPATH += $$PWD/../trktool
+#INCLUDEPATH += $$PWD/../trktool
+#DEPENDPATH += $$PWD/../trktool
 
 OTHER_FILES += \
     data/scr.xq \

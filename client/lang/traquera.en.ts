@@ -1075,12 +1075,12 @@
 <context>
     <name>TQConnectModel</name>
     <message>
-        <location filename="../tqconnectwidget.cpp" line="295"/>
+        <location filename="../tqconnectwidget.cpp" line="296"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tqconnectwidget.cpp" line="296"/>
+        <location filename="../tqconnectwidget.cpp" line="297"/>
         <source>Salary</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1104,7 +1104,7 @@
     </message>
     <message>
         <location filename="../tqconnectwidget.ui" line="86"/>
-        <location filename="../tqconnectwidget.cpp" line="39"/>
+        <location filename="../tqconnectwidget.cpp" line="40"/>
         <source>Сервер</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1115,25 +1115,25 @@
     </message>
     <message>
         <location filename="../tqconnectwidget.ui" line="103"/>
-        <location filename="../tqconnectwidget.cpp" line="36"/>
+        <location filename="../tqconnectwidget.cpp" line="37"/>
         <source>Проект</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../tqconnectwidget.ui" line="110"/>
-        <location filename="../tqconnectwidget.cpp" line="37"/>
+        <location filename="../tqconnectwidget.cpp" line="38"/>
         <source>Система</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../tqconnectwidget.ui" line="117"/>
-        <location filename="../tqconnectwidget.cpp" line="40"/>
+        <location filename="../tqconnectwidget.cpp" line="41"/>
         <source>Логин</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../tqconnectwidget.ui" line="124"/>
-        <location filename="../tqconnectwidget.cpp" line="41"/>
+        <location filename="../tqconnectwidget.cpp" line="42"/>
         <source>Пароль</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1165,32 +1165,32 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tqconnectwidget.cpp" line="35"/>
+        <location filename="../tqconnectwidget.cpp" line="36"/>
         <source>Id</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tqconnectwidget.cpp" line="38"/>
+        <location filename="../tqconnectwidget.cpp" line="39"/>
         <source>Тип БД</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tqconnectwidget.cpp" line="42"/>
+        <location filename="../tqconnectwidget.cpp" line="43"/>
         <source>Интегрированная авторизация</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tqconnectwidget.cpp" line="43"/>
+        <location filename="../tqconnectwidget.cpp" line="44"/>
         <source>Логин к БД</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tqconnectwidget.cpp" line="44"/>
+        <location filename="../tqconnectwidget.cpp" line="45"/>
         <source>Пароль к БД</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tqconnectwidget.cpp" line="45"/>
+        <location filename="../tqconnectwidget.cpp" line="46"/>
         <source>Автологин</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1508,275 +1508,6 @@
     <message>
         <location filename="../ttrecwindow.cpp" line="700"/>
         <source>Свойства</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>TrkChangeCondDialog</name>
-    <message>
-        <location filename="../../tracker/trkchangedlg.ui" line="20"/>
-        <source>Поиск по изменениям</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../tracker/trkchangedlg.ui" line="28"/>
-        <source>Наименование</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../tracker/trkchangedlg.ui" line="52"/>
-        <source>Изменение значения</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../tracker/trkchangedlg.ui" line="75"/>
-        <source>старое значение</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../tracker/trkchangedlg.ui" line="82"/>
-        <source>новое значение</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../tracker/trkchangedlg.ui" line="107"/>
-        <source>Какое изменение</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../tracker/trkchangedlg.ui" line="135"/>
-        <location filename="../../tracker/trkchangedlg.ui" line="191"/>
-        <source>Поле</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../tracker/trkchangedlg.ui" line="154"/>
-        <source>Автор изменений</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../tracker/trkchangedlg.ui" line="175"/>
-        <source>Что изменено</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../tracker/trkchangedlg.ui" line="181"/>
-        <source>Запись</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../tracker/trkchangedlg.ui" line="198"/>
-        <source>Нота</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../tracker/trkchangedlg.ui" line="205"/>
-        <source>Модуль</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../tracker/trkchangedlg.ui" line="212"/>
-        <source>Файл</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../tracker/trkchangedlg.ui" line="269"/>
-        <source>Заголовок ноты</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../tracker/trkchangedlg.ui" line="278"/>
-        <source>Другой...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../tracker/trkchangedlg.ui" line="314"/>
-        <source>Дата и время изменений</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../tracker/trkchangedlg.ui" line="323"/>
-        <source>между</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../tracker/trkchangedlg.ui" line="350"/>
-        <source>и</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../tracker/trkchangedlg.ui" line="360"/>
-        <source>днями назад</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../tracker/trkchangedlg.ui" line="385"/>
-        <location filename="../../tracker/trkchangedlg.ui" line="436"/>
-        <source>до</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../tracker/trkchangedlg.ui" line="397"/>
-        <location filename="../../tracker/trkchangedlg.ui" line="414"/>
-        <location filename="../../tracker/trkchangedlg.ui" line="448"/>
-        <location filename="../../tracker/trkchangedlg.ui" line="585"/>
-        <source>дней назад</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../tracker/trkchangedlg.ui" line="404"/>
-        <source>и после</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../tracker/trkchangedlg.ui" line="470"/>
-        <source>после</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../tracker/trkchangedlg.ui" line="513"/>
-        <source>Относительно текущего дня</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../tracker/trkchangedlg.ui" line="542"/>
-        <source>Дата</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../tracker/trkchangedlg.ui" line="568"/>
-        <source>Дата и время</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>TrkConnect</name>
-    <message>
-        <location filename="../ui/trklogin.ui" line="14"/>
-        <source>Connect to Tracker</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/trklogin.ui" line="25"/>
-        <source>Сервер</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/trklogin.ui" line="32"/>
-        <source>Проект</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/trklogin.ui" line="52"/>
-        <source>Пароль БД</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/trklogin.ui" line="66"/>
-        <source>Источник</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/trklogin.ui" line="76"/>
-        <source>Авторизация Windows</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/trklogin.ui" line="86"/>
-        <location filename="../ui/trklogin.ui" line="147"/>
-        <source>...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/trklogin.ui" line="93"/>
-        <source>Вид</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/trklogin.ui" line="106"/>
-        <source>Пользователь БД</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/trklogin.ui" line="120"/>
-        <source>Пароль</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/trklogin.ui" line="127"/>
-        <source>Логин</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/trklogin.ui" line="137"/>
-        <source>Соединяться автоматически при входе</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>TrkDateCondDialog</name>
-    <message>
-        <location filename="../../tracker/trkdatesdlg.ui" line="14"/>
-        <source>Условие</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../tracker/trkdatesdlg.ui" line="26"/>
-        <source>Поле с датой...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../tracker/trkdatesdlg.ui" line="70"/>
-        <source>текущей дате</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../tracker/trkdatesdlg.ui" line="77"/>
-        <source>указанной дате</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../tracker/trkdatesdlg.ui" line="84"/>
-        <source>не заполнено</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../tracker/trkdatesdlg.ui" line="100"/>
-        <source>до</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../tracker/trkdatesdlg.ui" line="128"/>
-        <location filename="../../tracker/trkdatesdlg.ui" line="235"/>
-        <source>текущей даты</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../tracker/trkdatesdlg.ui" line="141"/>
-        <location filename="../../tracker/trkdatesdlg.ui" line="222"/>
-        <source>указанной даты</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../tracker/trkdatesdlg.ui" line="164"/>
-        <location filename="../../tracker/trkdatesdlg.ui" line="255"/>
-        <source>и</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../tracker/trkdatesdlg.ui" line="171"/>
-        <location filename="../../tracker/trkdatesdlg.ui" line="265"/>
-        <source>дней назад</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../tracker/trkdatesdlg.ui" line="301"/>
-        <source>после</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../tracker/trkdatesdlg.ui" line="308"/>
-        <source>равно</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

@@ -1,11 +1,11 @@
 #include "mainwindow.h"
 //#include "planfiles.h"
 #include "database.h"
-#include "tracker.h"
+//#include "tracker.h"
 #include "querypage.h"
 //#include "projectpage.h"
 //#include "dialog.h"
-#include "trklogin.h"
+//#include "trklogin.h"
 #include "filterpage.h"
 #include "idinput.h"
 #include "gsmodel.h"
@@ -498,7 +498,7 @@ void MainWindow::repeatLastChanges()
     modifyPanel->setChanges(lastChanges);
 }
 
-void MainWindow::slotOpenRecordsClicked(ScrSet res)
+void MainWindow::slotOpenRecordsClicked(QSet<int> res)
 {
     openQueryById(res.toList(),intListToString(res.toList()),false);
 }
@@ -697,7 +697,7 @@ void MainWindow::finishedSearch(QNetworkReply *reply)
             if(!resDoc.isNull())
             {
                 QDomElement result = resDoc.firstChildElement("result");
-                ScrSet ids;
+                QSet<int> ids;
                 for(QDomElement doc = result.firstChildElement("doc");
                     !doc.isNull();
                     doc = doc.nextSiblingElement("doc"))
@@ -1013,7 +1013,7 @@ QueryPage *MainWindow::createNewPage(const QString &title)
     //page->setPlanModel(&planModel);
 	connect(page,SIGNAL(changedQuery(QString,QString)),this,SLOT(on_changedQuery(QString,QString)));
     connect(page,SIGNAL(selectedRecordsChanged()),this,SLOT(curSelectionChanged()));
-    connect(page,SIGNAL(openRecordsClicked(ScrSet)),this,SLOT(slotOpenRecordsClicked(ScrSet)));
+    connect(page,SIGNAL(openRecordsClicked(QSet<int>)),this,SLOT(slotOpenRecordsClicked(QSet<int>)));
     return page;
 }
 

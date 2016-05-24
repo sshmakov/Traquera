@@ -1,5 +1,5 @@
 #include "database.h"
-#include "tracker.h"
+//#include "tracker.h"
 #include <QtGui>
 #include <QAxBase>
 #include <QAxObject>

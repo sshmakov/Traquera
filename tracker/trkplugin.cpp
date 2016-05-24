@@ -8,6 +8,7 @@ static TrkPlugin *plugin;
 
 TrkPlugin::TrkPlugin()
 {
+//    QTextCodec::setCodecForTr(QTextCodec::codecForName("CP1251"));
 }
 
 static TQAbstractDB *newTrkToolDB(QObject *parent)
@@ -51,7 +52,6 @@ void TrkPlugin::initPlugin(QObject *obj, const QString &modulePath)
 //                              Q_ARG(const QString &,"Plugins/Jira"),
 //                              Q_ARG(void *, getJiraOptionsWidget));
 
-    TQAbstractDB::registerDbClass("PVCS Tracker", newTrkToolDB);
 
     QFileInfo fi(modulePath);
     pluginModule = fi.absoluteFilePath();
@@ -71,6 +71,8 @@ void TrkPlugin::initPlugin(QObject *obj, const QString &modulePath)
     if(!translator->load(QString("tracker.") + locale,pluginModule+"/lang"))
         qDebug() << "Can't load tracker translator";
     app->installTranslator(translator);
+
+    TQAbstractDB::registerDbClass("PVCS Tracker", newTrkToolDB);
     /*
     QDir pDir;
     pDir = pluginModule; //fi.absoluteDir();

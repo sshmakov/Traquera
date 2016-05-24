@@ -1,8 +1,9 @@
 #include "tqconnectwidget.h"
 #include "ui_tqconnectwidget.h"
 #include "ttglobal.h"
-#include "trklogin.h"
+//#include "trklogin.h"
 #include <QtSql>
+#include <QtGui>
 #include <QMenu>
 #include <tqjson.h>
 

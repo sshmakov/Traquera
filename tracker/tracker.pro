@@ -27,6 +27,7 @@ HEADERS += trkplugin.h\
     trkcond.h
 
 CODECFORTR = UTF-8
+CODECFORSRC = UTF-8
 
 TRANSLATIONS = \
     redistribute/tracker/lang/tracker.ru.ts \

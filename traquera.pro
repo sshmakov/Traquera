@@ -23,6 +23,14 @@ client.depends = tqplugapi
 
 
 TARGET = traquera
-TRANSLATIONS =
-CODECFORTR = utf-8
+#TRANSLATIONS =
+CODECFORTR = UTF-8
+CODECFORSRC = UTF-8
 
+#TRANSLATIONS = \
+#    jira\redistribute\jira\lang\jira.en.ts \
+#    jira\redistribute\jira\lang\jira.ru.ts \
+#    tracker\redistribute\tracker\lang\tracker.en.ts \
+#    tracker\redistribute\tracker\lang\tracker.ru.ts \
+#    client\lang\traquera.en.ts \
+#    client\lang\traquera.ru.ts \
