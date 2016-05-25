@@ -33,6 +33,8 @@ void TrkDecorator::fillEditPanels(QTabWidget *tabs, const TQAbstractRecordTypeDe
 //    QXmlSimpleReader xmlReader;
     //QFile *file = new QFile("data/tracker.xml");
     QIODevice *file = recDef->defineSource();
+    if(!file)
+        return;
     QXmlInputSource *source = new QXmlInputSource(file);
     QDomDocument dom;
     if(!dom.setContent(source,false))
@@ -382,6 +384,8 @@ FieldGroupsDef TrkDecorator::loadGroupsXML(const TQAbstractRecordTypeDef *recDef
 {
     FieldGroupsDef res;
     QScopedPointer<QIODevice> file(recDef->defineSource());
+    if(file.isNull())
+        return res;
     QScopedPointer<QXmlInputSource> source(new QXmlInputSource(file.data()));
     QDomDocument dom;
     if(!dom.setContent(source.data(),false))

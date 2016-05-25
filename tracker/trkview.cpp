@@ -3787,9 +3787,27 @@ QString TrkRecordTypeDef::fieldName(int vid) const
     return QString();
 }
 
+QString TrkRecordTypeDef::fieldSystemName(int vid) const
+{
+    return fieldName(vid);
+}
+
+QString TrkRecordTypeDef::fieldRoleName(int vid) const
+{
+    return QString();
+}
+
 QIODevice *TrkRecordTypeDef::defineSource() const
 {
-    return new QFile("data/tracker.xml");
+    QString fileName = project()->optionValue(TQOPTION_GROUP_FIELDS).toString();
+    QFile *file = new QFile(fileName);
+    if(!file->exists())
+    {
+        delete file;
+        return 0;
+    }
+    return file;
+//    return new QFile("data/tracker.xml");
 }
 
 QString TrkRecordTypeDef::valueToDisplay(int vid, const QVariant &value) const

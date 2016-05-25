@@ -268,6 +268,8 @@ public:
     int fieldVidSystem(const QString &systemName) const;
     virtual QList<int> fieldVids() const;
     virtual QString fieldName(int vid) const;
+    virtual QString fieldSystemName(int vid) const;
+    virtual QString fieldRoleName(int vid) const;
     virtual QIODevice *defineSource() const;
     virtual int recordType() const;
     virtual QString valueToDisplay(int vid, const QVariant &value) const;

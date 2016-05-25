@@ -771,15 +771,18 @@ QDomDocument TQRecord::toXML()
     foreach(int vid, vids)
     {
         bool ok = false;
-        TQAbstractFieldType fdef = def->getFieldType(vid, &ok);
-
 
         QString fname = def->fieldName(vid);
+        QString sysName = def->fieldSystemName(vid);
+        QString role = def->fieldRoleName(vid);
         QVariant ftext = value(vid,Qt::DisplayRole);
         QVariant fvalue = value(vid,Qt::EditRole);
 
         QDomElement f = xml.createElement("field");
         f.setAttribute("name", fname);
+        f.setAttribute("systemName", sysName);
+        if(!role.isEmpty())
+            f.setAttribute("role", role);
         f.setAttribute("value",fvalue.toString());
         QDomText v = xml.createTextNode(ftext.toString());
         f.appendChild(v);

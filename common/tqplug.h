@@ -115,6 +115,8 @@ public:
     virtual int fieldVid(const QString &name) const = 0;
     virtual QList<int> fieldVids() const = 0;
     virtual QString fieldName(int vid) const = 0;
+    virtual QString fieldSystemName(int vid) const = 0;
+    virtual QString fieldRoleName(int vid) const = 0;
     virtual QIODevice *defineSource() const = 0;
     virtual int recordType() const = 0;
     virtual QString valueToDisplay(int vid, const QVariant &value) const = 0;
@@ -354,6 +356,18 @@ public:
     {
         if(isValid())
            return def->fieldName(vid);
+        return QString();
+    }
+    inline QString systemName()
+    {
+        if(isValid())
+           return def->fieldSystemName(vid);
+        return QString();
+    }
+    inline QString roleName()
+    {
+        if(isValid())
+           return def->fieldRoleName(vid);
         return QString();
     }
 

@@ -1149,6 +1149,8 @@ QVariant JiraProject::optionValue(const QString &option) const
             || option == TQOPTION_EMAIL_TEMPLATE
             )
         return jira->dataDir.absoluteFilePath("issue.xq");
+    if(option == TQOPTION_GROUP_FIELDS)
+        return jira->dataDir.absoluteFilePath("jira.xml");
     return ttglobal()->optionDefaultValue(option);
 }
 
@@ -1628,9 +1630,30 @@ QString JiraRecTypeDef::fieldName(int vid) const
     return desc.name;
 }
 
+QString JiraRecTypeDef::fieldSystemName(int vid) const
+{
+    if(!fields.contains(vid))
+        return QString();
+    const JiraFieldDesc &desc = fields.value(vid);
+    return desc.id;
+}
+
+QString JiraRecTypeDef::fieldRoleName(int vid) const
+{
+    return QString();
+}
+
 QIODevice *JiraRecTypeDef::defineSource() const
 {
-    return new QFile("data/jira.xml");
+    QString fileName = project()->optionValue(TQOPTION_GROUP_FIELDS).toString();
+    QFile *file = new QFile(fileName);
+    if(!file->exists())
+    {
+        delete file;
+        return 0;
+    }
+    return file;
+    //return new QFile("data/jira.xml");
 }
 
 int JiraRecTypeDef::recordType() const
