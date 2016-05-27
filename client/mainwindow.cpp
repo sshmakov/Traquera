@@ -45,6 +45,7 @@
 #include <filespage.h>
 #include "tqlogindlg.h"
 #include "tqprjoptdlg.h"
+#include <logform.h>
 
 extern int uniqueAlbumId;
 extern int uniqueArtistId;
@@ -145,6 +146,9 @@ MainWindow::MainWindow(QWidget *parent)
 		return;
 	tabWidget->setCurrentIndex(tabWidget->insertTab(0, new QueryPage(), "Query"));
 	*/
+    logForm = new LogForm(this);
+//    logForm->setObjectName("LogForm");
+    addWidgetToDock(logForm->windowTitle(), logForm, Qt::BottomDockWidgetArea);
 	loadSettings();
     /*
     dbClassComboBox->addItems(TQAbstractDB::registeredDbClasses());
@@ -218,59 +222,24 @@ MainWindow::~MainWindow()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    ttglobal()->settings()->setValue(MainWindowState, saveState());
-    ttglobal()->settings()->setValue(MainWindowGeometry, saveGeometry());
+    saveSettings();
     QWidget::closeEvent(event);
 }
 
 void MainWindow::loadSettings()
 {
     QSettings *settings = ttglobal()->settings();
-    /*
-    dbmsEdit->setText(settings->value("TrackerDBMSType",dbmsEdit->text()).toString());
-    serverEdit->setText(settings->value("TrackerSQLServer",serverEdit->text()).toString());
-	sqlUserEdit->setText(settings->value("TrackerSQLUser",sqlUserEdit->text()).toString());
-	sqlPassEdit->setText(settings->value("TrackerSQLPass",sqlPassEdit->text()).toString());
-	trustedUserBox->setChecked(settings->value("TrackerSQL",trustedUserBox->isChecked()).toBool());
-	trustChanged(trustedUserBox->checkState());
-	projectEdit->setText(settings->value("TrackerProject",projectEdit->text()).toString());
-	userEdit->setText(settings->value("TrackerUser",userEdit->text()).toString());
-    */
-
     if(settings->contains(MainWindowGeometry))
         restoreGeometry(settings->value(MainWindowGeometry).toByteArray());
     if(settings->contains(MainWindowState))
         restoreState(settings->value(MainWindowState).toByteArray());
-//    solrUrl = settings->value("TrackerIndex", solrUrl).toString();
 }
 
 void MainWindow::saveSettings()
 {
     QSettings *settings = ttglobal()->settings();
-    /*
-    settings->setValue("TrackerDBMSType",dbmsEdit->text());
-    settings->setValue("TrackerSQLServer",serverEdit->text());
-	settings->setValue("TrackerSQLUser",sqlUserEdit->text());
-	settings->setValue("TrackerSQLPass",sqlPassEdit->text());
-	settings->setValue("TrackerSQL",trustedUserBox->isChecked());
-	settings->setValue("TrackerProject",projectEdit->text());
-	settings->setValue("TrackerUser",userEdit->text());
-    */
-//    settings->setValue("TrackerIndex", solrUrl);
-    /*
-	settings->beginGroup("Plans");
-	{
-		QStringList keys=settings->childKeys();
-		for(int i=0; i<keys.count(); i++)
-			settings->remove(keys[i]);
-		for(int i=0; i<projects->plans.count(); i++)
-        {
-			settings->setValue(QString::number(i),projects->plans[i].file);
-            settings->setValue(QString::number(i) + ".RO", projects->plans[i].readOnly);
-        }
-	}
-    settings->endGroup();
-    */
+    settings->setValue(MainWindowState, saveState());
+    settings->setValue(MainWindowGeometry, saveGeometry());
 }
 
 void MainWindow::showProgressBar()
@@ -750,6 +719,7 @@ void MainWindow::addWidgetToDock(const QString &title, QWidget *widget, Qt::Dock
     QDockWidget *dw = new QDockWidget(title, this);
     dw->setAllowedAreas(Qt::AllDockWidgetAreas);
     dw->setWidget(widget);
+    dw->setObjectName("dock_"+title);
     addDockWidget(area,dw);
     connect(widget,SIGNAL(destroyed()),dw,SLOT(deleteLater()));
 }

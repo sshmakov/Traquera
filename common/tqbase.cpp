@@ -780,7 +780,7 @@ QDomDocument TQRecord::toXML()
 
         QDomElement f = xml.createElement("field");
         f.setAttribute("name", fname);
-        f.setAttribute("systemName", sysName);
+        f.setAttribute("id", sysName);
         if(!role.isEmpty())
             f.setAttribute("role", role);
         f.setAttribute("value",fvalue.toString());

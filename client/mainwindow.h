@@ -55,6 +55,7 @@ struct ProjectRec {
 class MainWindow;
 class MainProc;
 class TQRecordViewController;
+class LogForm;
 
 class MainWindow : public QMainWindow, private Ui::MainWindow
 {
@@ -94,6 +95,7 @@ private:
     QMap<QString, TQAbstractProject *>projectByName;
 
     TQHistory *journal;
+    LogForm *logForm;
     //PlansPlugin *planPlugin;
     //PlanFilesModel *projects;
 //	QAbstractItemModel *excels;

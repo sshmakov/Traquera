@@ -1,12 +1,14 @@
-﻿#include <QtGui>
+#include <QtGui>
 
 #include "database.h"
 #include "mainwindow.h"
 #include "settings.h"
+#include "logform.h"
 #include "ttglobal.h"
 
 int main(int argc, char *argv[])
 {
+    LogHandler::installHandler();
     //Q_INIT_RESOURCE(masterdetail);
 
 //    QCoreApplication::addLibraryPath("C:/gits/build/traquera-main-Desktop-Debug/plugins/tracker");

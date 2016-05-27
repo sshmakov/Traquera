@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-<link rel="stylesheet" href="style.css"/>
+<link rel="stylesheet" href="../../../data/style.css"/>
 <style>
 <!--
 .noteT {
@@ -12,15 +12,15 @@ font-weight: bold;
 
 -->
 </style>
-<script src="funcs.js" LANGUAGE="JScript">
+<script src="../../../data/funcs.js" LANGUAGE="JScript">
 <!--
 -->
 </script>
-<script src="funcs2.js">
+<script src="../../../data/funcs2.js">
 <!--
 -->
 </script>
-<script src="funcs3.js">
+<script src="../../../data/funcs3.js">
 <!--
 -->
 </script>
@@ -47,7 +47,7 @@ return (
 <a href="#changes" class="contLink" id="tocLast">Changes</a>
 </div>
 </div>
-<a name="top">Запрос {$scr/*/fields/field[@name = "Key"]/node()}. <b>{$scr/*/fields/field[@name = "Summary"]/node()}</b></a>
+<a name="top">Запрос {$scr/*/fields/field[@id = "issuekey"]/node()}. <b>{$scr/*/fields/field[@id = "summary"]/node()}</b></a>
 <p id="debug"></p>
 <!--
 <a href="#" onclick="javascript:global.shell('C:\\Windows\\system32\\cmd.exe /c c:\\1\\1.bat лорлрлрлор'); return false;">Run</a> 
@@ -58,7 +58,7 @@ return (
 -->
 <p id="debug2"/>
 	<div>
-                <div><span class="noteTitle"><!-- {$scr/*/Description/string(@name)} -->Description</span> ({$scr/*/fields/field[@name = "Submitter"]/node()})</div>
+                <div><span class="noteTitle"><!-- {$scr/*/Description/string(@name)} -->Description</span> ({$scr/*/fields/field[@id = "creator"]/node()})</div>
 
 		<blockquote><pre style="white-space: pre-wrap; font-family: serif" class="noteText">
 			{string($scr/*/Description)}

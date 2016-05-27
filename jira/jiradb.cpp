@@ -320,11 +320,10 @@ void JiraDB::setConnectString(const QString &connectString)
     setConnectMethod((JiraConnectMethod)method);
 }
 
-QVariant JiraDB::sendRequest(const QString &dbmsServer, const QString &method, const QString &query, const QVariantMap &bodyMap)
+QVariant JiraDB::sendRequest(const QString &dbmsServer, const QString &method, const QString &query, QVariantMap bodyMap)
 {
     QString link(dbmsServer + query);
     QUrl url(link);
-    QByteArray body = parser->toByteArray(bodyMap);
     QNetworkRequest req;
     req.setUrl(url);
     req.setHeader(QNetworkRequest::ContentTypeHeader,"application/json");
@@ -332,21 +331,28 @@ QVariant JiraDB::sendRequest(const QString &dbmsServer, const QString &method, c
     QNetworkReply *r;
     if(connectMethod == OAuth)
     {
+        QByteArray body = parser->toByteArray(bodyMap);
         dumpRequest(&req, method, body);
         r = oa->signedGet(&req);
     }
     else if(connectMethod == CookieAuth)
     {
+        if(false && d->isLogged)
+        {
+            QVariantMap headers = bodyMap.value("headers", QVariantMap()).toMap();
+            headers.insert("cookie", QString("JSESSIONID=") + d->session.jsessionId);
+            bodyMap.insert("headers", headers);
+        }
+        QByteArray body = parser->toByteArray(bodyMap);
         QList<QNetworkCookie> list = man->cookieJar()->cookiesForUrl(dbmsServer);
         if(list.size())
             req.setHeader(QNetworkRequest::SetCookieHeader, QVariant::fromValue(list));
-        if(d->isLogged)
-
         dumpRequest(&req, method, body);
         r = sendWait(method, req, body);
     }
     else //if(connectMethod == BaseAuth)
     {
+        QByteArray body = parser->toByteArray(bodyMap);
         QByteArray v = QByteArray("Basic ") + QString(dbmsUser() + ":" + dbmsPass()).toLocal8Bit().toBase64();
         req.setRawHeader("Authorization", v);
         r = sendWait(method, req, body);
@@ -665,6 +671,7 @@ void JiraDB::dumpRequest(QNetworkRequest *req, const QString &method, const QByt
         QByteArray value = req->rawHeader(header);
         qDebug() << header << value;
     }
+    qDebug() << body;
     qDebug() << "---";
 }
 
@@ -1140,8 +1147,10 @@ TQAbstractQWController *JiraProject::queryWidgetController(int rectype)
 QVariant JiraProject::optionValue(const QString &option) const
 {
     QSettings *sets = projectSettings();
-    if(sets->contains(option))
-        return sets->value(option);
+    QVariant v = sets->value(option);
+    delete sets;
+    if(v.isValid())
+        return v;
 
     if(option == TQOPTION_VIEW_TEMPLATE
             || option == TQOPTION_EDIT_TEMPLATE

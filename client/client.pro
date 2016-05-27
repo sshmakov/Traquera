@@ -33,7 +33,8 @@ FORMS += ui/tracksmain.ui ui/querypage.ui ui/filters.ui ui/scrwidg.ui \
     proxyoptions.ui \
     tqlogindlg.ui \
     tqprjoptdlg.ui \
-    filespage.ui
+    filespage.ui \
+    logform.ui
 #    tqqrywid.ui \
 #    ui/planfilesform.ui \
 #    ui/projectpage.ui
@@ -73,7 +74,8 @@ HEADERS += \
     tqprjoptdlg.h \
     filespage.h \
     tqrecordviewcontroller.h \
-    tqqueryviewcontroller.h
+    tqqueryviewcontroller.h \
+    logform.h
 
 #    plans.h planproxy.h \
 #    planfiles.h \
@@ -116,7 +118,8 @@ SOURCES += database.cpp main.cpp mainwindow.cpp querypage.cpp \
     tqprjoptdlg.cpp \
     filespage.cpp \
     tqrecordviewcontroller.cpp \
-    tqqueryviewcontroller.cpp
+    tqqueryviewcontroller.cpp \
+    logform.cpp
 
 #    planfilesform.cpp \
 #    project.cpp projectpage.cpp plans.cpp planproxy.cpp planfiles.cpp \

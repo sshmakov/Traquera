@@ -97,7 +97,7 @@ public:
     void setConnectMethod(JiraConnectMethod method);
     virtual TQAbstractProject *openConnection(const QString &connectString);
     void setConnectString(const QString &connectString);
-    QVariant sendRequest(const QString &dbmsServer, const QString &method, const QString &query, const QVariantMap &bodyMap = QVariantMap());
+    QVariant sendRequest(const QString &dbmsServer, const QString &method, const QString &query, QVariantMap bodyMap = QVariantMap());
     QNetworkReply *sendRequestNative(const QUrl &url, const QString &method, const QByteArray &body = QByteArray());
     QVariant parseValue(const QVariant &source, const QString &path);
     static TQAbstractDB *createJiraDB(QObject *parent);
