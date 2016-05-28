@@ -44,6 +44,7 @@ class QueryPage : public QWidget, public Ui::queryForm
     Q_PROPERTY(int recordType READ recordType)
     Q_PROPERTY(QAbstractItemView *tableView READ tableView)
     Q_PROPERTY(TQQueryViewController *controller READ controller)
+    Q_PROPERTY(TQAbstractProject *project READ project())
 protected:
     QueryPagePrivate *d;
     QTreeView *planTreeView;

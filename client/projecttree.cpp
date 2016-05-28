@@ -237,7 +237,8 @@ void TQOneProjectTree::close()
 {
     if(!isOpened())
         return;
-    beginResetModel();
+    beginRemoveRows(QModelIndex(), 0, rowCount()-1);
+//    beginResetModel();
 
     if(folders)
     {
@@ -246,10 +247,9 @@ void TQOneProjectTree::close()
         folders = 0;
     }
     foreach(QAbstractItemModel *model, queryModels)
-    {
         removeSourceModel(model);
-        model->deleteLater();
-    }
+    foreach(QAbstractItemModel *model, queryModels)
+        delete model;
     queryModels.clear();
 //    if(userModel)
 //    {
@@ -268,7 +268,8 @@ void TQOneProjectTree::close()
         delete info.data.prj;
         info.data.prj = 0;
     }
-    endResetModel();
+//    endResetModel();
+    endRemoveRows();
     emit projectClosed();
 }
 

@@ -184,6 +184,8 @@ int UnionModel::rowCount(const QModelIndex &parent) const
 {
     if(!parent.isValid())
         return models.count();
+    if(!models.count())
+        return 0;
     int id = parent.internalId();
     const MapInfo &m = info[id];
     QModelIndex sp = mapToSource(parent);
@@ -338,18 +340,21 @@ void UnionModel::removeSourceModel(QAbstractItemModel *model)
     int row = models.indexOf(model);
     if(row == -1)
         return;
+    disconnect(model);
+    beginRemoveRows(QModelIndex(), row, row);
+    int id = -1;
     foreach(MapInfo m, info)
     {
         if(m.model == model)
-        {
-            info.remove(m.id);
-            models.removeAt(m.row);
-            titles.removeAt(m.row);
-            disconnect(model);
-            break;
-        }
+            id = m.id;
     }
-    emit layoutChanged();
+    models.removeAt(row);
+    titles.removeAt(row);
+    if(id >= 0)
+        info.remove(id);
+
+//    emit layoutChanged();
+    endRemoveRows();
 }
 
 QAbstractItemModel *UnionModel::sourceModel(const QModelIndex &proxyIndex) const
@@ -451,6 +456,24 @@ void UnionModel::do_rowsAboutToBeInserted(const QModelIndex &parent, int start, 
     else
         pEndRow = end;
     beginInsertRows(pparent, pStartRow, pEndRow);
+}
+
+void UnionModel::do_rowsAboutToBeRemoved(const QModelIndex &parent, int start, int end)
+{
+    if(parent.isValid())
+    {
+        beginRemoveRows(mapFromSource(parent), start, end);
+        return;
+    }
+    QAbstractItemModel *model = qobject_cast<QAbstractItemModel *>(sender());
+    int row = sourceModelIndex(model);
+    if(row == -1)
+    {
+        beginRemoveRows(QModelIndex(), -1, -1);
+        return;
+    }
+    QModelIndex parentIndex = index(row, 0);
+    beginRemoveRows(parentIndex, start, end);
 }
 
 void UnionModel::do_rowsInserted()

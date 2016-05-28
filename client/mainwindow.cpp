@@ -526,6 +526,23 @@ bool MainWindow::closeProjectTree(TQOneProjectTree *pm)
     TQAbstractProject *prj = pm->project();
     if(prj)
     {
+        QList<QWidget *> pagesForDelete;
+        for(int i=0; i<tabWidget->count(); i++)
+        {
+            QWidget *page = tabWidget->widget(i);
+            QueryPage *qpage = qobject_cast<QueryPage*>(page);
+            if(qpage && qpage->project() == prj)
+//                qpage->deleteLater();
+                pagesForDelete.append(qpage);
+            else {
+                TQAbstractProject *project = page->property("project").value<TQAbstractProject*>();
+                if(project && project == prj)
+//                    page->deleteLater();
+                    pagesForDelete.append(page);
+            }
+        }
+        foreach(QWidget *page, pagesForDelete)
+            delete page;
         int index = cbCurrentProjectName->findData((int)prj);
         if(index != -1)
         {

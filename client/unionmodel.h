@@ -50,7 +50,6 @@ public:
     virtual QStringList mimeTypes() const;
     virtual bool dropMimeData(const QMimeData *data,
          Qt::DropAction action, int row, int column, const QModelIndex &parent);
-
     QModelIndex appendSourceModel(QAbstractItemModel *model, const QString &title);
     void removeSourceModel(QAbstractItemModel *model);
     QAbstractItemModel *sourceModel(const QModelIndex &proxyIndex) const;
@@ -98,10 +97,7 @@ private slots:
 
     void	do_rowsAboutToBeMoved ( const QModelIndex & sourceParent, int sourceStart, int sourceEnd, const QModelIndex & destinationParent, int destinationRow )
     { beginMoveRows(mapFromSource(sourceParent), sourceStart, sourceEnd, mapFromSource(destinationParent), destinationRow); }
-    void	do_rowsAboutToBeRemoved ( const QModelIndex & parent, int start, int end )
-    {
-        beginRemoveRows(mapFromSource(parent), start, end);
-    }
+    void	do_rowsAboutToBeRemoved ( const QModelIndex & parent, int start, int end );
 
     void	do_rowsInserted ();
 

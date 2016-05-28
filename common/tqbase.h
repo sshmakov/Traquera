@@ -596,6 +596,7 @@ protected slots:
     */
 };
 
+Q_DECLARE_METATYPE(TQAbstractProject*)
 Q_DECLARE_METATYPE(TQAbstractRecordTypeDef*)
 Q_DECLARE_METATYPE(TQRecord)
 
