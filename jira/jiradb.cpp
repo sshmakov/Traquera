@@ -1440,7 +1440,8 @@ void JiraProject::storeReadedField(JiraRecord *rec, JiraRecTypeDef *rdef, const 
             else
             {
                 rec->values.insert(fvid, value);
-                rec->displayValues.insert(fvid, value);
+                QString displayValue = rdef->valueToDisplay(fvid,value);
+                rec->displayValues.insert(fvid, displayValue);
             }
         }
     }
@@ -1709,7 +1710,7 @@ QVariant JiraRecTypeDef::displayToValue(int vid, const QString &text) const
     switch(simple)
     {
     case TQ::TQ_FIELD_TYPE_DATE:
-        dt = QDateTime::fromString(dateTimeFormat());
+        dt = QDateTime::fromString(text,dateTimeFormat());
         return QVariant(dt);
     case TQ::TQ_FIELD_TYPE_USER:
     case TQ::TQ_FIELD_TYPE_CHOICE:
@@ -1865,6 +1866,9 @@ QVariant JiraRecord::value(int vid, int role) const
     case Qt::EditRole:
         value = values.value(vid, QVariant());
     }
+#ifdef QT_DEBUG
+    QString s = value.toString();
+#endif
 
     return value;
 }
