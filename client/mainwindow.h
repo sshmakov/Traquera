@@ -185,6 +185,12 @@ protected:
     void saveIdsToList(const QString &list);
     TQAbstractDB *newDb(const QString &dbClass, const QString &dbType, const QString &dbServer);
     TQAbstractDB *getDb(const QString &dbClass, const QString &dbType, const QString &dbServer);
+    struct TQDockInfo {
+        QDockWidget *dw;
+        QWidget *widget;
+        QAction *action;
+    };
+    QHash<QDockWidget *, TQDockInfo> dockInfo;
     void registerDBClasses();
 protected slots:
     void deleteTheObject();
@@ -231,6 +237,8 @@ public slots:
 private slots:
 //    void slotRecordWindowOpened(TQRecordViewController *controller);
     void slotViewOpened(QWidget *widget, TQViewController *controller);
+    void slotDockVisibilityChanged(bool visible);
+    void slotDockAction();
 
 private:
     bool openProjectTree(TQOneProjectTree *pm, const QString &connString = QString());

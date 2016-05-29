@@ -505,6 +505,34 @@ void MainWindow::slotViewOpened(QWidget *widget, TQViewController *controller)
     connect(controller,SIGNAL(currentRecordChanged(TQRecord*)),tab,SLOT(setRecord(TQRecord*)));
 }
 
+void MainWindow::slotDockVisibilityChanged(bool visible)
+{
+    QDockWidget *dw = qobject_cast<QDockWidget *>(sender());
+    if(!dw)
+        return;
+    if(!dockInfo.contains(dw))
+        return;
+    TQDockInfo &info = dockInfo[dw];
+    if(!info.action)
+        return;
+    info.action->setChecked(visible);
+}
+
+void MainWindow::slotDockAction()
+{
+    QAction *action = qobject_cast<QAction *>(sender());
+    if(!action)
+        return;
+    foreach(const TQDockInfo &info, dockInfo)
+    {
+        if(info.action == action)
+        {
+            info.dw->setVisible(!info.dw->isVisible());
+            break;
+        }
+    }
+}
+
 bool MainWindow::openProjectTree(TQOneProjectTree *pm, const QString &connString)
 {
     if(pm->isOpened())
@@ -737,8 +765,18 @@ void MainWindow::addWidgetToDock(const QString &title, QWidget *widget, Qt::Dock
     dw->setAllowedAreas(Qt::AllDockWidgetAreas);
     dw->setWidget(widget);
     dw->setObjectName("dock_"+title);
+    QAction *action =new QAction(title, this);
+    action->setCheckable(true);
+    TQDockInfo info;
+    info.dw = dw;
+    info.widget = widget;
+    info.action = action;
+    dockInfo.insert(dw, info);
+    menuView->addActions(QList<QAction*>() << action);
     addDockWidget(area,dw);
     connect(widget,SIGNAL(destroyed()),dw,SLOT(deleteLater()));
+    connect(action, SIGNAL(triggered()), SLOT(slotDockAction()));
+    connect(dw,SIGNAL(visibilityChanged(bool)),SLOT(slotDockVisibilityChanged(bool)));
 }
 
 void MainWindow::updateModifyPanel(const TQAbstractRecordTypeDef *typeDef, const QObjectList &records)
