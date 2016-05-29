@@ -1643,7 +1643,12 @@ void MainWindow::openCurItem(bool reuse)
             tabWidget->setTabText(tabWidget->currentIndex(),folderName);
         }
         else if(selectedTreeItem.isProjectSelected)
-            actionOpen_Project->trigger();
+        {
+            if(!selectedTreeItem.prj)
+                actionOpen_Project->trigger();
+            else
+                actionMakeActive->trigger();
+        }
         else
             return;
         if(page && !selectedTreeItem.icon.isNull())
@@ -2344,13 +2349,12 @@ void MainWindow::on_actionDeleteQuery_triggered()
     }
 }
 
-
-
 void MainWindow::on_actionMakeActive_triggered()
 {
     readSelectedTreeItem();
-    TQAbstractProject *prj = selectedTreeItem.prj;
-    setCurrentProject(prj);
+//    TQAbstractProject *prj = selectedTreeItem.prj;
+    TQOneProjectTree *prjTree = selectedTreeItem.prjModel;
+    setCurrentProjectTree(prjTree);
 }
 
 void MainWindow::on_cbCurrentProjectName_currentIndexChanged(int index)
