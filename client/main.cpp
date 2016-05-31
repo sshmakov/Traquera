@@ -15,8 +15,11 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
 //    QTextCodec::setCodecForCStrings(QTextCodec::codecForName("windows-1251"));
 //    QTextCodec::setCodecForTr(QTextCodec::codecForName("windows-1251"));
-    QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
-    QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF-8"));
+    QTextCodec *codec = QTextCodec::codecForName("UTF-8");
+    QTextCodec::setCodecForCStrings(codec);
+    QTextCodec::setCodecForTr(codec);
+    codec = QTextCodec::codecForName("windows-1251");
+    QTextCodec::setCodecForLocale(codec);
     app.setApplicationName(PRODUCT_NAME);
     app.setOrganizationName(COMPANY_NAME);
 

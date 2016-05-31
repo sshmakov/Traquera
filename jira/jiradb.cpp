@@ -12,6 +12,7 @@
 #include "jiraqry.h"
 #include "jiraquerydialog.h"
 #include <ttglobal.h>
+#include <tqdebug.h>
 
 Q_EXPORT_PLUGIN2("jira", JiraPlugin)
 
@@ -40,7 +41,7 @@ JiraPlugin::JiraPlugin(QObject *parent)
         }
     }
     if(!translator->load(QString("jira.") + locale,pluginModule+"/lang"))
-        qDebug() << "Can't load jira translator";
+        tqDebug() << "Can't load jira translator";
     app->installTranslator(translator);
 }
 
@@ -394,7 +395,7 @@ QNetworkReply *JiraDB::sendRequestNative(const QUrl &url, const QString &method,
     QNetworkRequest req;
     req.setUrl(url);
     dumpRequest(&req, method, body);
-    qDebug() << method << url;
+    tqDebug() << method << url;
     req.setHeader(QNetworkRequest::ContentTypeHeader,"application/json");
     QNetworkReply *r = 0;
     if(connectMethod == OAuth)
@@ -512,15 +513,15 @@ QVariant JiraDB::sendSimpleRequest(const QString &dbmsType, const QString &metho
     */
     if(reply->error() != QNetworkReply::NoError)
     {
-        qDebug() << "Error:" << reply->error()
+        tqDebug() << "Error:" << QString::number(reply->error())
                  << reply->errorString();
-        qDebug() << reply->readAll();
+        tqDebug() << reply->readAll();
         return QVariant();
     }
 
     QByteArray buf = reply->readAll();
 
-    qDebug() << buf;
+    tqDebug() << buf;
     QString s(buf.constData());
 //    qDebug(text.constData());
 //    QBuffer buf(&text);
@@ -664,37 +665,37 @@ bool JiraDB::loginCookie(const QString &server, const QString &user, const QStri
 
 void JiraDB::dumpRequest(QNetworkRequest *req, const QString &method, const QByteArray &body)
 {
-    qDebug() << "Request:";
-    qDebug() << method << req->url();
+    tqDebug() << "Request:";
+    tqDebug() << method << req->url();
     foreach(const QByteArray &header, req->rawHeaderList())
     {
         QByteArray value = req->rawHeader(header);
-        qDebug() << header << value;
+        tqDebug() << header << value;
     }
-    qDebug() << body;
-    qDebug() << "---";
+    tqDebug() << body;
+    tqDebug() << "---";
 }
 
 void JiraDB::dumpReply(QNetworkReply *reply, const QByteArray &body)
 {
     if(!reply)
     {
-        qDebug() << "Response: 0";
+        tqDebug() << "Response: 0";
         return;
     }
-    qDebug() << "Response:";
+    tqDebug() << "Response:";
     if(reply->error() != QNetworkReply::NoError)
     {
-        qDebug() << "Error:" << reply->error()
+        tqDebug() << "Error:" << QString::number(reply->error())
                  << reply->errorString();
     }
     foreach(const QNetworkReply::RawHeaderPair &pair, reply->rawHeaderPairs())
     {
-        qDebug() << pair.first << pair.second;
+        tqDebug() << pair.first << pair.second;
     }
     //        qDebug() << reply->header(QNetworkRequest::ContentTypeHeader).toString();
-    qDebug() << body;
-    qDebug() << "---";
+    tqDebug() << body;
+    tqDebug() << "---";
 }
 
 void JiraDB::replyFinished(QNetworkReply *reply)

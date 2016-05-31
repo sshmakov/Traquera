@@ -15,6 +15,7 @@
 #include "ttglobal.h"
 #include "unionmodel.h"
 #include "ttfolders.h"
+#include <tqdebug.h>
 //#define SERV_DB_ON
 #ifdef SERV_DB_ON
 #include "tqservicedb.h"
@@ -544,6 +545,10 @@ bool MainWindow::openProjectTree(TQOneProjectTree *pm, const QString &connString
         cbCurrentProjectName->addItem(prj->projectName(), (int)prj);
         setCurrentProjectTree(pm);
     }
+    if(res)
+        tqInfo() << tr("Открытие проекта %1 - успешно").arg(pm->projectTitle());
+    else
+        tqInfo() << tr("Открытие проекта %1 - не удалось").arg(pm->projectTitle());
     return res;
 }
 
@@ -581,6 +586,7 @@ bool MainWindow::closeProjectTree(TQOneProjectTree *pm)
         }
     }
     pm->close();
+    tqInfo() << tr("Закрытие проекта %1 - успешно").arg(pm->projectTitle());
     return true;
 }
 
@@ -2268,7 +2274,7 @@ void MainWindow::slotNewDBConnect(const QString &dbClass)
         TQOneProjectTree *tree = qobject_cast<TQOneProjectTree *>(treeModel->sourceModel(row));
         treeView->setCurrentIndex(treeModel->index(row,0));
         readSelectedTreeItem();
-        openProjectTree(tree, connString);
+        bool res = openProjectTree(tree, connString);
 //        if(tree->open(connString))
 //        {
 

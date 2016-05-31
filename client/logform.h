@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QTextDocument>
 #include <QtGui>
+#include <tqdebug.h>
 
 namespace Ui {
 class LogForm;

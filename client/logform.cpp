@@ -17,23 +17,33 @@ LogForm::~LogForm()
     delete ui;
 }
 
-
 static void messageOutput(QtMsgType type, const char *msg)
 {
     switch (type) {
     case QtDebugMsg:
-        handler.cursor.insertText(QString("Debug: %1\n").arg(msg));
+//        if(curVerboseLevel >= 4)
+            handler.cursor.insertText(QString("Debug: %1\n").arg(msg));
         break;
     case QtWarningMsg:
-        handler.cursor.insertText(QString("Warning: %1\n").arg(msg));
+//        if(curVerboseLevel >= 3)
+            handler.cursor.insertText(QString("Warning: %1\n").arg(msg));
         break;
     case QtCriticalMsg:
-        handler.cursor.insertText(QString("Critical: %1\n").arg(msg));
+//        if(curVerboseLevel >= 2)
+            handler.cursor.insertText(QString("Critical: %1\n").arg(msg));
         break;
     case QtFatalMsg:
-        handler.cursor.insertText(QString("Fatal: %1\n").arg(msg));
+//        if(curVerboseLevel >= 1)
+            handler.cursor.insertText(QString("Fatal: %1\n").arg(msg));
         abort();
+    default:
+        handler.cursor.insertText(QString::fromLocal8Bit(msg) + "\n");
     }
+}
+
+static void stringOutput(int level, const QString &string)
+{
+    handler.cursor.insertText(string);
 }
 
 LogHandler::LogHandler(QObject *parent)
@@ -53,4 +63,6 @@ void LogHandler::installHandler()
         return;
     handler.oldHandler = qInstallMsgHandler(messageOutput);
     handler.isInstalled = true;
+    TQDebug::registerMsgWriter(stringOutput);
 }
+
