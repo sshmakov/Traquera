@@ -2,9 +2,12 @@
 #define ACTIVEFACTORY_H
 
 #include <QAxObject>
+#include "tqaxfactory_global.h"
+
+//#ifdef TQ_AXFACTORY
 #include <QAxFactory>
 
-class ActiveFactory : public QAxFactory
+class TQAXFACTORYSHARED_EXPORT ActiveFactory : public QAxFactory
 {
     Q_OBJECT
     Q_CLASSINFO("ClassID", "{D2CCDBD9-E436-46a7-A3A3-BCFEED3A54C3}")
@@ -25,8 +28,9 @@ signals:
 public slots:
     
 };
+//#endif
 
-class ActiveXObject :public QAxObject
+class TQAXFACTORYSHARED_EXPORT ActiveXObject :public QAxObject
 {
 public:
      ActiveXObject( QObject * parent = 0 );

@@ -78,7 +78,7 @@ public:
     Q_INVOKABLE QString makeRecordsPage(const QObjectList &records, const QString& xqCodeFile);
     void sendEmail(const QObjectList &records);
     void sendEmail2(const QObjectList &records);
-    void sendEmail3(const QObjectList &records);
+//    void sendEmail3(const QObjectList &records);
     void printPreview();
     Q_INVOKABLE QModelIndexList selectedRows();
     Q_INVOKABLE QObjectList selectedRecords(); //Q_INVOKABLE QList<TrkToolRecord *> selectedRecords();

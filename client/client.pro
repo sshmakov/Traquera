@@ -129,7 +129,7 @@ SOURCES += database.cpp main.cpp mainwindow.cpp querypage.cpp \
 RESOURCES += resources/tracks.qrc
 
 #win32: LIBS += -L$$PWD/../trktool/lib/ -ltrktooln -lshell32 -lshlwapi -L../lib -ltqplugapi
-win32: LIBS += -lshell32 -lshlwapi -L../lib -ltqplugapi
+win32: LIBS += -lshell32 -lshlwapi -L../lib
 # win32: LIBS += -lodbc32
 
 
@@ -174,6 +174,9 @@ DEFINES -= CONSOLE_APP
 DEFINES += CLIENT_APP
 
 RC_FILE = traquera-win.rc
+
+INCLUDEPATH += ../tqaxfactory
+LIBS += -ltqaxfactory
 
 #INCLUDEPATH += /Projects/ImageMagick-6.8.7-Q16/include
 #LIBS += -L/Projects/ImageMagick-6.8.7-Q16/lib -lCORE_RL_Magick++_

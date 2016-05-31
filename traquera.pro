@@ -16,7 +16,8 @@ SUBDIRS += \
     jira \
     client \
     trindex \
-    install
+    install \
+    tqaxfactory
 
 msplans.depends = client
 client.depends = tqplugapi

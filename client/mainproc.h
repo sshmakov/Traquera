@@ -15,7 +15,7 @@ public:
     virtual TQAbstractProject *currentProject();
     virtual bool insertViewTab(QWidget *view, QWidget *tab, const QString &title);
     virtual bool addPropWidget(QWidget *widget);
-
+    QVariant createActiveX(const QString &objectName, QObject *parent);
 };
 
 #endif // MAINPROC_H

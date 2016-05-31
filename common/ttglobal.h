@@ -32,6 +32,8 @@ class QAxObject;
 class QSqlDatabase;
 class QSqlError;
 
+typedef QVariant (*TQActiveXCreator)(const QString &objectName);
+
 class TTMainProc
 {
 public:
@@ -39,6 +41,8 @@ public:
     virtual TQAbstractProject *currentProject() = 0;
     virtual bool insertViewTab(QWidget *view, QWidget *tab, const QString &title) = 0;
     virtual bool addPropWidget(QWidget *widget) = 0;
+    virtual QVariant createActiveX(const QString &objectName, QObject *parent) = 0;
+
 };
 
 
@@ -100,7 +104,7 @@ public:
     Q_INVOKABLE bool unregisterEventHandler(const QString &event, QObject *obj, const QString &method);
     Q_INVOKABLE QObject *oauth();
     QScriptEngine *newScriptEngine();
-    QAxScriptManager *newAxScriptManager();
+//    QAxScriptManager *newAxScriptManager();
 protected:
     void initLibraryPath();
     void addLibraryPath(const QString &path);

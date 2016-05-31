@@ -1,6 +1,7 @@
 #include "mainproc.h"
 #include "mainwindow.h"
 #include "ttrecwindow.h"
+#include "activefactory.h"
 
 
 // =========================================================================
@@ -39,5 +40,11 @@ bool MainProc::insertViewTab(QWidget *view, QWidget *tab, const QString &title)
 bool MainProc::addPropWidget(QWidget *widget)
 {
     return mainWin->addPropWidget(widget);
+}
+
+QVariant MainProc::createActiveX(const QString &objectName, QObject *parent)
+{
+    QAxObject *obj = new ActiveXObject(objectName, parent);
+    return obj->asVariant();
 }
 

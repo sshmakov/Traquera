@@ -4,13 +4,17 @@
 #
 #-------------------------------------------------
 
-#QT       -= gui
-QT += xml network sql script scripttools axserver
-CONFIG += qaxcontainer
-CONFIG += qaxserver dll
+CONFIG += dll
 
-DEF_FILE = qaxserver.def
-RC_FILE  = qaxserver.rc
+#QT       -= gui
+QT += xml network sql script scripttools
+#QT += axserver
+QT += axcontainer
+CONFIG += qaxcontainer
+#CONFIG += qaxserver
+
+#DEF_FILE = qaxserver.def
+#RC_FILE  = qaxserver.rc
 
 
 
@@ -20,7 +24,8 @@ TEMPLATE = lib
 DEFINES += TQ_PLUGIN_API CLIENT_APP
 
 INCLUDEPATH += \
-        ../common
+        ../common \
+        ../tqaxfactory
 
 SOURCES += tqplugapi.cpp \
     ../common/tqbase.cpp \
@@ -28,9 +33,9 @@ SOURCES += tqplugapi.cpp \
     tqoauth.cpp \
     ../common/ttglobal.cpp \
     tqjson.cpp \
-    activefactory.cpp \
     ../common/tqviewcontroller.cpp \
-    tqnetaccessmanager.cpp
+    tqnetaccessmanager.cpp \
+    ../common/tqdebug.cpp
 
 HEADERS += tqplugapi.h\
     ../common/tqplugin_global.h \
@@ -41,9 +46,9 @@ HEADERS += tqplugapi.h\
     ../common/tqoauth.h \
     ../common/ttglobal.h \
     ../common/tqjson.h \
-    activefactory.h \
     ../common/tqviewcontroller.h \
-    tqnetaccessmanager.h
+    tqnetaccessmanager.h \
+    ../common/tqdebug.h
 
 unix:!symbian {
     maemo5 {

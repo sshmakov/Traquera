@@ -20,7 +20,7 @@
 #include <QAxScriptManager>
 #include <QtScript>
 #include <QtScriptTools>
-#include <activefactory.h>
+//#include <activefactory.h>
 
 
 #ifdef Q_WS_WIN
@@ -261,8 +261,9 @@ QMap<QString, GetOptionsWidgetFunc> TTGlobal::optionsWidgets() const
 
 QVariant TTGlobal::CreateObject(const QString &objectName)
 {
-    QAxObject *obj = new ActiveXObject(objectName, this);
-    return obj->asVariant();
+    if(!d->proc)
+        return QVariant();
+    return d->proc->createActiveX(objectName, this);
 }
 
 QString TTGlobal::saveObjectDocumentation(QObject *object, const QString &fileName) const
@@ -852,12 +853,13 @@ QScriptEngine *TTGlobal::newScriptEngine()
     return engine;
 }
 
-QAxScriptManager *TTGlobal::newAxScriptManager()
+
+/*QAxScriptManager *TTGlobal::newAxScriptManager()
 {
     QAxScriptManager *man = new QAxScriptManager(this);
     connect(man, SIGNAL(error(QAxScript*,int,QString,int,QString)),SLOT(axScriptError(QAxScript*,int,QString,int,QString)));
-    man->addObject(this);
+    man->addObject(this); // !!!!
     return man;
-}
+}*/
 
 

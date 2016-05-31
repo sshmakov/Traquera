@@ -1,7 +1,9 @@
 #include "activefactory.h"
 #include <ttglobal.h>
 #include <Windows.h>
+//#include <QAxFactory>
 
+//#ifdef TQ_AXFACTORY
 ActiveFactory::ActiveFactory( const QUuid & libid, const QUuid & appid ) :
     QAxFactory(libid, appid)
 {
@@ -71,6 +73,27 @@ QAXFACTORY_BEGIN
     QAXCLASS(TTGlobal)
 //     QAXCLASS(Class2)
 QAXFACTORY_END()
+
+//#endif
+
+/*
+QT_BEGIN_NAMESPACE
+
+QAxBase *qax_create_object_wrapper(QObject *object)
+{
+    IDispatch *dispatch = 0;
+    QAxObject *wrapper = 0;
+    qAxFactory()->createObjectWrapper(object, &dispatch);
+    if (dispatch) {
+        wrapper = new QAxObject(dispatch, object);
+        wrapper->setObjectName(object->objectName());
+        dispatch->Release();
+    }
+    return wrapper;
+}
+
+QT_END_NAMESPACE
+*/
 
 ActiveXObject::ActiveXObject(QObject *parent)
     :QAxObject(parent)

@@ -714,7 +714,7 @@ void QueryPage::sendEmail(const QObjectList &records)
 	mail->dynamicCall("Display(QVariant)", true);
 }
 
-
+/*
 void QueryPage::sendEmail3(const QObjectList &records)
 {
     if(!records.count())
@@ -738,6 +738,7 @@ void QueryPage::sendEmail3(const QObjectList &records)
 //    script->call("test", QList<QVariant>());
     delete man;
 }
+*/
 
 void QueryPage::sendEmail2(const QObjectList &records)
 {
