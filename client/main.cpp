@@ -5,6 +5,7 @@
 #include "settings.h"
 #include "logform.h"
 #include "ttglobal.h"
+#include <tqdebug.h>
 
 int main(int argc, char *argv[])
 {
@@ -31,8 +32,17 @@ int main(int argc, char *argv[])
 		{
 			if(++i<args.count())
 				locale=args[i];
-			break;
 		}
+        else if(args[i].trimmed().compare("-debug") == 0)
+        {
+            if(++i<args.count())
+            {
+                bool ok;
+                int level = args[i].toInt(&ok);
+                if(ok)
+                    TQDebug::setVerboseLevel(level);
+            }
+        }
 	}
     QTranslator *translator = new QTranslator();
     if(translator->load(QString("traquera.") + locale,app.applicationDirPath() + "/lang"))

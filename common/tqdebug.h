@@ -10,6 +10,7 @@ enum TQMsgLevel {
     TQVerboseLevel = 4,
     TQDebugLevel = 3,
     TQInfoLevel = 2,
+    TQWarningLevel = 2,
     TQErrorLevel = 1,
     TQCriticalLevel = 1,
     TQFatalLevel = 0};

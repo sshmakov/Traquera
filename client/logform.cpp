@@ -21,19 +21,19 @@ static void messageOutput(QtMsgType type, const char *msg)
 {
     switch (type) {
     case QtDebugMsg:
-//        if(curVerboseLevel >= 4)
+        if(TQDebug::verboseLevel() >= TQDebugLevel)
             handler.cursor.insertText(QString("Debug: %1\n").arg(msg));
         break;
     case QtWarningMsg:
-//        if(curVerboseLevel >= 3)
+        if(TQDebug::verboseLevel() >= TQWarningLevel)
             handler.cursor.insertText(QString("Warning: %1\n").arg(msg));
         break;
     case QtCriticalMsg:
-//        if(curVerboseLevel >= 2)
+        if(TQDebug::verboseLevel() >= TQCriticalLevel)
             handler.cursor.insertText(QString("Critical: %1\n").arg(msg));
         break;
     case QtFatalMsg:
-//        if(curVerboseLevel >= 1)
+        if(TQDebug::verboseLevel() >= TQFatalLevel)
             handler.cursor.insertText(QString("Fatal: %1\n").arg(msg));
         abort();
     default:
