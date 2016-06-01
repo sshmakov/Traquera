@@ -39,6 +39,7 @@ signals:
 public slots:
     void setRecord(TQRecord *record);
     void refreshFiles();
+    void refreshFiles2();
     void previewCurrentFile();
     void openCurrentFile();
     void saveCurrentFiles();
@@ -56,8 +57,6 @@ private slots:
 
     void on_tabWidget_currentChanged(QWidget *arg1);
 
-    void on_filesTable_entered(const QModelIndex &index);
-
     void on_filesTable_currentItemChanged(QTableWidgetItem *current, QTableWidgetItem *previous);
 
     void on_addBtn_clicked();
@@ -65,6 +64,8 @@ private slots:
     void on_saveBtn_clicked();
 
     void on_delBtn_clicked();
+
+    void on_filesTable_doubleClicked(const QModelIndex &index);
 
 private:
     Ui::FilesPage *ui;

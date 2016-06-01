@@ -16,6 +16,7 @@ public:
     int curFileIndex;
     bool modifyEnabled;
     QString title;
+//    FilesListWidget *fileView;
     FilesPagePrivate()
         : rec(0), def(0), modifyEnabled(false), curFileIndex(-1)
     {
@@ -35,7 +36,8 @@ FilesPage::FilesPage(QWidget *parent) :
     ui(new Ui::FilesPage)
 {
     ui->setupUi(this);
-
+//    d->fileView = new FilesListWidget(this);
+//    ui->layFiles->addWidget(d->fileView);
     ui->filesTable->horizontalHeader()->setResizeMode(0,QHeaderView::ResizeToContents);
     ui->filesTable->horizontalHeader()->setResizeMode(1,QHeaderView::ResizeToContents);
 
@@ -102,6 +104,7 @@ void FilesPage::setRecord(TQRecord *record)
         connect(d->rec, SIGNAL(changedState(int)), SLOT(recordChangedState()));
     }
     refreshFiles();
+//    refreshFiles2();
 }
 
 void FilesPage::refreshFiles()
@@ -128,6 +131,38 @@ void FilesPage::refreshFiles()
     else
         setModifyEnabled(false);
     emit onTitleChange();
+}
+
+void FilesPage::refreshFiles2()
+{
+    /*
+    stopPreview();
+    d->fileView->clear();
+    if(d->rec)
+    {
+//        ui->filesTable->setRowCount(0);
+        QList<TQAttachedFile> files = d->rec->fileList();
+        TTFileIconProvider prov;
+        int row=0;
+        foreach(const TQAttachedFile &file, files)
+        {
+            QFileInfo f(file.fileName);
+            QListWidgetItem *item = new QListWidgetItem(d->fileView);
+//            d->fileView->insertItem(item);
+            item->setIcon(prov.icon(f));
+            item->setText(f.fileName());
+//            ui->filesTable->insertRow(row);
+//            ui->filesTable->setItem(row,FP_NAME,new QTableWidgetItem(prov.icon(f),f.fileName()));
+//            ui->filesTable->setItem(row,FP_CHANGE,new QTableWidgetItem(file.createDateTime.toString(d->def->dateTimeFormat())));
+//            ui->filesTable->setItem(row,FP_ORIGINALPATH,new QTableWidgetItem(f.dir().path()));
+            row++;
+        }
+        setModifyEnabled(d->rec->mode() != TQRecord::View);
+    }
+    else
+        setModifyEnabled(false);
+    emit onTitleChange();
+    */
 }
 
 void FilesPage::previewCurrentFile()
@@ -281,10 +316,6 @@ void FilesPage::on_tabWidget_currentChanged(QWidget *arg1)
         stopPreview();
 }
 
-void FilesPage::on_filesTable_entered(const QModelIndex &index)
-{
-}
-
 void FilesPage::on_filesTable_currentItemChanged(QTableWidgetItem *current, QTableWidgetItem *previous)
 {
     if(ui->tabWidget->currentWidget() == ui->tabPreview)
@@ -325,6 +356,12 @@ void FilesPage::on_delBtn_clicked()
 {
     deleteCurrentFiles();
 }
+
+void FilesPage::on_filesTable_doubleClicked(const QModelIndex &index)
+{
+    openCurrentFile();
+}
+
 
 // ======================== FileListWidget ===============================
 FileListWidget::FileListWidget(QWidget *parent) :
@@ -400,3 +437,4 @@ void FileListWidget::startDrag()
         drag->exec(Qt::CopyAction | Qt::MoveAction, Qt::CopyAction);
     }
 }
+
