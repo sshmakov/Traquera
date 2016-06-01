@@ -17,8 +17,13 @@ class LogForm : public QWidget
 public:
     explicit LogForm(QWidget *parent = 0);
     ~LogForm();
+private slots:
+    void contentChanged();
+    void scrollChanged();
+    bool isEndPos();
 
 private:
+    bool end;
     Ui::LogForm *ui;
 };
 

@@ -6,15 +6,39 @@ static LogHandler handler;
 
 LogForm::LogForm(QWidget *parent) :
     QWidget(parent),
+    end(true),
     ui(new Ui::LogForm)
 {
     ui->setupUi(this);
     ui->textEdit->setDocument(&handler.doc);
+    ui->textEdit->moveCursor(QTextCursor::End);
+    connect(ui->textEdit, SIGNAL(textChanged()), SLOT(contentChanged()));
+    connect(ui->textEdit->verticalScrollBar(), SIGNAL(valueChanged(int)), SLOT(scrollChanged()));
 }
 
 LogForm::~LogForm()
 {
     delete ui;
+}
+
+void LogForm::contentChanged()
+{
+    if(isEndPos())
+        ui->textEdit->verticalScrollBar()->setValue(ui->textEdit->verticalScrollBar()->maximum());
+//        ui->textEdit->moveCursor(QTextCursor::End);
+}
+
+void LogForm::scrollChanged()
+{
+    int pos  = ui->textEdit->verticalScrollBar()->value();
+    end = pos >= ui->textEdit->verticalScrollBar()->maximum();
+}
+
+bool LogForm::isEndPos()
+{
+    return end;
+//    int pos  = ui->textEdit->verticalScrollBar()->value();
+//    return pos >= ui->textEdit->verticalScrollBar()->maximum();
 }
 
 static void messageOutput(QtMsgType type, const char *msg)
