@@ -1,9 +1,9 @@
 #ifndef TQDEBUG_H
 #define TQDEBUG_H
 
-#include <tqplugin_global.h>
 #include <QDebug>
 #include <QUrl>
+#include <tqplugin_global.h>
 
 typedef void (*TQMsgWriter)(int level, const QString &string);
 enum TQMsgLevel {
@@ -25,6 +25,11 @@ private:
     QString buffer;
     bool needSpace;
 public:
+    inline TQDebug() :
+        lvl(TQDebugLevel),
+        ts(&buffer, QIODevice::WriteOnly),
+        needSpace(false)
+    {}
     inline TQDebug(int level) :
         lvl(level),
         ts(&buffer, QIODevice::WriteOnly),
@@ -68,19 +73,24 @@ protected:
     void flush();
 };
 
-inline TQDebug tqDebug(int initLevel = TQDebugLevel)
+inline TQDebug tqDebug()
+{
+    return TQDebug();
+}
+
+inline TQDebug tqDebug(int initLevel)
 {
     return TQDebug(initLevel);
 }
 
 inline TQDebug tqInfo()
 {
-    return TQDebug(TQInfoLevel);
+    return TQDebug((int)TQInfoLevel);
 }
 
 inline TQDebug tqError()
 {
-    return TQDebug(TQErrorLevel);
+    return TQDebug((int)TQErrorLevel);
 }
 
 #endif // TQDEBUG_H

@@ -77,15 +77,19 @@ LogHandler::LogHandler(QObject *parent)
 
 LogHandler::~LogHandler()
 {
+#ifndef QT_DEBUG
     if(isInstalled)
         qInstallMsgHandler(oldHandler);
+#endif
 }
 
 void LogHandler::installHandler()
 {
     if(handler.isInstalled)
         return;
+#ifndef QT_DEBUG
     handler.oldHandler = qInstallMsgHandler(messageOutput);
+#endif
     handler.isInstalled = true;
     TQDebug::registerMsgWriter(stringOutput);
 }

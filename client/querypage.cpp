@@ -40,6 +40,7 @@
 #include <QAxScriptManager>
 #include <filespage.h>
 #include <tqqueryviewcontroller.h>
+#include <tqdebug.h>
 //#include <Shlwapi.h>
 
 
@@ -789,6 +790,7 @@ void QueryPage::openQuery(TQAbstractProject *prj, const QString &queryName, int 
     emit modelChanged(newmodel);
     addHistoryPoint();
     emit changedQuery(prj->projectName(), queryName);
+    tqInfo() << tr("Открыта выборка \"%1\"").arg(queryName);
 }
 
 void QueryPage::openIds(TQAbstractProject *prj, const QString &ids, const QString &title, int recType)
@@ -803,12 +805,14 @@ void QueryPage::openIds(TQAbstractProject *prj, const QString &ids, const QStrin
     emit modelChanged(newmodel);
     addHistoryPoint();
 
+
     QString newTitle;
     if(title.isEmpty())
         newTitle = ids;
     else
         newTitle = title;
     emit changedQuery(prj->projectName(), newTitle);
+    tqInfo() << tr("Открыт список запросов %1").arg(ids);
 }
 
 void QueryPage::openIds(TQAbstractProject *prj, const QList<int> &idlist, const QString &title, int recType)
@@ -828,6 +832,7 @@ void QueryPage::openIds(TQAbstractProject *prj, const QList<int> &idlist, const 
     else
         newTitle = title;
     emit changedQuery(prj->projectName(), newTitle);
+    tqInfo() << tr("Открыт список запросов %1").arg(intListToString(idlist));
 }
 
 void QueryPage::openModel(TQAbstractProject *prj, QAbstractItemModel *newModel)
@@ -852,6 +857,7 @@ void QueryPage::openFolder(TQAbstractProject *prj, const TTFolder &afolder, int 
     QString ids = intListToString(idlist);
     emit changedQuery(prj->projectName(), ids);
     addHistoryPoint();
+    tqInfo() << tr("Открыта папка \"%1\"").arg(afolder.title);
 
 }
 
@@ -1067,15 +1073,22 @@ void QueryPage::on_actionAdd_Note_triggered()
         settings->setValue("LastNote",nd->titleEdit->currentText());
         QObjectList records = selectedRecords();
         TQRecord *rec;
+        QList<int> ids;
         foreach(QObject *obj, records)
         {
             rec = qobject_cast<TQRecord *>(obj);
+            if(!rec)
+                continue;
+            int id = rec->recordId();
             if(rec->updateBegin())
             {
                 rec->addNote(nd->titleEdit->currentText(), nd->noteEdit->toPlainText());
-                rec->commit();
+                if(rec->commit())
+                    ids << id;
             }
         }
+        tqInfo() << tr("В запрос(-ы) %1 добавлена нота \"%2\":\n%3")
+                    .arg(intListToString(ids), nd->titleEdit->currentText(), nd->noteEdit->toPlainText());
     }
     delete nd;
 }
@@ -1136,12 +1149,14 @@ void QueryPage::appendIds(const QList<int> &ids)
 {
     d->tmodel->appendRecordIds(ids);
     updateHistoryPoint();
+    tqInfo() << tr("Добавлены в список запросы %1").arg((intListToString(ids)));
 }
 
 void QueryPage::removeIds(const QList<int> &ids)
 {
     d->tmodel->removeRecordIds(ids);
     updateHistoryPoint();
+    tqInfo() << tr("Удалены из списка запросы %1").arg((intListToString(ids)));
 }
 
 void QueryPage::setIdChecked(int id, bool checked)
@@ -1169,6 +1184,7 @@ void QueryPage::openRecordId(int id)
         win->setRecord(rec);
         win->show();
     }
+    tqInfo() << tr("Открыт запрос %1").arg((intListToString(QList<int>() << id)));
 }
 
 /*

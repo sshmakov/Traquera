@@ -21,7 +21,7 @@
 #include <QtScript>
 #include <QtScriptTools>
 //#include <activefactory.h>
-
+#include <tqdebug.h>
 
 #ifdef Q_WS_WIN
 //#include <shlobj.h>
@@ -229,11 +229,13 @@ QString TTGlobal::curProjectName() const
 
 QObject *TTGlobal::project(const QString &projectName) const
 {
+    Q_UNUSED(projectName)
     return 0;
 }
 
 QObject *TTGlobal::getRecord(int id, const QString &projectName)
 {
+    Q_UNUSED(projectName)
     if(!d->proc)
         return 0;
     TQAbstractProject *prj = d->proc->currentProject();
