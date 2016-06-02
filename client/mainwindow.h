@@ -216,7 +216,7 @@ public slots:
     int addTab(const QString &title, QWidget *widget, const QIcon &icon = QIcon());
     void focusTab(QWidget *widget);
     QToolBar *addToolBar(const QString &title);
-    void addWidgetToDock(const QString &title, QWidget *widget, Qt::DockWidgetArea area = Qt::RightDockWidgetArea);
+    QDockWidget *addWidgetToDock(const QString &title, QWidget *widget, Qt::DockWidgetArea area = Qt::RightDockWidgetArea);
     void updateModifyPanel(const TQAbstractRecordTypeDef *typeDef, const QObjectList &records);
     void proxyAuthentication(QNetworkProxy proxy ,QAuthenticator* auth);
 
@@ -272,9 +272,7 @@ private slots:
     void on_actionOpenIds_triggered();
     void on_dockProps_visibilityChanged(bool visible);
     void on_dockQueries_visibilityChanged(bool visible);
-    void on_dockWidget_visibilityChanged(bool visible);
     void on_actionViewQueriesFolders_triggered(bool checked);
-    void on_actionViewHistory_triggered(bool checked);
     void on_actionViewModify_triggered(bool checked);
     void on_actionRefresh_Query_triggered();
     void on_actionEditContents_triggered();

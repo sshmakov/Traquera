@@ -149,7 +149,8 @@ MainWindow::MainWindow(QWidget *parent)
 	*/
     logForm = new LogForm(this);
 //    logForm->setObjectName("LogForm");
-    addWidgetToDock(logForm->windowTitle(), logForm, Qt::BottomDockWidgetArea);
+    QDockWidget *dw = addWidgetToDock(logForm->windowTitle(), logForm, Qt::BottomDockWidgetArea);
+    dw->setVisible(false);
 	loadSettings();
     /*
     dbClassComboBox->addItems(TQAbstractDB::registeredDbClasses());
@@ -765,7 +766,7 @@ QToolBar *MainWindow::addToolBar(const QString &title)
     return QMainWindow::addToolBar(title);
 }
 
-void MainWindow::addWidgetToDock(const QString &title, QWidget *widget, Qt::DockWidgetArea area)
+QDockWidget *MainWindow::addWidgetToDock(const QString &title, QWidget *widget, Qt::DockWidgetArea area)
 {
     QDockWidget *dw = new QDockWidget(title, this);
     dw->setAllowedAreas(Qt::AllDockWidgetAreas);
@@ -783,6 +784,7 @@ void MainWindow::addWidgetToDock(const QString &title, QWidget *widget, Qt::Dock
     connect(widget,SIGNAL(destroyed()),dw,SLOT(deleteLater()));
     connect(action, SIGNAL(triggered()), SLOT(slotDockAction()));
     connect(dw,SIGNAL(visibilityChanged(bool)),SLOT(slotDockVisibilityChanged(bool)));
+    return dw;
 }
 
 void MainWindow::updateModifyPanel(const TQAbstractRecordTypeDef *typeDef, const QObjectList &records)
@@ -1946,19 +1948,9 @@ void MainWindow::on_dockQueries_visibilityChanged(bool visible)
     actionViewQueriesFolders->setChecked(visible);
 }
 
-void MainWindow::on_dockWidget_visibilityChanged(bool visible)
-{
-    actionViewHistory->setChecked(visible);
-}
-
 void MainWindow::on_actionViewQueriesFolders_triggered(bool checked)
 {
     dockQueries->setVisible(checked);
-}
-
-void MainWindow::on_actionViewHistory_triggered(bool checked)
-{
-    dockWidget->setVisible(checked);
 }
 
 void MainWindow::on_actionViewModify_triggered(bool checked)
