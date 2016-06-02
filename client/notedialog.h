@@ -16,6 +16,8 @@ public:
     explicit NoteDialog(QWidget *parent = 0);
     ~NoteDialog();
 
+private slots:
+    void on_actionAddNote_triggered();
 };
 
 #endif // NOTEDIALOG_H
