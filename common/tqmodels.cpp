@@ -317,7 +317,7 @@ void TQRecModel::append(const PTQRecord &rec)
 {
     BaseRecModel<PTQRecord>::append(rec);
     TQRecord *prec = rec;
-    connect(prec, SIGNAL(recordChanged(int)), SLOT(recordChanged(int)));
+    connect(prec, SIGNAL(changed(int)), SLOT(recordChanged(int)));
     connect(prec,SIGNAL(destroyed(QObject*)),SLOT(recordDestroyed(QObject*)));
 }
 
