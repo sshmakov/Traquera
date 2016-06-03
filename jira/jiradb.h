@@ -137,6 +137,15 @@ struct JiraFilter {
 
 class JiraFilterModel;
 
+struct JiraUser
+{
+    QString key;
+    QString name;
+    QString displayName;
+    QString email;
+    bool isActive;
+};
+
 class JiraProject: public TQBaseProject
 {
     Q_OBJECT
@@ -148,6 +157,7 @@ protected:
     int projectId;
     QMap<QString, int> favSearch;
     JiraFilterModel *filters;
+    QMap<QString,JiraUser> knownUsers; // by name
 public:
     JiraProject(TQAbstractDB *db);
     void loadDefinition();
@@ -191,6 +201,9 @@ protected:
     void loadQueries();
     void loadUsers();
     void storeReadedField(JiraRecord *rec, JiraRecTypeDef *rdef, const QString &fid, const QVariant &value);
+//    void appendUserToKnown(const TQUser &user);
+public slots:
+    void appendUserToKnown(const QVariantMap &userRec);
 protected slots:
     void showSelectUser();
 
@@ -251,6 +264,8 @@ protected:
     QMap<QString, int> nativeTypes; // schema type to native type
     QMap<QString, int> schemaToSimple;
     int idVid, descVid;
+//    QMap<QString, JiraUser> knownUsers; // by name
+
 public:
     JiraRecTypeDef(JiraProject *project);
     virtual QStringList fieldNames() const;

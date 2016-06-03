@@ -1403,6 +1403,7 @@ void JiraProject::loadUsers()
         user.fullName = user.displayName;
         user.id = i++;
         m_userList.insert(user.login, user);
+        appendUserToKnown(userMap);
     }
 }
 
@@ -1430,6 +1431,7 @@ void JiraProject::storeReadedField(JiraRecord *rec, JiraRecTypeDef *rdef, const 
                 QString displayName = uMap.value("displayName").toString();
                 rec->values.insert(fvid, login);
                 rec->displayValues.insert(fvid, displayName);
+                appendUserToKnown(uMap);
             }
             else if(value.type() == QVariant::Map)
             {
@@ -1446,6 +1448,20 @@ void JiraProject::storeReadedField(JiraRecord *rec, JiraRecTypeDef *rdef, const 
             }
         }
     }
+}
+
+void JiraProject::appendUserToKnown(const QVariantMap &userRec)
+{
+    QString name = userRec.value("name").toString();
+    if(knownUsers.contains(name))
+        return;
+    JiraUser item;
+    item.key = userRec.value("key").toString();
+    item.name = name;
+    item.displayName = userRec.value("displayName").toString();
+    item.email = userRec.value("emailAddress").toString();
+    item.isActive = userRec.value("active").toBool();
+    knownUsers.insert(name, item);
 }
 
 void JiraProject::showSelectUser()
@@ -1808,7 +1824,13 @@ bool JiraRecTypeDef::hasFieldCustomEditor(int vid) const
 QWidget *JiraRecTypeDef::createCustomEditor(int vid, QWidget *parent) const
 {
     JiraUserComboBox *box = new JiraUserComboBox(prj, parent);
-    box->showPopup();
+    QStringList items;
+    foreach(const JiraUser &user, prj->knownUsers)
+    {
+        items.append(user.displayName);
+    }
+    items.sort();
+    box->insertItems(0, items);
     return box;
     /*
     QLineEdit *editor = new QLineEdit(parent);
