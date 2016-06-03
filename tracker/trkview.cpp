@@ -3507,7 +3507,7 @@ TrkRecordTypeDef *TrkFieldDef::recordDef() const
 
 // ================ RecordTypeDef =================
 TrkRecordTypeDef::TrkRecordTypeDef(TrkToolProject *project)
-    : QObject(project), prj(project), fieldDefs(), nameVids(), recType(-1), isReadOnly(true), choices()
+    : QObject(project), TQBaseRecordTypeDef(project), prj(project), fieldDefs(), nameVids(), recType(-1), isReadOnly(true), choices()
 {}
 //RecordTypeDef(const RecordTypeDef & src): prj(src.prj), fieldDefs(src.fieldDefs), nameVids(src.nameVids) {}
 

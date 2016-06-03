@@ -129,6 +129,36 @@ public:
     virtual QString dateTimeFormat() const = 0;
     virtual QStringList noteTitleList() const = 0;
     virtual TQAbstractProject *project() const = 0;
+    virtual bool hasFieldCustomEditor(int vid) const = 0;
+    virtual QWidget *createCustomEditor(int vid, QWidget *parent) const = 0;
+};
+
+class TQBaseRecordTypeDefPrivate;
+
+class TQPLUGIN_SHARED TQBaseRecordTypeDef: public TQAbstractRecordTypeDef
+{
+private:
+    TQBaseRecordTypeDefPrivate *d;
+public:
+    TQBaseRecordTypeDef(TQAbstractProject *prj);
+    ~TQBaseRecordTypeDef();
+    TQAbstractFieldType getFieldType(int vid, bool *ok = 0) const;
+    TQAbstractFieldType getFieldType(const QString &name, bool *ok = 0) const;
+    bool containFieldVid(int vid) const;
+    QString fieldSystemName(int vid) const;
+    bool canFieldSubmit(int vid) const;
+    bool canFieldUpdate(int vid) const;
+    bool isNullable(int vid) const;
+    bool hasChoiceList(int vid) const;
+    TQChoiceList choiceTable(const QString &tableName) const;
+    QIODevice *defineSource() const;
+    QString dateTimeFormat() const;
+    QString valueToDisplay(int vid, const QVariant &value) const;
+    QVariant displayToValue(int vid, const QString &text) const;
+    TQAbstractProject *project() const;
+    bool hasFieldCustomEditor(int vid) const;
+    QWidget *createCustomEditor(int vid, QWidget *parent) const;
+    QStringList noteTitleList() const;
 };
 
 /*class AbstractFieldDef {
@@ -336,7 +366,7 @@ public:
 };
 */
 
-class TQAbstractFieldType {
+class TQPLUGIN_SHARED TQAbstractFieldType {
 protected:
     const TQAbstractRecordTypeDef *def;
     int vid;
@@ -505,6 +535,8 @@ public:
     {
         return def;
     }
+    virtual bool hasCustomFieldEditor() const;
+    virtual QWidget *createFieldEditor(QWidget *parent) const;
 
     friend class TQAbstractRecordTypeDef;
 };

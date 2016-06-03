@@ -18,7 +18,9 @@ SOURCES += jiradb.cpp \
     webform.cpp \
     jiralogin.cpp \
     jiraquerydialog.cpp \
-    jiraqry.cpp
+    jiraqry.cpp \
+    jirafinduser.cpp \
+    jirausermodel.cpp
 
 HEADERS += jiradb.h\
         jira_global.h \
@@ -27,7 +29,9 @@ HEADERS += jiradb.h\
     webform.h \
     jiralogin.h \
     jiraquerydialog.h \
-    jiraqry.h
+    jiraqry.h \
+    jirafinduser.h \
+    jirausermodel.h
 
 INCLUDEPATH += ../common
 
@@ -54,7 +58,8 @@ FORMS += \
     jiraoptions.ui \
     webform.ui \
     jiralogin.ui \
-    jiraquerydialog.ui
+    jiraquerydialog.ui \
+    jirafinduser.ui
 
 OTHER_FILES += \
     mykey.pub \

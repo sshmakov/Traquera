@@ -35,7 +35,8 @@ SOURCES += tqplugapi.cpp \
     tqjson.cpp \
     ../common/tqviewcontroller.cpp \
     tqnetaccessmanager.cpp \
-    ../common/tqdebug.cpp
+    ../common/tqdebug.cpp \
+    tqplug.cpp
 
 HEADERS += tqplugapi.h\
     ../common/tqplugin_global.h \

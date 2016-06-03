@@ -257,16 +257,14 @@ void TTItemEditor::setModelData(const QModelIndex &index)
 }
 
 
-QWidget * TTItemEditor::createSubEditor(const QStyleOptionViewItem &option, const QModelIndex &index)
+QWidget * TTItemEditor::createSubEditor(TQAbstractFieldType &fdef)
 {
-    Q_UNUSED(option)
     QComboBox *cb;
     QLineEdit *le;
     QSpinBox *sb;
     TQDateTimeEdit *dt;
 //    QWidget *res;
     QStringList sl;
-    TQAbstractFieldType fdef = panel->fieldDef(index.row());
     int type = fdef.simpleType(); // panel->fieldRow(index.row()).fieldType;
     switch(type)
     {
@@ -326,7 +324,26 @@ void TTItemEditor::doClearClick()
 
 void TTItemEditor::initInternal(const QStyleOptionViewItem &option, const QModelIndex &index)
 {
-    subeditor = createSubEditor(option, index);
+    TQAbstractFieldType fdef = panel->fieldDef(index.row());
+    subeditor = 0;
+    if(fdef.hasCustomFieldEditor())
+    {
+        subeditor = fdef.createFieldEditor(this);
+        /*
+        if(subeditor)
+        {
+            isCustomEditor = true;
+            QHBoxLayout *lay = new QHBoxLayout(this);
+            lay->setContentsMargins(0,0,0,0);
+            lay->setSpacing(0);
+            lay->addWidget(subeditor);
+            return;
+        }
+        */
+    }
+    if(!subeditor)
+        subeditor = createSubEditor(fdef);
+    isCustomEditor = false;
     clearBtn = new QToolButton(this);
     clearBtn->setContentsMargins(0,0,0,0);
     clearBtn->setIcon(QIcon(":/images/cleartext.png"));

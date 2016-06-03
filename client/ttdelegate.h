@@ -9,6 +9,7 @@
 class QTableWidget;
 class ModifyPanel;
 class QToolButton;
+class TQAbstractFieldType;
 
 class TTItemEditor: public QWidget
 {
@@ -16,6 +17,7 @@ class TTItemEditor: public QWidget
 protected:
     ModifyPanel *panel;
     QWidget *subeditor;
+    bool isCustomEditor;
     QToolButton *clearBtn;
     QToolButton *resetBtn;
     QString itemName;
@@ -29,7 +31,7 @@ signals:
     void clearItem(const QString &itemName);
 private:
     void initInternal(const QStyleOptionViewItem &option, const QModelIndex &index);
-    QWidget *createSubEditor(const QStyleOptionViewItem &option, const QModelIndex &index);
+    QWidget *createSubEditor(TQAbstractFieldType &fdef);
 private slots:
     void doResetClick();
     void doClearClick();

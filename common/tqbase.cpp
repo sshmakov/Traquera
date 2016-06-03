@@ -728,13 +728,14 @@ QVariant TQRecord::value(const QString &fieldName, int role) const
         int vid = def->fieldVid(fieldName);
         if(vid == TQ::TQ_NO_VID)
             return QVariant();
-        switch(role)
-        {
-        case Qt::EditRole:
-            return value(vid);
-        case Qt::DisplayRole:
-            return def->valueToDisplay(vid, value(vid));
-        }
+        return value(vid, role);
+//        switch(role)
+//        {
+//        case Qt::EditRole:
+//            return value(vid);
+//        case Qt::DisplayRole:
+//            return def->valueToDisplay(vid, value(vid));
+//        }
     }
     return QVariant();
 }

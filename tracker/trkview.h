@@ -264,7 +264,7 @@ typedef QHash<TRK_VID, TrkFieldDef *> TrkVidDefs;
 typedef QHash<QString, int> NameVid;
 
 
-class TrkRecordTypeDef: public QObject, public TQAbstractRecordTypeDef
+class TrkRecordTypeDef: public QObject, public TQBaseRecordTypeDef
 {
     Q_OBJECT
     Q_INTERFACES(TQAbstractRecordTypeDef)

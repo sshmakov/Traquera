@@ -97,7 +97,7 @@ public:
     void setConnectMethod(JiraConnectMethod method);
     virtual TQAbstractProject *openConnection(const QString &connectString);
     void setConnectString(const QString &connectString);
-    QVariant sendRequest(const QString &dbmsServer, const QString &method, const QString &query, QVariantMap bodyMap = QVariantMap());
+    QVariant sendRequest(const QString &method, const QString &query, QVariantMap bodyMap = QVariantMap());
     QNetworkReply *sendRequestNative(const QUrl &url, const QString &method, const QByteArray &body = QByteArray());
     QVariant parseValue(const QVariant &source, const QString &path);
     static TQAbstractDB *createJiraDB(QObject *parent);
@@ -111,12 +111,11 @@ protected:
     QList<QNetworkReply*> readyReplies;
     QList<QNetworkCookie> cookies;
     bool waitReply(QNetworkReply *reply);
-    JiraPrjInfoList getProjectList(const QString& serverUrl);
+    JiraPrjInfoList getProjectList();
     bool showLoginPage(const QString &server,
                      const QString &user = QString(),
                      const QString &pass = QString());
-    bool loginCookie(const QString &server,
-                     const QString &user = QString(),
+    bool loginCookie(const QString &user = QString(),
                      const QString &pass = QString());
     void dumpRequest(QNetworkRequest *req, const QString &method, const QByteArray &body);
     void dumpReply(QNetworkReply *reply, const QByteArray &buf);
@@ -143,7 +142,7 @@ class JiraProject: public TQBaseProject
     Q_OBJECT
 protected:
     JiraDB *db;
-    QString dbmsServer;
+//    QString dbmsServer;
     QMap<int,JiraRecTypeDef *> recordDefs;
     QString projectKey;
     int projectId;
@@ -152,6 +151,7 @@ protected:
 public:
     JiraProject(TQAbstractDB *db);
     void loadDefinition();
+    inline JiraDB *jiraDb() const { return db; }
     //Redefine
     TQAbstractRecordTypeDef *recordTypeDef(int recordType);
     int defaultRecType() const;
@@ -191,8 +191,11 @@ protected:
     void loadQueries();
     void loadUsers();
     void storeReadedField(JiraRecord *rec, JiraRecTypeDef *rdef, const QString &fid, const QVariant &value);
+protected slots:
+    void showSelectUser();
 
     friend class JiraDB;
+    friend class JiraRecTypeDef;
 };
 
 struct JiraFieldDesc
@@ -232,7 +235,7 @@ struct JiraFieldDesc
     }
 };
 
-class JiraRecTypeDef : public TQAbstractRecordTypeDef
+class JiraRecTypeDef : public TQBaseRecordTypeDef
 {
 protected:
     JiraProject *prj;
@@ -279,9 +282,11 @@ public:
     virtual QVariant fieldMaxValue(int vid) const;
     virtual QString fieldChoiceTable(int vid) const;
     virtual int roleVid(int role) const;
-    virtual QString dateTimeFormat() const;
+//    virtual QString dateTimeFormat() const;
     virtual QStringList noteTitleList() const;
     virtual TQAbstractProject *project() const;
+    bool hasFieldCustomEditor(int vid) const;
+    QWidget *createCustomEditor(int vid, QWidget *parent) const;
 
     friend class JiraProject;
     friend class JiraRecord;
