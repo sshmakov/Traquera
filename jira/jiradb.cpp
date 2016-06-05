@@ -140,6 +140,12 @@ public:
     bool isLogged;
     SavedSession session;
     QList<QNetworkCookie> lastCookies;
+    int lastHTTPCode;
+    QString lastHTTPError;
+
+    JiraDBPrivate() : isLogged(false), lastHTTPCode(0)
+    {
+    }
 };
 
 // ======================== JiraDB ==================================
@@ -148,7 +154,6 @@ JiraDB::JiraDB(QObject *parent)
       d(new JiraDBPrivate()),
       timeOutSecs(10)
 {
-    d->isLogged = false;
     parser->setCharset("UTF-8");
     man =
             //new QNetworkAccessManager(this);
@@ -323,10 +328,10 @@ void JiraDB::setConnectString(const QString &connectString)
     setConnectMethod((JiraConnectMethod)method);
 }
 
-QVariant JiraDB::sendRequest(const QString &method, const QString &query, QVariantMap bodyMap)
+QVariant JiraDB::sendRequest(const QString &method, const QUrl &url, QVariantMap bodyMap)
 {
-    QString link(dbmsServer() + query);
-    QUrl url(link);
+//    QString link(dbmsServer() + url);
+//    QUrl url(link);
     QNetworkRequest req;
     req.setUrl(url);
     req.setHeader(QNetworkRequest::ContentTypeHeader,"application/json");
@@ -371,6 +376,8 @@ QVariant JiraDB::sendRequest(const QString &method, const QString &query, QVaria
     }
     readyReplies.removeAll(reply.data());
     */
+    d->lastHTTPCode = reply->error();
+    d->lastHTTPError = reply->errorString();
     QString contType = reply->header(QNetworkRequest::ContentTypeHeader).toString();
     if(contType.contains(';'))
         contType = contType.split(';').value(0);
@@ -390,6 +397,11 @@ QVariant JiraDB::sendRequest(const QString &method, const QString &query, QVaria
     if(!contType.compare("application/json",Qt::CaseInsensitive))
         obj = parser->toVariant(buf);
     return obj;
+}
+
+QUrl JiraDB::queryUrl(const QString &query) const
+{
+    return QUrl(dbmsServer() + query);
 }
 
 QNetworkReply *JiraDB::sendRequestNative(const QUrl &url, const QString &method, const QByteArray &body)
@@ -417,6 +429,16 @@ QNetworkReply *JiraDB::sendRequestNative(const QUrl &url, const QString &method,
     }
     dumpReply(r, QByteArray());
     return r;
+}
+
+int JiraDB::lastHTTPCode() const
+{
+    return d->lastHTTPCode;
+}
+
+QString JiraDB::lastHTTPErrorString() const
+{
+    return d->lastHTTPError;
 }
 
 static int method2op(const QString &method)
@@ -542,7 +564,7 @@ QDialog *JiraDB::createConnectDialog() const
 
 QVariant JiraDB::parseValue(const QVariant &source, const QString &path)
 {
-    QStringList hier = path.split(",");
+    QStringList hier = path.split("/");
     QVariant cur = source;
     for(int i = 0; i<hier.size(); i++)
     {
@@ -593,7 +615,7 @@ JiraPrjInfoList JiraDB::getProjectList()
     if(!projectInfo.contains(server))
     {
         JiraPrjInfoList list;
-        QVariantList reply = sendRequest("GET","rest/api/2/project").toList();
+        QVariantList reply = sendRequest("GET",queryUrl("rest/api/2/project")).toList();
         foreach(QVariant v, reply)
         {
             JiraProjectInfo info;
@@ -629,7 +651,7 @@ bool JiraDB::loginCookie(const QString &user, const QString &pass)
     QVariantMap reqMap;
     reqMap.insert("username", user);
     reqMap.insert("password", pass);
-    QVariantMap repMap = sendRequest("POST", "rest/auth/1/session", reqMap).toMap();
+    QVariantMap repMap = sendRequest("POST", queryUrl("rest/auth/1/session"), reqMap).toMap();
     /*
     "Server" "nginx/1.2.1"
     "Date" "Wed, 11 May 2016 18:52:53 GMT"
@@ -683,11 +705,10 @@ void JiraDB::dumpReply(QNetworkReply *reply, const QByteArray &body)
         tqDebug() << "Response: 0";
         return;
     }
-    tqDebug() << "Response:";
+    tqDebug() << "Response:" << QString::number(reply->error());
     if(reply->error() != QNetworkReply::NoError)
     {
-        tqDebug() << "Error:" << QString::number(reply->error())
-                 << reply->errorString();
+        tqDebug() << "Error:" << reply->errorString();
     }
     foreach(const QNetworkReply::RawHeaderPair &pair, reply->rawHeaderPairs())
     {
@@ -745,7 +766,7 @@ TQRecModel *JiraProject::openQueryModel(const QString &queryName, int recType, b
     int index = favSearch.value(queryName);
     const JiraFilter &fitem = filters->at(index);
     QString jql = fitem.jql;
-    QVariantMap map = db->sendRequest("GET",QString("rest/api/2/search?jql=%1").arg(jql)).toMap();
+    QVariantMap map = db->sendRequest("GET",db->queryUrl(QString("rest/api/2/search?jql=%1").arg(jql))).toMap();
     QVariantList issueList = map.value("issues").toList();
     TQRecModel *model = new TQRecModel(this, recType, this);
     int pos = projectKey.length()+1;
@@ -771,7 +792,7 @@ QAbstractItemModel *JiraProject::openIdsModel(const IntList &ids, int recType, b
     foreach(int i, ids)
         list.append(projectKey + "-" + QString::number(i));
     QString jql = QString("Key in (%1)").arg(list.join(","));
-    QVariantMap map = db->sendRequest("GET",QString("rest/api/2/search?jql=%1&fields=key,id").arg(jql)).toMap();
+    QVariantMap map = db->sendRequest("GET",db->queryUrl(QString("rest/api/2/search?jql=%1&fields=key,id").arg(jql))).toMap();
     QVariantList issueList = map.value("issues").toList();
     TQRecModel *model = new TQRecModel(this, recType, this);
     model->setHeaders(rdef->fieldNames());
@@ -826,10 +847,10 @@ bool JiraProject::readRecordWhole(TQRecord *record)
     JiraRecord *rec = qobject_cast<JiraRecord *>(record);
     if(!rec)
         return false;
-    JiraRecTypeDef *rdef = dynamic_cast<JiraRecTypeDef *>(record->recordDef());
+    const JiraRecTypeDef *rdef = dynamic_cast<const JiraRecTypeDef *>(record->typeDef());
     if(!rdef)
         return false;
-    QVariantMap issue = db->sendRequest("GET",QString("rest/api/2/issue/%1?expand=attachment").arg(rec->jiraKey())).toMap();
+    QVariantMap issue = db->sendRequest("GET",db->queryUrl(QString("rest/api/2/issue/%1?expand=attachment").arg(rec->jiraKey()))).toMap();
     QVariantMap fields = issue.value("fields").toMap();
     QVariantMap::iterator i;
     rec->values.clear();
@@ -879,10 +900,10 @@ bool JiraProject::readRecordFields(TQRecord *record)
     JiraRecord *rec = qobject_cast<JiraRecord *>(record);
     if(!rec)
         return false;
-    JiraRecTypeDef *rdef = dynamic_cast<JiraRecTypeDef *>(record->recordDef());
+    const JiraRecTypeDef *rdef = dynamic_cast<const JiraRecTypeDef *>(record->typeDef());
     if(!rdef)
         return false;
-    QVariantMap issue = db->sendRequest("GET",QString("rest/api/2/issue/%1?fields=*all,-description,-comment").arg(rec->jiraKey())).toMap();
+    QVariantMap issue = db->sendRequest("GET",db->queryUrl(QString("rest/api/2/issue/%1?fields=*all,-description,-comment").arg(rec->jiraKey()))).toMap();
     if(!issue.contains("id"))
         return false;
     rec->internalId = issue.value("id").toInt();
@@ -900,7 +921,7 @@ bool JiraProject::readRecordTexts(TQRecord *record)
     JiraRecord *rec = qobject_cast<JiraRecord *>(record);
     if(!rec)
         return false;
-    QVariantMap issue = db->sendRequest("GET",QString("rest/api/2/issue/%1?fields=description,comment").arg(rec->jiraKey())).toMap();
+    QVariantMap issue = db->sendRequest("GET",db->queryUrl(QString("rest/api/2/issue/%1?fields=description,comment").arg(rec->jiraKey()))).toMap();
     rec->desc = db->parseValue(issue,"fields/description").toString();
     QVariantList comments = db->parseValue(issue,"comment/comments").toList();
     rec->notesCol.clear();
@@ -925,12 +946,12 @@ bool JiraProject::readRecordBase(TQRecord *record)
     JiraRecord *rec = qobject_cast<JiraRecord *>(record);
     if(!rec)
         return false;
-    JiraRecTypeDef *rdef = dynamic_cast<JiraRecTypeDef *>(record->recordDef());
+    const JiraRecTypeDef *rdef = dynamic_cast<const JiraRecTypeDef *>(record->typeDef());
     if(!rdef)
         return false;
     QHash<int, QString> fieldList = baseRecordFields(record->recordType());
     QStringList list = fieldList.values();
-    QVariantMap issue = db->sendRequest("GET",QString("rest/api/2/issue/%1?fields=%2").arg(rec->jiraKey()).arg(list.join(","))).toMap();
+    QVariantMap issue = db->sendRequest("GET",db->queryUrl(QString("rest/api/2/issue/%1?fields=%2").arg(rec->jiraKey()).arg(list.join(",")))).toMap();
     QVariantMap fields = issue.value("fields").toMap();
     QVariantMap::iterator i;
     for(i = fields.begin(); i!=fields.end(); i++)
@@ -941,7 +962,7 @@ bool JiraProject::readRecordBase(TQRecord *record)
 
 QVariant JiraProject::getFieldValue(const TQRecord *record, const QString &fname, bool *ok)
 {
-    TQAbstractRecordTypeDef *rdef = record->recordDef();
+    const TQAbstractRecordTypeDef *rdef = record->typeDef();
     int vid = rdef->fieldVid(name);
     return getFieldValue(record,vid,ok);
 }
@@ -956,7 +977,7 @@ QVariant JiraProject::getFieldValue(const TQRecord *record, int vid, bool *ok)
 
 bool JiraProject::setFieldValue(TQRecord *record, const QString &fname, const QVariant &value)
 {
-    int vid = record->recordDef()->fieldVid(fname);
+    int vid = record->typeDef()->fieldVid(fname);
     if(vid)
     {
         record->setValue(vid, value);
@@ -971,7 +992,7 @@ bool JiraProject::updateRecordBegin(TQRecord *record)
     if(!rec)
         return false;
     rec->setMode(TQRecord::Edit);
-    return false;
+    return true;
 }
 
 bool JiraProject::commitRecord(TQRecord *record)
@@ -981,13 +1002,25 @@ bool JiraProject::commitRecord(TQRecord *record)
     JiraRecord *jRec = qobject_cast<JiraRecord*>(record);
     if(!jRec)
         return false;
-    TQAbstractRecordTypeDef *recDef = jRec->recordDef();
+    const JiraRecTypeDef *recDef = dynamic_cast<const JiraRecTypeDef *>(jRec->typeDef());
     QVariantMap issue;
     QVariantMap fields;
-    foreach(int vid, jRec->values.keys())
+    TQFieldValues vidChanges = jRec->vidChanges();
+    TQFieldValues::const_iterator i;
+    for(i = vidChanges.begin(); i != vidChanges.end(); ++i)
     {
-        QString fname = recDef->fieldName(vid);
-//        fields.insert(fname, jRec->value(vid, Qt::EditRole));
+        int vid = i.key();
+        QVariant value = i.value();
+        if(!recDef->containFieldVid(vid))
+            continue;
+        const JiraFieldDesc &fdesc = recDef->fields[vid];
+        if(fdesc.isChoice())
+        {
+            QVariantMap v;
+            v.insert("id", value.toString());
+            value = v;
+        }
+        fields.insert(fdesc.id, value);
     }
     QVariantMap v2;
     v2.insert("key", projectKey);
@@ -1002,25 +1035,41 @@ bool JiraProject::commitRecord(TQRecord *record)
     QVariantList comments;
     foreach(const TQNote &note, jRec->notes())
     {
-        if(note.isAdded)
+        if(note.isAdded || note.isChanged)
         {
             QVariantMap com;
             com.insert("body", note.text);
         }
     }
     issue.insert("comments", comments);
-//    QByteArray body = db->jsonParser()->toByteArray(issue);
-//    qDebug() << "Post body:" << body;
-    QVariantMap res = db->sendRequest("POST",QString("rest/api/2/issue"),issue).toMap();
-    if(!res.contains("id"))
+    QVariantMap res;
+    bool wasError;
+    if(record->mode() == TQRecord::Edit)
+    {
+        res = db->sendRequest("PUT",db->queryUrl(QString("rest/api/2/issue/%1").arg(jRec->jiraKey())),issue).toMap();
+        wasError = db->lastHTTPCode() && db->lastHTTPCode() != 200;
+    }
+    else
+    {
+        res = db->sendRequest("POST",db->queryUrl(QString("rest/api/2/issue")),issue).toMap();
+        wasError = db->lastHTTPCode() && db->lastHTTPCode() != 200;// !res.contains("id");
+    }
+    if(wasError)
     {
         QString error;
         QVariantList elist = res.value("errorMessages").toList();
         foreach(QVariant e, elist)
             error += e.toString() + "\n";
+        QVariantMap objErrors = res.value("errors").toMap();
+        QVariantMap::iterator i;
+        for(i=objErrors.begin(); i!=objErrors.end(); ++i)
+        {
+            QString key = i.key();
+            QString s = i.value().toString();
+            error += tr("%1: %2\n").arg(key, s);
+        }
+        error = tr("Ошибка сохранения запроса\n") + error;
         error = error.trimmed();
-        if(error.isEmpty())
-            error = tr("Ошибка вставки issue");
         QMessageBox::critical(0, "Jira error", error);
         return false;
     }
@@ -1217,9 +1266,9 @@ QVariant JiraProject::optionValue(const QString &option) const
 
 void JiraProject::loadRecordTypes()
 {
-    QVariant obj = db->sendRequest("GET", "rest/api/2/field");
+    QVariant obj = db->sendRequest("GET", db->queryUrl("rest/api/2/field"));
     QVariantList fieldList = obj.toList();
-    QVariantList types = db->sendRequest("GET","rest/api/2/issuetype").toList();
+    QVariantList types = db->sendRequest("GET",db->queryUrl("rest/api/2/issuetype")).toList();
     foreach(const QVariant &t, types)
     {
         QVariantMap typeMap = t.toMap();
@@ -1231,8 +1280,8 @@ void JiraProject::loadRecordTypes()
         rdef->recType = recordType;
         rdef->recTypeName = typeMap.value("name").toString();
 
-        obj = db->sendRequest("GET", QString("rest/api/2/issue/createmeta?projectIds=%1&issuetypeIds=%2").arg(projectId).arg(recordType));
-        QVariantMap createFields = db->parseValue(obj, "projects/0/issuetypes/fields").toMap();
+        obj = db->sendRequest("GET", db->queryUrl(QString("rest/api/2/issue/createmeta?projectIds=%1&issuetypeIds=%2&expand=projects.issuetypes.fields").arg(projectId).arg(recordType)));
+        QVariantMap createFields = db->parseValue(obj, "projects/0/issuetypes/0/fields").toMap();
         int vid = 1;
         int nativeType = 1;
         foreach(QVariant v, fieldList)
@@ -1248,6 +1297,7 @@ void JiraProject::loadRecordTypes()
             f.navigable = map.value("navigable", false).toBool();
             f.searchable = map.value("searchable", false).toBool();
             f.clauseNames = map.value("clauseNames",QStringList()).toStringList();
+
             QVariantMap s = map.value("schema", QVariantMap()).toMap();
             f.schemaType = s.value("type").toString();
             f.schemaItems = s.value("items").toString();
@@ -1284,6 +1334,7 @@ void JiraProject::loadRecordTypes()
                 QVariantMap createMeta = createFields.value(f.id).toMap();
                 f.createShow = true;
                 f.createRequired = createMeta.value("required","false").toString() == "true";
+                f.autoCompleteUrl = createMeta.value("autoCompleteUrl").toString();
                 if(createMeta.contains("allowedValues"))
                 {
                     QVariantList values = createMeta.value("allowedValues").toList();
@@ -1293,7 +1344,7 @@ void JiraProject::loadRecordTypes()
                         QVariantMap vmap = v.toMap();
                         TQChoiceItem item;
                         item.displayText = vmap.value("name").toString();
-                        item.fieldValue = vmap.value("id").toInt();
+                        item.fieldValue = vmap.value("id");
                         item.id = vmap.value("id").toInt();
                         item.weight = 0;
                         item.order = pos++;
@@ -1323,7 +1374,7 @@ void JiraProject::loadRecordTypes()
 
 TQChoiceList JiraProject::loadChoiceTables(JiraRecTypeDef *rdef, const QString &url)
 {
-    QVariant obj = db->sendRequest("GET", "rest/api/2/"+url);
+    QVariant obj = db->sendRequest("GET", db->queryUrl("rest/api/2/"+url));
     QVariantList statusList = obj.toList();
     TQChoiceList list;
     int order = 0;
@@ -1344,7 +1395,7 @@ typedef QPair<QString,QString> QStringPair;
 
 void JiraProject::loadQueries()
 {
-    QVariantList favs = db->sendRequest("GET", "rest/api/2/filter/favourite").toList();
+    QVariantList favs = db->sendRequest("GET", db->queryUrl("rest/api/2/filter/favourite")).toList();
     foreach(QVariant v, favs)
     {
         QVariantMap favMap = v.toMap();
@@ -1391,7 +1442,7 @@ void JiraProject::loadQueries()
 void JiraProject::loadUsers()
 {
     m_userList.clear();
-    QVariantList owners = db->sendRequest("GET", "rest/api/2/user/assignable/search?project="+projectKey).toList();
+    QVariantList owners = db->sendRequest("GET", db->queryUrl("rest/api/2/user/assignable/search?project="+projectKey)).toList();
     int i=1;
     foreach(QVariant v, owners)
     {
@@ -1407,7 +1458,7 @@ void JiraProject::loadUsers()
     }
 }
 
-void JiraProject::storeReadedField(JiraRecord *rec, JiraRecTypeDef *rdef, const QString &fid, const QVariant &value)
+void JiraProject::storeReadedField(JiraRecord *rec, const JiraRecTypeDef *rdef, const QString &fid, const QVariant &value)
 {
     int fvid = rdef->fieldVidSystem(fid);
     if(fid == "description")
@@ -1824,6 +1875,9 @@ bool JiraRecTypeDef::hasFieldCustomEditor(int vid) const
 QWidget *JiraRecTypeDef::createCustomEditor(int vid, QWidget *parent) const
 {
     JiraUserComboBox *box = new JiraUserComboBox(prj, parent);
+    const JiraFieldDesc &desc = fields[vid];
+//    if(!desc.autoCompleteUrl.isEmpty())
+//        box->setCompleteLink(desc.autoCompleteUrl);
     QStringList items;
     foreach(const JiraUser &user, prj->knownUsers)
     {
@@ -1927,13 +1981,11 @@ QVariant JiraRecord::value(int vid, int role) const
     return value;
 }
 
-bool JiraRecord::setValue(int vid, const QVariant &newValue, int role)
+bool JiraRecord::setValue(int vid, const QVariant &newValue)
 {
     if(!def)
         return false;
     if(vid == def->idVid)
-        return false;
-    if(role != Qt::EditRole)
         return false;
     if(vid == def->descVid)
     {
@@ -1942,8 +1994,12 @@ bool JiraRecord::setValue(int vid, const QVariant &newValue, int role)
     }
     if(!def->fields.contains(vid))
         return false;
-    values.insert(vid, newValue);
-    displayValues.insert(vid, def->valueToDisplay(vid, newValue));
+    bool res = TQRecord::setValue(vid, newValue);
+    if(res)
+    {
+        values.insert(vid, newValue);
+        displayValues.insert(vid, def->valueToDisplay(vid, newValue));
+    }
     return true;
 }
 

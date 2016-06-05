@@ -62,8 +62,6 @@ public:
     //TRK_UINT res;
 };
 
-typedef QHash<QString, QVariant> FieldValues;
-
 class TQChoiceList: public QList<TQChoiceItem>
 {
 public:

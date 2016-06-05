@@ -180,7 +180,7 @@ protected:
     ModifyPanel *modifyPanel;
     QTimer *selectionTimer;
     QueryPage *curQueryPage();
-    FieldValues lastChanges;
+    QVariantHash lastChanges;
     virtual void closeEvent(QCloseEvent *event);
     void saveIdsToList(const QString &list);
     TQAbstractDB *newDb(const QString &dbClass, const QString &dbType, const QString &dbServer);

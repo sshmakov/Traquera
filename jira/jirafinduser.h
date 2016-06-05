@@ -37,6 +37,7 @@ private:
 public:
     JiraUserComboBox(JiraProject *project, QWidget *parent = 0);
     ~JiraUserComboBox();
+    void setCompleteLink(const QString &link);
 private slots:
     void refreshModel();
 

@@ -393,6 +393,10 @@ bool isSystemModel(QAbstractItemModel *) const;
 */
 };
 
+typedef QHash<int, QVariant> TQFieldValues;
+Q_DECLARE_METATYPE(TQFieldValues)
+
+class TQRecordPrivate;
 
 class TQPLUGIN_SHARED TQRecord: public QObject
 {
@@ -403,41 +407,9 @@ class TQPLUGIN_SHARED TQRecord: public QObject
     Q_PROPERTY(QString description READ description WRITE setDescription)
 public:
     enum TQRecMode {View, Edit, Insert};
-protected:
-    TQAbstractProject *m_prj;
-    int recType;
-    int recMode;
-    int recId;
-    int links;
-    bool modified;
-
-    /*
-    //QHash<QString, QVariant> values;
-    mutable QHash<int, QVariant> values; // by VID
-    QHash<int, bool> changedValue; // by VID
-    qint64 lastTransaction;
-    QStringList fieldList;
-
-    //void readHandle(TRK_RECORD_HANDLE handle, bool force=false);
-    //void readFieldValue(TRK_RECORD_HANDLE handle, TRK_VID vid);
-    int links;
-    //NotesCol addedNotes;
-//    QList<int> deletedNotes;
-//    QHash<int, TrkNote> addedNotes;
-    TQNotesCol notesList;
-    bool textsReaded;
-    QString desc;
-    bool descChanged; //, descLoaded;
-    // void needRecHandle();
-    // void freeRecHandle();
-    bool readed;
-    bool historyReaded;
-    QStringList historyListMem;
-    void readFullRecord();
-    virtual void init();
-    */
-public: //protected: // Project specific data
-    //TRK_RECORD_HANDLE lockHandle;
+private:
+    TQRecordPrivate *d;
+public:
     TQRecord();
     TQRecord(TQAbstractProject *prj, int rtype, int id);
     TQRecord(const TQRecord &src);
@@ -446,7 +418,6 @@ public: //protected: // Project specific data
     Q_INVOKABLE virtual bool isValid() const;
     Q_INVOKABLE virtual int recordType() const;
     Q_INVOKABLE virtual int recordId() const;
-    TQAbstractRecordTypeDef *recordDef() const;
 
     Q_INVOKABLE virtual int mode() const;
     Q_INVOKABLE virtual void setMode(int newMode);
@@ -488,8 +459,12 @@ public:
 
     Q_INVOKABLE virtual QVariant value(int vid, int role = Qt::DisplayRole) const ;
     Q_INVOKABLE virtual QVariant value(const QString& fieldName, int role = Qt::DisplayRole) const;
-    Q_INVOKABLE virtual bool setValue(int vid, const QVariant& newValue, int role = Qt::EditRole);
-    virtual bool setValues(const QHash<QString, QVariant> &values);
+    Q_INVOKABLE virtual bool setValue(int vid, const QVariant& newValue);
+    Q_INVOKABLE virtual bool setValues(const QVariantHash &values);
+    Q_INVOKABLE virtual bool seVidValues(const TQFieldValues &values);
+    Q_INVOKABLE virtual TQFieldValues vidChanges() const;
+    Q_INVOKABLE virtual QVariantHash fieldChanges() const;
+
 //    Q_INVOKABLE  int recordId() const { return values[VID_Id].toInt(); } // TRK_UINT
 //    Q_INVOKABLE void setValue(const QString& fieldName, const QVariant& value, int role = Qt::EditRole);
 
@@ -504,96 +479,13 @@ public:
     Q_INVOKABLE virtual bool isSelected() const;
     Q_INVOKABLE virtual void setSelected(bool value);
     Q_INVOKABLE virtual void refresh();
+protected:
+    virtual void doSetMode(int newMode) const;
+    virtual void doSetRecordId(int id) const;
 signals:
     void changedState(int newMode) const;
     void changed(int recId) const;
 
-//    virtual void setRecordId(int id) { values[VID_Id] = QVariant::fromValue(id); }
-//    TQRecord(const TQRecord& src);
-//    TQRecord & operator =(const TQRecord &src);
-    /*
-    Q_INVOKABLE bool isValid()
-    {
-        return prj!=0;
-    }
-
-    Q_INVOKABLE QVariant value(const QString& fieldName, int role = Qt::DisplayRole) const;
-    Q_INVOKABLE QVariant value(TRK_VID vid, int role = Qt::DisplayRole) const ;
-    TQRecord::RecMode mode() const { return recMode; }
-    Q_INVOKABLE  int recordId() const { return values[VID_Id].toInt(); } // TRK_UINT
-    Q_INVOKABLE QString title();
-    Q_INVOKABLE void setTitle(const QString &newTitle);
-    Q_INVOKABLE void setValue(const QString& fieldName, const QVariant& value, int role = Qt::EditRole);
-    Q_INVOKABLE void setValue(TRK_VID vid, const QVariant& value, int role = Qt::EditRole);
-    //Q_INVOKABLE bool insertBegin();
-    Q_INVOKABLE bool updateBegin();
-    Q_INVOKABLE bool commit();
-    Q_INVOKABLE bool cancel();
-    Q_INVOKABLE bool isInsertMode() const;
-    Q_INVOKABLE bool isEditMode() const;
-    QDomDocument toXML();
-    Q_INVOKABLE QString toHTML(const QString &xqCodeFile);
-    Q_INVOKABLE QStringList historyList();
-    QString description();
-    Q_INVOKABLE bool setDescription(const QString &newDesc);
-    Q_INVOKABLE const QStringList & fields() const;
-    Q_INVOKABLE bool isSelected() const;
-    Q_INVOKABLE void setSelected(bool value);
-    Q_INVOKABLE bool isFieldReadOnly(const QString &field);
-    const TQAbstractRecordTypeDef *typeDef() const
-    {
-        return prj->recordTypeDef(rectype);
-    }
-    TQAbstractFieldType fieldDef(TRK_VID vid) const
-    {
-        return typeDef()->getFieldType(vid);
-    }
-    TQAbstractFieldType fieldDef(const QString &name) const
-    {
-        return typeDef()->getFieldType(name);
-    }
-    Q_INVOKABLE bool isEditing() const
-    {
-        return mode() != View;
-    }
-    void setValues(const FieldValues &values)
-    {
-        if(!isEditing())
-            return;
-        foreach(const QString &fieldName, values.keys())
-            setValue(fieldName, values.value(fieldName), Qt::EditRole);
-
-    }
-
-    Q_INVOKABLE bool setNote(int index, const QString &title, const QString &text);
-    Q_INVOKABLE bool setNoteText(int index, const QString &text);
-    Q_INVOKABLE bool deleteNote(int index);
-    Q_INVOKABLE int addNote(const QString &noteTitle, const QString &noteText);
-    Q_INVOKABLE bool appendNote(const QString &noteTitle, const QString &note);
-    Q_INVOKABLE QString noteTitle(int index);
-    Q_INVOKABLE QString noteText(int index);
-    void addLink();
-    void removeLink(const QObject *receiver=0);
-    TQNotesCol notes();
-    QList<TQToolFile> fileList();
-    bool saveFile(int fileIndex, const QString &dest);
-    TrkToolProject *project() const
-    {
-        return prj;
-    }
-
-    Q_INVOKABLE void refresh();
-    Q_INVOKABLE void releaseBuffer();
-    TRK_RECORD_TYPE recordType() const { return rectype; }
-protected slots:
-    void somethingChanged();
-    void valuesReloaded();
-
-
-    friend class TrkToolRecordSet;
-    //friend class TrkToolModel;
-    friend class TrkToolProject;
-    */
 };
 
 Q_DECLARE_METATYPE(TQAbstractProject*)

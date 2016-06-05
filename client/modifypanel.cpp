@@ -304,9 +304,9 @@ QVariant ModifyPanel::fieldValue(const QString &fieldName)
     return QVariant();
 }
 
-FieldValues ModifyPanel::changes()
+QVariantHash ModifyPanel::changes()
 {
-    FieldValues res;
+    QVariantHash res;
     foreach(const ModifyRow &f, rows)
     {
         if(f.isGroup)
@@ -318,7 +318,7 @@ FieldValues ModifyPanel::changes()
     return res;
 }
 
-void ModifyPanel::setChanges(const FieldValues &newChanges)
+void ModifyPanel::setChanges(const QVariantHash &newChanges)
 {
     foreach(const QString &name, newChanges.keys())
         setFieldValue(name,newChanges.value(name));

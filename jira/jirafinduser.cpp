@@ -88,6 +88,11 @@ JiraUserComboBox::~JiraUserComboBox()
     delete d;
 }
 
+void JiraUserComboBox::setCompleteLink(const QString &link)
+{
+    d->model->setCompleteLink(link);
+}
+
 void JiraUserComboBox::refreshModel()
 {
     d->model->refresh(currentText());

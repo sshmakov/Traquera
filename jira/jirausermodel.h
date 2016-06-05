@@ -16,6 +16,7 @@ public:
     ~JiraUserModel();
     QVariant data(const QModelIndex &index, int role) const;
     int rowCount(const QModelIndex &parent) const;
+    void setCompleteLink(const QString &url);
 public slots:
     void refresh(const QString &firstChars);
 signals:

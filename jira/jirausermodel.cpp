@@ -8,6 +8,7 @@ public:
     JiraProject *prj;
     QStringList users;
     QStringList keys;
+    QString autoCompleteUrl;
 };
 
 JiraUserModel::JiraUserModel(JiraProject *project) :
@@ -15,6 +16,7 @@ JiraUserModel::JiraUserModel(JiraProject *project) :
     d(new JiraUserModelPrivate())
 {
     d->prj = project;
+    d->autoCompleteUrl = d->prj->jiraDb()->queryUrl("rest/api/2/user/search?username=").toString();
 }
 
 JiraUserModel::~JiraUserModel()
@@ -38,14 +40,21 @@ int JiraUserModel::rowCount(const QModelIndex &parent) const
     return d->users.size();
 }
 
+void JiraUserModel::setCompleteLink(const QString &url)
+{
+    d->autoCompleteUrl = url;
+}
+
 void JiraUserModel::refresh(const QString &firstChars)
 {
     beginResetModel();
     d->users.clear();
     d->keys.clear();
     QVariant reply = d->prj->jiraDb()->sendRequest("GET",
-                                                   QString("rest/api/2/user/search?username=%1")
-                                                   .arg(firstChars));
+                                                   QUrl(
+                                                       QString(d->autoCompleteUrl +"%1").arg(firstChars)
+                                                       )
+                                                   );
     if(reply.type() == QVariant::List)
     {
         QVariantList list = reply.toList();

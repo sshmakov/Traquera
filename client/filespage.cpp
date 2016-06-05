@@ -11,7 +11,7 @@ class FilesPagePrivate
 {
 public:
     TQRecord *rec;
-    TQAbstractRecordTypeDef *def;
+    const TQAbstractRecordTypeDef *def;
     QTimer previewTimer;
     int curFileIndex;
     bool modifyEnabled;
@@ -98,7 +98,7 @@ void FilesPage::setRecord(TQRecord *record)
     d->rec = record;
     if(d->rec)
     {
-        d->def = d->rec->recordDef();
+        d->def = d->rec->typeDef();
         connect(d->rec, SIGNAL(changed(int)), SLOT(refreshFiles()));
         connect(d->rec, SIGNAL(destroyed()), SLOT(detachRecord()));
         connect(d->rec, SIGNAL(changedState(int)), SLOT(recordChangedState()));

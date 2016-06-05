@@ -56,8 +56,8 @@ public:
     void setRowValue(int row, const QVariant &value, int role = Qt::EditRole);
     QString fieldName(const QModelIndex &index);
     QVariant fieldValue(const QString &fieldName);
-    FieldValues changes();
-    void setChanges(const FieldValues &newChanges);
+    QVariantHash changes();
+    void setChanges(const QVariantHash &newChanges);
     void setButtonsVisible(bool visible);
 signals:
     void applyButtonPressed();

@@ -229,7 +229,7 @@ void TTItemEditor::setModelData(const QModelIndex &index)
         return;
     TQAbstractFieldType fdef = panel->fieldDef(index.row());
     if(0!=(ed = qobject_cast<QLineEdit*>(subeditor)))
-        panel->setFieldValue(fieldName,ed->text());
+        panel->setFieldValue(fieldName, fdef.displayToValue(ed->text()));
         //model->setData(index,ed->text());
         //ed->setText(index.data().toString());
 
@@ -237,15 +237,20 @@ void TTItemEditor::setModelData(const QModelIndex &index)
         panel->setFieldValue(fieldName,sb->value());
     else if(0!=(cb = qobject_cast<QComboBox*>(subeditor)))
     {
+        panel->setFieldValue(fieldName, fdef.displayToValue(cb->currentText()));
+        /*
         TQChoiceList ch = fdef.choiceList();
         int i = cb->currentIndex();
         if(i>=0 && i<ch.count())
             panel->setFieldValue(fieldName,ch.value(i).fieldValue);
         else
             panel->setFieldValue(fieldName,QVariant());
+            */
     }
     else if(0 != (dt = qobject_cast<TQDateTimeEdit*>(subeditor)))
     {
+        panel->setFieldValue(fieldName, fdef.displayToValue(dt->text()));
+        /*
         QString text = dt->text();
         QDateTime d = QDateTime::fromString(text,fdef.recordDef()->dateTimeFormat());
 //        QDateTime d = QDateTime::fromString(text,TT_DATETIME_FORMAT);
@@ -253,6 +258,7 @@ void TTItemEditor::setModelData(const QModelIndex &index)
             panel->setFieldValue(fieldName,dt->dateTime());
         else
             panel->setFieldValue(fieldName,QDateTime());
+            */
     }
 }
 

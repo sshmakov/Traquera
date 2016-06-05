@@ -453,8 +453,8 @@ void MainWindow::applyChanges()
         {
             foreach(const QString &fieldName, lastChanges.keys())
             {
-                int vid = rec->recordDef()->fieldVid(fieldName);
-                rec->setValue(vid, lastChanges.value(fieldName), Qt::EditRole);
+                int vid = rec->typeDef()->fieldVid(fieldName);
+                rec->setValue(vid, lastChanges.value(fieldName));
             }
             if(!rec->commit())
                 rec->cancel();

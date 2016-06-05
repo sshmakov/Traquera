@@ -1012,7 +1012,7 @@ TQRecord *TrkToolProject::newRecord(int rectype)
         return 0;
     }
     //rec->commit();
-    rec->recMode = TrkToolRecord::Insert;
+    rec->doSetMode(TQRecord::Insert);
     return rec;
 }
 
@@ -1605,11 +1605,11 @@ QVariant TrkToolProject::doGetValue(TRK_RECORD_HANDLE recHandle, const QString &
 
 bool TrkToolProject::doReadBaseFields(TrkToolRecord *record, TRK_RECORD_HANDLE recHandle)
 {
-    QHash<int, QString> baseFields = baseRecordFields(record->recType);
+    QHash<int, QString> baseFields = baseRecordFields(record->recordType());
     foreach(int vid, baseFields.keys())
     {
         QString fname = baseFields[vid];
-        TRK_FIELD_TYPE fType = recordDef[record->recType]->fieldNativeType(vid);
+        TRK_FIELD_TYPE fType = recordDef[record->recordType()]->fieldNativeType(vid);
         record->values[vid] = doGetValue(recHandle, fname, fType);
     }
     emit recordValuesLoaded(record->recordId());
@@ -2000,7 +2000,7 @@ int TrkToolProject::attachFileToRecord(TQRecord *record, const QString &filePath
         return -1;
     int res = -1;
     int nextIndex = 0;
-    if(trec->recMode != TQRecord::Insert)
+    if(trec->mode() != TQRecord::Insert)
         if(isTrkOK(TrkInitAttachedFileList(attHandle)))
         {
             while(TRK_SUCCESS == TrkGetNextAttachedFile(attHandle))
@@ -2057,7 +2057,7 @@ bool TrkToolProject::doCommitInsert(TrkToolRecord *record)
             TrkRecordHandleFree(&record->trkHandle);
             record->handleAllocated = false;
         }
-        record->recMode = TrkToolRecord::View;
+        record->doSetMode(TQRecord::View);
         record->readFullRecord();
         record->somethingChanged();
         return true;
@@ -2088,7 +2088,7 @@ bool TrkToolProject::doCommitUpdate(TrkToolRecord *record)
 
 bool TrkToolProject::doCancelInsert(TrkToolRecord *record)
 {
-    record->recMode = TrkToolRecord::View;
+    record->doSetMode(TQRecord::View);
     return true;
 }
 
@@ -2099,7 +2099,7 @@ bool TrkToolProject::doCancelUpdate(TrkToolRecord *record)
         return false;
     isTrkOK(TrkRecordCancelTransaction(*recHandle));
     recHandle.recHandler()->isModify = false;
-    record->recMode = TrkToolRecord::View;
+    record->doSetMode(TQRecord::View);
     record->somethingChanged();
     return true;
 }
@@ -2125,9 +2125,9 @@ bool TrkToolProject::doSetValue(TrkToolRecord *record, TRK_RECORD_HANDLE recHand
 {
     if(!record->isEditing())
         return false;
-    QString fieldName = fieldVID2Name(record->recType, vid);
+    QString fieldName = fieldVID2Name(record->recordType(), vid);
     //TRK_VID vid = fieldName2VID(record->rectype, fieldName);
-    TQAbstractFieldType def = recordDef[record->recType]->getFieldType(vid);
+    TQAbstractFieldType def = recordDef[record->recordType()]->getFieldType(vid);
     QString s;
     QDateTime dt;
     switch(def.nativeType())
@@ -2380,7 +2380,7 @@ TrkToolRecord::TrkToolRecord(TrkToolProject *parent, TRK_RECORD_TYPE rtype)
       handleAllocated(false),
       files()
 {
-    fieldList = prj->recordTypeDef(recType)->fieldNames();
+    fieldList = prj->recordTypeDef(recordType())->fieldNames();
     init();
 }
 
@@ -2394,7 +2394,7 @@ TrkToolRecord::TrkToolRecord(const TrkToolRecord &src)
       handleAllocated(false),
       files()
 {
-    fieldList = prj->recordTypeDef(recType)->fieldNames();
+    fieldList = prj->recordTypeDef(recordType())->fieldNames();
     init();
 }
 
@@ -2420,7 +2420,7 @@ TrkToolRecord &TrkToolRecord::operator =(const TrkToolRecord &src)
 TrkToolRecord::~TrkToolRecord()
 {
 //    disconnect();
-    links=0;
+//    links=0;
     if(mode() != TQRecord::View)
         cancel();
 
@@ -2432,7 +2432,7 @@ TrkToolRecord::~TrkToolRecord()
 
 QVariant TrkToolRecord::value(const QString& fieldName, int role) const
 {
-    TRK_VID vid = prj->fieldName2VID(recType, fieldName);
+    TRK_VID vid = prj->fieldName2VID(recordType(), fieldName);
     if(vid)
         return value(vid, role);
     else
@@ -2443,7 +2443,7 @@ QVariant TrkToolRecord::value(int vid, int role) const
 {
     if(!vid)
         return QVariant();
-    if(vid == 10001 && recMode == Insert)
+    if(vid == 10001 && mode() == Insert)
         return 0;
     if(!values.contains(vid))
     {
@@ -2473,7 +2473,7 @@ int TrkToolRecord::recordId() const
 void TrkToolRecord::setRecordId(TRK_UINT id)
 {
     values[VID_Id] = QVariant::fromValue(id);
-    recId = id;
+    doSetRecordId(id);
 }
 
 QString TrkToolRecord::title() const
@@ -2680,9 +2680,9 @@ void TrkToolRecord::readFullRecord()
 
 void TrkToolRecord::init()
 {
-    recMode = View;
+    doSetMode(TQRecord::View);
     //lockHandle = 0;
-    links = 0;
+//    links = 0;
     //nextNoteId = -1;
     descChanged = false;
     textsReaded = false;
@@ -2716,7 +2716,7 @@ int TrkToolRecord::appendFile(const QString &filePath)
 
 void TrkToolRecord::refresh()
 {
-    if(recMode == Insert)
+    if(mode() == Insert)
         return;
     prj->readRecordWhole(this);
     valuesReloaded();
@@ -2741,12 +2741,12 @@ void TrkToolRecord::valuesReloaded()
     //emit loaded(recordId());
 }
 
-bool TrkToolRecord::setValue(const QString& fieldName, const QVariant& value, int role)
+bool TrkToolRecord::setValue(const QString& fieldName, const QVariant& value)
 {
     if(!isEditing())
         return false;
-    TRK_VID vid = prj->fieldName2VID(recType, fieldName);
-    return setValue(vid, value, role);
+    TRK_VID vid = prj->fieldName2VID(recordType(), fieldName);
+    return setValue(vid, value);
     /*
 	if(recMode != Edit && recMode !=Insert)
 		return;
@@ -2802,9 +2802,9 @@ bool TrkToolRecord::setValue(const QString& fieldName, const QVariant& value, in
     */
 }
 
-bool TrkToolRecord::setValue(int vid, const QVariant &value, int role)
+bool TrkToolRecord::setValue(int vid, const QVariant &value)
 {
-    if(role == Qt::EditRole && isEditing())
+    if(isEditing())
     {
         values[vid] = value;
         changedValue[vid] = true;
@@ -2822,12 +2822,12 @@ QDomDocument TrkToolRecord::toXML()
 	xml.appendChild(root);
 	QDomElement flds =xml.createElement("fields");
 //    QHash<TRK_VID, TrkFieldDef>::const_iterator fi;
-    QList<int> vids = prj->recordTypeDef(recType)->fieldVids();
+    QList<int> vids = prj->recordTypeDef(recordType())->fieldVids();
     foreach(int vid, vids) //fi = prj->recordDef[rectype]->fieldDefs.constBegin(); fi!= prj->recordDef[rectype]->fieldDefs.constEnd(); ++fi)
 	{
         //QString fname = fi.value().name;
         //TRK_VID vid = fi.key();
-        QString fname = prj->recordTypeDef(recType)->fieldName(vid);
+        QString fname = prj->recordTypeDef(recordType())->fieldName(vid);
         QVariant ftext = value(vid,Qt::DisplayRole);
         QVariant fvalue = value(vid,Qt::EditRole);
 
@@ -2842,7 +2842,7 @@ QDomDocument TrkToolRecord::toXML()
 	}
 	root.appendChild(flds);
 	QDomElement desc = xml.createElement("Description");
-    desc.setAttribute("name", prj->recordTypeDef(recType)->fieldName(VID_Description));
+    desc.setAttribute("name", prj->recordTypeDef(recordType())->fieldName(VID_Description));
 	QDomText v = xml.createTextNode(description());
 	desc.appendChild(v);
 	root.appendChild(desc);
@@ -2913,7 +2913,7 @@ QDomDocument TrkToolRecord::toXML()
 
 QStringList TrkToolRecord::historyList()
 {
-    if(recMode == Insert)
+    if(mode() == Insert)
         return QStringList();
     if(historyReaded)
         return historyListMem;
@@ -3851,7 +3851,7 @@ QVariant TrkRecordTypeDef::displayToValue(int vid, const QString &text) const
     switch(fieldNativeType(vid))
     {
     case TRK_FIELD_TYPE_DATE:
-        dt = QDateTime::fromString(TT_DATETIME_FORMAT);
+        dt = QDateTime::fromString(text, dateTimeFormat()); //  TT_DATETIME_FORMAT
         return QVariant(dt);
     //case TRK_FIELD_TYPE_NONE:
     case TRK_FIELD_TYPE_CHOICE:

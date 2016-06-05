@@ -724,8 +724,8 @@ public:
     void setRecordId(TRK_UINT id);
     Q_INVOKABLE QString title() const;
     Q_INVOKABLE bool setTitle(const QString &newTitle);
-    Q_INVOKABLE bool setValue(const QString& fieldName, const QVariant& value, int role = Qt::EditRole);
-    Q_INVOKABLE bool setValue(int vid, const QVariant& value, int role = Qt::EditRole);
+    Q_INVOKABLE bool setValue(const QString& fieldName, const QVariant& value);
+    Q_INVOKABLE bool setValue(int vid, const QVariant& value);
     //Q_INVOKABLE bool insertBegin();
 //    Q_INVOKABLE bool updateBegin();
 //    Q_INVOKABLE bool commit();
@@ -744,7 +744,7 @@ public:
     Q_INVOKABLE bool isFieldReadOnly(const QString &field) const;
     const TQAbstractRecordTypeDef *typeDef() const
     {
-        return prj->recordTypeDef(recType);
+        return prj->recordTypeDef(recordType());
     }
     TQAbstractFieldType fieldDef(TRK_VID vid) const
     {
@@ -758,15 +758,15 @@ public:
 //    {
 //        return mode() != View;
 //    }
-    bool setValues(const FieldValues &values)
-    {
-        if(!isEditing())
-            return false;
-        foreach(const QString &fieldName, values.keys())
-            if(!setValue(fieldName, values.value(fieldName), Qt::EditRole))
-                return false;
-        return true;
-    }
+//    bool setValues(const QVariantHash &values)
+//    {
+//        if(!isEditing())
+//            return false;
+//        foreach(const QString &fieldName, values.keys())
+//            if(!setValue(fieldName, values.value(fieldName)))
+//                return false;
+//        return true;
+//    }
 
     Q_INVOKABLE bool setNote(int index, const QString &title, const QString &text);
     Q_INVOKABLE bool setNoteText(int index, const QString &text);

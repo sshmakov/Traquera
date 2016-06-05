@@ -35,6 +35,8 @@ public:
     Q_INVOKABLE bool saveSettings();
     Q_INVOKABLE bool loadSettings();
     static JiraPlugin *plugin();
+signals:
+    void error(const QString &pluginName,const QString &errorText);
 };
 
 class QNetworkAccessManager;
@@ -97,8 +99,11 @@ public:
     void setConnectMethod(JiraConnectMethod method);
     virtual TQAbstractProject *openConnection(const QString &connectString);
     void setConnectString(const QString &connectString);
-    QVariant sendRequest(const QString &method, const QString &query, QVariantMap bodyMap = QVariantMap());
+    QVariant sendRequest(const QString &method, const QUrl &url, QVariantMap bodyMap = QVariantMap());
+    QUrl queryUrl(const QString &query) const;
     QNetworkReply *sendRequestNative(const QUrl &url, const QString &method, const QByteArray &body = QByteArray());
+    int lastHTTPCode() const;
+    QString lastHTTPErrorString() const;
     QVariant parseValue(const QVariant &source, const QString &path);
     static TQAbstractDB *createJiraDB(QObject *parent);
     QVariant sendSimpleRequest(const QString &dbmsType, const QString &method, const QString &query, const QString &body = QString());
@@ -200,7 +205,7 @@ protected:
     TQChoiceList loadChoiceTables(JiraRecTypeDef *rdef, const QString &url);
     void loadQueries();
     void loadUsers();
-    void storeReadedField(JiraRecord *rec, JiraRecTypeDef *rdef, const QString &fid, const QVariant &value);
+    void storeReadedField(JiraRecord *rec, const JiraRecTypeDef *rdef, const QString &fid, const QVariant &value);
 //    void appendUserToKnown(const TQUser &user);
 public slots:
     void appendUserToKnown(const QVariantMap &userRec);
@@ -230,21 +235,30 @@ struct JiraFieldDesc
     bool createShow;
     QString choiceTable;
     TQChoiceList choices;
+    QString autoCompleteUrl;
 
     QVariant defaultValue, minValue, maxValue;
 
-    bool isValid() const
+    inline bool isValid() const
     {
         return !id.isEmpty();
     }
-    bool isChoice() const
+    inline bool isChoice() const
     {
         return simpleType == TQ::TQ_FIELD_TYPE_CHOICE
                 || simpleType == TQ::TQ_FIELD_TYPE_USER;
     }
-    bool isUser() const
+    inline bool isUser() const
     {
         return simpleType == TQ::TQ_FIELD_TYPE_USER;
+    }
+    inline bool isArray() const
+    {
+        return schemaType == "array";
+    }
+    inline bool isOption() const
+    {
+        return schemaType == "option";
     }
 };
 
@@ -343,7 +357,7 @@ public:
     Q_INVOKABLE QString jiraKey() const;
     Q_INVOKABLE int recordInternalId() const;
     QVariant value(int vid, int role = Qt::DisplayRole) const ;
-    bool setValue(int vid, const QVariant &newValue, int role);
+    bool setValue(int vid, const QVariant &newValue);
     TQNotesCol notes() const;
 
     friend class JiraProject;

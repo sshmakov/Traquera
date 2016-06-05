@@ -449,66 +449,73 @@ TQGroupList TQBaseProject::userGroups()
 }
 
 //========================= TQRecord ==================================
+class TQRecordPrivate
+{
+public:
+    TQAbstractProject *m_prj;
+    int recType;
+    int recMode;
+    int recId;
+    int links;
+    bool modified;
+    QHash<int, QVariant> vidChanges;
+
+    TQRecordPrivate() : m_prj(0), recType(0), recMode(TQRecord::View), recId(0), links(0), modified(false) {}
+};
+
 TQRecord::TQRecord()
-    :QObject(0), m_prj(0), recType(0), recMode(TQRecord::View), recId(0), links(0), modified(false)
+    : QObject(0), d(new TQRecordPrivate())
 {
 }
 
 
 TQRecord::TQRecord(TQAbstractProject *prj, int rtype, int id)
-    :QObject(prj), m_prj(prj), recType(rtype), recMode(TQRecord::View), recId(id), links(0), modified(false)
+    :QObject(prj), d(new TQRecordPrivate())
 {
+    d->m_prj = prj;
+    d->recType = rtype;
+    d->recId = id;
 }
 
 TQRecord::TQRecord(const TQRecord &src)
-    :QObject(), m_prj(src.m_prj), recType(src.recType), recMode(src.recMode), recId(src.recId), links(0), modified(false)
+    :QObject(), d(new TQRecordPrivate())
 {
+    d->m_prj = src.d->m_prj;
+    d->recType = src.d->recType;
+    d->recId = src.d->recId;
 }
-
-/*
-TQRecord &TQRecord::operator =(const TQRecord &src)
-{
-    recType = src.recType;
-    recMode = View;
-    return *this;
-}
-*/
 
 TQRecord::~TQRecord()
 {
+    delete d;
 }
 
 bool TQRecord::isValid() const
 {
-    return this && m_prj!=0 && (recId > 0 || mode() == Insert);
+    return this && d->m_prj!=0 && (d->recId > 0 || mode() == Insert);
 }
 
 int TQRecord::recordType() const
 {
-    return recType;
+    return d->recType;
 }
 
 int TQRecord::recordId() const
 {
-    return recId;
-}
-
-TQAbstractRecordTypeDef *TQRecord::recordDef() const
-{
-    return project()->recordTypeDef(recordType());
+    return d->recId;
 }
 
 int TQRecord::mode() const
 {
-    return recMode;
+    return d->recMode;
 }
 
 void TQRecord::setMode(int newMode)
 {
-    if(recMode != newMode)
+    if(d->recMode != newMode)
     {
-        recMode = newMode;
-        emit changedState(recMode);
+        d->recMode = newMode;
+        emit changedState(d->recMode);
     }
 }
 
@@ -528,7 +535,12 @@ bool TQRecord::commit()
 {
     if(!isValid())
         return false;
-    return project()->commitRecord(this);
+    bool res = project()->commitRecord(this);
+    if(res)
+    {
+        d->vidChanges.clear();
+    }
+    return res;
 }
 
 bool TQRecord::cancel()
@@ -540,12 +552,12 @@ bool TQRecord::cancel()
 
 void TQRecord::setModified(bool value)
 {
-    modified = value;
+    d->modified = value;
 }
 
 bool TQRecord::isModified() const
 {
-    return modified;
+    return d->modified;
 }
 
 QString TQRecord::title() const
@@ -700,7 +712,7 @@ bool TQRecord::removeFile(int fileIndex)
 
 TQAbstractProject *TQRecord::project() const
 {
-    return m_prj;
+    return d->m_prj;
 }
 
 const TQAbstractRecordTypeDef *TQRecord::typeDef() const
@@ -740,29 +752,64 @@ QVariant TQRecord::value(const QString &fieldName, int role) const
     return QVariant();
 }
 
-bool TQRecord::setValue(int vid, const QVariant &newValue, int role)
+bool TQRecord::setValue(int vid, const QVariant &newValue)
 {
-    Q_UNUSED(vid)
-    Q_UNUSED(newValue)
-    Q_UNUSED(role)
-    return false;
+    if(!isEditing())
+        return false;
+    d->vidChanges[vid] = newValue;
+    return true;
 }
 
-bool TQRecord::setValues(const QHash<QString, QVariant> &values)
+bool TQRecord::setValues(const QVariantHash &values)
 {
     const TQAbstractRecordTypeDef *def = typeDef();
     if(!def)
         return false;
-    QHash<QString, QVariant>::const_iterator i;
+    TQFieldValues vidValues;
+    QVariantHash::const_iterator i;
     for (i = values.constBegin(); i != values.constEnd(); ++i)
     {
         int vid = def->fieldVid(i.key());
-        if(!vid)
+        if(vid == TQ::TQ_NO_VID)
             return false;
-        if(!setValue(vid, i.value()))
-            return false;
+        vidValues.insert(vid, i.value());
     }
+    if(!seVidValues(vidValues))
+        return false;
     return true;
+}
+
+bool TQRecord::seVidValues(const TQFieldValues &values)
+{
+    bool res = true;
+    TQFieldValues::const_iterator i;
+    for (i = values.constBegin(); i != values.constEnd(); ++i)
+    {
+        res = res && setValue(i.key(), i.value());
+    }
+    return res;
+}
+
+TQFieldValues TQRecord::vidChanges() const
+{
+    return d->vidChanges;
+}
+
+QVariantHash TQRecord::fieldChanges() const
+{
+    const TQAbstractRecordTypeDef *def = typeDef();
+    if(!def)
+        return QVariantHash();
+    QVariantHash res;
+    TQFieldValues::const_iterator i;
+    for(i = d->vidChanges.begin(); i != d->vidChanges.end(); ++i)
+    {
+        int vid = i.key();
+        QVariant value = i.value();
+        QString field = def->fieldName(vid);
+        res.insert(field, value);
+    }
+    return res;
 }
 
 QDomDocument TQRecord::toXML()
@@ -980,7 +1027,7 @@ bool TQRecord::isFieldReadOnly(const QString &field) const
 
 void TQRecord::addLink()
 {
-    links++;
+    d->links++;
 }
 
 void TQRecord::removeLink(const QObject *receiver)
@@ -989,7 +1036,7 @@ void TQRecord::removeLink(const QObject *receiver)
         return;
     if(receiver)
         disconnect(receiver);
-    if(--links <= 0)
+    if(--d->links <= 0)
         deleteLater();
 }
 
@@ -1010,9 +1057,17 @@ void TQRecord::setSelected(bool value)
 
 void TQRecord::refresh()
 {
-    if(recMode == Insert)
+    if(mode() == Insert)
         return;
-    m_prj->readRecordWhole(this);
-    //valuesReloaded();
+    project()->readRecordWhole(this);
 }
 
+void TQRecord::doSetMode(int newMode) const
+{
+    d->recMode = newMode;
+}
+
+void TQRecord::doSetRecordId(int id) const
+{
+    d->recId = id;
+}
