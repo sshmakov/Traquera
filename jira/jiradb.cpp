@@ -2013,6 +2013,11 @@ TQNotesCol JiraRecord::notes() const
     return notesCol;
 }
 
+const TQAbstractRecordTypeDef *JiraRecord::typeDef() const
+{
+    return def;
+}
+
 
 void JiraDB::setConnectMethod(JiraDB::JiraConnectMethod method)
 {

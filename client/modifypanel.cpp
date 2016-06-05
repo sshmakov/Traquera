@@ -19,7 +19,8 @@ ModifyPanel::ModifyPanel(QWidget *parent) :
     queryPage(0),
     //a_model(0),
     rdef(0),
-    a_readOnly(false)
+    a_readOnly(false),
+    curMode(TQRecord::View)
 {
     ui->setupUi(this);
     TTDelegate *del = new TTDelegate(this);
@@ -73,11 +74,12 @@ void ModifyPanel::setModel(TrkToolModel *newModel)
 }
 */
 
-void ModifyPanel::setRecordDef(const TQAbstractRecordTypeDef *typeDef)
+void ModifyPanel::setRecordDef(const TQAbstractRecordTypeDef *typeDef, int mode)
 {
-    if(rdef == typeDef)
+    if(rdef == typeDef && curMode == mode)
         return;
     rdef = typeDef;
+    curMode = mode;
     rows.clear();
     if(rdef)
     {
@@ -107,7 +109,10 @@ void ModifyPanel::setRecordDef(const TQAbstractRecordTypeDef *typeDef)
                 //frow.editor = 0;
                 frow.displayValue = "";
                 frow.isChanged = false;
-                frow.isEditable = fType.canUpdate();
+                if(mode == TQRecord::Insert)
+                    frow.isEditable = fType.canSubmit();
+                else
+                    frow.isEditable = fType.canUpdate();
                 //frow.resetBtn = 0;
                 rows.append(frow);
             }
@@ -123,6 +128,9 @@ void ModifyPanel::fillTable()
     if(!rows.count())
        ui->fieldsTableWidget->setRowCount(0);
     int wRows = ui->fieldsTableWidget->rowCount();
+    QFont disabledFont = ui->fieldsTableWidget->font();
+    disabledFont.setWeight(QFont::Light);
+    disabledFont.setItalic(true);
     foreach(const ModifyRow &row, rows)
     {
         if(++line >= wRows)
@@ -130,6 +138,8 @@ void ModifyPanel::fillTable()
         QTableWidgetItem *item;
         item = new QTableWidgetItem(row.fieldName,0);
         item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+        if(!row.isEditable)
+            item->setFont(disabledFont);
         ui->fieldsTableWidget->setItem(line,0,item);
         if(row.isGroup)
         {

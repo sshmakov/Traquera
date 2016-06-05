@@ -151,10 +151,11 @@ void TTRecordWindow::showNoteEditor(bool show)
 
 }
 
-void TTRecordWindow::setRecordTypeDef(const TQAbstractRecordTypeDef *recDef)
+void TTRecordWindow::setRecordTypeDef(const TQAbstractRecordTypeDef *recDef, int mode)
 {
-    d->recDef =  recDef;
-    props->setRecordDef(recDef);
+    d->recDef = recDef;
+    Q_ASSERT(recDef != 0);
+    props->setRecordDef(recDef, mode);
     titleVid = recDef->roleVid(TQAbstractRecordTypeDef::TitleField);
     if(titleVid)
         titleFieldName = recDef->fieldName(titleVid);
@@ -179,6 +180,7 @@ TQRecord *TTRecordWindow::record()
 void TTRecordWindow::setRecord(TQRecord *rec)
 {
     a_record = rec;
+    setRecordTypeDef(rec->typeDef(), rec->mode());
     factory->setRecord(rec);
     refreshValues();
     refreshState();
@@ -255,6 +257,7 @@ void TTRecordWindow::refreshState()
     ui->actionCancelChanges->setEnabled(edit);
     bool changed = editorMode != a_record->mode();
     editorMode = a_record->mode();
+    setRecordTypeDef(a_record->typeDef(), a_record->mode());
     if(changed)
         emit modeChanged(editorMode);
 }

@@ -1180,7 +1180,7 @@ void QueryPage::openRecordId(int id)
     if(rec)
     {
         TTRecordWindow *win = new TTRecordWindow();
-        win->setRecordTypeDef(rec->typeDef());
+//        win->setRecordTypeDef(rec->typeDef());
         win->setRecord(rec);
         win->show();
     }

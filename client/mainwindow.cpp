@@ -789,7 +789,7 @@ QDockWidget *MainWindow::addWidgetToDock(const QString &title, QWidget *widget, 
 
 void MainWindow::updateModifyPanel(const TQAbstractRecordTypeDef *typeDef, const QObjectList &records)
 {
-    modifyPanel->setRecordDef(typeDef);
+    modifyPanel->setRecordDef(typeDef, TQRecord::Edit);
     modifyPanel->fillValues(records);
 }
 
@@ -2017,7 +2017,6 @@ void MainWindow::on_actionNewRequest_triggered()
     if(!rec)
         return;
     TTRecordWindow *win = new TTRecordWindow();
-    win->setRecordTypeDef(rec->typeDef());
     win->setRecord(rec);
     connect(win, SIGNAL(recordAdded(TQRecord*)), SLOT(showRecordInList(TQRecord*)));
     win->show();

@@ -359,6 +359,7 @@ public:
     QVariant value(int vid, int role = Qt::DisplayRole) const ;
     bool setValue(int vid, const QVariant &newValue);
     TQNotesCol notes() const;
+    const TQAbstractRecordTypeDef *typeDef() const;
 
     friend class JiraProject;
 };

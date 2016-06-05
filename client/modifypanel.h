@@ -37,15 +37,17 @@ protected:
 
     QList<ModifyRow> rows;
     bool a_readOnly;
+    int curMode;
 public:
     explicit ModifyPanel(QWidget *parent = 0);
     ~ModifyPanel();
     
 //    void setQueryPage(QueryPage *page);
 //    void setModel(TrkToolModel *newModel);
-    void setRecordDef(const TQAbstractRecordTypeDef *typeDef);
+    void setRecordDef(const TQAbstractRecordTypeDef *typeDef, int mode);
     //void fillValues(TrkToolRecord *record);
     void fillValues(const QObjectList &records);
+    int mode() const;
     QTableWidget *tableWidget();
     const ModifyRow &fieldRow(int row)
     {

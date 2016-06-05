@@ -30,13 +30,13 @@ class TTRecordWindow : public QMainWindow
     Q_PROPERTY(bool changed READ isChanged WRITE setChanged)
     Q_PROPERTY(int mode READ mode NOTIFY modeChanged)
     Q_PROPERTY(TQViewController *controller READ controller)
-    Q_PROPERTY(const TQAbstractRecordTypeDef *recordTypeDef READ recordTypeDef WRITE setRecordTypeDef)
+    Q_PROPERTY(const TQAbstractRecordTypeDef *recordTypeDef READ recordTypeDef)
 private:
     TTRecordWindowPrivate *d;
 public:
     explicit TTRecordWindow(QWidget *parent = 0);
     ~TTRecordWindow();
-    void setRecordTypeDef(const TQAbstractRecordTypeDef *recDef);
+    void setRecordTypeDef(const TQAbstractRecordTypeDef *recDef, int mode);
     const TQAbstractRecordTypeDef *recordTypeDef() const;
     Q_INVOKABLE TQRecord *record();
     void setRecord(TQRecord *rec);
