@@ -84,7 +84,7 @@ void TQHistory::openedModel(const TQRecModel *model)
         item.queryName = model->queryName();
     }
     item.foundIds = intListToString(model->getIdList());
-    item.isQuery = model->isQuery();
+    item.isQuery = model->isQueryType();
     item.rectype = model->recordType();
     item.createDateTime = QDateTime::currentDateTime();
     if(isNew)

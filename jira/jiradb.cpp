@@ -783,7 +783,7 @@ TQRecModel *JiraProject::openQueryModel(const QString &queryName, int recType, b
     return model;
 }
 
-QAbstractItemModel *JiraProject::openIdsModel(const IntList &ids, int recType, bool emitEvent)
+TQRecModel *JiraProject::openIdsModel(const IntList &ids, int recType, bool emitEvent)
 {
     TQAbstractRecordTypeDef *rdef = recordTypeDef(recType);
     if(!rdef)
@@ -847,6 +847,8 @@ bool JiraProject::readRecordWhole(TQRecord *record)
     JiraRecord *rec = qobject_cast<JiraRecord *>(record);
     if(!rec)
         return false;
+    if(rec->mode() == TQRecord::Insert)
+        return true;
     const JiraRecTypeDef *rdef = dynamic_cast<const JiraRecTypeDef *>(record->typeDef());
     if(!rdef)
         return false;
@@ -900,6 +902,8 @@ bool JiraProject::readRecordFields(TQRecord *record)
     JiraRecord *rec = qobject_cast<JiraRecord *>(record);
     if(!rec)
         return false;
+    if(rec->mode() == TQRecord::Insert)
+        return true;
     const JiraRecTypeDef *rdef = dynamic_cast<const JiraRecTypeDef *>(record->typeDef());
     if(!rdef)
         return false;
@@ -921,6 +925,8 @@ bool JiraProject::readRecordTexts(TQRecord *record)
     JiraRecord *rec = qobject_cast<JiraRecord *>(record);
     if(!rec)
         return false;
+    if(rec->mode() == TQRecord::Insert)
+        return true;
     QVariantMap issue = db->sendRequest("GET",db->queryUrl(QString("rest/api/2/issue/%1?fields=description,comment").arg(rec->jiraKey()))).toMap();
     rec->desc = db->parseValue(issue,"fields/description").toString();
     QVariantList comments = db->parseValue(issue,"comment/comments").toList();
@@ -946,6 +952,8 @@ bool JiraProject::readRecordBase(TQRecord *record)
     JiraRecord *rec = qobject_cast<JiraRecord *>(record);
     if(!rec)
         return false;
+    if(rec->mode() == TQRecord::Insert)
+        return true;
     const JiraRecTypeDef *rdef = dynamic_cast<const JiraRecTypeDef *>(record->typeDef());
     if(!rdef)
         return false;
@@ -1053,6 +1061,22 @@ bool JiraProject::commitRecord(TQRecord *record)
     {
         res = db->sendRequest("POST",db->queryUrl(QString("rest/api/2/issue")),issue).toMap();
         wasError = db->lastHTTPCode() && db->lastHTTPCode() != 200;// !res.contains("id");
+        if(!wasError)
+        {
+            /*{
+                "id": "10000",
+                "key": "TST-24",
+                "self": "http://www.example.com/jira/rest/api/2/issue/10000"
+            }*/
+            QString key = res.value("key").toString();
+            bool ok = false;
+            int id = key.mid(key.indexOf("-")+1).toInt(&ok);
+            if(ok)
+            {
+                jRec->doSetRecordId(id);
+                readRecordBase(jRec);
+            }
+        }
     }
     if(wasError)
     {
@@ -1211,6 +1235,11 @@ QVariant JiraProject::optionValue(const QString &option) const
     if(option == TQOPTION_GROUP_FIELDS)
         return jira->dataDir.absoluteFilePath("jira.xml");
     return ttglobal()->optionDefaultValue(option);
+}
+
+QString JiraProject::jiraProjectKey() const
+{
+    return projectKey;
 }
 
 /*TQAbstractRecordTypeDef *JiraProject::loadRecordTypeDef(int recordType)
@@ -1876,8 +1905,12 @@ QWidget *JiraRecTypeDef::createCustomEditor(int vid, QWidget *parent) const
 {
     JiraUserComboBox *box = new JiraUserComboBox(prj, parent);
     const JiraFieldDesc &desc = fields[vid];
-//    if(!desc.autoCompleteUrl.isEmpty())
-//        box->setCompleteLink(desc.autoCompleteUrl);
+    if(!desc.autoCompleteUrl.isEmpty())
+    {
+        QString s = desc.autoCompleteUrl;
+        s.replace(QString("issueKey=null&"),QString("project=%1&").arg(prj->jiraProjectKey()));
+        box->setCompleteLink(s);
+    }
     QStringList items;
     foreach(const JiraUser &user, prj->knownUsers)
     {

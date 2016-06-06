@@ -171,7 +171,7 @@ public:
     TQAbstractRecordTypeDef *recordTypeDef(int recordType);
     int defaultRecType() const;
     TQRecModel *openQueryModel(const QString &queryName, int recType, bool emitEvent = true);
-    QAbstractItemModel *openIdsModel(const IntList &ids, int recType, bool emitEvent = true);
+    TQRecModel *openIdsModel(const IntList &ids, int recType, bool emitEvent = true);
     TQRecord *createRecordById(int id, int rectype);
     void refreshModel(QAbstractItemModel *model);
     TQRecord *recordOfIndex(const QModelIndex &index);
@@ -198,7 +198,7 @@ public:
     TQAbstractQWController *queryWidgetController(int rectype);
 
     QVariant optionValue(const QString &option) const;
-    void initFilterList();
+    QString jiraProjectKey() const;
 protected:
 //    TQAbstractRecordTypeDef *loadRecordTypeDef(int recordType);
     void loadRecordTypes();

@@ -63,6 +63,8 @@ bool TrkToolModel::openIds(const QList<int> &ids)
 
 void TQRecModel::appendRecordIds(const QList<int> &ids)
 {
+    QList<int> res = doAppendRecordIds(ids);
+    /*
     QList<TQRecord *> records;
     TQRecord *rec;
     foreach(int id, ids)
@@ -76,38 +78,27 @@ void TQRecModel::appendRecordIds(const QList<int> &ids)
     if(!records.size())
         return;
     beginResetModel();
-//    emit layoutAboutToBeChanged();
-    foreach(rec, records)
+    */
+    foreach(int id, res)
     {
-        append(rec);
-        addedIds.insert(rec->recordId());
-        deletedIds.remove(rec->recordId());
-        rec->addLink();
+        addedIds.insert(id);
+        deletedIds.remove(id);
     }
-//    emit layoutChanged();
-    endResetModel();
+//    endResetModel();
 
 }
 
 void TQRecModel::removeRecordIds(const QList<int> &ids)
 {
-    beginResetModel();
-//    emit layoutAboutToBeChanged();
-    foreach(int id, ids)
+    QList<int> res = doRemoveRecordIds(ids);
+
+//    beginResetModel();
+    foreach(int id, res)
     {
-        int r = rowOfRecordId(id);
-        if(r==-1)
-            continue;
-        beginRemoveRows(QModelIndex(),r,r);
-        TQRecord *rec = records.takeAt(r);
-        if(rec)
-            rec->removeLink(this);
         addedIds.remove(id);
         deletedIds.insert(id);
-        endRemoveRows();
     }
-//    emit layoutChanged();
-    endResetModel();
+//    endResetModel();
 }
 
 void TQRecModel::appendRecordId(int id)
@@ -199,6 +190,47 @@ bool TQRecModel::setEditColData(const PTQRecord &rec, int col, const QVariant & 
     return false;
 }
 
+QList<int> TQRecModel::doAppendRecordIds(const QList<int> &ids)
+{
+    QSet<int> set = getIdList().toSet();
+    QList<int> add = ids.toSet().subtract(set).toList();
+    beginInsertRows(QModelIndex(), records.size(), records.size() + add.size() - 1);
+    QList<int> res;
+    foreach(int id, add)
+    {
+        TQRecord *rec = prj->createRecordById(id, rectype);
+        if(!rec)
+            continue;
+        records << rec;
+        rec->addLink();
+        res << id;
+    }
+    endInsertRows();
+    return res;
+}
+
+QList<int> TQRecModel::doRemoveRecordIds(const QList<int> &ids)
+{
+    QSet<int> set = getIdList().toSet();
+    QList<int> del = ids.toSet().intersect(set).toList();
+    QList<int> res;
+    foreach(int id, del)
+    {
+        int row = rowOfRecordId(id);
+        if(row == -1)
+            continue;
+        beginRemoveRows(QModelIndex(), row, row);
+        TQRecord *rec = records.takeAt(row);
+        if(rec)
+        {
+            rec->removeLink(this);
+            res << id;
+        }
+        endRemoveRows();
+    }
+    return res;
+}
+
 void TQRecModel::recordChanged(int id)
 {
     int row = rowOfRecordId(id);
@@ -248,7 +280,7 @@ int TQRecModel::rowId(int row) const
     //int col=vids.indexOf(VID_Id);
     if(idCol == -1)
         return 0;
-    return index(row,idCol).data().toUInt();
+    return index(row,idCol).data(Qt::EditRole).toUInt();
 }
 
 int TQRecModel::rowOfRecordId(int id) const

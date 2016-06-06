@@ -1793,9 +1793,12 @@ void MainWindow::on_actionOpenSelected_triggered()
     TQAbstractProject *prj = currentProject();
     if(!prj)
         return;
-    QueryPage *newpage = createNewPage(tr("Отмеченные"));
-    newpage->openModel(prj, prj->selectedModel(prj->defaultRecType()));
-
+    QAbstractItemModel *model = prj->selectedModel(prj->defaultRecType());
+    if(model)
+    {
+        QueryPage *newpage = createNewPage(tr("Отмеченные"));
+        newpage->openModel(prj, model);
+    }
 }
 
 void MainWindow::on_treeView_customContextMenuRequested(const QPoint &pos)

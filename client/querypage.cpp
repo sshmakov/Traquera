@@ -1547,7 +1547,7 @@ void QueryPage::addHistoryPoint()
     item.projectName = d->modelProject->projectName();
     if(d->tmodel)
     {
-        item.isQuery = d->tmodel->isQuery();
+        item.isQuery = d->tmodel->isQueryType();
         item.queryName = d->tmodel->queryName();
         item.rectype = d->tmodel->recordType();
         item.foundIds = intListToString(d->tmodel->getIdList());

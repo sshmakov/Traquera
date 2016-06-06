@@ -1,6 +1,7 @@
 #include "tqbase.h"
 #include "tqjson.h"
 #include "ttglobal.h"
+#include <tqmodels.h>
 
 QHash<QString, TQAbstractProject *> TQAbstractDB::projectList;
 
@@ -256,20 +257,39 @@ void TQBaseProject::setSelectedId(int id, bool value, int recType)
 {
     if(!selected.contains(recType))
         selected.insert(recType,TQSelectedSet());
+    TQRecModel *model = selectedModels.value(recType, 0);
     if(value)
+    {
         selected[recType].insert(id);
+        if(model)
+            model->doAppendRecordIds(QList<int>() << id);
+    }
     else
+    {
         selected[recType].remove(id);
+        if(model)
+            model->doRemoveRecordIds(QList<int>() << id);
+    }
 }
 
 void TQBaseProject::clearSelected(int recType)
 {
     selected.remove(recType);
+    TQRecModel *model = selectedModels.value(recType, 0);
+    if(model)
+        model->clearRecords();
 }
 
 TQRecModel *TQBaseProject::selectedModel(int recType)
 {
-    return selectedModels[recType];
+    TQRecModel *model = selectedModels.value(recType, 0);
+    if(!model)
+    {
+        TQSelectedSet set = selected.value(recType);
+        model = openIdsModel(set.toList(), recType);
+        selectedModels.insert(recType, model);
+    }
+    return model;
 }
 
 bool TQBaseProject::canFieldSubmit(int vid, int recType)

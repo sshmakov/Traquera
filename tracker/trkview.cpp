@@ -1426,12 +1426,12 @@ TrkToolModel *TrkToolProject::openRecentModel(int afterTransId, const QString &n
 }
 */
 
-QAbstractItemModel *TrkToolProject::openIdsModel(const QList<int> &ids, int type, bool emitEvent)
+TQRecModel *TrkToolProject::openIdsModel(const QList<int> &ids, int type, bool emitEvent)
 {
     TQRecModel *model = new TQRecModel(this, type, this);
     //beginResetModel();
     QList <int> unique = uniqueIntList(ids);
-    model->prevTransId=0;
+//    model->prevTransId=0;
     QList<TQRecord*> records;
     foreach(int id, unique)
     {
@@ -1441,7 +1441,7 @@ QAbstractItemModel *TrkToolProject::openIdsModel(const QList<int> &ids, int type
     }
     model->append(records);
     model->setQueryName(intListToString(unique));
-    model->isQueryType = false;
+    model->setQueryType(false);
     //endResetModel();
 
 //	model->openIds(ids);
@@ -3343,7 +3343,7 @@ void TrkHistory::openedModel(const TQRecModel *model)
         item.queryName = model->queryName();
     }
     item.foundIds = intListToString(model->getIdList());
-    item.isQuery = model->isQuery();
+    item.isQuery = model->isQueryType();
     item.rectype = model->recordType();
     item.createDateTime = QDateTime::currentDateTime();
     if(isNew)

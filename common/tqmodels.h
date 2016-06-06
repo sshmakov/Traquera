@@ -185,7 +185,7 @@ protected:
     QSet<int> addedIds;
     QSet<int> deletedIds;
     QString query;
-    bool isQueryType;
+    bool isQuery;
 public:
     TQRecModel(TQAbstractProject *project, int type, QObject *parent = 0);
     virtual ~TQRecModel();
@@ -215,7 +215,8 @@ public:
     int idColumn() const { return idCol; }
     bool isSystemModel();
     int lastTransactionId() { return lastTransId; }
-    bool isQuery() const { return isQueryType; }
+    bool isQueryType() const { return isQuery; }
+    void setQueryType(bool value) { isQuery = value; }
     int recordType() const { return rectype; }
     /*
 public:
@@ -235,12 +236,15 @@ protected:
     virtual QVariant displayColData(const PTQRecord & rec, int col) const;
     virtual QVariant editColData(const PTQRecord & rec, int col) const;
     virtual bool setEditColData(const PTQRecord & rec, int col, const QVariant & value);
+    QList<int> doAppendRecordIds(const QList<int> &ids);
+    QList<int> doRemoveRecordIds(const QList<int> &ids);
 protected slots:
     void recordChanged(int id);
     void recordDestroyed(QObject *rec);
 
     friend class TrkHistory;
-    friend class TrkToolProject;
+//    friend class TrkToolProject;
+    friend class TQBaseProject;
 };
 
 #endif // TQMODELS_H
