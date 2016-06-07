@@ -478,6 +478,26 @@ void TTRecordWindow::addDetailTab(QWidget *tab, const QString &title, const QIco
     */
 }
 
+void TTRecordWindow::addDetailWidgets(QWidget *topWidget, QWidget *pageWidget, const QString &title, const QIcon &icon)
+{
+    QWidget *page;
+    if(topWidget && pageWidget)
+    {
+        page = new QWidget(this);
+//        QHBoxLayout *lay = new QHBoxLayout(page);
+        QSplitter *split = new QSplitter(page);
+        split->addWidget(topWidget);
+        split->addWidget(pageWidget);
+    }
+    else if(topWidget)
+        page = topWidget;
+    else if(pageWidget)
+        page = pageWidget;
+    else
+        return;
+    ui->tabWidget->addTab(page,icon,title);
+}
+
 void TTRecordWindow::setDetailTabTitle(QWidget *tab, const QString &title)
 {
     int index = ui->tabWidget->indexOf(tab);

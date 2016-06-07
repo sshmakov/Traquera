@@ -126,6 +126,7 @@ public slots:
     void cancel();
     void commit();
     void addDetailTab(QWidget *tab, const QString &title, const QIcon &icon = QIcon());
+    void addDetailWidgets(QWidget *topWidget, QWidget *pageWidget, const QString &title, const QIcon &icon);
     void setDetailTabTitle(QWidget *tab, const QString &title);
 
 
