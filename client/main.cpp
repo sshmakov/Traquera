@@ -24,14 +24,14 @@ int main(int argc, char *argv[])
     app.setApplicationName(PRODUCT_NAME);
     app.setOrganizationName(COMPANY_NAME);
 
-	QString locale = QLocale::system().name();
+    QLocale locale = QLocale::system();
 	QStringList args = app.arguments();
 	for(int i=1; i<args.count(); i++)
 	{
-		if(args[i].trimmed().compare("-lang") == 0)
+        if(args[i].trimmed().compare("-locale") == 0)
 		{
 			if(++i<args.count())
-				locale=args[i];
+                locale = QLocale(args[i]);
 		}
         else if(args[i].trimmed().compare("-debug") == 0)
         {
@@ -44,9 +44,24 @@ int main(int argc, char *argv[])
             }
         }
 	}
-    QTranslator *translator = new QTranslator();
-    if(translator->load(QString("traquera.") + locale,app.applicationDirPath() + "/lang"))
+    QTranslator *translator;
+    translator = new QTranslator(&app);
+    QString langPath;
+#ifdef QT_DEBUG
+    langPath = "./lang";
+#else
+    langPath = app.applicationDirPath() + "/lang";
+#endif
+//    if(translator->load(QString("qt_") + locale,langPath,"_"))
+    if(translator->load(locale, "qt", "_", langPath))
         app.installTranslator(translator);
+    else
+        delete translator;
+    translator = new QTranslator(&app);
+    if(translator->load(locale,"traquera",".",langPath))
+        app.installTranslator(translator);
+    else
+        delete translator;
 
 	 //QApplication::setStyle(new QCleanlooksStyle);
 

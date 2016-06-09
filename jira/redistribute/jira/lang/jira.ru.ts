@@ -5,28 +5,56 @@
 <context>
     <name>JiraFilterModel</name>
     <message>
-        <location filename="../../../jiradb.cpp" line="1881"/>
+        <location filename="../../../jiradb.cpp" line="2065"/>
         <source>Имя фильтра</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../jiradb.cpp" line="1882"/>
+        <location filename="../../../jiradb.cpp" line="2066"/>
         <source>Группа</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../jiradb.cpp" line="1892"/>
+        <location filename="../../../jiradb.cpp" line="2076"/>
         <source>Системные фильтры</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../jiradb.cpp" line="1892"/>
+        <location filename="../../../jiradb.cpp" line="2076"/>
         <source>Избранные фильтры</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../jiradb.cpp" line="1892"/>
+        <location filename="../../../jiradb.cpp" line="2076"/>
         <source>Локальные фильтры</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>JiraFindUser</name>
+    <message>
+        <location filename="../../../jirafinduser.ui" line="14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../../jirafinduser.ui" line="23"/>
+        <source>Искать</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../../jirafinduser.ui" line="50"/>
+        <source>Вася</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../../jirafinduser.ui" line="55"/>
+        <source>Петя</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../../jirafinduser.ui" line="60"/>
+        <source>ssh</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -144,47 +172,54 @@
 <context>
     <name>JiraProject</name>
     <message>
-        <location filename="../../../jiradb.cpp" line="1015"/>
-        <source>Ошибка вставки issue</source>
+        <location filename="../../../jiradb.cpp" line="1093"/>
+        <source>%1: %2
+</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../jiradb.cpp" line="1234"/>
+        <location filename="../../../jiradb.cpp" line="1095"/>
+        <source>Ошибка сохранения запроса
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../../jiradb.cpp" line="1324"/>
         <source> (cf)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../jiradb.cpp" line="1349"/>
+        <location filename="../../../jiradb.cpp" line="1441"/>
         <source>Мои открытые запросы</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../jiradb.cpp" line="1351"/>
+        <location filename="../../../jiradb.cpp" line="1443"/>
         <source>Созданные мной</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../jiradb.cpp" line="1355"/>
+        <location filename="../../../jiradb.cpp" line="1447"/>
         <source>Все запросы</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../jiradb.cpp" line="1357"/>
+        <location filename="../../../jiradb.cpp" line="1449"/>
         <source>Открытые запросы</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../jiradb.cpp" line="1359"/>
+        <location filename="../../../jiradb.cpp" line="1451"/>
         <source>Добавленные недавно</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../jiradb.cpp" line="1361"/>
+        <location filename="../../../jiradb.cpp" line="1453"/>
         <source>Решенные недавно</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../jiradb.cpp" line="1363"/>
+        <location filename="../../../jiradb.cpp" line="1455"/>
         <source>Обновленные недавно</source>
         <translation type="unfinished"></translation>
     </message>

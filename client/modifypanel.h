@@ -68,15 +68,10 @@ signals:
 protected:
     void fillTable();
 public slots:
-//    void selectedRecordsChanged(const QObjectList &newSelection);
-//    void modelChanged(TrkToolModel *newmodel);
     void setFieldValue(const QString &fieldName, const QVariant &value);
     void resetField(const QString& fieldName);
     void resetAll();
     void clearField(const QString& fieldName);
-protected slots:
-    void queryPageDestroyed(QObject * page = 0);
-//    void modelDestroyed();
 private slots:
     void on_saveChangesButton_clicked();
 

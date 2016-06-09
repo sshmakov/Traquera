@@ -34,7 +34,8 @@ FORMS += ui/tracksmain.ui ui/querypage.ui ui/filters.ui ui/scrwidg.ui \
     tqlogindlg.ui \
     tqprjoptdlg.ui \
     filespage.ui \
-    logform.ui
+    logform.ui \
+    queryfields.ui
 #    tqqrywid.ui \
 #    ui/planfilesform.ui \
 #    ui/projectpage.ui
@@ -75,7 +76,8 @@ HEADERS += \
     filespage.h \
     tqrecordviewcontroller.h \
     tqqueryviewcontroller.h \
-    logform.h
+    logform.h \
+    queryfields.h
 
 #    plans.h planproxy.h \
 #    planfiles.h \
@@ -119,7 +121,8 @@ SOURCES += database.cpp main.cpp mainwindow.cpp querypage.cpp \
     filespage.cpp \
     tqrecordviewcontroller.cpp \
     tqqueryviewcontroller.cpp \
-    logform.cpp
+    logform.cpp \
+    queryfields.cpp
 
 #    planfilesform.cpp \
 #    project.cpp projectpage.cpp plans.cpp planproxy.cpp planfiles.cpp \
@@ -158,7 +161,9 @@ OTHER_FILES += \
     data/style2.css \
     data/editor.css \
     lang/traquera.ru.ts \
-    lang/traquera.en.ts
+    lang/traquera.en.ts \
+    lang/qt_ru.ts \
+    lang/qt_ru.qm
 
 
 datafolder.source = data

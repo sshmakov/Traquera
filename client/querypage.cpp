@@ -41,6 +41,7 @@
 #include <filespage.h>
 #include <tqqueryviewcontroller.h>
 #include <tqdebug.h>
+#include "queryfields.h"
 //#include <Shlwapi.h>
 
 
@@ -81,6 +82,7 @@ public:
     QMap<int, int> topIndex;
     QMap<int, int> pageIndex;
     TQQueryViewController *controller;
+    QueryFields *fieldsPanel;
 };
 
 QueryPage::QueryPage(QWidget *parent)
@@ -116,7 +118,10 @@ QueryPage::QueryPage(QWidget *parent)
     d->linkField="Id";
     queryView->setModel(d->qryFilterModel);
 
-    projectTabWidget->hide();
+    d->fieldsPanel = new QueryFields(this);
+    projectTabWidget->addTab(d->fieldsPanel, tr("Поля"));
+    d->fieldsPanel->setViewController(d->controller, TQRecord::View);
+//    projectTabWidget->hide();
 
     connect(queryView,SIGNAL(activated(const QModelIndex &)),actionTest,SLOT(trigger()));
 

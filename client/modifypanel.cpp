@@ -27,7 +27,7 @@ ModifyPanel::ModifyPanel(QWidget *parent) :
     del->assignToPanel(this);
     ui->fieldsTableWidget->addAction(ui->actionApplyChanges);
     ui->fieldsTableWidget->addAction(ui->actionRevertChanges);
-    ui->fieldsTableWidget->addAction(ui->actionRepeatChanges);
+//    ui->fieldsTableWidget->addAction(ui->actionRepeatChanges);
     ui->fieldsTableWidget->addAction(ui->actionRevertField);
     ui->fieldsTableWidget->addAction(ui->actionClearField);
     //loadDefinitions();
@@ -403,29 +403,6 @@ void ModifyPanel::clearField(const QString &fieldName)
     else
         setFieldValue(fieldName, fieldDef(fieldName).defaultValue());
 }
-
-/*
-void ModifyPanel::modelChanged(TrkToolModel *newmodel)
-{
-    setModel(newmodel);
-}
-*/
-
-void ModifyPanel::queryPageDestroyed(QObject *page)
-{
-    if(queryPage && page == queryPage)
-    {
-        queryPage->disconnect(this);
-        queryPage=0;
-    }
-}
-
-/*
-void ModifyPanel::modelDestroyed()
-{
-    a_model = 0;
-}
-*/
 
 void ModifyPanel::on_saveChangesButton_clicked()
 {

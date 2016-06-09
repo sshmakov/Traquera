@@ -544,6 +544,6 @@ public:
 //Q_DECLARE_INTERFACE(AbstractFieldType, "com.allrecall.traquera.AbstractFieldType")
 //Q_DECLARE_INTERFACE(AbstractFieldDef, "com.allrecall.traquera.AbstractFieldDef")
 Q_DECLARE_INTERFACE(TQAbstractRecordTypeDef, "com.allrecall.traquera.TQAbstractRecordTypeDef")
-
+Q_DECLARE_METATYPE(const TQAbstractRecordTypeDef *)
 
 #endif // TQPLUG_H

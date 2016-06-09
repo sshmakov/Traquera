@@ -24,6 +24,7 @@ TQViewController::TQViewController(QObject *parent) :
     QObject(parent)
 {
     qRegisterMetaType<TQViewController*>("TQViewController*");
+    qRegisterMetaType<const TQAbstractRecordTypeDef *>("const TQAbstractRecordTypeDef *");
 }
 
 TQViewController::~TQViewController()
@@ -64,9 +65,10 @@ bool TQViewController::flag(const QString &flagName) const
 
 const TQAbstractRecordTypeDef *TQViewController::recordDef() const
 {
-    TQAbstractRecordTypeDef *def=0;
-    QMetaObject::invokeMethod(view(), "recordDef",
-                              Q_RETURN_ARG(TQAbstractRecordTypeDef *, def));
+    const TQAbstractRecordTypeDef *def = 0;
+    QVariant v = view()->property("recordTypeDef");
+    def = v.value<const TQAbstractRecordTypeDef *>();
+//    QMetaObject::invokeMethod(view(), "recordTypeDef", Q_RETURN_ARG(TQAbstractRecordTypeDef *, def));
     return def;
 }
 

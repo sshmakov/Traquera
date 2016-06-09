@@ -20,7 +20,19 @@
    <property name="spacing">
     <number>3</number>
    </property>
-   <item row="0" column="0" colspan="4">
+   <item row="4" column="1">
+    <widget class="QWidget" name="buttonsPanel" native="true">
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <property name="margin">
+       <number>0</number>
+      </property>
+     </layout>
+    </widget>
+   </item>
+   <item row="0" column="0" colspan="3">
     <widget class="QTableWidget" name="fieldsTableWidget">
      <property name="contextMenuPolicy">
       <enum>Qt::ActionsContextMenu</enum>
@@ -67,73 +79,10 @@
      </column>
     </widget>
    </item>
-   <item row="1" column="0" colspan="4">
-    <layout class="QVBoxLayout" name="verticalLayout"/>
-   </item>
-   <item row="5" column="2">
-    <widget class="QWidget" name="buttonsPanel" native="true">
-     <layout class="QHBoxLayout" name="horizontalLayout">
-      <property name="spacing">
-       <number>0</number>
-      </property>
-      <property name="margin">
-       <number>0</number>
-      </property>
-      <item>
-       <widget class="QPushButton" name="repeatButton">
-        <property name="toolTip">
-         <string>F4</string>
-        </property>
-        <property name="text">
-         <string>Повтор</string>
-        </property>
-        <property name="icon">
-         <iconset resource="ui/tracks.qrc">
-          <normaloff>:/images/refresh-24.png</normaloff>:/images/refresh-24.png</iconset>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item>
-       <widget class="QPushButton" name="saveChangesButton">
-        <property name="toolTip">
-         <string>Ctrl+Return</string>
-        </property>
-        <property name="text">
-         <string>Сохранить</string>
-        </property>
-        <property name="icon">
-         <iconset resource="ui/tracks.qrc">
-          <normaloff>:/images/filesave.png</normaloff>:/images/filesave.png</iconset>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButton">
-        <property name="text">
-         <string>Сброс</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
   </layout>
   <action name="actionApplyChanges">
    <property name="icon">
-    <iconset resource="ui/tracks.qrc">
+    <iconset resource="../resources/tracks.qrc">
      <normaloff>:/images/filesave.png</normaloff>:/images/filesave.png</iconset>
    </property>
    <property name="text">
@@ -148,7 +97,7 @@
   </action>
   <action name="actionRevertChanges">
    <property name="icon">
-    <iconset resource="ui/tracks.qrc">
+    <iconset resource="../resources/tracks.qrc">
      <normaloff>:/images/cancel.png</normaloff>:/images/cancel.png</iconset>
    </property>
    <property name="text">
@@ -163,7 +112,7 @@
   </action>
   <action name="actionRepeatChanges">
    <property name="icon">
-    <iconset resource="ui/tracks.qrc">
+    <iconset resource="../resources/tracks.qrc">
      <normaloff>:/images/refresh-24.png</normaloff>:/images/refresh-24.png</iconset>
    </property>
    <property name="text">
@@ -203,7 +152,8 @@
   </action>
  </widget>
  <resources>
-  <include location="ui/tracks.qrc"/>
+  <include location="../resources/tracks.qrc"/>
+  <include location="../resources/tracks.qrc"/>
  </resources>
  <connections/>
 </ui>

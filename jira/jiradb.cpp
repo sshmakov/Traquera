@@ -29,21 +29,6 @@ JiraPlugin::JiraPlugin(QObject *parent)
 {
     jira = this;
 
-    QCoreApplication *app = QCoreApplication::instance();
-    QString locale = QLocale::system().name();
-    QTranslator *translator = new QTranslator();
-    for(int i=1; i<app->argc(); i++)
-    {
-        if(app->arguments().value(i).trimmed().compare("-lang") == 0)
-        {
-            if(++i<app->argc())
-                locale=app->arguments().value(i);
-            break;
-        }
-    }
-    if(!translator->load(QString("jira.") + locale,pluginModule+"/lang"))
-        tqDebug() << "Can't load jira translator";
-    app->installTranslator(translator);
 }
 
 
@@ -75,6 +60,27 @@ void JiraPlugin::initPlugin(QObject *obj, const QString &modulePath)
     }
     if(!settings)
         settings = new QSettings("AllRecall","JiraPlugin",this);
+
+    QCoreApplication *app = QCoreApplication::instance();
+    QLocale locale = QLocale::system();
+    QTranslator *translator = new QTranslator(app);
+    for(int i=1; i<app->argc(); i++)
+    {
+        if(app->arguments().value(i).trimmed().compare("-locale") == 0)
+        {
+            if(++i<app->argc())
+                locale = QLocale(app->arguments().value(i));
+            break;
+        }
+    }
+    if(translator->load(locale, "jira", ".", pluginModule+"/lang"))
+        app->installTranslator(translator);
+    else
+    {
+        tqDebug() << "Can't load jira translator";
+        delete translator;
+    }
+
     loadSettings();
     TQAbstractDB::registerDbClass("Jira",JiraDB::createJiraDB);
     QMetaObject::invokeMethod(globalObject, "registerOptionsWidget", Qt::DirectConnection,
