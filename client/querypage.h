@@ -17,6 +17,7 @@
 #include "preview.h"
 #include <tqmodels.h>
 #include "tqhistory.h"
+#include <QXmlQuery>
 
 /*
 struct TrkHistoryItem 
@@ -73,9 +74,9 @@ public:
     void openFolder(TQAbstractProject *prj, const TTFolder &afolder, int recType);
     //void setPlanModel(PlanModel *newmodel);
 	int getColNum(const QString &colname);
-	QString makeRecordPage(const QModelIndex &qryIndex, const QString& xqCodeFile);
-    //QString makeRecordsPage(const QModelIndexList &records, const QString& xqCodeFile);
-    Q_INVOKABLE QString makeRecordsPage(const QObjectList &records, const QString& xqCodeFile);
+//	QString makeRecordPage(const QModelIndex &qryIndex, const QString& xqCodeFile);
+    Q_INVOKABLE QString makeRecordsPage(const QObjectList &records, const QString& xqCodePath);
+//    QString makeRecordPage(const TQRecord *record, QXmlQuery xquery);
     void sendEmail(const QObjectList &records);
     void sendEmail2(const QObjectList &records);
 //    void sendEmail3(const QObjectList &records);
@@ -104,10 +105,10 @@ protected:
     void setQueryModel(TQAbstractProject *prj, TQRecModel *model);
     QModelIndex mapIndexToModel(const QModelIndex &index) const;
 public slots:
-	void changedView(const QModelIndex &index, const QModelIndex &prev);
+//	void changedView(const QModelIndex &index, const QModelIndex &prev);
 	void headerChanged();
 	void headerToggled(bool checked);
-	void drawNotes(const QModelIndex &qryIndex);
+    void drawNotes();
 	void closeTab(int index);
 	void resetPlanFilter();
 //	void addScrTask(PrjItemModel *prj);

@@ -72,7 +72,7 @@ public:
     TTFolder folder;
     bool itIsFolder;
     TQAbstractProject *modelProject;
-    QString xqFile;
+    QString xqPageFile;
 //    QStringList xqList;
     TQRecModel *tmodel;
     QList<QAction*> headerActions;
@@ -83,6 +83,21 @@ public:
     QMap<int, int> pageIndex;
     TQQueryViewController *controller;
     QueryFields *fieldsPanel;
+    TTGlobal *globalObj;
+    /*QXmlQuery loadXQ(const QString &filePath)
+    {
+        QFile xq(filePath);
+        xq.open(QIODevice::ReadOnly);
+
+        QXmlQuery query;
+        query.setMessageHandler(sysMessager);
+        if(globalObj)
+            query.setNetworkAccessManager(globalObj->networkManager());
+
+        query.setQuery(&xq);
+        return query;
+    }
+    */
 };
 
 QueryPage::QueryPage(QWidget *parent)
@@ -91,6 +106,7 @@ QueryPage::QueryPage(QWidget *parent)
     d->controller = new TQQueryViewController(this);
     connect(this,SIGNAL(selectedRecordsChanged()),d->controller,SLOT(onSelectedRecordsChanged()));
     connect(d->controller,SIGNAL(detailTabTitleChanged(QWidget*,QString)),this,SLOT(slotTabTitleChanged(QWidget*,QString)));
+    d->globalObj = ttglobal();
     d->modelProject = 0;
     d->tmodel = 0;
     d->itIsFolder = false;
@@ -325,12 +341,12 @@ void QueryPage::setQueryModel(TQAbstractProject *prj, TQRecModel *model)
     }
     d->tmodel = model;
     d->modelProject = prj;
-    d->xqFile = ttglobal()->optionDefaultValue(TQOPTION_VIEW_TEMPLATE).toString();
+    d->xqPageFile = ttglobal()->optionDefaultValue(TQOPTION_VIEW_TEMPLATE).toString();
 //    d->xqFile = "data/scr.xq";
     if(prj)
     {
         TQScopeSettings sets(d->modelProject->projectSettings());
-        d->xqFile = prj->optionValue(TQOPTION_VIEW_TEMPLATE).toString();
+        d->xqPageFile = prj->optionValue(TQOPTION_VIEW_TEMPLATE).toString();
 //        d->xqFile = sets->value("RecordTemplate", d->xqFile).toString();
     }
     if(!d->tmodel->isSystemModel())
@@ -406,7 +422,7 @@ QModelIndex QueryPage::mapIndexToModel(const QModelIndex &index) const
     return qryIndex;
 }
 
-void QueryPage::changedView(const QModelIndex &index, const QModelIndex &prev)
+/*void QueryPage::changedView(const QModelIndex &index, const QModelIndex &prev)
 {
 	if(prev.row() == index.row())
 		return;
@@ -419,7 +435,7 @@ void QueryPage::changedView(const QModelIndex &index, const QModelIndex &prev)
 #endif
 
     drawNotes(qryIndex);
-}
+}*/
 
 void QueryPage::selectionChanged(const QItemSelection & /* selected */, const QItemSelection & /*deselected*/)
 {
@@ -569,6 +585,7 @@ static QString escape(const QString& s)
 	return res;
 }
 
+/*
 QString QueryPage::makeRecordPage(const QModelIndex &qryIndex, const QString& xqCodeFile)
 {
 	const TQRecModel *model = qobject_cast<const TQRecModel *>(qryIndex.model());
@@ -652,12 +669,103 @@ QString QueryPage::makeRecordsPage(const QObjectList &records, const QString &xq
     return page;
 
 }
-
-void QueryPage::drawNotes(const QModelIndex &qryIndex)
+*/
+/*
+QString QueryPage::makeRecordPage(const TQRecord *record, QXmlQuery xquery)
 {
-    QUrl baseUrl = QUrl::fromUserInput(d->xqFile);
-//    QString base = ttglobal()->dataDir()+"/record.htm";
-    QString page = makeRecordPage(qryIndex, d->xqFile);
+    QDomDocument xml = record->toXML();
+
+#ifdef QT_DEBUG
+    QFile testXml("!testRec.xml");
+    testXml.open(QIODevice::WriteOnly | QIODevice::Text);
+    QTextStream textOut(&testXml);
+    xml.save(textOut,4);
+#endif
+
+    QString page;
+    QByteArray ba = xml.toByteArray();
+    QBuffer buf;
+    buf.setData(ba);
+    buf.open(QIODevice::ReadOnly);
+    xquery.bindVariable("scrdoc",&buf);
+    xquery.evaluateTo(&page);
+    return page;
+}
+*/
+
+QString QueryPage::makeRecordsPage(const QObjectList &records, const QString &xqCodePath)
+{
+    QDomDocument xml("records");
+    QDomElement root=xml.createElement("records");
+    xml.appendChild(root);
+    TQRecord *firstRecord = 0;
+    foreach(QObject *obj, records)
+    {
+        TQRecord *rec = qobject_cast<TQRecord *>(obj);
+        if(!rec)
+            continue;
+        if(!firstRecord)
+            firstRecord = rec;
+        rec->refresh();
+        QDomDocument recxml = rec->toXML();
+        root.appendChild(recxml);
+    }
+
+#ifdef QT_DEBUG
+    QFile testXml("!testRec.xml");
+    testXml.open(QIODevice::WriteOnly | QIODevice::Text);
+    QTextStream textOut(&testXml);
+    xml.save(textOut,4);
+#endif
+
+    QFile trackerXML(project()->optionValue(TQOPTION_GROUP_FIELDS).toString()); // "data/tracker.xml");
+    trackerXML.open(QIODevice::ReadOnly);
+
+    QString page;
+    QByteArray baAll, baSingle;
+    QBuffer bufAll, bufSingle;
+    baAll= xml.toByteArray();
+    bufAll.setData(baAll);
+    bufAll.open(QIODevice::ReadOnly);
+
+    if(firstRecord)
+    {
+        xml = firstRecord->toXML();
+        baSingle = xml.toByteArray();
+    }
+    bufSingle.setData(baSingle);
+    bufSingle.open(QIODevice::ReadOnly);
+
+    QFile xq(xqCodePath);
+    xq.open(QIODevice::ReadOnly);
+
+    QXmlQuery xquery;
+    xquery.setMessageHandler(sysMessager);
+    if(d->globalObj)
+        xquery.setNetworkAccessManager(d->globalObj->networkManager());
+
+    xquery.bindVariable("scrs",&bufAll);
+    xquery.bindVariable("def",&trackerXML);
+    xquery.bindVariable("scrdoc",&bufSingle);
+
+    xquery.setQuery(&xq);
+    xquery.evaluateTo(&page);
+    return page;
+}
+
+void QueryPage::drawNotes()
+{
+    QUrl baseUrl = QUrl::fromUserInput(d->xqPageFile);
+    QString page;
+    TQRecord *record = currentRecord();
+//    page = makeRecordPage(qryIndex, d->xqPageFile);
+
+//    const TQRecModel *model = qobject_cast<const TQRecModel *>(qryIndex.model());
+    if(record)
+    {
+        QDomDocument xml = record->toXML();
+        page = makeRecordsPage(QObjectList() << record, d->xqPageFile);
+    }
 #ifdef QT_DEBUG
     QFile testRes("!testResult.html");
     testRes.open(QIODevice::WriteOnly | QIODevice::Text);
@@ -1244,15 +1352,16 @@ void QueryPage::updateDetails()
         if(!key.isEmpty())
             keys.append(key);
     }
-    QModelIndex qryIndex = mapIndexToModel(queryView->currentIndex());
-    if(!qryIndex.isValid())
-        return;
-    TQRecord *record = d->tmodel->at(qryIndex.row());
-    const TQAbstractRecordTypeDef *def = record->typeDef();
+//    QModelIndex qryIndex = mapIndexToModel(queryView->currentIndex());
+//    if(!qryIndex.isValid())
+//        return;
+//    const TQAbstractRecordTypeDef *def = record->typeDef();
+    TQRecord *record = currentRecord(); // d->tmodel->at(qryIndex.row());
 #ifdef DECORATOR
-    decorator->readValues(record, fieldEdits);
+    if(record)
+        decorator->readValues(record, fieldEdits);
 #endif
-    drawNotes(qryIndex);
+    drawNotes();
 
 //    filesPage->setRecord(record);
     d->controller->emitCurrentRecordChanged(record);
@@ -1586,10 +1695,10 @@ void QueryPage::on_toolButton_clicked()
 {
     QString newFile = QFileDialog::getOpenFileName(this,
                                  tr("Выберите файл шаблона страницы"),
-                                 d->xqFile,
+                                 d->xqPageFile,
                                  tr("XQuery (*.xq);;Все файлы (*.*)"));
     if(newFile.isEmpty())
         return;
-    d->xqFile = newFile;
+    d->xqPageFile = newFile;
     updateDetails();
 }

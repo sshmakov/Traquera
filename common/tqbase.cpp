@@ -608,7 +608,7 @@ bool TQRecord::setTitle(const QString &newTitle)
     return false;
 }
 
-QString TQRecord::description()
+QString TQRecord::description() const
 {
     if(!isValid())
         return QString();
@@ -832,7 +832,7 @@ QVariantHash TQRecord::fieldChanges() const
     return res;
 }
 
-QDomDocument TQRecord::toXML()
+QDomDocument TQRecord::toXML() const
 {
     QDomDocument xml("scr");
     QDomElement root=xml.createElement("scr");

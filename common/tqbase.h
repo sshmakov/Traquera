@@ -436,7 +436,7 @@ public:
     Q_INVOKABLE virtual QString title() const;
     Q_INVOKABLE virtual bool setTitle(const QString &newTitle);
 
-    Q_INVOKABLE virtual QString description() ;
+    Q_INVOKABLE virtual QString description() const ;
     Q_INVOKABLE virtual bool setDescription(const QString &newDesc);
 
     virtual TQNotesCol notes() const;
@@ -468,7 +468,7 @@ public:
 //    Q_INVOKABLE  int recordId() const { return values[VID_Id].toInt(); } // TRK_UINT
 //    Q_INVOKABLE void setValue(const QString& fieldName, const QVariant& value, int role = Qt::EditRole);
 
-    virtual QDomDocument toXML();
+    virtual QDomDocument toXML() const;
     Q_INVOKABLE virtual QString toJSON();
 //    Q_INVOKABLE virtual QString toHTML(const QString &xqCodeFile);
     Q_INVOKABLE virtual QStringList historyList() const;
