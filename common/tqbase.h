@@ -59,7 +59,8 @@ struct TQNote
     bool isAdded;
     bool isDeleted;
     bool isChanged;
-//    TrkNote();
+    int internalId;
+    inline TQNote() : isAdded(false), isDeleted(false), isChanged(false) {}
 //    TrkNote(const TrkNote &src);
 };
 

@@ -445,9 +445,7 @@ void QueryPage::selectionChanged(const QItemSelection & /* selected */, const QI
 
 void QueryPage::currentChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight)
 {
-    if(d->detailsTimer->isActive())
-        return;
-    d->detailsTimer->start(100);
+    d->detailsTimer->start(250);
     emit selectedRecordsChanged();
 }
 
@@ -706,7 +704,7 @@ QString QueryPage::makeRecordsPage(const QObjectList &records, const QString &xq
             continue;
         if(!firstRecord)
             firstRecord = rec;
-        rec->refresh();
+//        rec->refresh();
         QDomDocument recxml = rec->toXML();
         root.appendChild(recxml);
     }

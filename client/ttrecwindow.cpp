@@ -199,6 +199,8 @@ bool TTRecordWindow::setNote(int index, const QString &title, const QString &tex
 
 bool TTRecordWindow::addNote(const QString &title, const QString &text)
 {
+    if(!enableModify())
+        return false;
     return a_record->addNote(title, text);
 }
 

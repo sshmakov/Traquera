@@ -824,7 +824,7 @@ TQRecord *JiraProject::createRecordById(int id, int rectype)
     JiraRecord *rec = new JiraRecord(this, rectype, id);
     rec->key = projectKey + "-" + QString::number(id);
     rec->internalId = 0;
-    connect(rec, SIGNAL(changed(int)), this, SIGNAL(recordChanged(int)));
+//    connect(rec, SIGNAL(changed(int)), this, SIGNAL(recordChanged(int)));
     readRecordFields(rec);
     return rec;
 }
@@ -858,7 +858,7 @@ bool JiraProject::readRecordWhole(TQRecord *record)
     const JiraRecTypeDef *rdef = dynamic_cast<const JiraRecTypeDef *>(record->typeDef());
     if(!rdef)
         return false;
-    QVariantMap issue = db->sendRequest("GET",db->queryUrl(QString("rest/api/2/issue/%1?expand=attachment").arg(rec->jiraKey()))).toMap();
+    QVariantMap issue = db->sendRequest("GET",db->queryUrl(QString("rest/api/2/issue/%1?fields=*all&expand=attachment").arg(rec->jiraKey()))).toMap();
     QVariantMap fields = issue.value("fields").toMap();
     QVariantMap::iterator i;
     rec->values.clear();
@@ -866,21 +866,7 @@ bool JiraProject::readRecordWhole(TQRecord *record)
     for(i = fields.begin(); i!=fields.end(); i++)
         storeReadedField(rec, rdef, i.key(), i.value());
     rec->isFieldsReaded = true;
-    QVariantList comments = fields.value("comment").toMap().value("comments").toList();
-    rec->notesCol.clear();
-    foreach(QVariant c, comments)
-    {
-        QVariantMap com = c.toMap();
-        TQNote note;
-        QVariantMap author = com.value("author").toMap();
-        note.author = author.value("name").toString();
-        note.authorFullName = author.value("displayName").toString();
-        note.text = com.value("body").toString();
-        note.title = "Comment";
-        note.crdate = QDateTime::fromString(com.value("created").toString(), Qt::ISODate);
-        note.mddate = QDateTime::fromString(com.value("updated").toString(), Qt::ISODate);
-        rec->notesCol.append(note);
-    }
+    doParseComments(rec, issue);
     rec->isTextsReaded = true;
 
     rec->files.clear();
@@ -899,7 +885,8 @@ bool JiraProject::readRecordWhole(TQRecord *record)
             rec->files.append(file);
         }
     }
-    emit rec->changed(rec->recordId());
+//    emit recordChanged(rec->recordId());
+//    emit rec->changed(rec->recordId());
     return true;
 }
 
@@ -922,7 +909,8 @@ bool JiraProject::readRecordFields(TQRecord *record)
     for(i = fields.begin(); i!=fields.end(); i++)
         storeReadedField(rec, rdef, i.key(), i.value());
     rec->isFieldsReaded = true;
-    emit rec->changed(rec->recordId());
+//    emit recordChanged(rec->recordId());
+//    emit rec->changed(rec->recordId());
     return true;
 }
 
@@ -935,7 +923,9 @@ bool JiraProject::readRecordTexts(TQRecord *record)
         return true;
     QVariantMap issue = db->sendRequest("GET",db->queryUrl(QString("rest/api/2/issue/%1?fields=description,comment").arg(rec->jiraKey()))).toMap();
     rec->desc = db->parseValue(issue,"fields/description").toString();
-    QVariantList comments = db->parseValue(issue,"comment/comments").toList();
+    doParseComments(rec, issue);
+    /*
+    QVariantList comments = db->parseValue(issue,"fields/comment/comments").toList();
     rec->notesCol.clear();
     foreach(QVariant c, comments)
     {
@@ -946,10 +936,13 @@ bool JiraProject::readRecordTexts(TQRecord *record)
         note.title = "Comment";
         note.crdate = QDateTime::fromString(com.value("created").toString(), Qt::ISODate);
         note.mddate = QDateTime::fromString(com.value("updated").toString(), Qt::ISODate);
+        note.internalId = com.value("id").toInt();
         rec->notesCol.append(note);
     }
+    */
     rec->isTextsReaded = true;
-    emit rec->changed(rec->recordId());
+//    emit recordChanged(rec->recordId());
+//    emit rec->changed(rec->recordId());
     return true;
 }
 
@@ -1013,6 +1006,8 @@ bool JiraProject::commitRecord(TQRecord *record)
 {
     if(record->mode() == TQRecord::View)
         return false;
+    if(record->mode() == TQRecord::Edit)
+        return doCommitUpdateRecord(record);
     JiraRecord *jRec = qobject_cast<JiraRecord*>(record);
     if(!jRec)
         return false;
@@ -1028,7 +1023,13 @@ bool JiraProject::commitRecord(TQRecord *record)
         if(!recDef->containFieldVid(vid))
             continue;
         const JiraFieldDesc &fdesc = recDef->fields[vid];
-        if(fdesc.isChoice())
+        if(fdesc.isUser())
+        {
+            QVariantMap v;
+            v.insert("name", value.toString());
+            value = v;
+        }
+        else if(fdesc.isChoice())
         {
             QVariantMap v;
             v.insert("id", value.toString());
@@ -1049,13 +1050,13 @@ bool JiraProject::commitRecord(TQRecord *record)
     QVariantList comments;
     foreach(const TQNote &note, jRec->notes())
     {
-        if(note.isAdded || note.isChanged)
-        {
-            QVariantMap com;
-            com.insert("body", note.text);
-        }
+        QVariantMap com;
+        com.insert("body", note.text);
+        comments.append(com);
     }
-    issue.insert("comments", comments);
+    QVariantMap commentMap;
+    commentMap.insert("comments",comments);
+    issue.insert("comment", commentMap);
     QVariantMap res;
     bool wasError;
     if(record->mode() == TQRecord::Edit)
@@ -1107,7 +1108,137 @@ bool JiraProject::commitRecord(TQRecord *record)
     jRec->key = res.value("key").toString();
     jRec->setMode(TQRecord::View);
     jRec->refresh();
+    emit recordChanged(jRec->recordId());
     return true;
+}
+
+bool JiraProject::doCommitUpdateRecord(TQRecord *record)
+{
+    if(record->mode() == TQRecord::View)
+        return false;
+    JiraRecord *jRec = qobject_cast<JiraRecord*>(record);
+    if(!jRec)
+        return false;
+    const JiraRecTypeDef *recDef = dynamic_cast<const JiraRecTypeDef *>(jRec->typeDef());
+    QVariantMap issue;
+    QVariantMap fields;
+    TQFieldValues vidChanges = jRec->vidChanges();
+    TQFieldValues::const_iterator i;
+    for(i = vidChanges.begin(); i != vidChanges.end(); ++i)
+    {
+        int vid = i.key();
+        QVariant value = i.value();
+        if(!recDef->containFieldVid(vid))
+            continue;
+        const JiraFieldDesc &fdesc = recDef->fields[vid];
+        if(fdesc.isUser())
+        {
+            QVariantMap v;
+            v.insert("id", value.toString());
+            value = v;
+        }
+        else if(fdesc.isChoice())
+        {
+            QVariantMap v;
+            v.insert("id", value.toString());
+            value = v;
+        }
+//        QVariantList fChanges;
+//        QVariantMap fAction;
+//        fAction.insert("set", value);
+//        fChanges.append(fAction);
+        fields.insert(fdesc.id, value);
+    }
+    /*
+    QVariantMap v2;
+    v2.insert("key", projectKey);
+    fields.insert("project", v2);
+    v2.clear();
+    v2.insert("name", jRec->def->recTypeName);
+    fields.insert("issuetype", v2);
+    v2.clear();
+    fields.insert("summary",jRec->title());
+    fields.insert("description",jRec->description());
+    issue.insert("fields", fields);
+    */
+    QVariantMap res;
+    bool wasError = false;
+    if(!fields.isEmpty())
+    {
+        issue.insert("fields", fields);
+        res = db->sendRequest("PUT",db->queryUrl(QString("rest/api/2/issue/%1").arg(jRec->jiraKey())),issue).toMap();
+        wasError = db->lastHTTPCode() && db->lastHTTPCode() != 200;
+
+        if(wasError)
+        {
+            QString error;
+            QVariantList elist = res.value("errorMessages").toList();
+            foreach(QVariant e, elist)
+                error += e.toString() + "\n";
+            QVariantMap objErrors = res.value("errors").toMap();
+            QVariantMap::iterator i;
+            for(i=objErrors.begin(); i!=objErrors.end(); ++i)
+            {
+                QString key = i.key();
+                QString s = i.value().toString();
+                error += tr("%1: %2\n").arg(key, s);
+            }
+            error = tr("Ошибка сохранения запроса\n") + error;
+            error = error.trimmed();
+            QMessageBox::critical(0, "Jira error", error);
+            return false;
+        }
+    }
+    foreach(const TQNote &note, jRec->notes())
+    {
+        if(note.isAdded)
+        {
+            QVariantMap com;
+            com.insert("body", note.text);
+            res = db->sendRequest("POST",db->queryUrl(QString("rest/api/2/issue/%1/comment").arg(jRec->jiraKey())),com).toMap();
+            int errorCode = db->lastHTTPCode();
+            wasError |=  errorCode && errorCode != 200  && errorCode != 204;
+        }
+        else if(note.isChanged)
+        {
+            QVariantMap com;
+            com.insert("body", note.text);
+            res = db->sendRequest("POST",db->queryUrl(QString("rest/api/2/issue/%1/comment/%2").arg(jRec->jiraKey()).arg(note.internalId)),com).toMap();
+            wasError |= db->lastHTTPCode() && db->lastHTTPCode() != 200  && db->lastHTTPCode() != 204;
+        }
+        else if(note.isDeleted)
+        {
+            res = db->sendRequest("DELETE",db->queryUrl(QString("rest/api/2/issue/%1/comment/%2").arg(jRec->jiraKey()).arg(note.internalId))).toMap();
+            wasError |= db->lastHTTPCode() && db->lastHTTPCode() != 200  && db->lastHTTPCode() != 204;
+        }
+    }
+    if(!wasError)
+    {
+        jRec->setMode(TQRecord::View);
+        jRec->refresh();
+        emit recordChanged(jRec->recordId());
+    }
+    return wasError;
+}
+
+void JiraProject::doParseComments(JiraRecord *rec, const QVariantMap &issue)
+{
+    QVariantList comments = db->parseValue(issue,"fields/comment/comments").toList();
+    rec->notesCol.clear();
+    foreach(QVariant c, comments)
+    {
+        QVariantMap com = c.toMap();
+        TQNote note;
+        QVariantMap author = com.value("author").toMap();
+        note.author = author.value("name").toString();
+        note.authorFullName = author.value("displayName").toString();
+        note.text = com.value("body").toString();
+        note.title = "Comment";
+        note.crdate = QDateTime::fromString(com.value("created").toString(), Qt::ISODate);
+        note.mddate = QDateTime::fromString(com.value("updated").toString(), Qt::ISODate);
+        note.internalId = com.value("id").toInt();
+        rec->notesCol.append(note);
+    }
 }
 
 bool JiraProject::cancelRecord(TQRecord *record)
@@ -2052,6 +2183,31 @@ TQNotesCol JiraRecord::notes() const
     return notesCol;
 }
 
+bool JiraRecord::setNoteTitle(int index, const QString &newTitle)
+{
+    if(index<0 || index >=notesCol.size())
+        return false;
+    notesCol[index].title = newTitle;
+    notesCol[index].isChanged = true;
+}
+
+bool JiraRecord::setNoteText(int index, const QString &newText)
+{
+    if(index<0 || index >=notesCol.size())
+        return false;
+    notesCol[index].text = newText;
+    notesCol[index].isChanged = true;
+}
+
+bool JiraRecord::setNote(int index, const QString &newTitle, const QString &newText)
+{
+    if(index<0 || index >=notesCol.size())
+        return false;
+    notesCol[index].title = newTitle;
+    notesCol[index].text = newText;
+    notesCol[index].isChanged = true;
+}
+
 const TQAbstractRecordTypeDef *JiraRecord::typeDef() const
 {
     return def;
@@ -2082,4 +2238,15 @@ QVariant JiraFilterModel::displayColData(const JiraFilter &rec, int col) const
         return rec.isSystem ? tr("Системные фильтры") : rec.isServerStored ? tr ("Избранные фильтры") : tr("Локальные фильтры");
     }
     return QVariant();
+}
+
+
+int JiraRecord::addNote(const QString &noteTitle, const QString &noteText)
+{
+    TQNote note;
+    note.isAdded = true;
+    note.title = noteTitle;
+    note.text = noteText;
+    notesCol.append(note);
+    return true;
 }

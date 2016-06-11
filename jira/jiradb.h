@@ -200,6 +200,8 @@ public:
     QVariant optionValue(const QString &option) const;
     QString jiraProjectKey() const;
 protected:
+    bool doCommitUpdateRecord(TQRecord *record);
+    void doParseComments(JiraRecord *rec, const QVariantMap &issue);
 //    TQAbstractRecordTypeDef *loadRecordTypeDef(int recordType);
     void loadRecordTypes();
     TQChoiceList loadChoiceTables(JiraRecTypeDef *rdef, const QString &url);
@@ -359,6 +361,10 @@ public:
     QVariant value(int vid, int role = Qt::DisplayRole) const ;
     bool setValue(int vid, const QVariant &newValue);
     TQNotesCol notes() const;
+    bool setNoteTitle(int index, const QString &newTitle);
+    bool setNoteText(int index, const QString &newText);
+    bool setNote(int index, const QString &newTitle, const QString &newText);
+    int addNote(const QString &noteTitle, const QString &noteText);
     const TQAbstractRecordTypeDef *typeDef() const;
 
     friend class JiraProject;
