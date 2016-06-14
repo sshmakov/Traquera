@@ -245,87 +245,87 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../trkview.cpp" line="91"/>
+        <location filename="../../../trkview.cpp" line="92"/>
         <source>TRK_E_RECORD_LOCKED</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../trkview.cpp" line="92"/>
+        <location filename="../../../trkview.cpp" line="94"/>
         <source>TRK_E_RECORD_NOT_LOCKED</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../trkview.cpp" line="93"/>
+        <location filename="../../../trkview.cpp" line="95"/>
         <source>TRK_E_UNMATCHED_PARENS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../trkview.cpp" line="94"/>
+        <location filename="../../../trkview.cpp" line="96"/>
         <source>TRK_E_NO_CURRENT_TRANSITION</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../trkview.cpp" line="95"/>
+        <location filename="../../../trkview.cpp" line="97"/>
         <source>TRK_E_NO_CURRENT_RULE</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../trkview.cpp" line="96"/>
+        <location filename="../../../trkview.cpp" line="98"/>
         <source>TRK_E_UNKNOWN_RULE</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../trkview.cpp" line="97"/>
+        <location filename="../../../trkview.cpp" line="99"/>
         <source>TRK_E_RULE_ASSERTION_FAILED</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../trkview.cpp" line="98"/>
+        <location filename="../../../trkview.cpp" line="100"/>
         <source>TRK_E_ITEM_UNCHANGED</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../trkview.cpp" line="99"/>
+        <location filename="../../../trkview.cpp" line="101"/>
         <source>TRK_E_TRANSITION_NOT_ALLOWED</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../trkview.cpp" line="100"/>
+        <location filename="../../../trkview.cpp" line="102"/>
         <source>TRK_E_NO_CURRENT_STYLESHEET</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../trkview.cpp" line="101"/>
+        <location filename="../../../trkview.cpp" line="103"/>
         <source>TRK_E_NO_CURRENT_FORM</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../trkview.cpp" line="102"/>
+        <location filename="../../../trkview.cpp" line="104"/>
         <source>TRK_E_NO_CURRENT_VALUE</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../trkview.cpp" line="103"/>
+        <location filename="../../../trkview.cpp" line="105"/>
         <source>TRK_E_FORM_FIELD_ACCESS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../trkview.cpp" line="104"/>
+        <location filename="../../../trkview.cpp" line="106"/>
         <source>TRK_E_INVALID_QBID_STRING</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../trkview.cpp" line="105"/>
+        <location filename="../../../trkview.cpp" line="107"/>
         <source>TRK_E_FORM_INVALID_FIELD</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../trkview.cpp" line="106"/>
+        <location filename="../../../trkview.cpp" line="108"/>
         <source>TRK_E_PARTIAL_SUCCESS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../trkview.cpp" line="109"/>
+        <location filename="../../../trkview.cpp" line="111"/>
         <source>Tracker Error %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -723,27 +723,27 @@
 <context>
     <name>TrkHistory</name>
     <message>
-        <location filename="../../../trkview.cpp" line="3269"/>
+        <location filename="../../../trkview.cpp" line="3286"/>
         <source>Выборка</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../trkview.cpp" line="3270"/>
+        <location filename="../../../trkview.cpp" line="3287"/>
         <source>Тип</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../trkview.cpp" line="3271"/>
+        <location filename="../../../trkview.cpp" line="3288"/>
         <source>Записи</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../trkview.cpp" line="3272"/>
+        <location filename="../../../trkview.cpp" line="3289"/>
         <source>Тип записей</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../trkview.cpp" line="3273"/>
+        <location filename="../../../trkview.cpp" line="3290"/>
         <source>Время</source>
         <translation type="unfinished"></translation>
     </message>
@@ -877,12 +877,12 @@
         <translation type="obsolete">Ошибка открытия проекта %1 (%2)</translation>
     </message>
     <message>
-        <location filename="../../../trkview.cpp" line="504"/>
+        <location filename="../../../trkview.cpp" line="508"/>
         <source>Ошибка подключения</source>
         <translation type="unfinished">Ошибка подключения к PVCS Tracker</translation>
     </message>
     <message>
-        <location filename="../../../trkview.cpp" line="500"/>
+        <location filename="../../../trkview.cpp" line="504"/>
         <source>Ошибка открытия проекта %1 (Error code %2)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -890,33 +890,33 @@
 <context>
     <name>TrkToolQryModel</name>
     <message>
-        <location filename="../../../trkview.cpp" line="3362"/>
+        <location filename="../../../trkview.cpp" line="3379"/>
         <source>Название выборки</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../trkview.cpp" line="3365"/>
+        <location filename="../../../trkview.cpp" line="3382"/>
         <source>Публичная</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../trkview.cpp" line="3364"/>
+        <location filename="../../../trkview.cpp" line="3381"/>
         <source>Тип записи</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../trkview.cpp" line="3363"/>
+        <location filename="../../../trkview.cpp" line="3380"/>
         <source>Группа</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../trkview.cpp" line="3415"/>
+        <location filename="../../../trkview.cpp" line="3432"/>
         <source>Public queries</source>
         <oldsource>Public</oldsource>
         <translation>Общие выборки</translation>
     </message>
     <message>
-        <location filename="../../../trkview.cpp" line="3415"/>
+        <location filename="../../../trkview.cpp" line="3432"/>
         <source>Private queries</source>
         <translation>Личные выборки</translation>
     </message>

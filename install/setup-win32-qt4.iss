@@ -73,17 +73,18 @@ Source: "redistribute\*"; DestDir: "{app}"; Components: main; Flags: ignoreversi
 Source: "{#QTDIR}\plugins\imageformats\*"; DestDir: "{app}\imageformats"; Components: main; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#QTDIR}\plugins\sqldrivers\*"; DestDir: "{app}\sqldrivers"; Components: main; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\client\data\*"; DestDir: "{app}\data"; Components: main; Flags: ignoreversion recursesubdirs createallsubdirs 
+Source: "..\client\lang\*"; DestDir: "{app}\lang"; Components: main; Flags: ignoreversion recursesubdirs createallsubdirs 
 #if VARIANT != "RS"
 ; Jira
 Source: "{#BuildPath}\client\plugins\jira\jira.dll"; DestDir: "{app}\plugins\jira"; Components: "plugins/jira"
 Source: "{#BuildPath}\client\plugins\jira\data\*"; DestDir: "{app}\plugins\jira\data"; Components: "plugins/jira"
-Source: "{#BuildPath}\client\plugins\jira\lang\*.qm"; DestDir: "{app}\plugins\jira\lang"; Components: "plugins/jira"
+Source: "{#BuildPath}\client\plugins\jira\lang\*"; DestDir: "{app}\plugins\jira\lang"; Components: "plugins/jira"
 #endif
 ; Tracker
 Source: "{#BuildPath}\client\plugins\tracker\tracker.dll"; DestDir: "{app}\plugins\tracker"; Components: "plugins/tracker"
 Source: "{#BuildPath}\client\plugins\tracker\plugin.ini"; DestDir: "{app}\plugins\tracker"; Components: "plugins/tracker"
 Source: "{#BuildPath}\client\plugins\tracker\data\*"; DestDir: "{app}\plugins\tracker\data"; Components: "plugins/tracker"
-Source: "{#BuildPath}\client\plugins\tracker\lang\*.qm"; DestDir: "{app}\plugins\tracker\lang"; Components: "plugins/tracker"
+Source: "{#BuildPath}\client\plugins\tracker\lang\*"; DestDir: "{app}\plugins\tracker\lang"; Components: "plugins/tracker"
 ; MSProject
 Source: "{#BuildPath}\client\plugins\msplans\msplans.dll"; DestDir: "{app}\plugins\msplans"; Components: "plugins/msplans"
 Source: "{#BuildPath}\client\plugins\msplans\data\*"; DestDir: "{app}\plugins\msplans\data"; Components: "plugins/msplans"

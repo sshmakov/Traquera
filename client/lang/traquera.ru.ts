@@ -836,105 +836,111 @@
 <context>
     <name>QueryPage</name>
     <message>
-        <location filename="../querypage.cpp" line="122"/>
+        <location filename="../querypage.cpp" line="138"/>
         <source>Поля</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../querypage.cpp" line="156"/>
+        <location filename="../querypage.cpp" line="172"/>
         <source>Текст</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../querypage.cpp" line="257"/>
+        <location filename="../querypage.cpp" line="273"/>
         <source>Инфо %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../querypage.cpp" line="345"/>
+        <location filename="../querypage.cpp" line="361"/>
         <source>Любое поле</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../querypage.cpp" line="533"/>
+        <location filename="../querypage.cpp" line="547"/>
         <source>Настройка столбцов...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../querypage.cpp" line="682"/>
-        <location filename="../querypage.cpp" line="692"/>
+        <location filename="../querypage.cpp" line="788"/>
+        <location filename="../querypage.cpp" line="798"/>
         <source>Ошибка</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../querypage.cpp" line="683"/>
+        <location filename="../querypage.cpp" line="789"/>
         <source>Нет доступа к Outlook</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../querypage.cpp" line="693"/>
+        <location filename="../querypage.cpp" line="799"/>
         <source>Не создается письмо в Outlook</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../querypage.cpp" line="705"/>
+        <location filename="../querypage.cpp" line="811"/>
         <source>Запрос %1. %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../querypage.cpp" line="709"/>
+        <location filename="../querypage.cpp" line="815"/>
         <source>Запросы </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../querypage.cpp" line="798"/>
+        <location filename="../querypage.cpp" line="904"/>
         <source>Открыта выборка &quot;%1&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../querypage.cpp" line="820"/>
-        <location filename="../querypage.cpp" line="840"/>
+        <location filename="../querypage.cpp" line="926"/>
+        <location filename="../querypage.cpp" line="946"/>
         <source>Открыт список запросов %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../querypage.cpp" line="865"/>
+        <location filename="../querypage.cpp" line="971"/>
         <source>Открыта папка &quot;%1&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../querypage.cpp" line="1095"/>
+        <location filename="../querypage.cpp" line="1211"/>
         <source>В запрос(-ы) %1 добавлена нота &quot;%2&quot;:
 %3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../querypage.cpp" line="1157"/>
+        <location filename="../querypage.cpp" line="1214"/>
+        <source>В запрос(-ы) %1 не удалось добавить ноту &quot;%2&quot;:
+%3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../querypage.cpp" line="1276"/>
         <source>Добавлены в список запросы %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../querypage.cpp" line="1164"/>
+        <location filename="../querypage.cpp" line="1283"/>
         <source>Удалены из списка запросы %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../querypage.cpp" line="1192"/>
+        <location filename="../querypage.cpp" line="1311"/>
         <source>Открыт запрос %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../querypage.cpp" line="1439"/>
+        <location filename="../querypage.cpp" line="1559"/>
         <source>Отмеченные запросы</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../querypage.cpp" line="1588"/>
+        <location filename="../querypage.cpp" line="1708"/>
         <source>Выберите файл шаблона страницы</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../querypage.cpp" line="1590"/>
+        <location filename="../querypage.cpp" line="1710"/>
         <source>XQuery (*.xq);;Все файлы (*.*)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1546,22 +1552,22 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ttrecwindow.cpp" line="165"/>
+        <location filename="../ttrecwindow.cpp" line="168"/>
         <source>Тема:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ttrecwindow.cpp" line="187"/>
+        <location filename="../ttrecwindow.cpp" line="190"/>
         <source>Запрос %1 %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ttrecwindow.cpp" line="682"/>
+        <location filename="../ttrecwindow.cpp" line="694"/>
         <source>New note</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ttrecwindow.cpp" line="723"/>
+        <location filename="../ttrecwindow.cpp" line="735"/>
         <source>Свойства</source>
         <translation type="unfinished"></translation>
     </message>
