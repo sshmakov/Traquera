@@ -87,6 +87,7 @@ class TQAbstractRecordTypeDef
 {
 public:
     enum TQFieldRole {
+        NoRole,
         IdField,
         TitleField,
         DescriptionField,
@@ -114,6 +115,7 @@ public:
     virtual QList<int> fieldVids() const = 0;
     virtual QString fieldName(int vid) const = 0;
     virtual QString fieldSystemName(int vid) const = 0;
+    virtual int fieldRole(int vid) const = 0;
     virtual QString fieldRoleName(int vid) const = 0;
     virtual QIODevice *defineSource() const = 0;
     virtual int recordType() const = 0;
@@ -144,6 +146,7 @@ public:
     TQAbstractFieldType getFieldType(const QString &name, bool *ok = 0) const;
     bool containFieldVid(int vid) const;
     QString fieldSystemName(int vid) const;
+    QString fieldRoleName(int vid) const;
     bool canFieldSubmit(int vid) const;
     bool canFieldUpdate(int vid) const;
     bool isNullable(int vid) const;

@@ -19,6 +19,7 @@ static TQAbstractDB *newTrkToolDB(QObject *parent)
 
 void TrkPlugin::initPlugin(QObject *obj, const QString &modulePath)
 {
+    Q_UNUSED(obj)
 //    globalObject = obj;
 //    mainWindow = 0;
 //    QMetaObject::invokeMethod(globalObject, "mainWindow", Qt::DirectConnection,

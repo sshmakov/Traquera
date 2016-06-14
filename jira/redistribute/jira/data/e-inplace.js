@@ -128,7 +128,10 @@ InplaceEditor.prototype = {
 
   removeNote : function (index)
   {
-    editor.removeNote(index);
+    if(editor.removeNote(index))
+    {
+      $(".note[index='"+index+"']").fadeOut(2000);
+    }
   },
 
   editDescription : function ()

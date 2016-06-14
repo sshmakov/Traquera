@@ -446,7 +446,8 @@ public:
     Q_INVOKABLE virtual bool setNoteTitle(int index, const QString &newTitle);
     Q_INVOKABLE virtual bool setNoteText(int index, const QString &newText);
     Q_INVOKABLE virtual bool setNote(int index, const QString &newTitle, const QString &newText);
-    Q_INVOKABLE virtual int addNote(const QString &noteTitle, const QString &noteText);
+    Q_INVOKABLE virtual int addNote(const QString &noteTitle, const QString &noteText); // return note index base 0 or -1
+    Q_INVOKABLE virtual bool removeNote(int index);
 
     virtual QList<TQAttachedFile> fileList();
     Q_INVOKABLE virtual bool saveFile(int fileIndex, const QString &dest);

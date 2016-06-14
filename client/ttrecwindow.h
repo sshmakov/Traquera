@@ -58,6 +58,7 @@ public slots:
     bool setDescription(const QString &desc);
     bool setNote(int index, const QString &title, const QString &text);
     bool addNote(const QString &title, const QString &text);
+    bool removeNote(int index);
     bool startEditDescription();
     bool startEditNote(int index);
     bool endEditNote(bool commitChanges = true);

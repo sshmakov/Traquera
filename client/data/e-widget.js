@@ -75,6 +75,14 @@ WidgetEditor.prototype = {
     }
   },
 
+  removeNote : function (index)
+  {
+    if(editor.removeNote(index))
+    {
+      $(".note[index='"+index+"']").fadeOut(2000);
+    }
+  },
+
   editDescription : function()
   {
     this.editNote(-1);

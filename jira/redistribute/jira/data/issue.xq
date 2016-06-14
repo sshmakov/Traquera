@@ -66,7 +66,7 @@ return (
 	</div>
 {
 for $i in $scr/*/notes/note
-order by xs:dateTime($i/string(@cdatetime)), xs:integer($i/@index)
+order by xs:integer($i/@index)
 return (
 <div index="{$i/@index}" class="note"><a name="notePoint{$i/@index}"/>
 <span id="title{$i/@index}" class="noteTitle">{$i/string(@title)}</span> [{$i/string(@createdate)} ({$i/string(@author)})]

@@ -88,7 +88,9 @@ int isTrkOK(int result, bool show = true)
     case TRK_E_SEMAPHORE_ERROR		       :    error = QObject::tr("TRK_E_SEMAPHORE_ERROR"); break;
     case TRK_E_INVALID_SERVER_NAME	       :    error = QObject::tr("TRK_E_INVALID_SERVER_NAME"); break;
     case TRK_E_NOT_LICENSED			       :    error = QObject::tr("TRK_E_NOT_LICENSED"); break;
-    case TRK_E_RECORD_LOCKED			   :    error = QObject::tr("TRK_E_RECORD_LOCKED"); break;
+    case TRK_E_RECORD_LOCKED			   :
+        error = QObject::tr("TRK_E_RECORD_LOCKED");
+        break;
     case TRK_E_RECORD_NOT_LOCKED		   :    error = QObject::tr("TRK_E_RECORD_NOT_LOCKED"); break;
     case TRK_E_UNMATCHED_PARENS		       :    error = QObject::tr("TRK_E_UNMATCHED_PARENS"); break;
     case TRK_E_NO_CURRENT_TRANSITION	   :    error = QObject::tr("TRK_E_NO_CURRENT_TRANSITION"); break;
@@ -307,6 +309,8 @@ QString TrkToolDB::dbmsServer() const
 
 QStringList TrkToolDB::projects(const QString &dbmsType, const QString &user, const QString &pass)
 {
+    Q_UNUSED(user)
+    Q_UNUSED(pass)
 	if(!projectList.contains(dbmsType) || projectList[dbmsType].isEmpty())
 	{
 		TRK_UINT res;
@@ -1180,6 +1184,7 @@ TQQueryDef *TrkToolProject::createQueryDefinition(int rectype)
 
 TQAbstractQWController *TrkToolProject::queryWidgetController(int rectype)
 {
+    Q_UNUSED(rectype)
 #ifdef CLIENT_APP
     return new TQQueryWidgetController(this);
 #else
@@ -1278,6 +1283,7 @@ bool TrkToolProject::renameQuery(const QString &oldName, const QString &newName,
 
 bool TrkToolProject::deleteQuery(const QString &queryName, int recordType)
 {
+    Q_UNUSED(recordType)
     return isTrkOK(TrkDeleteQuery(handle, queryName.toLocal8Bit().constData()));
 }
 
@@ -1875,7 +1881,7 @@ bool TrkToolProject::cancelRecord(TQRecord *record)
     bool res = false;
     if(trec->mode() == TrkToolRecord::Insert)
         res = doCancelInsert(trec);
-    else if(record->mode() == TrkToolRecord::Edit)
+    else //if(record->mode() == TrkToolRecord::Edit)
         res = doCancelUpdate(trec);
     if(res)
         emit recordStateChanged(trec->recordId());
@@ -2018,11 +2024,11 @@ bool TrkToolProject::removeFileFromRecord(TQRecord *record, int fileIndex)
 {
     TrkToolRecord *trec = qobject_cast<TrkToolRecord *>(record);
     if(!trec)
-        return -1;
+        return false;
     TrkScopeRecHandle recHandle(this, trec);
     TRK_ATTFILE_HANDLE attHandle;
     if(!isTrkOK(TrkAttachedFileHandleAlloc(*recHandle, &attHandle)))
-        return -1;
+        return false;
     int res = false;
     int nextIndex = 0;
     if(isTrkOK(TrkInitAttachedFileList(attHandle)))
@@ -2058,8 +2064,10 @@ bool TrkToolProject::doCommitInsert(TrkToolRecord *record)
             record->handleAllocated = false;
         }
         record->doSetMode(TQRecord::View);
+        record->setModified(false);
         record->readFullRecord();
         record->somethingChanged();
+        emit recordChanged(record->recordId());
         return true;
     }
     return false;
@@ -2080,7 +2088,9 @@ bool TrkToolProject::doCommitUpdate(TrkToolRecord *record)
         recHandle.recHandler()->isModify = false;
         record->setMode(TrkToolRecord::View);
         record->lastTransaction = last;
+        record->setModified(false);
         record->somethingChanged();
+        emit recordChanged(record->recordId());
         return true;
     }
     return false;
@@ -2101,6 +2111,7 @@ bool TrkToolProject::doCancelUpdate(TrkToolRecord *record)
     recHandle.recHandler()->isModify = false;
     record->doSetMode(TQRecord::View);
     record->somethingChanged();
+    emit recordChanged(record->recordId());
     return true;
 }
 
@@ -2911,13 +2922,14 @@ QDomDocument TrkToolRecord::toXML()
     return xml;
 }
 
-QStringList TrkToolRecord::historyList()
+QStringList TrkToolRecord::historyList() const
 {
     if(mode() == Insert)
         return QStringList();
     if(historyReaded)
         return historyListMem;
-    return prj->historyList(this);
+    TrkToolRecord *rec = const_cast<TrkToolRecord *>(this);
+    return prj->historyList(rec);
     //return QStringList();
     /*
     TrkScopeRecHandle recHandle(prj->handle, lockHandle);
@@ -2943,11 +2955,12 @@ QStringList TrkToolRecord::historyList()
 }
 
 
-QString TrkToolRecord::description()
+QString TrkToolRecord::description() const
 {
     if(!textsReaded && !descChanged)
     {
-        prj->readRecordTexts(this);
+        TrkToolRecord *rec = const_cast<TrkToolRecord *>(this);
+        prj->readRecordTexts(rec);
         somethingChanged();
     }
     return desc;
@@ -3026,6 +3039,7 @@ bool TrkToolRecord::setNote(int index, const QString &title, const QString &text
     note.text = text;
     note.isChanged = true;
     notesList[index] = note;
+    setModified(true);
     return true;
     /*
     bool res=false;
@@ -3063,6 +3077,7 @@ bool TrkToolRecord::setNoteText(int index, const QString &text)
     note.text = text;
     note.isChanged = true;
     notesList[index] = note;
+    setModified(true);
     return true;
     /*
     bool res=false;
@@ -3080,7 +3095,7 @@ bool TrkToolRecord::setNoteText(int index, const QString &text)
     */
 }
 
-bool TrkToolRecord::deleteNote(int index)
+bool TrkToolRecord::removeNote(int index)
 {
     if(!isEditing())
         return false;
@@ -3089,6 +3104,7 @@ bool TrkToolRecord::deleteNote(int index)
     TQNote note = notesList[index];
     note.isDeleted = true;
     notesList[index] = note;
+    setModified(true);
     return true;
     /*
     bool res=false;
@@ -3112,7 +3128,7 @@ bool TrkToolRecord::deleteNote(int index)
 int TrkToolRecord::addNote(const QString &noteTitle, const QString &noteText)
 {
     if(!isEditing())
-        return 0;
+        return -1;
     TQNote note;
     note.title = noteTitle;
     note.text = noteText;
@@ -3121,7 +3137,8 @@ int TrkToolRecord::addNote(const QString &noteTitle, const QString &noteText)
     note.mddate = QDateTime::currentDateTime();
     notesList.append(note);
     //addedNotes[id] = note;
-    return notesList.count();
+    setModified(true);
+    return notesList.count()-1;
 }
 
 /*
@@ -3922,6 +3939,23 @@ QString TrkRecordTypeDef::fieldChoiceTable(int vid) const
     if(fDef->isUser())
         return "Users";
     return "Table_" + fDef->name;
+}
+
+int TrkRecordTypeDef::fieldRole(int vid) const
+{
+    if(vid == VID_Id)
+        return TQAbstractRecordTypeDef::IdField;
+    if(vid == VID_Description)
+        return TQAbstractRecordTypeDef::DescriptionField;
+    if(vid == VID_Title)
+        return TQAbstractRecordTypeDef::TitleField;
+    if(vid == VID_Owner)
+        return TQAbstractRecordTypeDef::OwnerField;
+    if(vid == VID_SubmitDate)
+        return TQAbstractRecordTypeDef::SubmitDateTimeField;
+    if(vid == VID_Submitter)
+        return TQAbstractRecordTypeDef::SubmitterField;
+    return NoRole;
 }
 
 QString TrkRecordTypeDef::dateTimeFormat() const

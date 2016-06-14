@@ -963,7 +963,6 @@ bool JiraProject::readRecordBase(TQRecord *record)
     QVariantMap::iterator i;
     for(i = fields.begin(); i!=fields.end(); i++)
         storeReadedField(rec, rdef, i.key(), i.value());
-    emit rec->changed(rec->recordId());
     return true;
 }
 
@@ -1218,7 +1217,7 @@ bool JiraProject::doCommitUpdateRecord(TQRecord *record)
         jRec->refresh();
         emit recordChanged(jRec->recordId());
     }
-    return wasError;
+    return !wasError;
 }
 
 void JiraProject::doParseComments(JiraRecord *rec, const QVariantMap &issue)
@@ -1245,7 +1244,9 @@ bool JiraProject::cancelRecord(TQRecord *record)
 {
     if(record->mode() == TQRecord::View)
         return false;
+    JiraRecord *rec = qobject_cast<JiraRecord *>(record);
     record->setMode(TQRecord::View);
+    emit rec->changed(record->recordId());
 }
 
 TQRecord *JiraProject::newRecord(int rectype)
@@ -1475,9 +1476,15 @@ void JiraProject::loadRecordTypes()
                 rdef->idVid = f.vid;
             }
             else if(f.id == "description")
-            {
                 rdef->descVid = f.vid;
-            }
+            else if(f.id == "summary")
+                rdef->summaryVid = f.vid;
+            else if(f.id == "assignee")
+                rdef->assigneeVid = f.vid;
+            else if(f.id == "creator")
+                rdef->creatorVid = f.vid;
+            else if(f.id == "created")
+                rdef->createdVid = f.vid;
             if(!rdef->schemaTypes.contains(f.schemaType))
             {
                 rdef->schemaTypes.append(f.schemaType);
@@ -1886,9 +1893,21 @@ QString JiraRecTypeDef::fieldSystemName(int vid) const
     return desc.id;
 }
 
-QString JiraRecTypeDef::fieldRoleName(int vid) const
+int JiraRecTypeDef::fieldRole(int vid) const
 {
-    return QString();
+    if(vid == idVid)
+        return TQAbstractRecordTypeDef::IdField;
+    if(vid == descVid)
+        return TQAbstractRecordTypeDef::DescriptionField;
+    if(vid == summaryVid)
+        return TQAbstractRecordTypeDef::TitleField;
+    if(vid == assigneeVid)
+        return TQAbstractRecordTypeDef::OwnerField;
+    if(vid == createdVid)
+        return TQAbstractRecordTypeDef::SubmitDateTimeField;
+    if(vid == createdVid)
+        return TQAbstractRecordTypeDef::SubmitterField;
+    return NoRole;
 }
 
 QIODevice *JiraRecTypeDef::defineSource() const
@@ -2169,6 +2188,7 @@ bool JiraRecord::setValue(int vid, const QVariant &newValue)
     {
         values.insert(vid, newValue);
         displayValues.insert(vid, def->valueToDisplay(vid, newValue));
+        setModified(true);
     }
     return true;
 }
@@ -2185,32 +2205,66 @@ TQNotesCol JiraRecord::notes() const
 
 bool JiraRecord::setNoteTitle(int index, const QString &newTitle)
 {
+    if(!isEditing())
+        return false;
     if(index<0 || index >=notesCol.size())
         return false;
     notesCol[index].title = newTitle;
     notesCol[index].isChanged = true;
+    setModified(true);
+    return true;
 }
 
 bool JiraRecord::setNoteText(int index, const QString &newText)
 {
+    if(!isEditing())
+        return false;
     if(index<0 || index >=notesCol.size())
         return false;
     notesCol[index].text = newText;
     notesCol[index].isChanged = true;
+    setModified(true);
+    return true;
 }
 
 bool JiraRecord::setNote(int index, const QString &newTitle, const QString &newText)
 {
+    if(!isEditing())
+        return false;
     if(index<0 || index >=notesCol.size())
         return false;
     notesCol[index].title = newTitle;
     notesCol[index].text = newText;
     notesCol[index].isChanged = true;
+    setModified(true);
+    return true;
 }
 
 const TQAbstractRecordTypeDef *JiraRecord::typeDef() const
 {
     return def;
+}
+
+int JiraRecord::addNote(const QString &noteTitle, const QString &noteText)
+{
+    if(mode() == TQRecord::View)
+        return -1;
+    TQNote note;
+    note.isAdded = true;
+    note.title = noteTitle;
+    note.text = noteText;
+    notesCol.append(note);
+    setModified(true);
+    return notesCol.size()-1;
+}
+
+bool JiraRecord::removeNote(int index)
+{
+    if(index<0 ||index >= notesCol.size())
+        return false;
+    notesCol[index].isDeleted = true;
+    setModified(true);
+    return true;
 }
 
 
@@ -2238,15 +2292,4 @@ QVariant JiraFilterModel::displayColData(const JiraFilter &rec, int col) const
         return rec.isSystem ? tr("Системные фильтры") : rec.isServerStored ? tr ("Избранные фильтры") : tr("Локальные фильтры");
     }
     return QVariant();
-}
-
-
-int JiraRecord::addNote(const QString &noteTitle, const QString &noteText)
-{
-    TQNote note;
-    note.isAdded = true;
-    note.title = noteTitle;
-    note.text = noteText;
-    notesCol.append(note);
-    return true;
 }

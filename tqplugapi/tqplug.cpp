@@ -46,6 +46,29 @@ QString TQBaseRecordTypeDef::fieldSystemName(int vid) const
     return fieldName(vid);
 }
 
+QString TQBaseRecordTypeDef::fieldRoleName(int vid) const
+{
+    int role = fieldRole(vid);
+    switch(role)
+    {
+    case TQAbstractRecordTypeDef::IdField:
+        return "id";
+    case TQAbstractRecordTypeDef::TitleField:
+        return "title";
+    case TQAbstractRecordTypeDef::DescriptionField:
+        return "description";
+    case TQAbstractRecordTypeDef::StateField:
+            return "state";
+    case TQAbstractRecordTypeDef::SubmitDateTimeField:
+            return "submitDateTime";
+    case TQAbstractRecordTypeDef::SubmitterField:
+            return "submitter";
+    case TQAbstractRecordTypeDef::OwnerField:
+            return "owner";
+    }
+    return QString();
+}
+
 bool TQBaseRecordTypeDef::canFieldSubmit(int vid) const
 {
     Q_UNUSED(vid)

@@ -687,7 +687,13 @@ int TQRecord::addNote(const QString &noteTitle, const QString &noteText)
 {
     Q_UNUSED(noteTitle)
     Q_UNUSED(noteText)
-    return 0;
+    return -1;
+}
+
+bool TQRecord::removeNote(int index)
+{
+    Q_UNUSED(index)
+    return false;
 }
 
 QList<TQAttachedFile> TQRecord::fileList()

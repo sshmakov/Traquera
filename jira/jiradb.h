@@ -279,7 +279,7 @@ protected:
     QStringList schemaTypes;
     QMap<QString, int> nativeTypes; // schema type to native type
     QMap<QString, int> schemaToSimple;
-    int idVid, descVid;
+    int idVid, descVid, summaryVid, assigneeVid, creatorVid, createdVid;
 //    QMap<QString, JiraUser> knownUsers; // by name
 
 public:
@@ -303,7 +303,7 @@ public:
     virtual QList<int> fieldVids() const;
     virtual QString fieldName(int vid) const;
     virtual QString fieldSystemName(int vid) const;
-    virtual QString fieldRoleName(int vid) const;
+    virtual int fieldRole(int vid) const;
     virtual QIODevice *defineSource() const;
     virtual int recordType() const;
     virtual QString valueToDisplay(int vid, const QVariant &value) const;
@@ -365,6 +365,7 @@ public:
     bool setNoteText(int index, const QString &newText);
     bool setNote(int index, const QString &newTitle, const QString &newText);
     int addNote(const QString &noteTitle, const QString &noteText);
+    bool removeNote(int index);
     const TQAbstractRecordTypeDef *typeDef() const;
 
     friend class JiraProject;

@@ -153,9 +153,12 @@ void TTRecordWindow::showNoteEditor(bool show)
 
 void TTRecordWindow::setRecordTypeDef(const TQAbstractRecordTypeDef *recDef, int mode)
 {
+    if(d->recDef == recDef && editorMode == mode)
+        return;
     d->recDef = recDef;
     Q_ASSERT(recDef != 0);
     props->setRecordDef(recDef, mode);
+    props->fillValues(QObjectList() << a_record);
     titleVid = recDef->roleVid(TQAbstractRecordTypeDef::TitleField);
     if(titleVid)
         titleFieldName = recDef->fieldName(titleVid);
@@ -201,7 +204,14 @@ bool TTRecordWindow::addNote(const QString &title, const QString &text)
 {
     if(!enableModify())
         return false;
-    return a_record->addNote(title, text);
+    return a_record->addNote(title, text) != -1;
+}
+
+bool TTRecordWindow::removeNote(int index)
+{
+    if(!enableModify())
+        return false;
+    return a_record->removeNote(index);
 }
 
 QString TTRecordWindow::noteTitle(int index)
@@ -562,7 +572,7 @@ bool TTRecordWindow::writeChanges()
         }
         else if(key<0)
         {
-            if(!a_record->addNote(newText.value(key).title,newText.value(key).text))
+            if(a_record->addNote(newText.value(key).title,newText.value(key).text) == -1)
                 return false;
         }
     }

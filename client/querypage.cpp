@@ -704,7 +704,7 @@ QString QueryPage::makeRecordsPage(const QObjectList &records, const QString &xq
             continue;
         if(!firstRecord)
             firstRecord = rec;
-//        rec->refresh();
+        rec->refresh();
         QDomDocument recxml = rec->toXML();
         root.appendChild(recxml);
     }
@@ -1184,7 +1184,7 @@ void QueryPage::on_actionAdd_Note_triggered()
         settings->setValue("LastNote",nd->titleEdit->currentText());
         QObjectList records = selectedRecords();
         TQRecord *rec;
-        QList<int> ids;
+        QList<int> successIds, rejectIds;
         foreach(QObject *obj, records)
         {
             rec = qobject_cast<TQRecord *>(obj);
@@ -1193,13 +1193,26 @@ void QueryPage::on_actionAdd_Note_triggered()
             int id = rec->recordId();
             if(rec->updateBegin())
             {
-                rec->addNote(nd->titleEdit->currentText(), nd->noteEdit->toPlainText());
-                if(rec->commit())
-                    ids << id;
+                if(rec->addNote(nd->titleEdit->currentText(), nd->noteEdit->toPlainText()) != -1 && rec->commit())
+                    successIds << id;
+                else
+                {
+                    rec->cancel();
+                    rejectIds << id;
+                }
+            }
+            else
+            {
+                rec->cancel();
+                rejectIds << id;
             }
         }
-        tqInfo() << tr("В запрос(-ы) %1 добавлена нота \"%2\":\n%3")
-                    .arg(intListToString(ids), nd->titleEdit->currentText(), nd->noteEdit->toPlainText());
+        if(successIds.size())
+            tqInfo() << tr("В запрос(-ы) %1 добавлена нота \"%2\":\n%3")
+                        .arg(intListToString(successIds), nd->titleEdit->currentText(), nd->noteEdit->toPlainText());
+        if(rejectIds.size())
+            tqInfo() << tr("В запрос(-ы) %1 не удалось добавить ноту \"%2\":\n%3")
+                        .arg(intListToString(rejectIds), nd->titleEdit->currentText(), nd->noteEdit->toPlainText());
     }
     delete nd;
 }

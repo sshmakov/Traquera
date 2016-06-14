@@ -313,6 +313,7 @@ public:
     virtual QVariant fieldMinValue(int vid) const;
     virtual QVariant fieldMaxValue(int vid) const;
     virtual QString fieldChoiceTable(int vid) const;
+    int fieldRole(int vid) const;
     virtual QString dateTimeFormat() const;
     QStringList noteTitleList() const;
 
@@ -735,8 +736,8 @@ public:
     Q_INVOKABLE bool isEditMode() const;
     QDomDocument toXML();
 //    Q_INVOKABLE QString toHTML(const QString &xqCodeFile);
-    Q_INVOKABLE QStringList historyList();
-    QString description();
+    Q_INVOKABLE QStringList historyList() const;
+    QString description() const;
     Q_INVOKABLE bool setDescription(const QString &newDesc);
     Q_INVOKABLE const QStringList & fields() const;
 //    Q_INVOKABLE bool isSelected() const;
@@ -770,7 +771,7 @@ public:
 
     Q_INVOKABLE bool setNote(int index, const QString &title, const QString &text);
     Q_INVOKABLE bool setNoteText(int index, const QString &text);
-    Q_INVOKABLE bool deleteNote(int index);
+    Q_INVOKABLE bool removeNote(int index);
     Q_INVOKABLE int addNote(const QString &noteTitle, const QString &noteText);
 //    Q_INVOKABLE bool appendNote(const QString &noteTitle, const QString &note);
     Q_INVOKABLE QString noteTitle(int index);

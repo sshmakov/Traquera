@@ -41,6 +41,11 @@ WindowEditor.prototype = {
     return false;
   },
 
+  removeNote : function (index)
+  {
+    editor.removeNote(index);
+  },
+
   editDescription : function()
   {
     editor.startEditDescription();

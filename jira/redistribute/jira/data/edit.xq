@@ -25,16 +25,16 @@ xquery version "1.0" encoding "utf-8";
 </script>
 <script>
 <!--
-//textEditor = new InplaceEditor();
+textEditor = new InplaceEditor();
 //textEditor = new WindowEditor();
-textEditor = new WidgetEditor();
+//textEditor = new WidgetEditor();
 -->
 </script>
 </head>
 {let $scr := doc(fn:iri-to-uri(string($scrdoc)))
 return
 <body>
-Запрос {$scr/*/fields/field[@name = "Id"]/node()} .  <b>{$scr/*/fields/field[@name = "Title"]/node()}</b>
+Запрос {$scr/*/fields/field[@role = "id"]/node()} .  <b>{$scr/*/fields/field[@role = "title"]/node()}</b>
 <p id="debug" style="display: visible"></p>
 	<div>
                 <div>
@@ -52,7 +52,7 @@ return
                 </object>
 	</div>
 {for $i in $scr/*/notes/note
-order by xs:dateTime($i/@cdatetime)
+order by xs:dateTime($i/@cdatetime), xs:integer($i/@index)
 return (
 <div class="note" index="{$i/@index}">
 <div id="block{$i/@index}">
