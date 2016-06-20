@@ -36,6 +36,7 @@ class TQProxyRecModel;
 //class FilesPage;
 class QueryPagePrivate;
 class TQQueryViewController;
+class TQViewController;
 
 
 class QueryPage : public QWidget, public Ui::queryForm
@@ -44,7 +45,7 @@ class QueryPage : public QWidget, public Ui::queryForm
     Q_PROPERTY(const TQAbstractRecordTypeDef *recordTypeDef READ recordTypeDef)
     Q_PROPERTY(int recordType READ recordType)
     Q_PROPERTY(QAbstractItemView *tableView READ tableView)
-    Q_PROPERTY(TQQueryViewController *controller READ controller)
+    Q_PROPERTY(TQViewController *controller READ controller)
     Q_PROPERTY(TQAbstractProject *project READ project())
 protected:
     QueryPagePrivate *d;
@@ -95,7 +96,7 @@ public:
     void initWidgets();
     bool hasMarked();
     TQAbstractProject *project() const;
-    TQQueryViewController *controller();
+    TQViewController *controller();
     QAbstractItemView *tableView() const;
 protected:
     void initPopupMenu();

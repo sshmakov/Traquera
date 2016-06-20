@@ -16,6 +16,7 @@ class TQPLUGIN_SHARED TQViewController : public QObject
     Q_PROPERTY(QWidget *view READ view)
     Q_PROPERTY(TQRecord *currentRecord READ currentRecord NOTIFY currentRecordChanged)
     Q_PROPERTY(QObjectList selectedRecords READ selectedRecords NOTIFY selectedRecordsChanged)
+    Q_PROPERTY(TQAbstractProject *project READ project)
 private:
 //    TQVCPrivate *d;
 public:
@@ -27,6 +28,7 @@ public:
     virtual QAbstractItemView *tableView() const;
     virtual bool flag(const QString &flagName) const;
     virtual const TQAbstractRecordTypeDef* recordDef() const;
+    TQAbstractProject *project() const;
 
 signals:
     /* from view to clients */

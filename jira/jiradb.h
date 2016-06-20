@@ -172,6 +172,7 @@ public:
     int defaultRecType() const;
     TQRecModel *openQueryModel(const QString &queryName, int recType, bool emitEvent = true);
     TQRecModel *openIdsModel(const IntList &ids, int recType, bool emitEvent = true);
+    TQRecModel *openRecords(const QString &queryText, int recType, bool emitEvent = true);
     TQRecord *createRecordById(int id, int rectype);
     void refreshModel(QAbstractItemModel *model);
     TQRecord *recordOfIndex(const QModelIndex &index);

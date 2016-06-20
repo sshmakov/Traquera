@@ -72,6 +72,14 @@ const TQAbstractRecordTypeDef *TQViewController::recordDef() const
     return def;
 }
 
+TQAbstractProject *TQViewController::project() const
+{
+    const TQAbstractRecordTypeDef *def = recordDef();
+    if(!def)
+        return 0;
+    return def->project();
+}
+
 void TQViewController::addDetailTab(QWidget *tab, const QString &title, const QIcon &icon)
 {
     QMetaObject::invokeMethod(view(), "addDetailTab",

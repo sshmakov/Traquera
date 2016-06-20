@@ -2,6 +2,8 @@
 #define QUERYFIELDS_H
 
 #include <QWidget>
+#include <tqbase.h>
+
 
 namespace Ui {
 class QueryFields;
@@ -21,10 +23,10 @@ private:
 public:
     explicit QueryFields(QWidget *parent = 0);
     ~QueryFields();
-    void setViewController(TQViewController *viewController, int mode);
 public slots:
     void applyChanges();
     void selectedRecordsChanged();
+    void setViewController(TQViewController *viewController, int mode = TQRecord::Edit);
 private slots:
     void on_buttonBox_clicked(QAbstractButton *button);
     void controllerDestroyed();

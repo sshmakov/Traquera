@@ -42,7 +42,6 @@ public:
     virtual bool insertViewTab(QWidget *view, QWidget *tab, const QString &title) = 0;
     virtual bool addPropWidget(QWidget *widget) = 0;
     virtual QVariant createActiveX(const QString &objectName, QObject *parent) = 0;
-
 };
 
 
@@ -64,6 +63,7 @@ public:
     explicit TTGlobal(QObject *parent = 0);
 //    static TTGlobal *global();
     void setMainProc(TTMainProc *proc);
+    TTMainProc *mainProc();
     const QSqlDatabase &userDatabase();
     Q_INVOKABLE QString toOemString(const QString &s);
     Q_INVOKABLE QSettings *settings();

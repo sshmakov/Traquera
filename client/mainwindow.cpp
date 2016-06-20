@@ -47,6 +47,7 @@
 #include "tqlogindlg.h"
 #include "tqprjoptdlg.h"
 #include <logform.h>
+#include <queryfields.h>
 
 extern int uniqueAlbumId;
 extern int uniqueArtistId;
@@ -82,8 +83,8 @@ MainWindow::MainWindow(QWidget *parent)
     //QSizePolicy policy = tabWidget->sizePolicy();
     //policy.setHorizontalStretch(1);
     //tabWidget->setSizePolicy(policy);
+    proc.messageHandler = new Messager(this);
     ttglobal()->setMainProc(&proc);
-    sysMessager = new Messager(this);
     //toolBox->setCurrentIndex(0);
     journal = 0;
     //setWindowTitle("TraQuera");
@@ -407,10 +408,10 @@ void MainWindow::idEntered(int flag)
     bool ok;
     s.left(1).toInt(&ok);
     int rectype = prj->defaultRecType();
-    if(ok)
+//    if(ok)
         openQueryById(s, rectype, reusePage);
-    else
-        findTrkRecords(s, reusePage);
+//    else
+//        findTrkRecords(s, reusePage);
     saveIdsToList(s);
 }
 
@@ -436,6 +437,7 @@ void MainWindow::slotRemoveRecordsId()
     saveIdsToList(s);
 }
 
+/*
 void MainWindow::applyChanges()
 {
     QueryPage *qpage = curQueryPage();
@@ -468,6 +470,7 @@ void MainWindow::repeatLastChanges()
 {
     modifyPanel->setChanges(lastChanges);
 }
+*/
 
 void MainWindow::slotOpenRecordsClicked(QSet<int> res)
 {
@@ -689,9 +692,15 @@ void MainWindow::refreshSelection()
 {
     QueryPage *page = curQueryPage();
     if(page)
-        updateModifyPanel(page->recordTypeDef(), page->selectedRecords());
+    {
+        emit controllerChanged(page->controller());
+//        updateModifyPanel(page->controller());
+    }
     else
-        updateModifyPanel(0, QObjectList());
+    {
+        emit controllerChanged(0);
+//        updateModifyPanel(0);
+    }
     emit updatingDetails();
     calcCountRecords();
 }
@@ -770,8 +779,12 @@ QDockWidget *MainWindow::addWidgetToDock(const QString &title, QWidget *widget, 
 {
     QDockWidget *dw = new QDockWidget(title, this);
     dw->setAllowedAreas(Qt::AllDockWidgetAreas);
+//    QVBoxLayout *lay = new QVBoxLayout(dw);
+//    dw->setLayout(lay);
+//    lay->setContentsMargins(0,0,0,0);
     dw->setWidget(widget);
     dw->setObjectName("dock_"+title);
+    dw->layout()->setMargin(0);
     QAction *action =new QAction(title, this);
     action->setCheckable(true);
     TQDockInfo info;
@@ -786,12 +799,23 @@ QDockWidget *MainWindow::addWidgetToDock(const QString &title, QWidget *widget, 
     connect(dw,SIGNAL(visibilityChanged(bool)),SLOT(slotDockVisibilityChanged(bool)));
     return dw;
 }
-
-void MainWindow::updateModifyPanel(const TQAbstractRecordTypeDef *typeDef, const QObjectList &records)
+// const TQAbstractRecordTypeDef *typeDef, const QObjectList &records
+/*
+void MainWindow::updateModifyPanel(TQViewController *controller)
 {
-    modifyPanel->setRecordDef(typeDef, TQRecord::Edit);
-    modifyPanel->fillValues(records);
+    if(controller)
+    {
+        modifyPanel->setRecordDef(controller->recordDef(), TQRecord::Edit);
+        modifyPanel->fillValues(controller->selectedRecords());
+    }
+    else
+    {
+        modifyPanel->setRecordDef(0, TQRecord::Edit);
+        modifyPanel->fillValues(QObjectList());
+    }
+//    queryFields->setViewController(controller, TQRecord::Edit);
 }
+*/
 
 void MainWindow::proxyAuthentication(QNetworkProxy proxy, QAuthenticator *auth)
 {
@@ -1298,10 +1322,14 @@ void MainWindow::readFilters()
 void MainWindow::readModifications()
 {
     //toolBox->addItem(modifyPanel, tr("Свойства"));
-    modifyPanel = new ModifyPanel(this);
-    connect(modifyPanel,SIGNAL(applyButtonPressed()),this,SLOT(applyChanges()));
-    connect(modifyPanel,SIGNAL(repeatButtonClicked()),this,SLOT(repeatLastChanges()));
-    dockPropsContents->layout()->addWidget(modifyPanel);
+//    modifyPanel = new ModifyPanel(this);
+//    connect(modifyPanel,SIGNAL(applyButtonPressed()),this,SLOT(applyChanges()));
+//    connect(modifyPanel,SIGNAL(repeatButtonClicked()),this,SLOT(repeatLastChanges()));
+//    dockPropsContents->layout()->addWidget(modifyPanel);
+
+    queryFields = new QueryFields(this);
+    addWidgetToDock(tr("Поля"),queryFields);
+    connect(this, SIGNAL(controllerChanged(TQViewController*)), queryFields, SLOT(setViewController(TQViewController*)));
 }
 
 TQAbstractProject *MainWindow::currentProject()
@@ -1941,10 +1969,10 @@ void MainWindow::on_actionOpenIds_triggered()
     idEntered(true);
 }
 
-void MainWindow::on_dockProps_visibilityChanged(bool visible)
-{
-    actionViewModify->setChecked(visible);
-}
+//void MainWindow::on_dockProps_visibilityChanged(bool visible)
+//{
+//    actionViewModify->setChecked(visible);
+//}
 
 void MainWindow::on_dockQueries_visibilityChanged(bool visible)
 {
@@ -1956,10 +1984,10 @@ void MainWindow::on_actionViewQueriesFolders_triggered(bool checked)
     dockQueries->setVisible(checked);
 }
 
-void MainWindow::on_actionViewModify_triggered(bool checked)
-{
-    dockProps->setVisible(checked);
-}
+//void MainWindow::on_actionViewModify_triggered(bool checked)
+//{
+//    dockProps->setVisible(checked);
+//}
 
 void MainWindow::on_actionRefresh_Query_triggered()
 {

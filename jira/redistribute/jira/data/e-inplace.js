@@ -93,7 +93,7 @@ InplaceEditor.prototype = {
     var textNode = document.getElementById('note'+index);
     $('#note'+index).removeClass("textstatic").addClass("texteditor");
     textNode.contentEditable = true;
-    setEditorHandler('#note'+index);
+    this.setEditorHandler('#note'+index);
     return false;
   },
 
@@ -103,14 +103,14 @@ InplaceEditor.prototype = {
     var textNode = document.getElementById('note'+index);
     textNode.contentEditable = false;
     var t = textNode.innerHTML;
-    t = removeBr(t);
+    t = this.removeBr(t);
     textNode.innerHTML = t;
     t = textNode.textContent;
     editor.setNote(index, editor.noteTitle(index), t);
     textNode.textContent = editor.noteText(index);
     $('#note'+index).addClass("textstatic");
     $('#note'+index).removeClass("texteditor");
-    clearEditorHandler('#note'+index);
+    this.clearEditorHandler('#note'+index);
     return false;
   },
 
@@ -122,7 +122,7 @@ InplaceEditor.prototype = {
   	textNode.textContent = editor.noteText(index);
   	$('#note'+index).addClass("textstatic");
   	$('#note'+index).removeClass("texteditor");
-  	clearEditorHandler('#note'+index);
+  	this.clearEditorHandler('#note'+index);
   	return false;
   },
 
@@ -142,7 +142,7 @@ InplaceEditor.prototype = {
           var textNode = document.getElementById('descText');
   	$('#descText').removeClass("textstatic").addClass("texteditor");
   	textNode.contentEditable = true;
-  	setEditorHandler('#descText');
+  	this.setEditorHandler('#descText');
   	return false;
   },
 
@@ -152,14 +152,14 @@ InplaceEditor.prototype = {
           var textNode = document.getElementById('descText');
   	textNode.contentEditable = false;
   	var t = textNode.innerHTML;
-  	t = removeBr(t);
+  	t = this.removeBr(t);
   	textNode.innerHTML = t;
   	t = textNode.textContent;
   	editor.setDescription(t);
   	textNode.textContent = editor.description;
   	$('#descText').addClass("textstatic");
   	$('#descText').removeClass("texteditor");
-  	clearEditorHandler('#descText');
+  	this.clearEditorHandler('#descText');
   	return false;
   },
 
@@ -171,7 +171,7 @@ InplaceEditor.prototype = {
   	textNode.textContent = editor.description;
   	$('#descText').addClass("textstatic");
   	$('#descText').removeClass("texteditor");
-  	clearEditorHandler('#descText');
+  	this.clearEditorHandler('#descText');
   	return false;
   }
 

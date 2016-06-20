@@ -1456,6 +1456,12 @@ TQRecModel *TrkToolProject::openIdsModel(const QList<int> &ids, int type, bool e
     return model;
 }
 
+TQRecModel *TrkToolProject::openRecords(const QString &queryText, int recType, bool emitEvent)
+{
+    QList<int> ids = stringToIntList(queryText);
+    return openIdsModel(ids, recType, emitEvent);
+}
+
 void TrkToolProject::refreshModel(QAbstractItemModel *model)
 {
     TQRecModel *recModel = qobject_cast<TQRecModel *>(model);

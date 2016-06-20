@@ -11,6 +11,6 @@ protected:
     virtual void	handleMessage ( QtMsgType type, const QString & description, const QUrl & identifier, const QSourceLocation & sourceLocation );
 };
 
-extern QAbstractMessageHandler *sysMessager;
+//extern QAbstractMessageHandler *sysMessager;
 
 #endif // MESSAGER_H

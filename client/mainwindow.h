@@ -56,6 +56,7 @@ class MainWindow;
 class MainProc;
 class TQRecordViewController;
 class LogForm;
+class QueryFields;
 
 class MainWindow : public QMainWindow, private Ui::MainWindow
 {
@@ -177,7 +178,8 @@ protected:
     void makeMenus();
     void setupToolbar();
     QueryPage *createNewPage(const QString &title);
-    ModifyPanel *modifyPanel;
+//    ModifyPanel *modifyPanel;
+    QueryFields *queryFields;
     QTimer *selectionTimer;
     QueryPage *curQueryPage();
     QVariantHash lastChanges;
@@ -217,11 +219,12 @@ public slots:
     void focusTab(QWidget *widget);
     QToolBar *addToolBar(const QString &title);
     QDockWidget *addWidgetToDock(const QString &title, QWidget *widget, Qt::DockWidgetArea area = Qt::RightDockWidgetArea);
-    void updateModifyPanel(const TQAbstractRecordTypeDef *typeDef, const QObjectList &records);
+//    void updateModifyPanel(TQViewController *controller);
     void proxyAuthentication(QNetworkProxy proxy ,QAuthenticator* auth);
 
 signals:
     void updatingDetails();
+    void controllerChanged(TQViewController *newController);
 
 public slots:
     void trustChanged(int State);
@@ -229,8 +232,8 @@ public slots:
     void idEntered(int flag);
     void slotAppendRecordsId();
     void slotRemoveRecordsId();
-    void applyChanges();
-    void repeatLastChanges();
+//    void applyChanges();
+//    void repeatLastChanges();
     void slotOpenRecordsClicked(QSet<int> res);
     void showRecordInList(TQRecord *record);
 
@@ -270,10 +273,10 @@ private slots:
     void on_actionDeleteFolder_triggered();
     void on_actionRenameFolder_triggered();
     void on_actionOpenIds_triggered();
-    void on_dockProps_visibilityChanged(bool visible);
+//    void on_dockProps_visibilityChanged(bool visible);
     void on_dockQueries_visibilityChanged(bool visible);
     void on_actionViewQueriesFolders_triggered(bool checked);
-    void on_actionViewModify_triggered(bool checked);
+//    void on_actionViewModify_triggered(bool checked);
     void on_actionRefresh_Query_triggered();
     void on_actionEditContents_triggered();
     //void on_actionPlansDialog_triggered();

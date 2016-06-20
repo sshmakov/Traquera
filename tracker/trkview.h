@@ -508,6 +508,7 @@ public:
                            qint64 afterTransId = 0);
     //TrkToolModel *openRecentModel(int afterTransId, const QString &name, TRK_RECORD_TYPE type = TRK_SCR_TYPE);
     TQRecModel *openIdsModel(const QList<int> &ids, int type, bool emitEvent = true);
+    TQRecModel *openRecords(const QString &queryText, int recType, bool emitEvent = true);
     void refreshModel(QAbstractItemModel *model);
     //NotesCol getNotes(int recId, TRK_RECORD_TYPE type) const;
     QStringList noteTitleList();

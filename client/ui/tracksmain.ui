@@ -77,7 +77,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>554</width>
+             <width>635</width>
              <height>418</height>
             </rect>
            </property>
@@ -216,7 +216,6 @@
     <addaction name="actionCloseTab"/>
     <addaction name="separator"/>
     <addaction name="actionViewQueriesFolders"/>
-    <addaction name="actionViewModify"/>
    </widget>
    <widget class="QMenu" name="menuProject">
     <property name="title">
@@ -302,30 +301,6 @@
         <bool>false</bool>
        </property>
       </widget>
-     </item>
-    </layout>
-   </widget>
-  </widget>
-  <widget class="QDockWidget" name="dockProps">
-   <property name="features">
-    <set>QDockWidget::AllDockWidgetFeatures</set>
-   </property>
-   <property name="windowTitle">
-    <string>Свойства</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>2</number>
-   </attribute>
-   <widget class="QWidget" name="dockPropsContents">
-    <layout class="QVBoxLayout" name="verticalLayout_4">
-     <property name="spacing">
-      <number>1</number>
-     </property>
-     <property name="margin">
-      <number>1</number>
-     </property>
-     <item>
-      <widget class="QWidget" name="widget" native="true"/>
      </item>
     </layout>
    </widget>
@@ -554,20 +529,6 @@
    </property>
    <property name="text">
     <string>Выборки и папки</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+1</string>
-   </property>
-  </action>
-  <action name="actionViewModify">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Свойства</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+2</string>
    </property>
   </action>
   <action name="actionEditContents">

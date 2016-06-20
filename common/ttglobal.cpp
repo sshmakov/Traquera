@@ -149,6 +149,11 @@ void TTGlobal::setMainProc(TTMainProc *proc)
     d->proc = proc;
 }
 
+TTMainProc *TTGlobal::mainProc()
+{
+    return d->proc;
+}
+
 const QSqlDatabase &TTGlobal::userDatabase()
 {
     if(!d->userDb.isOpen())
@@ -566,6 +571,7 @@ QObject *TTGlobal::oauth()
         m_oauth = new TQOAuth(this);
     return m_oauth;
 }
+
 
 void TTGlobal::handleEvent(const QString &event, QGenericReturnArgument ret, QGenericArgument val0, QGenericArgument val1,
                            QGenericArgument val2, QGenericArgument val3, QGenericArgument val4, QGenericArgument val5,

@@ -819,6 +819,33 @@ TQRecModel *JiraProject::openIdsModel(const IntList &ids, int recType, bool emit
     return model;
 }
 
+TQRecModel *JiraProject::openRecords(const QString &queryText, int recType, bool emitEvent)
+{
+    TQAbstractRecordTypeDef *rdef = recordTypeDef(recType);
+    if(!rdef)
+        return 0;
+    QString jql = queryText;
+    QVariantMap map = db->sendRequest("GET",db->queryUrl(QString("rest/api/2/search?jql=%1&fields=key,id").arg(jql))).toMap();
+    QVariantList issueList = map.value("issues").toList();
+    TQRecModel *model = new TQRecModel(this, recType, this);
+    model->setHeaders(rdef->fieldNames());
+    QList<TQRecord*> records;
+    int pos = projectKey.length()+1;
+    foreach(QVariant i, issueList)
+    {
+        QVariantMap issue = i.toMap();
+        QString key = issue.value("key").toString();
+        int id = key.mid(pos).toInt();
+        JiraRecord *rec = new JiraRecord(this, recType, id);
+        rec->key = key;
+        rec->internalId = issue.value("id").toInt();
+        readRecordFields(rec);
+        records.append(rec);
+    }
+    model->append(records);
+    return model;
+}
+
 TQRecord *JiraProject::createRecordById(int id, int rectype)
 {
     JiraRecord *rec = new JiraRecord(this, rectype, id);
@@ -1202,7 +1229,7 @@ bool JiraProject::doCommitUpdateRecord(TQRecord *record)
         {
             QVariantMap com;
             com.insert("body", note.text);
-            res = db->sendRequest("POST",db->queryUrl(QString("rest/api/2/issue/%1/comment/%2").arg(jRec->jiraKey()).arg(note.internalId)),com).toMap();
+            res = db->sendRequest("PUT",db->queryUrl(QString("rest/api/2/issue/%1/comment/%2").arg(jRec->jiraKey()).arg(note.internalId)),com).toMap();
             wasError |= db->lastHTTPCode() && db->lastHTTPCode() != 200  && db->lastHTTPCode() != 204;
         }
         else if(note.isDeleted)
@@ -2153,7 +2180,14 @@ QVariant JiraRecord::value(int vid, int role) const
     if(role != Qt::DisplayRole && role != Qt::EditRole)
         return QVariant();
     if(def && vid == def->descVid)
+    {
+        if(!isTextsReaded)
+        {
+            TQRecord *rec = const_cast<JiraRecord *>(this);
+            project()->readRecordTexts(rec);
+        }
         return desc;
+    }
     QVariant value;
     switch(role)
     {

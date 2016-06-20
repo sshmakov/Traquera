@@ -43,6 +43,7 @@
 #include <tqdebug.h>
 #include "queryfields.h"
 //#include <Shlwapi.h>
+#include <mainproc.h>
 
 
 struct DetailPages
@@ -137,7 +138,7 @@ QueryPage::QueryPage(QWidget *parent)
     d->fieldsPanel = new QueryFields(this);
     projectTabWidget->addTab(d->fieldsPanel, tr("Поля"));
     d->fieldsPanel->setViewController(d->controller, TQRecord::View);
-//    projectTabWidget->hide();
+    projectTabWidget->hide();
 
     connect(queryView,SIGNAL(activated(const QModelIndex &)),actionTest,SLOT(trigger()));
 
@@ -309,7 +310,7 @@ TQAbstractProject *QueryPage::project() const
     return d->modelProject;
 }
 
-TQQueryViewController *QueryPage::controller()
+TQViewController *QueryPage::controller()
 {
     return d->controller;
 }
@@ -693,6 +694,8 @@ QString QueryPage::makeRecordPage(const TQRecord *record, QXmlQuery xquery)
 
 QString QueryPage::makeRecordsPage(const QObjectList &records, const QString &xqCodePath)
 {
+//    QXmlQuery xquery = ttglobal()->makeXmlQuery(controller());
+
     QDomDocument xml("records");
     QDomElement root=xml.createElement("records");
     xml.appendChild(root);
@@ -738,7 +741,7 @@ QString QueryPage::makeRecordsPage(const QObjectList &records, const QString &xq
     xq.open(QIODevice::ReadOnly);
 
     QXmlQuery xquery;
-    xquery.setMessageHandler(sysMessager);
+    xquery.setMessageHandler(mainProc->messageHandler);
     if(d->globalObj)
         xquery.setNetworkAccessManager(d->globalObj->networkManager());
 

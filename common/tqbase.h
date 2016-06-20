@@ -268,6 +268,7 @@ public:
     virtual bool renameQuery(const QString &oldName, const QString &newName, int recordType);
     virtual bool deleteQuery(const QString &queryName, int recordType);
     virtual TQRecModel *openIdsModel(const IntList &ids, int recType, bool emitEvent = true) = 0;
+    virtual TQRecModel *openRecords(const QString &queryText, int recType, bool emitEvent = true) = 0;
     virtual void refreshModel(QAbstractItemModel *model) = 0;
     virtual QAbstractItemModel *queryModel(int type) = 0;
     virtual TQRecord *recordOfIndex(const QModelIndex &index) = 0;
