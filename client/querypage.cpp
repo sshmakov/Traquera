@@ -208,7 +208,6 @@ void QueryPage::initWidgets()
     copyAction->setShortcut(QKeySequence::Copy);
 #endif
     webView_2->addAction(copyAction);
-    initPopupMenu();
 }
 
 void QueryPage::addDetailTab(QWidget *tab, const QString &title, const QIcon &icon)
@@ -407,7 +406,13 @@ void QueryPage::setQueryModel(TQAbstractProject *prj, TQRecModel *model)
 		queryView->horizontalHeader(),
 		SIGNAL(sectionResized (int, int, int)),
 		this, SLOT(headerChanged()));
+    connect(
+        queryView->horizontalHeader(),
+        SIGNAL(customContextMenuRequested(QPoint)),
+        this, SLOT(showHeaderPopupMenu(QPoint)));
     queryView->selectRow(0);
+    queryView->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
+//    initPopupMenu();
 }
 
 QModelIndex QueryPage::mapIndexToModel(const QModelIndex &index) const
@@ -517,6 +522,52 @@ void QueryPage::slotUnsupportedContent(QNetworkReply *reply)
     delete reply;
 }
 
+void QueryPage::columnVisibleToggle()
+{
+}
+
+void QueryPage::showHeaderPopupMenu(const QPoint &pos)
+{
+    QMenu menu;
+    QHeaderView *hv=queryView->horizontalHeader();
+    QAction *action;
+    action = new QAction(tr("Настройка столбцов..."),&menu);
+    connect(action,SIGNAL(triggered()),this,SLOT(execColumnsEditor()));
+    menu.addAction(action);
+    int section = hv->logicalIndexAt(pos);
+    if(section >= 0)
+    {
+        QString label = hv->model()->headerData(section,Qt::Horizontal).toString().trimmed();
+        action = new QAction(tr("Скрыть столбец '%1'").arg(label),&menu);
+        action->setProperty("HeaderPos", section);
+        connect(action,SIGNAL(triggered()),this,SLOT(headerHide()));
+        menu.addAction(action);
+    }
+    menu.addSeparator();
+    QMenu *subMenu = menu.addMenu(tr("Столбцы"));
+
+    QHash<QString, int> fieldPos;
+    QStringList fields = recordTypeDef()->fieldNames();
+    QStringList labels;
+    for(int i=0; i<hv->count(); i++)
+    {
+        QString label = queryView->model()->headerData(i,Qt::Horizontal).toString().trimmed();
+        fieldPos[label] = i;
+        labels << label;
+    }
+    fields.sort();
+    foreach(const QString fieldName, fields)
+    {
+        int section = fieldPos.value(fieldName, -1);
+        QAction *action = new QAction(fieldName,&menu);
+        action->setCheckable(true);
+        action->setChecked(section != -1 && !hv->isSectionHidden(section));
+        action->setProperty("HeaderPos", section);
+        connect(action,SIGNAL(toggled(bool)),this,SLOT(headerToggled(bool)));
+        subMenu->addAction(action);
+    }
+    menu.exec(queryView->mapToGlobal(pos));
+}
 
 void QueryPage::resetPlanFilter()
 {
@@ -544,11 +595,60 @@ void QueryPage::headerChanged()
 void QueryPage::initPopupMenu()
 {
 	QHeaderView *hv=queryView->horizontalHeader();
+    QList<QAction *> headerActions;
+    QHash<QString, int> fieldPos;
+    QStringList fields = recordTypeDef()->fieldNames();
+    QStringList labels;
+    for(int i=0; i<hv->count(); i++)
+    {
+        QString label = queryView->model()->headerData(i,Qt::Horizontal).toString().trimmed();
+        fieldPos[label] = i;
+        labels << label;
+    }
+    fields.sort();
+    foreach(const QString fieldName, fields)
+    {
+        int pos = fieldPos.value(fieldName, -1);
+        QAction *action = new QAction(fieldName,this);
+        action->setCheckable(true);
+        action->setChecked(pos != -1 && !hv->isSectionHidden(pos));
+        action->setProperty("HeaderPos", pos);
+        connect(action,SIGNAL(toggled(bool)),this,SLOT(headerToggled(bool)));
+        headerActions.append(action);
+    }
+
+
+/*    QList<QAction *> headerActions;
+    for(int i=0; i<hv->count(); i++)
+    {
+        QString label = projectView->model()->headerData(i,Qt::Horizontal).toString().trimmed();
+        QAction *action = new QAction(label,this);
+        action->setCheckable(true);
+        action->setChecked(!hv->isSectionHidden(i));
+        action->setProperty("HeaderPos")
+        connect(action,SIGNAL(toggled(bool)),this,SLOT(headerToggled(bool)));
+        //hv->addAction(action);
+        headerActions.append(action);
+    }
+    hv->addActions(headerActions);
+*/
+
+//    QStringList names = recordTypeDef()->fieldNames();
+//    names.sort();
+//    foreach(const QString &fieldName, names)
+//    {
+//        QAction *action = new QAction(fieldName, this);
+//        connect(action,SIGNAL(triggered()),this,SLOT(columnVisibleToggle()));
+//        if(hv->logicalIndex(0))
+//        hv->addAction(action);
+//    }
 
     QAction *action = new QAction(tr("Настройка столбцов..."),this);
     connect(action,SIGNAL(triggered()),this,SLOT(execColumnsEditor()));
-    hv->addAction(action);
-	hv->setContextMenuPolicy(Qt::ActionsContextMenu);
+//    hv->addAction(action);
+    headerActions.append(action);
+    hv->addActions(headerActions);
+    hv->setContextMenuPolicy(Qt::ActionsContextMenu);
 }
 
 void QueryPage::headerToggled(bool checked)
@@ -572,6 +672,11 @@ void QueryPage::headerToggled(bool checked)
             }
 	}
     headerChanged();
+}
+
+void QueryPage::headerHide()
+{
+    headerToggled(false);
 }
 
 static QString escape(const QString& s)

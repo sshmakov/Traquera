@@ -109,6 +109,7 @@ public slots:
 //	void changedView(const QModelIndex &index, const QModelIndex &prev);
 	void headerChanged();
 	void headerToggled(bool checked);
+    void headerHide();
     void drawNotes();
 	void closeTab(int index);
 	void resetPlanFilter();
@@ -142,6 +143,8 @@ protected slots:
     //void slotPlanContextMenuRequested ( const QPoint & pos );
     void populateJavaScriptWindowObject();
     void slotUnsupportedContent(QNetworkReply *reply);
+    void columnVisibleToggle();
+    void showHeaderPopupMenu(const QPoint &pos);
     //void recordChanged(int recordId);
 signals:
     void changedQuery(const QString & projectName, const QString & queryName);
