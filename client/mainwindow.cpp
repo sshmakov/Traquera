@@ -178,7 +178,7 @@ MainWindow::MainWindow(QWidget *parent)
             SLOT(proxyAuthentication(QNetworkProxy,QAuthenticator*)),
             Qt::DirectConnection);
 
-    ttglobal()->registerOptionsWidget(tr("Сеть")+"/"+tr("Прокси"), ProxyOptions::proxyOptionsFunc);
+    ttglobal()->registerOptionsWidget(tr("Сеть"), ProxyOptions::proxyOptionsFunc);
     ProxyOptions::loadSettings();
     QSignalMapper *openMapper = new QSignalMapper(this);
 
