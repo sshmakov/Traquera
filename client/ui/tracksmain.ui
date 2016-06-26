@@ -530,6 +530,9 @@
    <property name="text">
     <string>Выборки и папки</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+1</string>
+   </property>
   </action>
   <action name="actionEditContents">
    <property name="text">

@@ -15,7 +15,7 @@ QList<int> toIntList(const QString & ids)
 }
 
 
-int parseToIntList(const char *text, QList<int> &arr)
+static int parseToIntList(const char *text, QList<int> &arr)
 {
     const char *p=text;
     bool digit=false;
@@ -40,6 +40,12 @@ int parseToIntList(const char *text, QList<int> &arr)
         p++;
     }
     return arr.count();
+}
+
+bool isIntListOnly(const QString &text)
+{
+    static QRegExp reg("^\\s*\\d+\\s*(,\\s*\\d+)*\\s*$");
+    return reg.exactMatch(text);
 }
 
 QList<int> stringToIntList(const QString &s)

@@ -57,17 +57,11 @@ public:
 
 private slots:
 //    void on_chUseProxy_clicked(bool checked);
-
 //    void on_chNeedLogin_clicked(bool checked);
-
     void on_cbProxyType_currentIndexChanged(int index);
-
     void on_leServer_editingFinished();
-
     void on_lePort_editingFinished();
-
     void on_leLogin_editingFinished();
-
     void on_lePassword_editingFinished();
 
 private:

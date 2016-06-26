@@ -102,7 +102,6 @@ SOURCES += database.cpp main.cpp mainwindow.cpp querypage.cpp \
     ttrecwindow.cpp \
     preview.cpp \
     ttfileiconprovider.cpp \
-    ../common/ttutils.cpp \
     ../common/cliputil.cpp \
     notewidget.cpp \
     scrpluginfactory.cpp \
@@ -122,7 +121,8 @@ SOURCES += database.cpp main.cpp mainwindow.cpp querypage.cpp \
     tqrecordviewcontroller.cpp \
     tqqueryviewcontroller.cpp \
     logform.cpp \
-    queryfields.cpp
+    queryfields.cpp \
+    ../common/ttutils.cpp
 
 #    planfilesform.cpp \
 #    project.cpp projectpage.cpp plans.cpp planproxy.cpp planfiles.cpp \

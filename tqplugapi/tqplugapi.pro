@@ -49,7 +49,8 @@ HEADERS += tqplugapi.h\
     ../common/tqjson.h \
     ../common/tqviewcontroller.h \
     tqnetaccessmanager.h \
-    ../common/tqdebug.h
+    ../common/tqdebug.h \
+    ../common/ttutils.h
 
 unix:!symbian {
     maemo5 {

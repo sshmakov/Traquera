@@ -14,10 +14,33 @@
 #include <ttglobal.h>
 #include <tqdebug.h>
 #include "jirafinduser.h"
+//#include <ttutils.h>
 
 Q_EXPORT_PLUGIN2("jira", JiraPlugin)
 
 static JiraPlugin *jira = 0;
+
+static bool isIntListOnly(const QString &text)
+{
+    static QRegExp reg("^\\s*\\d+\\s*(,\\s*\\d+)*\\s*$");
+    return reg.exactMatch(text);
+}
+
+static QList<int> stringToIntList(const QString &s)
+{
+    QList<int> ilist;
+    QStringList slist = s.split(',');
+    foreach(const QString &si, slist)
+    {
+        bool ok;
+        int i = si.toInt(&ok);
+        if(ok)
+            ilist << i;
+    }
+    return ilist;
+}
+
+
 
 static QWidget *getJiraOptionsWidget(const QString &path, GetOptionsWidgetFunc func)
 {
@@ -821,6 +844,8 @@ TQRecModel *JiraProject::openIdsModel(const IntList &ids, int recType, bool emit
 
 TQRecModel *JiraProject::openRecords(const QString &queryText, int recType, bool emitEvent)
 {
+    if(isIntListOnly(queryText))
+        return openIdsModel(stringToIntList(queryText), recType, emitEvent);
     TQAbstractRecordTypeDef *rdef = recordTypeDef(recType);
     if(!rdef)
         return 0;
