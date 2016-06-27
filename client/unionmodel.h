@@ -88,10 +88,8 @@ private slots:
     void	do_layoutChanged ()
     { emit layoutChanged(); }
 
-    void	do_modelAboutToBeReset ()
-    { beginResetModel(); }
-    void	do_modelReset ()
-    { endResetModel(); }
+    void	do_modelAboutToBeReset ();
+    void	do_modelReset ();
 
     void	do_rowsAboutToBeInserted ( const QModelIndex & parent, int start, int end );
 

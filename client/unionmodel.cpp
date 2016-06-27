@@ -54,7 +54,7 @@ QVariant UnionModel::data(const QModelIndex &proxyIndex, int role) const
     int id = proxyIndex.internalId();
     if(!info.contains(id))
         return QVariant();
-    const MapInfo &m = info[id];
+    const MapInfo &m = info.value(id);
     if(m.parentId<0)
     {
         if(proxyIndex.column()==0 && proxyIndex.row()<titles.count())
@@ -90,7 +90,7 @@ Qt::ItemFlags UnionModel::flags(const QModelIndex &index) const
     int id = index.internalId();
     if(!info.contains(id))
         return 0;
-    const MapInfo &m = info[id];
+    const MapInfo &m = info.value(id);
     if(m.parentId<0)
         return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
     QModelIndex si = mapToSource(index);
@@ -102,12 +102,14 @@ QModelIndex UnionModel::parent(const QModelIndex &child) const
     if(!child.isValid())
         return QModelIndex();
     int infoIndex = child.internalId();
-    if(infoIndex<0 || infoIndex>info.size())
+    if(!info.contains(infoIndex))
         return QModelIndex();
     const MapInfo &m = info[infoIndex];
     if(m.parentId<0)
         return QModelIndex();
-    return createIndex(info[m.parentId].row,0,info[m.parentId].id);
+    if(!info.contains(m.parentId))
+        return QModelIndex();
+    return createIndex(info.value(m.parentId).row,0,info.value(m.parentId).id);
     /*
     int parentId = child.internalId();
     if(!parentId)
@@ -138,7 +140,9 @@ bool UnionModel::hasChildren(const QModelIndex &parent) const
     if(!parent.isValid())
         return models.count()>0;
     int id = parent.internalId();
-    const MapInfo &m = info[id];
+    if(!info.contains(id))
+        return false;
+    MapInfo m = info.value(id);
     QModelIndex sp = mapToSource(parent);
     if(sp.isValid())
         return m.model->hasChildren(sp);
@@ -160,10 +164,10 @@ QModelIndex UnionModel::index(int row, int column, const QModelIndex &parent) co
         return createIndex(row,column,-1);
         */
     }
-    const MapInfo &p = info[parent.internalId()];
     MapInfo m = findInfo(row,parent);
     if(!m.isValid())
     {
+        const MapInfo &p = info.value(parent.internalId());
         m.id = info.count();
         m.parentId = p.id;
         m.row = row;
@@ -187,7 +191,9 @@ int UnionModel::rowCount(const QModelIndex &parent) const
     if(!models.count())
         return 0;
     int id = parent.internalId();
-    const MapInfo &m = info[id];
+    if(!info.contains(id))
+        return 0;
+    MapInfo m = info.value(id);
     QModelIndex sp = mapToSource(parent);
     return m.model->rowCount(sp);
 }
@@ -342,15 +348,15 @@ void UnionModel::removeSourceModel(QAbstractItemModel *model)
         return;
     disconnect(model);
     beginRemoveRows(QModelIndex(), row, row);
-    int id = -1;
+    QList<int> ids;
     foreach(MapInfo m, info)
     {
         if(m.model == model)
-            id = m.id;
+            ids.append(m.id);
     }
     models.removeAt(row);
     titles.removeAt(row);
-    if(id >= 0)
+    foreach(int id, ids)
         info.remove(id);
 
 //    emit layoutChanged();
@@ -436,6 +442,16 @@ MapInfo UnionModel::findInfo(int row, const QModelIndex &parent) const
             return m;
         }
     return MapInfo();
+}
+
+void UnionModel::do_modelAboutToBeReset()
+{
+    beginResetModel();
+}
+
+void UnionModel::do_modelReset()
+{
+    endResetModel();
 }
 
 void UnionModel::do_rowsAboutToBeInserted(const QModelIndex &parent, int start, int end)
