@@ -1534,9 +1534,18 @@ QString TrkToolProject::doGetDesc(TRK_RECORD_HANDLE recHandle) const
     {
         char buf[1024];
         TRK_UINT res;
+        bool tryAgain = true;
         while(remain)
         {
-            res = TrkGetDescriptionData(recHandle,sizeof(buf),buf,&remain);
+            TRK_UINT newRemain = remain;
+            res = TrkGetDescriptionData(recHandle,sizeof(buf),buf,&newRemain);
+//            if(res == TRK_E_NO_MORE_DATA && remain && !newRemain && tryAgain)
+//            {
+//                tryAgain = false;
+//                continue;
+//            }
+            remain = newRemain;
+            tryAgain = false;
             if(res != TRK_SUCCESS && res != TRK_E_DATA_TRUNCATED)
                 break;
             result += QString::fromLocal8Bit(buf);
@@ -1695,6 +1704,7 @@ bool TrkToolProject::readRecordTexts(TQRecord *record)
     TrkScopeRecHandle recHandle(this, trec);
     if(!recHandle.isValid())
         return false;
+    resetRecHandler(recHandle.recHandler());
     trec->desc = doGetDesc(*recHandle);
     trec->descChanged = false;
     trec->notesList = doGetNotes(*recHandle);
@@ -4119,21 +4129,21 @@ TrkRecHandler *TrkToolProject::allocRecHandler(int recID, TRK_RECORD_TYPE recTyp
         }
     }
 
+    for(int i=0; i<handlers.count(); i++)
+    {
+        TrkRecHandler &ph = handlers[i];
+        if(ph.recType == recType && ph.links <= 0 && !ph.isModify && !ph.isInsert)
+        {
+            if(recID && !isTrkOK(TrkGetSingleRecord(ph.handle, recID, recType)))
+                return 0;
+            ph.links = 1;
+            ph.id = recID;
+            return &ph;
+        }
+    }
+
     if(handlers.count() >= MAX_HANDLERS_COUNT)
     {
-        for(int i=0; i<handlers.count(); i++)
-        {
-            TrkRecHandler &ph = handlers[i];
-            if(ph.recType == recType && ph.links <= 0 && !ph.isModify && !ph.isInsert)
-            {
-                if(recID && !isTrkOK(TrkGetSingleRecord(ph.handle, recID, recType)))
-                    return 0;
-                ph.links = 1;
-                ph.id = recID;
-                return &ph;
-            }
-        }
-
         for(int i=0; i<handlers.count(); i++)
         {
             TrkRecHandler &h = handlers[i];
@@ -4175,6 +4185,7 @@ void TrkToolProject::freeRecHandler(TrkRecHandler *recHandler)
             --h.links;
 //            if(h.links == 0 && !h.isInsert && !h.isModify)
 //            {
+//                h.id = -1;
 //                TrkRecordHandleFree(&h.handle);
 //                handlers.removeAt(i);
 //            }
@@ -4201,6 +4212,17 @@ bool TrkToolProject::resetRecHandler(TrkRecHandler *rec)
     if(rec->id > 0)
         return isTrkOK(TrkGetSingleRecord(rec->handle,rec->id,rec->recType));
     return true;
+}
+
+void TrkToolProject::invalidateRecHandler(int recID)
+{
+    QMutexLocker locker(&handlerMutex);
+    for(int i=0; i<handlers.count(); i++)
+    {
+        TrkRecHandler &h = handlers[i];
+        if(h.id == recID && h.links <= 0)
+            h.id = -1;
+    }
 }
 
 //TrkRecHandler *TrkToolProject::pointTrkRecHandler(int recID, TRK_RECORD_TYPE recType)

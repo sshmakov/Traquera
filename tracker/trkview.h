@@ -488,6 +488,7 @@ protected: // Work with record handlers
     void freeRecHandler(TrkRecHandler *recHandler);
     void clearAllHandlers();
     bool resetRecHandler(TrkRecHandler *rec);
+    void invalidateRecHandler(int recID);
     //TrkRecHandler *pointTrkRecHandler(int recID, TRK_RECORD_TYPE recType = TRK_SCR_TYPE);
 public:
     TrkToolProject(TrkToolDB *db = 0);
