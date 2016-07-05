@@ -9,16 +9,17 @@ class TQ
   Q_ENUMS(TQFieldTypes TQVids)
 public:
   enum TQFieldTypes {
-      TQ_FIELD_TYPE_NONE			= 0,
+      TQ_FIELD_TYPE_NONE		= 0,
       TQ_FIELD_TYPE_CHOICE		= 1,
       TQ_FIELD_TYPE_STRING		= 2,
       TQ_FIELD_TYPE_NUMBER		= 3,
-      TQ_FIELD_TYPE_DATE			= 4,
+      TQ_FIELD_TYPE_DATE		= 4,
       //TQ_FIELD_TYPE_SUBMITTER	= 5,
       //TQ_FIELD_TYPE_OWNER		= 6,
-      TQ_FIELD_TYPE_USER			= 7,
+      TQ_FIELD_TYPE_USER		= 7,
       TQ_FIELD_TYPE_ELAPSED_TIME = 8,
       //TQ_FIELD_TYPE_STATE		= 9,
+      TQ_FIELD_TYPE_ARRAY       = 10,
       TQ_FIELD_TYPE_PERCENT     = 101
   };
   enum TQVids {
@@ -131,6 +132,7 @@ public:
     virtual TQAbstractProject *project() const = 0;
     virtual bool hasFieldCustomEditor(int vid) const = 0;
     virtual QWidget *createCustomEditor(int vid, QWidget *parent) const = 0;
+    virtual QString typeName() const = 0;
 };
 
 class TQBaseRecordTypeDefPrivate;

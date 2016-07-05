@@ -271,6 +271,7 @@ class TrkRecordTypeDef: public QObject, public TQBaseRecordTypeDef
 protected:
     TrkToolProject *prj;
     TRK_RECORD_TYPE recType;
+    QString recTypeName;
     bool isReadOnly;
     TrkVidDefs fieldDefs;
     QHash<int, QString> baseFields;
@@ -320,6 +321,7 @@ public:
     TQAbstractProject *project() const;
     int fieldVidByInternalId(int id) const;
     int fieldInternalIdByVid(int vid) const;
+    QString typeName() const;
 
 
     friend class TrkToolProject;

@@ -10,6 +10,7 @@
 //#include "trkview.h"
 #include "tqbase.h"
 #include <QTableView>
+#include <TQMultiComboBox/TQMultiComboBox.h>
 
 #define Settings_Grid "TrackerGrid3"
 
@@ -17,7 +18,7 @@ struct EditDef {
     QWidget *edit;
     QWidget *internalEditor;
     int fieldcol;
-    int fieldid;
+    int vid;
     QString fieldName;
     QString title;
 };
@@ -75,13 +76,13 @@ public:
 
 class QueryPage;
 
-class TrkDecorator : public QObject
+class TQDecorator : public QObject
 {
     Q_OBJECT
 protected:
 //    TQAbstractProject *prj;
 public:
-    explicit TrkDecorator(QObject *parent = 0);
+    explicit TQDecorator(QObject *parent = 0);
     void fillEditPanels(QTabWidget *tabs, const TQAbstractRecordTypeDef *recDef, EditDefList &def, bool onlyView = true);
     void readValues(TQRecord *record, EditDefList &def);
     void updateState(TQRecord *record, EditDefList &def);
@@ -99,21 +100,22 @@ public slots:
     
 };
 
-extern TrkDecorator *decorator;
+extern TQDecorator *decorator;
 
-class TrkFieldEdit;
+class TQFieldEdit;
 
-Q_DECLARE_INTERFACE(TrkFieldEdit,
+Q_DECLARE_INTERFACE(TQFieldEdit,
                      "allrecall.tracktasks.TrkFieldEditInterface/1.0")
 
-class TrkFieldEdit
+class TQFieldEdit
 {
 protected:
     QString field;
     TQRecord *rec;
+    int vid;
 public:
-    explicit TrkFieldEdit(const QString &fieldName);
-    void connectToRecord(TQRecord *record);
+    explicit TQFieldEdit(const QString &fieldName);
+    virtual void connectToRecord(TQRecord *record, int fieldVid);
     virtual void clearValue() = 0;
     virtual void setValue(const QVariant &value) = 0;
     virtual QVariant value() const = 0;
@@ -121,13 +123,13 @@ public:
     void valueChanged(const QString &fieldName, const QVariant &newValue);
 };
 
-class TrkStringEdit: public QLineEdit, public TrkFieldEdit
+class TQStringEdit: public QLineEdit, public TQFieldEdit
 {
     Q_OBJECT
-    Q_INTERFACES(TrkFieldEdit)
+    Q_INTERFACES(TQFieldEdit)
 public:
-    explicit TrkStringEdit(QWidget *parent, const QString &fieldName);
-    virtual void TrkFieldEdit::clearValue();
+    explicit TQStringEdit(QWidget *parent, const QString &fieldName);
+    virtual void TQFieldEdit::clearValue();
     virtual void setValue(const QVariant &value);
     virtual QVariant value() const;
     virtual void setReadOnly(bool readOnly);
@@ -135,12 +137,12 @@ protected slots:
     void onTextChanged(const QString &text);
 };
 
-class TrkChoiceBox: public QComboBox, public TrkFieldEdit
+class TQChoiceBox: public QComboBox, public TQFieldEdit
 {
     Q_OBJECT
-    Q_INTERFACES(TrkFieldEdit)
+    Q_INTERFACES(TQFieldEdit)
 public:
-    explicit TrkChoiceBox(QWidget *parent, const QString &fieldName);
+    explicit TQChoiceBox(QWidget *parent, const QString &fieldName);
     virtual void clearValue();
     virtual void setValue(const QVariant &value);
     virtual QVariant value() const;
@@ -149,18 +151,31 @@ protected slots:
     void onEditTextChanged(const QString &text);
 };
 
-class TrkDateTimeEdit: public QDateTimeEdit, public TrkFieldEdit
+class TQDateTimeEdit: public QDateTimeEdit, public TQFieldEdit
 {
     Q_OBJECT
-    Q_INTERFACES(TrkFieldEdit)
+    Q_INTERFACES(TQFieldEdit)
 public:
-    explicit TrkDateTimeEdit(QWidget *parent, const QString &fieldName);
+    explicit TQDateTimeEdit(QWidget *parent, const QString &fieldName);
     virtual void clearValue();
     virtual void setValue(const QVariant &value);
     virtual QVariant value() const;
     virtual void setReadOnly(bool readOnly);
 protected slots:
     void onDateTimeChanged(const QDateTime &value);
+};
+
+class TQChoiceArrayEdit: public TQMultiComboBox, public TQFieldEdit
+{
+    Q_OBJECT
+    Q_INTERFACES(TQFieldEdit)
+public:
+    explicit TQChoiceArrayEdit(QWidget *parent, const QString &fieldName);
+    virtual void clearValue();
+    virtual void setValue(const QVariant &value);
+    virtual QVariant value() const;
+    virtual void setReadOnly(bool readOnly);
+
 };
 
 #endif // TRKDECORATOR_H

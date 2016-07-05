@@ -617,8 +617,10 @@ bool TrkToolProject::readDefs()
         recType = ri.key();
         if(!recordDef.contains(ri.key()))
         {
-            recordDef[ri.key()] = new TrkRecordTypeDef(this);
-            recordDef[ri.key()]->recType = ri.key();
+            TrkRecordTypeDef *p = new TrkRecordTypeDef(this);
+            recordDef[ri.key()] = p;
+            p->recType = ri.key();
+            p->recTypeName = ri.value();
         }
         TrkVidDefs def;
         if(isTrkOK(TrkInitFieldList(handle, ri.key())))
@@ -4003,6 +4005,11 @@ int TrkRecordTypeDef::fieldInternalIdByVid(int vid) const
     if(!fDef)
         return 0;
     return fDef->internalId;
+}
+
+QString TrkRecordTypeDef::typeName() const
+{
+    return recTypeName;
 }
 
 // ============ TrkScopeRecHandle =================

@@ -89,7 +89,7 @@ MainWindow::MainWindow(QWidget *parent)
     journal = 0;
     //setWindowTitle("TraQuera");
 //#ifdef DECORATOR
-    decorator = new TrkDecorator(this);
+    decorator = new TQDecorator(this);
 //#endif
 //    trkdb = 0;
 //#ifdef SERV_DB_ON
@@ -149,10 +149,16 @@ MainWindow::MainWindow(QWidget *parent)
 	tabWidget->setCurrentIndex(tabWidget->insertTab(0, new QueryPage(), "Query"));
 	*/
     logForm = new LogForm(this);
-//    logForm->setObjectName("LogForm");
+    logForm->setObjectName("LogForm");
     QDockWidget *dw = addWidgetToDock(logForm->windowTitle(), logForm, Qt::BottomDockWidgetArea);
     dw->setVisible(false);
-	loadSettings();
+
+    queryFields = new QueryFields(this);
+    queryFields->setObjectName("Fields");
+    addWidgetToDock(tr("Поля"),queryFields);
+    connect(this, SIGNAL(controllerChanged(TQViewController*)), queryFields, SLOT(setViewController(TQViewController*)));
+
+    loadSettings();
     /*
     dbClassComboBox->addItems(TQAbstractDB::registeredDbClasses());
     connect(readProjectsBtn, SIGNAL(clicked()),this,SLOT(readProjects()));
@@ -160,7 +166,6 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(trustedUserBox, SIGNAL(stateChanged(int)), this, SLOT(trustChanged(int)));
     */
     //readFilters();
-    readModifications();
     setupToolbar();
     treeView->addAction(actionOpen_Query);
     //Preview *prev = new Preview(this);
@@ -783,7 +788,10 @@ QDockWidget *MainWindow::addWidgetToDock(const QString &title, QWidget *widget, 
 //    dw->setLayout(lay);
 //    lay->setContentsMargins(0,0,0,0);
     dw->setWidget(widget);
-    dw->setObjectName("dock_"+title);
+    QString objName = widget->objectName();
+    if(objName.isEmpty())
+        objName = title;
+    dw->setObjectName("dock_"+objName);
     dw->layout()->setMargin(0);
     QAction *action =new QAction(title, this);
     action->setCheckable(true);
@@ -1317,19 +1325,6 @@ void MainWindow::showPlanTask(const QString &fileName, int taskNum)
 void MainWindow::readFilters()
 {
     //toolBox->addItem(new FilterPage(this), tr("Фильтры"));
-}
-
-void MainWindow::readModifications()
-{
-    //toolBox->addItem(modifyPanel, tr("Свойства"));
-//    modifyPanel = new ModifyPanel(this);
-//    connect(modifyPanel,SIGNAL(applyButtonPressed()),this,SLOT(applyChanges()));
-//    connect(modifyPanel,SIGNAL(repeatButtonClicked()),this,SLOT(repeatLastChanges()));
-//    dockPropsContents->layout()->addWidget(modifyPanel);
-
-    queryFields = new QueryFields(this);
-    addWidgetToDock(tr("Поля"),queryFields);
-    connect(this, SIGNAL(controllerChanged(TQViewController*)), queryFields, SLOT(setViewController(TQViewController*)));
 }
 
 TQAbstractProject *MainWindow::currentProject()

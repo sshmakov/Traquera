@@ -157,8 +157,6 @@ public slots:
 public:
 	void initProjectModel();
     void loadPlugins();
-    //QMenu MainWindow::planMenu(bool forLink=false);
-    void readModifications();
     Q_INVOKABLE TQAbstractProject *currentProject();
     void setCurrentProject(TQAbstractProject *prj);
     int projectTreeRow(TQAbstractProject *prj);

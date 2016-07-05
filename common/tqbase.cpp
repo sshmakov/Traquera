@@ -751,6 +751,11 @@ const TQAbstractRecordTypeDef *TQRecord::typeDef() const
     return p->recordTypeDef(recordType());
 }
 
+const TQAbstractRecordTypeDef *TQRecord::typeEditDef() const
+{
+    return typeDef();
+}
+
 QVariant TQRecord::value(int vid, int role) const
 {
     Q_UNUSED(vid)

@@ -81,11 +81,11 @@ class TTUserEditor : public QComboBox
 public:
 };
 
-class TQDateTimeEdit: public QDateTimeEdit
+class TQDateTimeFieldEdit: public QDateTimeEdit
 {
     Q_OBJECT
 public:
-    explicit TQDateTimeEdit(QWidget *parent = 0);
+    explicit TQDateTimeFieldEdit(QWidget *parent = 0);
     void clear();
     void setDateTime(const QDateTime &dateTime);
     QDateTime dateTime();

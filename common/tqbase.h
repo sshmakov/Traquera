@@ -459,6 +459,7 @@ public:
 
     virtual TQAbstractProject *project() const;
     virtual const TQAbstractRecordTypeDef *typeDef() const;
+    virtual const TQAbstractRecordTypeDef *typeEditDef() const;
 
     Q_INVOKABLE virtual QVariant value(int vid, int role = Qt::DisplayRole) const ;
     Q_INVOKABLE virtual QVariant value(const QString& fieldName, int role = Qt::DisplayRole) const;

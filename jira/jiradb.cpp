@@ -177,6 +177,441 @@ public:
     }
 };
 
+// ======================== JiraRecTypeDef ==================================
+struct JiraRecTypeDefPrivate {
+    JiraProject *prj;
+    int recType;
+    QString recTypeName;
+    QMap<int, JiraFieldDesc> fields;
+    QMap<QString, int> systemNames;
+    QMap<QString, int> vids;
+    QMap<int, QString> roleFields;
+    QStringList systemChoices;
+    //    QHash<int,int> fIndexByVid;
+    QStringList schemaTypes;
+    QMap<QString, int> nativeTypes; // schema type to native type
+    QMap<QString, int> schemaToSimple;
+    int idVid, descVid, summaryVid, assigneeVid, creatorVid, createdVid;
+    //    QMap<QString, JiraUser> knownUsers; // by name
+};
+
+JiraRecTypeDef::JiraRecTypeDef(JiraProject *project)
+    : TQBaseRecordTypeDef(project), d(new JiraRecTypeDefPrivate())
+{
+    d->prj = project;
+    d->schemaToSimple.insert("array", TQ::TQ_FIELD_TYPE_ARRAY);
+    d->schemaToSimple.insert("date", TQ::TQ_FIELD_TYPE_DATE);
+    d->schemaToSimple.insert("datetime", TQ::TQ_FIELD_TYPE_DATE);
+    d->schemaToSimple.insert("group", TQ::TQ_FIELD_TYPE_CHOICE);
+    d->schemaToSimple.insert("issuetype", TQ::TQ_FIELD_TYPE_CHOICE);
+    d->schemaToSimple.insert("number", TQ::TQ_FIELD_TYPE_NUMBER);
+    d->schemaToSimple.insert("option-with-child", TQ::TQ_FIELD_TYPE_CHOICE);
+    d->schemaToSimple.insert("option", TQ::TQ_FIELD_TYPE_CHOICE);
+    d->schemaToSimple.insert("priority", TQ::TQ_FIELD_TYPE_CHOICE);
+    d->schemaToSimple.insert("progress", TQ::TQ_FIELD_TYPE_CHOICE);
+    d->schemaToSimple.insert("project", TQ::TQ_FIELD_TYPE_STRING);
+    d->schemaToSimple.insert("resolution", TQ::TQ_FIELD_TYPE_CHOICE);
+    d->schemaToSimple.insert("securitylevel", TQ::TQ_FIELD_TYPE_CHOICE);
+    d->schemaToSimple.insert("status", TQ::TQ_FIELD_TYPE_CHOICE);
+    d->schemaToSimple.insert("string", TQ::TQ_FIELD_TYPE_STRING);
+    d->schemaToSimple.insert("timetracking", TQ::TQ_FIELD_TYPE_DATE);
+    d->schemaToSimple.insert("user", TQ::TQ_FIELD_TYPE_USER);
+    d->schemaToSimple.insert("votes", TQ::TQ_FIELD_TYPE_NUMBER);
+    d->schemaToSimple.insert("issuekey", TQ::TQ_FIELD_TYPE_NUMBER);
+
+    d->roleFields.insert(TQAbstractRecordTypeDef::IdField,"issuekey");
+    d->roleFields.insert(TQAbstractRecordTypeDef::TitleField, "summary");
+    d->roleFields.insert(TQAbstractRecordTypeDef::DescriptionField, "description");
+    d->roleFields.insert(TQAbstractRecordTypeDef::StateField, "status");
+    d->roleFields.insert(TQAbstractRecordTypeDef::SubmitDateTimeField, "created");
+    d->roleFields.insert(TQAbstractRecordTypeDef::SubmitterField, "creator");
+    d->roleFields.insert(TQAbstractRecordTypeDef::OwnerField, "assignee");
+    d->roleFields.insert(TQAbstractRecordTypeDef::IdFriendlyField,"key");
+
+    d->systemChoices
+            << "status"
+            << "issuetype"
+            << "priority"
+            << "resolution"
+            << "project"
+//            << "issueLinkTypes"
+               ;
+}
+
+JiraRecTypeDef::JiraRecTypeDef(JiraRecTypeDef *src)
+    : TQBaseRecordTypeDef(src->project()), d(new JiraRecTypeDefPrivate())
+{
+    *d = *(src->d);
+}
+
+QStringList JiraRecTypeDef::fieldNames() const
+{
+    QStringList list;
+    foreach(const JiraFieldDesc &desc, d->fields)
+        list.append(desc.name);
+    return list;
+}
+
+TQAbstractFieldType JiraRecTypeDef::getFieldType(int vid, bool *ok) const
+{
+    if(d->fields.contains(vid))
+    {
+        TQAbstractFieldType ftype(this, vid);
+        if(ok)
+            *ok = true;
+        return ftype;
+    }
+    if(ok)
+        *ok = false;
+    return TQAbstractFieldType();
+}
+
+TQAbstractFieldType JiraRecTypeDef::getFieldType(const QString &name, bool *ok) const
+{
+    int vid = fieldVid(name);
+    if(vid)
+        return getFieldType(vid, ok);
+    if(ok)
+        *ok = false;
+    return TQAbstractFieldType();
+}
+
+QString JiraRecTypeDef::fieldSchemaType(int vid) const
+{
+    if(!d->fields.contains(vid))
+        return QString();
+    return d->fields[vid].schemaType;
+}
+
+int JiraRecTypeDef::fieldNativeType(int vid) const
+{
+    if(!d->fields.contains(vid))
+        return 0;
+    return d->fields[vid].nativeType;
+}
+
+int JiraRecTypeDef::fieldSimpleType(int vid) const
+{
+    if(!d->fields.contains(vid))
+        return TQ::TQ_FIELD_TYPE_NONE;
+    return d->fields[vid].simpleType;
+}
+
+bool JiraRecTypeDef::canFieldSubmit(int vid) const
+{
+    if(!d->fields.contains(vid))
+        return false;
+    return d->fields[vid].createShow;
+}
+
+bool JiraRecTypeDef::canFieldUpdate(int vid) const
+{
+    if(!d->fields.contains(vid))
+        return false;
+    return d->fields[vid].editable;
+}
+
+bool JiraRecTypeDef::isNullable(int vid) const
+{
+    if(!d->fields.contains(vid))
+        return false;
+    const JiraFieldDesc &desc = d->fields[vid];
+    return !desc.createRequired;
+}
+
+bool JiraRecTypeDef::hasChoiceList(int vid) const
+{
+    if(!d->fields.contains(vid))
+        return false;
+    const JiraFieldDesc &desc = d->fields[vid];
+    if(desc.simpleType == TQ::TQ_FIELD_TYPE_USER
+            || desc.simpleType == TQ::TQ_FIELD_TYPE_CHOICE)
+        return true;
+    return false;
+}
+
+TQChoiceList JiraRecTypeDef::choiceTable(const QString &tableName) const
+{
+    static const char *pref = "Table_";
+    if(tableName == "Users")
+    {
+        QMap<QString, TQUser> users = d->prj->userList();
+        TQChoiceList res;
+        int pos = 0;
+        foreach(QString login, users.keys())
+        {
+            TQChoiceItem item;
+            const TQUser &user = users[login];
+            item.fieldValue = login;
+            item.displayText = user.displayName;
+            item.id = user.id;
+            item.order = pos++;
+            item.weight = 0;
+            res.append(item);
+        }
+        return res;
+    }
+    else if(tableName.indexOf(pref)==0)
+    {
+        QString fSystemName = tableName.mid(QString(pref).length());
+        int vid = d->systemNames.value(fSystemName, -1);
+        if(vid<0)
+            return TQChoiceList();
+        const JiraFieldDesc &desc = d->fields.value(vid);
+        return desc.choices;
+    }
+    return TQChoiceList();
+}
+
+bool JiraRecTypeDef::containFieldVid(int vid) const
+{
+    return d->fields.contains(vid);
+}
+
+int JiraRecTypeDef::fieldVid(const QString &name) const
+{
+    return d->vids.value(name, TQ::TQ_NO_VID);
+}
+
+int JiraRecTypeDef::fieldVidSystem(const QString &systemName) const
+{
+    return d->systemNames.value(systemName, TQ::TQ_NO_VID);
+}
+
+QList<int> JiraRecTypeDef::fieldVids() const
+{
+    QList<int> list;
+    foreach(const JiraFieldDesc &desc, d->fields)
+        list.append(desc.vid);
+    return list;
+//    return vids.values();
+}
+
+QString JiraRecTypeDef::fieldName(int vid) const
+{
+    if(!d->fields.contains(vid))
+        return QString();
+    const JiraFieldDesc &desc = d->fields.value(vid);
+    return desc.name;
+}
+
+QString JiraRecTypeDef::fieldSystemName(int vid) const
+{
+    if(!d->fields.contains(vid))
+        return QString();
+    const JiraFieldDesc &desc = d->fields.value(vid);
+    return desc.id;
+}
+
+int JiraRecTypeDef::fieldRole(int vid) const
+{
+    if(vid == d->idVid)
+        return TQAbstractRecordTypeDef::IdField;
+    if(vid == d->descVid)
+        return TQAbstractRecordTypeDef::DescriptionField;
+    if(vid == d->summaryVid)
+        return TQAbstractRecordTypeDef::TitleField;
+    if(vid == d->assigneeVid)
+        return TQAbstractRecordTypeDef::OwnerField;
+    if(vid == d->createdVid)
+        return TQAbstractRecordTypeDef::SubmitDateTimeField;
+    if(vid == d->createdVid)
+        return TQAbstractRecordTypeDef::SubmitterField;
+    return NoRole;
+}
+
+QIODevice *JiraRecTypeDef::defineSource() const
+{
+    QString fileName = project()->optionValue(TQOPTION_GROUP_FIELDS).toString();
+    QFile *file = new QFile(fileName);
+    if(!file->exists())
+    {
+        delete file;
+        return 0;
+    }
+    return file;
+    //return new QFile("data/jira.xml");
+}
+
+int JiraRecTypeDef::recordType() const
+{
+    return d->recType;
+}
+
+QString JiraRecTypeDef::valueToDisplay(int vid, const QVariant &value) const
+{
+    const JiraFieldDesc &desc = d->fields.value(vid);
+    switch(desc.simpleType)
+    {
+    case TQ::TQ_FIELD_TYPE_NONE:
+        return QString();
+    case TQ::TQ_FIELD_TYPE_CHOICE:
+    {
+        QString table = fieldChoiceTable(vid);
+        if(table.isEmpty())
+            return "";
+        TQChoiceList list = choiceTable(table);
+        foreach(const TQChoiceItem &c, list)
+        {
+            if(c.fieldValue == value)
+                return c.displayText;
+        }
+        return "";
+    }
+    case TQ::TQ_FIELD_TYPE_STRING:
+    case TQ::TQ_FIELD_TYPE_NUMBER:
+        return value.toString();
+    case TQ::TQ_FIELD_TYPE_DATE:
+    {
+        QDateTime dt = value.toDateTime();
+        QString dv = dt.toString(dateTimeFormat());
+        return dv;
+    }
+    case TQ::TQ_FIELD_TYPE_USER:
+        return project()->userFullName(value.toString());
+
+    }
+    return QString();
+}
+
+QVariant JiraRecTypeDef::displayToValue(int vid, const QString &text) const
+{
+    QDateTime dt;
+    int simple = fieldSimpleType(vid);
+    switch(simple)
+    {
+    case TQ::TQ_FIELD_TYPE_DATE:
+        dt = QDateTime::fromString(text,dateTimeFormat());
+        return QVariant(dt);
+    case TQ::TQ_FIELD_TYPE_USER:
+    case TQ::TQ_FIELD_TYPE_CHOICE:
+    {
+        QString table = fieldChoiceTable(vid);
+        if(table.isEmpty())
+            return "";
+        TQChoiceList list = choiceTable(table);
+        foreach(const TQChoiceItem &c, list)
+        {
+            if(c.displayText.compare(text,Qt::CaseInsensitive) == 0)
+                return c.fieldValue;
+        }
+        return QVariant(QVariant::String);
+    }
+    case TQ::TQ_FIELD_TYPE_STRING:
+        return text;
+    case TQ::TQ_FIELD_TYPE_NUMBER:
+        bool ok;
+        int v = text.toInt(&ok);
+        if(!ok)
+            return QVariant(QVariant::Int);
+        return v;
+    }
+    return text;
+}
+
+QVariant JiraRecTypeDef::fieldDefaultValue(int vid) const
+{
+    const JiraFieldDesc &desc = d->fields.value(vid);
+    return desc.defaultValue;
+}
+
+QVariant JiraRecTypeDef::fieldMinValue(int vid) const
+{
+    const JiraFieldDesc &desc = d->fields.value(vid);
+    return desc.minValue;
+}
+
+QVariant JiraRecTypeDef::fieldMaxValue(int vid) const
+{
+    const JiraFieldDesc &desc = d->fields.value(vid);
+    return desc.maxValue;
+}
+
+QString JiraRecTypeDef::fieldChoiceTable(int vid) const
+{
+    const JiraFieldDesc &desc = d->fields.value(vid);
+    if(!desc.isValid() || !desc.isChoice())
+        return QString();
+    if(desc.isUser())
+        return "Users";
+    return "Table_" + desc.id;
+}
+
+int JiraRecTypeDef::roleVid(int role) const
+{
+    QString fSystem = d->roleFields.value(role);
+    if(fSystem.isEmpty())
+        return TQ::TQ_NO_VID;
+    return d->systemNames.value(fSystem, TQ::TQ_NO_VID);
+}
+
+//QString JiraRecTypeDef::dateTimeFormat() const
+//{
+//    QLocale locale = QLocale::system();
+//    return locale.dateFormat(QLocale::ShortFormat)+" "+locale.timeFormat(QLocale::LongFormat);
+//}
+
+QStringList JiraRecTypeDef::noteTitleList() const
+{
+    return QStringList();
+}
+
+TQAbstractProject *JiraRecTypeDef::project() const
+{
+    return d->prj;
+}
+
+bool JiraRecTypeDef::hasFieldCustomEditor(int vid) const
+{
+    int type = fieldSimpleType(vid);
+    return (type == TQ::TQ_FIELD_TYPE_USER);
+}
+
+QWidget *JiraRecTypeDef::createCustomEditor(int vid, QWidget *parent) const
+{
+    JiraUserComboBox *box = new JiraUserComboBox(d->prj, parent);
+    const JiraFieldDesc &desc = d->fields[vid];
+    if(!desc.autoCompleteUrl.isEmpty())
+    {
+        QString s = desc.autoCompleteUrl;
+        s.replace(QString("issueKey=null&"),QString("project=%1&").arg(d->prj->jiraProjectKey()));
+        box->setCompleteLink(s);
+    }
+    QStringList items;
+    foreach(const JiraUser &user, d->prj->knownUsers)
+    {
+        items.append(user.displayName);
+    }
+    items.sort();
+    box->insertItems(0, items);
+    return box;
+    /*
+    QLineEdit *editor = new QLineEdit(parent);
+    JiraFindUser *win = new JiraFindUser(prj);
+    win->connect(editor,SIGNAL(destroyed()),SLOT(deleteLater()));
+    if(win->exec())
+    {
+        editor->setText(win->text());
+    }
+    return editor;
+    */
+}
+
+const JiraFieldDesc &JiraRecTypeDef::fieldDesc(int vid) const
+{
+    return d->fields[vid];
+}
+
+QString JiraRecTypeDef::typeName() const
+{
+    return d->recTypeName;
+}
+
+int JiraRecTypeDef::schemaToSimpleType(const QString &schemaType)
+{
+    return d->schemaToSimple.value(schemaType,TQ::TQ_FIELD_TYPE_NONE);
+}
+
 // ======================== JiraDB ==================================
 JiraDB::JiraDB(QObject *parent)
     : TQAbstractDB(parent), webForm(0), oa(new TQOAuth(this)), parser(new TQJson(this)),
@@ -1073,7 +1508,7 @@ bool JiraProject::commitRecord(TQRecord *record)
         QVariant value = i.value();
         if(!recDef->containFieldVid(vid))
             continue;
-        const JiraFieldDesc &fdesc = recDef->fields[vid];
+        const JiraFieldDesc &fdesc = recDef->fieldDesc(vid);
         if(fdesc.isUser())
         {
             QVariantMap v;
@@ -1092,7 +1527,7 @@ bool JiraProject::commitRecord(TQRecord *record)
     v2.insert("key", projectKey);
     fields.insert("project", v2);
     v2.clear();
-    v2.insert("name", jRec->def->recTypeName);
+    v2.insert("name", jRec->typeDef()->typeName());
     fields.insert("issuetype", v2);
     v2.clear();
     fields.insert("summary",jRec->title());
@@ -1181,7 +1616,7 @@ bool JiraProject::doCommitUpdateRecord(TQRecord *record)
         QVariant value = i.value();
         if(!recDef->containFieldVid(vid))
             continue;
-        const JiraFieldDesc &fdesc = recDef->fields[vid];
+        const JiraFieldDesc &fdesc = recDef->fieldDesc(vid);
         if(fdesc.isUser())
         {
             QVariantMap v;
@@ -1483,12 +1918,219 @@ QString JiraProject::jiraProjectKey() const
 }
 */
 
+void JiraProject::readRecordDef2(JiraRecTypeDef *rdef, const QVariantMap &fieldsMap)
+{
+    static QStringList skippedFields = QStringList()
+            << "attachment"
+            << "description"
+            << "comment"
+            << "worklog"
+               ;
+    int vid = 1;
+    int nativeType = 1;
+    foreach(QVariant v, fieldList)
+    {
+        QVariantMap map = v.toMap();
+        JiraFieldDesc f;
+        f.id = map.value("id",0).toString();
+        f.name = map.value("name").toString();
+        f.custom = map.value("custom", false).toBool();
+        if(f.custom)
+            f.name = f.name + tr(" (cf)");
+        f.orderable = map.value("orderable", false).toBool();
+        f.navigable = map.value("navigable", false).toBool();
+        f.searchable = map.value("searchable", false).toBool();
+        f.editable = false;
+        f.clauseNames = map.value("clauseNames",QStringList()).toStringList();
+
+        QVariantMap s = map.value("schema", QVariantMap()).toMap();
+        f.schemaType = s.value("type").toString();
+        f.schemaItems = s.value("items").toString();
+        f.schemaSystem = s.value("system").toString();
+        f.vid = ++vid;
+        if(f.id == "issuekey")
+        {
+            f.schemaType = "issuekey";
+            rdef->d->idVid = f.vid;
+        }
+        else if(f.id == "description")
+            rdef->d->descVid = f.vid;
+        else if(f.id == "summary")
+            rdef->d->summaryVid = f.vid;
+        else if(f.id == "assignee")
+            rdef->d->assigneeVid = f.vid;
+        else if(f.id == "creator")
+            rdef->d->creatorVid = f.vid;
+        else if(f.id == "created")
+            rdef->d->createdVid = f.vid;
+        if(!rdef->d->schemaTypes.contains(f.schemaType))
+        {
+            rdef->d->schemaTypes.append(f.schemaType);
+            rdef->d->nativeTypes.insert(f.schemaType, nativeType++);
+        }
+        if(skippedFields.contains(f.id))
+            continue;
+        f.nativeType = rdef->d->schemaTypes.indexOf(f.schemaType); // not work for issuekey
+        f.simpleType = rdef->schemaToSimpleType(f.schemaType);
+        if(f.simpleType == TQ::TQ_FIELD_TYPE_USER)
+            f.choiceTable = "Users";
+        else if(f.simpleType == TQ::TQ_FIELD_TYPE_CHOICE)
+        {
+            f.choiceTable = "Table_" + f.id;
+            if(rdef->d->systemChoices.contains(f.id))
+                f.choices = loadChoiceTables(rdef, f.id);
+        }
+        else
+            f.choiceTable = QString();
+        if(fieldsMap.contains(f.id))
+        {
+            QVariantMap createMeta = fieldsMap.value(f.id).toMap();
+            f.createShow = true;
+            f.createRequired = createMeta.value("required","false").toString() == "true";
+            f.autoCompleteUrl = createMeta.value("autoCompleteUrl").toString();
+            if(createMeta.contains("allowedValues"))
+            {
+                QVariantList values = createMeta.value("allowedValues").toList();
+                int pos=0;
+                foreach(QVariant v, values)
+                {
+                    QVariantMap vmap = v.toMap();
+                    TQChoiceItem item;
+                    item.displayText = vmap.value("name").toString();
+                    item.fieldValue = vmap.value("id");
+                    item.id = vmap.value("id").toInt();
+                    item.weight = 0;
+                    item.order = pos++;
+                    f.choices.append(item);
+                }
+            }
+        }
+        else
+        {
+            f.createShow = false;
+            f.createRequired = false;
+        }
+        rdef->d->systemNames.insert(f.id, f.vid);
+        {
+            int i = 2;
+            QString name = f.name;
+            while(rdef->d->vids.contains(f.name))
+                f.name = name + " " +QString::number(i++);
+            rdef->d->vids.insert(f.name, f.vid);
+            rdef->d->fields.insert(f.vid,f);
+        }
+    }
+}
+
+void JiraProject::readRecordDef(JiraRecTypeDef *rdef, int recordType, const QVariantMap &typeMap)
+{
+    rdef->d->recType = recordType;
+    rdef->d->recTypeName = typeMap.value("name").toString();
+
+    QVariant obj = db->sendRequest("GET", db->queryUrl(QString("rest/api/2/issue/createmeta?projectIds=%1&issuetypeIds=%2&expand=projects.issuetypes.fields").arg(projectId).arg(recordType)));
+    QVariantMap createFields = db->parseValue(obj, "projects/0/issuetypes/0/fields").toMap();
+    readRecordDef2(rdef, createFields);
+    /*
+    int vid = 1;
+    int nativeType = 1;
+    foreach(QVariant v, fieldList)
+    {
+        QVariantMap map = v.toMap();
+        JiraFieldDesc f;
+        f.id = map.value("id",0).toString();
+        f.name = map.value("name").toString();
+        f.custom = map.value("custom", false).toBool();
+        if(f.custom)
+            f.name = f.name + tr(" (cf)");
+        f.orderable = map.value("orderable", false).toBool();
+        f.navigable = map.value("navigable", false).toBool();
+        f.searchable = map.value("searchable", false).toBool();
+        f.clauseNames = map.value("clauseNames",QStringList()).toStringList();
+
+        QVariantMap s = map.value("schema", QVariantMap()).toMap();
+        f.schemaType = s.value("type").toString();
+        f.schemaItems = s.value("items").toString();
+        f.schemaSystem = s.value("system").toString();
+        f.vid = ++vid;
+        if(f.id == "issuekey")
+        {
+            f.schemaType = "issuekey";
+            rdef->idVid = f.vid;
+        }
+        else if(f.id == "description")
+            rdef->descVid = f.vid;
+        else if(f.id == "summary")
+            rdef->summaryVid = f.vid;
+        else if(f.id == "assignee")
+            rdef->assigneeVid = f.vid;
+        else if(f.id == "creator")
+            rdef->creatorVid = f.vid;
+        else if(f.id == "created")
+            rdef->createdVid = f.vid;
+        if(!rdef->schemaTypes.contains(f.schemaType))
+        {
+            rdef->schemaTypes.append(f.schemaType);
+            rdef->nativeTypes.insert(f.schemaType, nativeType++);
+        }
+        f.nativeType = rdef->schemaTypes.indexOf(f.schemaType); // not work for issuekey
+        f.simpleType = rdef->schemaToSimpleType(f.schemaType);
+        if(f.simpleType == TQ::TQ_FIELD_TYPE_USER)
+            f.choiceTable = "Users";
+        else if(f.simpleType == TQ::TQ_FIELD_TYPE_CHOICE)
+        {
+            f.choiceTable = "Table_" + f.id;
+            if(rdef->systemChoices.contains(f.id))
+                f.choices = loadChoiceTables(rdef, f.id);
+        }
+        else
+            f.choiceTable = QString();
+        if(createFields.contains(f.id))
+        {
+            QVariantMap createMeta = createFields.value(f.id).toMap();
+            f.createShow = true;
+            f.createRequired = createMeta.value("required","false").toString() == "true";
+            f.autoCompleteUrl = createMeta.value("autoCompleteUrl").toString();
+            if(createMeta.contains("allowedValues"))
+            {
+                QVariantList values = createMeta.value("allowedValues").toList();
+                int pos=0;
+                foreach(QVariant v, values)
+                {
+                    QVariantMap vmap = v.toMap();
+                    TQChoiceItem item;
+                    item.displayText = vmap.value("name").toString();
+                    item.fieldValue = vmap.value("id");
+                    item.id = vmap.value("id").toInt();
+                    item.weight = 0;
+                    item.order = pos++;
+                    f.choices.append(item);
+                }
+            }
+        }
+        else
+        {
+            f.createShow = false;
+            f.createRequired = false;
+        }
+        rdef->systemNames.insert(f.id, f.vid);
+        {
+            int i = 2;
+            QString name = f.name;
+            while(rdef->vids.contains(f.name))
+                f.name = name + " " +QString::number(i++);
+            rdef->vids.insert(f.name, f.vid);
+            rdef->fields.insert(f.vid,f);
+        }
+    }
+    */
+}
+
 void JiraProject::loadRecordTypes()
 {
     QVariant obj = db->sendRequest("GET", db->queryUrl("rest/api/2/field"));
-    QVariantList fieldList = obj.toList();
-    QVariantList types = db->sendRequest("GET",db->queryUrl("rest/api/2/issuetype")).toList();
-    foreach(const QVariant &t, types)
+    fieldList = obj.toList();
+    typesList = db->sendRequest("GET",db->queryUrl("rest/api/2/issuetype")).toList();
+    foreach(const QVariant &t, typesList)
     {
         QVariantMap typeMap = t.toMap();
         int recordType = typeMap.value("id",0).toInt();
@@ -1496,105 +2138,49 @@ void JiraProject::loadRecordTypes()
             continue;
 
         JiraRecTypeDef *rdef = new JiraRecTypeDef(this);
-        rdef->recType = recordType;
-        rdef->recTypeName = typeMap.value("name").toString();
+        rdef->d->recType = recordType;
+        rdef->d->recTypeName = typeMap.value("name").toString();
 
-        obj = db->sendRequest("GET", db->queryUrl(QString("rest/api/2/issue/createmeta?projectIds=%1&issuetypeIds=%2&expand=projects.issuetypes.fields").arg(projectId).arg(recordType)));
+        QVariant obj = db->sendRequest("GET", db->queryUrl(QString("rest/api/2/issue/createmeta?projectIds=%1&issuetypeIds=%2&expand=projects.issuetypes.fields").arg(projectId).arg(recordType)));
         QVariantMap createFields = db->parseValue(obj, "projects/0/issuetypes/0/fields").toMap();
-        int vid = 1;
-        int nativeType = 1;
-        foreach(QVariant v, fieldList)
-        {
-            QVariantMap map = v.toMap();
-            JiraFieldDesc f;
-            f.id = map.value("id",0).toString();
-            f.name = map.value("name").toString();
-            f.custom = map.value("custom", false).toBool();
-            if(f.custom)
-                f.name = f.name + tr(" (cf)");
-            f.orderable = map.value("orderable", false).toBool();
-            f.navigable = map.value("navigable", false).toBool();
-            f.searchable = map.value("searchable", false).toBool();
-            f.clauseNames = map.value("clauseNames",QStringList()).toStringList();
-
-            QVariantMap s = map.value("schema", QVariantMap()).toMap();
-            f.schemaType = s.value("type").toString();
-            f.schemaItems = s.value("items").toString();
-            f.schemaSystem = s.value("system").toString();
-            f.vid = ++vid;
-            if(f.id == "issuekey")
-            {
-                f.schemaType = "issuekey";
-                rdef->idVid = f.vid;
-            }
-            else if(f.id == "description")
-                rdef->descVid = f.vid;
-            else if(f.id == "summary")
-                rdef->summaryVid = f.vid;
-            else if(f.id == "assignee")
-                rdef->assigneeVid = f.vid;
-            else if(f.id == "creator")
-                rdef->creatorVid = f.vid;
-            else if(f.id == "created")
-                rdef->createdVid = f.vid;
-            if(!rdef->schemaTypes.contains(f.schemaType))
-            {
-                rdef->schemaTypes.append(f.schemaType);
-                rdef->nativeTypes.insert(f.schemaType, nativeType++);
-            }
-            f.nativeType = rdef->schemaTypes.indexOf(f.schemaType); // not work for issuekey
-            f.simpleType = rdef->schemaToSimpleType(f.schemaType);
-            if(f.simpleType == TQ::TQ_FIELD_TYPE_USER)
-                f.choiceTable = "Users";
-            else if(f.simpleType == TQ::TQ_FIELD_TYPE_CHOICE)
-            {
-                f.choiceTable = "Table_" + f.id;
-                if(rdef->systemChoices.contains(f.id))
-                    f.choices = loadChoiceTables(rdef, f.id);
-            }
-            else
-                f.choiceTable = QString();
-            if(createFields.contains(f.id))
-            {
-                QVariantMap createMeta = createFields.value(f.id).toMap();
-                f.createShow = true;
-                f.createRequired = createMeta.value("required","false").toString() == "true";
-                f.autoCompleteUrl = createMeta.value("autoCompleteUrl").toString();
-                if(createMeta.contains("allowedValues"))
-                {
-                    QVariantList values = createMeta.value("allowedValues").toList();
-                    int pos=0;
-                    foreach(QVariant v, values)
-                    {
-                        QVariantMap vmap = v.toMap();
-                        TQChoiceItem item;
-                        item.displayText = vmap.value("name").toString();
-                        item.fieldValue = vmap.value("id");
-                        item.id = vmap.value("id").toInt();
-                        item.weight = 0;
-                        item.order = pos++;
-                        f.choices.append(item);
-                    }
-                }
-            }
-            else
-            {
-                f.createShow = false;
-                f.createRequired = false;
-            }
-            rdef->systemNames.insert(f.id, f.vid);
-            {
-                int i = 2;
-                QString name = f.name;
-                while(rdef->vids.contains(f.name))
-                    f.name = name + " " +QString::number(i++);
-                rdef->vids.insert(f.name, f.vid);
-                rdef->fields.insert(f.vid,f);
-            }
-        }
+        readRecordDef2(rdef, createFields);
+//        readRecordDef(rdef, recordType, typeMap);
         recordDefs.insert(recordType, rdef);
-        recordTypes.insert(rdef->recType, rdef->recTypeName);
+        recordTypes.insert(rdef->d->recType, rdef->d->recTypeName);
     }
+}
+
+JiraRecTypeDef *JiraProject::loadEditRecordDef(const JiraRecord *record)
+{
+    JiraRecTypeDef *srcDef = (JiraRecTypeDef *)record->typeDef();
+    JiraRecTypeDef *rdef = new JiraRecTypeDef(srcDef);
+    /*
+    rdef->d->recType = record->recordType();
+    QVariantMap typeMap;
+    foreach(const QVariant &t, typesList)
+    {
+        if(t.toMap().value("id",0).toInt() == rdef->d->recType)
+        {
+            typeMap = t.toMap();
+            break;
+        }
+    }
+
+    rdef->d->recTypeName = typeMap.value("name").toString();
+    */
+    QVariant obj = db->sendRequest("GET", db->queryUrl(QString("rest/api/2/issue/%1/editmeta").arg(record->jiraKey())));
+    QVariantMap editFields = db->parseValue(obj, "fields").toMap();
+    foreach(QString systemName, editFields.keys())
+    {
+        QVariantMap map = editFields.value(systemName).toMap();
+        int vid = rdef->d->systemNames.value(systemName, TQ::TQ_NO_VID);
+        if(vid != TQ::TQ_NO_VID)
+        {
+            JiraFieldDesc &fdesc = rdef->d->fields[vid];
+            fdesc.editable = true;
+        }
+    }
+    return rdef;
 }
 
 TQChoiceList JiraProject::loadChoiceTables(JiraRecTypeDef *rdef, const QString &url)
@@ -1690,7 +2276,7 @@ void JiraProject::storeReadedField(JiraRecord *rec, const JiraRecTypeDef *rdef, 
         rec->desc = value.toString();
     else
     {
-        if(rdef->systemChoices.contains(fid))
+        if(rdef->d->systemChoices.contains(fid))
         {
             int id = value.toMap().value("id").toInt();
             QString display = value.toMap().value("name").toString();
@@ -1699,7 +2285,7 @@ void JiraProject::storeReadedField(JiraRecord *rec, const JiraRecTypeDef *rdef, 
         }
         else
         {
-            const JiraFieldDesc &fdef = rdef->fields[fvid];
+            const JiraFieldDesc &fdef = rdef->d->fields[fvid];
             if(fdef.isUser())
             {
                 QVariantMap uMap = value.toMap();
@@ -1745,429 +2331,53 @@ void JiraProject::showSelectUser()
 }
 
 
-// ======================== JiraRecTypeDef ==================================
-JiraRecTypeDef::JiraRecTypeDef(JiraProject *project)
-    : TQBaseRecordTypeDef(project), prj(project)
-{
-    schemaToSimple.insert("array", TQ::TQ_FIELD_TYPE_CHOICE);
-    schemaToSimple.insert("date", TQ::TQ_FIELD_TYPE_DATE);
-    schemaToSimple.insert("datetime", TQ::TQ_FIELD_TYPE_DATE);
-    schemaToSimple.insert("group", TQ::TQ_FIELD_TYPE_CHOICE);
-    schemaToSimple.insert("issuetype", TQ::TQ_FIELD_TYPE_CHOICE);
-    schemaToSimple.insert("number", TQ::TQ_FIELD_TYPE_NUMBER);
-    schemaToSimple.insert("option-with-child", TQ::TQ_FIELD_TYPE_CHOICE);
-    schemaToSimple.insert("option", TQ::TQ_FIELD_TYPE_CHOICE);
-    schemaToSimple.insert("priority", TQ::TQ_FIELD_TYPE_CHOICE);
-    schemaToSimple.insert("progress", TQ::TQ_FIELD_TYPE_CHOICE);
-    schemaToSimple.insert("project", TQ::TQ_FIELD_TYPE_STRING);
-    schemaToSimple.insert("resolution", TQ::TQ_FIELD_TYPE_CHOICE);
-    schemaToSimple.insert("securitylevel", TQ::TQ_FIELD_TYPE_CHOICE);
-    schemaToSimple.insert("status", TQ::TQ_FIELD_TYPE_CHOICE);
-    schemaToSimple.insert("string", TQ::TQ_FIELD_TYPE_STRING);
-    schemaToSimple.insert("timetracking", TQ::TQ_FIELD_TYPE_DATE);
-    schemaToSimple.insert("user", TQ::TQ_FIELD_TYPE_USER);
-    schemaToSimple.insert("votes", TQ::TQ_FIELD_TYPE_NUMBER);
-    schemaToSimple.insert("issuekey", TQ::TQ_FIELD_TYPE_NUMBER);
-
-    roleFields.insert(TQAbstractRecordTypeDef::IdField,"issuekey");
-    roleFields.insert(TQAbstractRecordTypeDef::TitleField, "summary");
-    roleFields.insert(TQAbstractRecordTypeDef::DescriptionField, "description");
-    roleFields.insert(TQAbstractRecordTypeDef::StateField, "status");
-    roleFields.insert(TQAbstractRecordTypeDef::SubmitDateTimeField, "created");
-    roleFields.insert(TQAbstractRecordTypeDef::SubmitterField, "creator");
-    roleFields.insert(TQAbstractRecordTypeDef::OwnerField, "assignee");
-    roleFields.insert(TQAbstractRecordTypeDef::IdFriendlyField,"key");
-
-    systemChoices
-            << "status"
-            << "issuetype"
-            << "priority"
-            << "resolution"
-            << "project"
-//            << "issueLinkTypes"
-               ;
-}
-
-QStringList JiraRecTypeDef::fieldNames() const
-{
-    QStringList list;
-    foreach(const JiraFieldDesc &desc, fields)
-        list.append(desc.name);
-    return list;
-}
-
-TQAbstractFieldType JiraRecTypeDef::getFieldType(int vid, bool *ok) const
-{
-    if(fields.contains(vid))
-    {
-        TQAbstractFieldType ftype(this, vid);
-        if(ok)
-            *ok = true;
-        return ftype;
-    }
-    if(ok)
-        *ok = false;
-    return TQAbstractFieldType();
-}
-
-TQAbstractFieldType JiraRecTypeDef::getFieldType(const QString &name, bool *ok) const
-{
-    int vid = fieldVid(name);
-    if(vid)
-        return getFieldType(vid, ok);
-    if(ok)
-        *ok = false;
-    return TQAbstractFieldType();
-}
-
-QString JiraRecTypeDef::fieldSchemaType(int vid) const
-{
-    if(!fields.contains(vid))
-        return QString();
-    return fields[vid].schemaType;
-}
-
-int JiraRecTypeDef::fieldNativeType(int vid) const
-{
-    if(!fields.contains(vid))
-        return 0;
-    return fields[vid].nativeType;
-}
-
-int JiraRecTypeDef::fieldSimpleType(int vid) const
-{
-    if(!fields.contains(vid))
-        return TQ::TQ_FIELD_TYPE_NONE;
-    return fields[vid].simpleType;
-}
-
-bool JiraRecTypeDef::canFieldSubmit(int vid) const
-{
-    if(!fields.contains(vid))
-        return false;
-    return fields[vid].createShow;
-}
-
-bool JiraRecTypeDef::canFieldUpdate(int vid) const
-{
-    return true;
-}
-
-bool JiraRecTypeDef::isNullable(int vid) const
-{
-    if(!fields.contains(vid))
-        return false;
-    const JiraFieldDesc &desc = fields[vid];
-    return !desc.createRequired;
-}
-
-bool JiraRecTypeDef::hasChoiceList(int vid) const
-{
-    if(!fields.contains(vid))
-        return false;
-    const JiraFieldDesc &desc = fields[vid];
-    if(desc.simpleType == TQ::TQ_FIELD_TYPE_USER
-            || desc.simpleType == TQ::TQ_FIELD_TYPE_CHOICE)
-        return true;
-    return false;
-}
-
-TQChoiceList JiraRecTypeDef::choiceTable(const QString &tableName) const
-{
-    static const char *pref = "Table_";
-    if(tableName == "Users")
-    {
-        QMap<QString, TQUser> users = prj->userList();
-        TQChoiceList res;
-        int pos = 0;
-        foreach(QString login, users.keys())
-        {
-            TQChoiceItem item;
-            const TQUser &user = users[login];
-            item.fieldValue = login;
-            item.displayText = user.displayName;
-            item.id = user.id;
-            item.order = pos++;
-            item.weight = 0;
-            res.append(item);
-        }
-        return res;
-    }
-    else if(tableName.indexOf(pref)==0)
-    {
-        QString fSystemName = tableName.mid(QString(pref).length());
-        int vid = systemNames.value(fSystemName, -1);
-        if(vid<0)
-            return TQChoiceList();
-        const JiraFieldDesc &desc = fields.value(vid);
-        return desc.choices;
-    }
-    return TQChoiceList();
-}
-
-bool JiraRecTypeDef::containFieldVid(int vid) const
-{
-    return fields.contains(vid);
-}
-
-int JiraRecTypeDef::fieldVid(const QString &name) const
-{
-    return vids.value(name, TQ::TQ_NO_VID);
-}
-
-int JiraRecTypeDef::fieldVidSystem(const QString &systemName) const
-{
-    return systemNames.value(systemName, TQ::TQ_NO_VID);
-}
-
-QList<int> JiraRecTypeDef::fieldVids() const
-{
-    QList<int> list;
-    foreach(const JiraFieldDesc &desc, fields)
-        list.append(desc.vid);
-    return list;
-//    return vids.values();
-}
-
-QString JiraRecTypeDef::fieldName(int vid) const
-{
-    if(!fields.contains(vid))
-        return QString();
-    const JiraFieldDesc &desc = fields.value(vid);
-    return desc.name;
-}
-
-QString JiraRecTypeDef::fieldSystemName(int vid) const
-{
-    if(!fields.contains(vid))
-        return QString();
-    const JiraFieldDesc &desc = fields.value(vid);
-    return desc.id;
-}
-
-int JiraRecTypeDef::fieldRole(int vid) const
-{
-    if(vid == idVid)
-        return TQAbstractRecordTypeDef::IdField;
-    if(vid == descVid)
-        return TQAbstractRecordTypeDef::DescriptionField;
-    if(vid == summaryVid)
-        return TQAbstractRecordTypeDef::TitleField;
-    if(vid == assigneeVid)
-        return TQAbstractRecordTypeDef::OwnerField;
-    if(vid == createdVid)
-        return TQAbstractRecordTypeDef::SubmitDateTimeField;
-    if(vid == createdVid)
-        return TQAbstractRecordTypeDef::SubmitterField;
-    return NoRole;
-}
-
-QIODevice *JiraRecTypeDef::defineSource() const
-{
-    QString fileName = project()->optionValue(TQOPTION_GROUP_FIELDS).toString();
-    QFile *file = new QFile(fileName);
-    if(!file->exists())
-    {
-        delete file;
-        return 0;
-    }
-    return file;
-    //return new QFile("data/jira.xml");
-}
-
-int JiraRecTypeDef::recordType() const
-{
-    return recType;
-}
-
-QString JiraRecTypeDef::valueToDisplay(int vid, const QVariant &value) const
-{
-    const JiraFieldDesc &desc = fields.value(vid);
-    switch(desc.simpleType)
-    {
-    case TQ::TQ_FIELD_TYPE_NONE:
-        return QString();
-    case TQ::TQ_FIELD_TYPE_CHOICE:
-    {
-        QString table = fieldChoiceTable(vid);
-        if(table.isEmpty())
-            return "";
-        TQChoiceList list = choiceTable(table);
-        foreach(const TQChoiceItem &c, list)
-        {
-            if(c.fieldValue == value)
-                return c.displayText;
-        }
-        return "";
-    }
-    case TQ::TQ_FIELD_TYPE_STRING:
-    case TQ::TQ_FIELD_TYPE_NUMBER:
-        return value.toString();
-    case TQ::TQ_FIELD_TYPE_DATE:
-    {
-        QDateTime dt = value.toDateTime();
-        QString dv = dt.toString(dateTimeFormat());
-        return dv;
-    }
-    case TQ::TQ_FIELD_TYPE_USER:
-        return project()->userFullName(value.toString());
-
-    }
-    return QString();
-}
-
-QVariant JiraRecTypeDef::displayToValue(int vid, const QString &text) const
-{
-    QDateTime dt;
-    int simple = fieldSimpleType(vid);
-    switch(simple)
-    {
-    case TQ::TQ_FIELD_TYPE_DATE:
-        dt = QDateTime::fromString(text,dateTimeFormat());
-        return QVariant(dt);
-    case TQ::TQ_FIELD_TYPE_USER:
-    case TQ::TQ_FIELD_TYPE_CHOICE:
-    {
-        QString table = fieldChoiceTable(vid);
-        if(table.isEmpty())
-            return "";
-        TQChoiceList list = choiceTable(table);
-        foreach(const TQChoiceItem &c, list)
-        {
-            if(c.displayText.compare(text,Qt::CaseInsensitive) == 0)
-                return c.fieldValue;
-        }
-        return QVariant(QVariant::String);
-    }
-    case TQ::TQ_FIELD_TYPE_STRING:
-        return text;
-    case TQ::TQ_FIELD_TYPE_NUMBER:
-        bool ok;
-        int v = text.toInt(&ok);
-        if(!ok)
-            return QVariant(QVariant::Int);
-        return v;
-    }
-    return text;
-}
-
-QVariant JiraRecTypeDef::fieldDefaultValue(int vid) const
-{
-    const JiraFieldDesc &desc = fields.value(vid);
-    return desc.defaultValue;
-}
-
-QVariant JiraRecTypeDef::fieldMinValue(int vid) const
-{
-    const JiraFieldDesc &desc = fields.value(vid);
-    return desc.minValue;
-}
-
-QVariant JiraRecTypeDef::fieldMaxValue(int vid) const
-{
-    const JiraFieldDesc &desc = fields.value(vid);
-    return desc.maxValue;
-}
-
-QString JiraRecTypeDef::fieldChoiceTable(int vid) const
-{
-    const JiraFieldDesc &desc = fields.value(vid);
-    if(!desc.isValid() || !desc.isChoice())
-        return QString();
-    if(desc.isUser())
-        return "Users";
-    return "Table_" + desc.id;
-}
-
-int JiraRecTypeDef::roleVid(int role) const
-{
-    QString fSystem = roleFields.value(role);
-    if(fSystem.isEmpty())
-        return TQ::TQ_NO_VID;
-    return systemNames.value(fSystem, TQ::TQ_NO_VID);
-}
-
-//QString JiraRecTypeDef::dateTimeFormat() const
-//{
-//    QLocale locale = QLocale::system();
-//    return locale.dateFormat(QLocale::ShortFormat)+" "+locale.timeFormat(QLocale::LongFormat);
-//}
-
-QStringList JiraRecTypeDef::noteTitleList() const
-{
-    return QStringList();
-}
-
-TQAbstractProject *JiraRecTypeDef::project() const
-{
-    return prj;
-}
-
-bool JiraRecTypeDef::hasFieldCustomEditor(int vid) const
-{
-    int type = fieldSimpleType(vid);
-    return (type == TQ::TQ_FIELD_TYPE_USER);
-}
-
-QWidget *JiraRecTypeDef::createCustomEditor(int vid, QWidget *parent) const
-{
-    JiraUserComboBox *box = new JiraUserComboBox(prj, parent);
-    const JiraFieldDesc &desc = fields[vid];
-    if(!desc.autoCompleteUrl.isEmpty())
-    {
-        QString s = desc.autoCompleteUrl;
-        s.replace(QString("issueKey=null&"),QString("project=%1&").arg(prj->jiraProjectKey()));
-        box->setCompleteLink(s);
-    }
-    QStringList items;
-    foreach(const JiraUser &user, prj->knownUsers)
-    {
-        items.append(user.displayName);
-    }
-    items.sort();
-    box->insertItems(0, items);
-    return box;
-    /*
-    QLineEdit *editor = new QLineEdit(parent);
-    JiraFindUser *win = new JiraFindUser(prj);
-    win->connect(editor,SIGNAL(destroyed()),SLOT(deleteLater()));
-    if(win->exec())
-    {
-        editor->setText(win->text());
-    }
-    return editor;
-    */
-}
-
-int JiraRecTypeDef::schemaToSimpleType(const QString &schemaType)
-{
-    return schemaToSimple.value(schemaType,TQ::TQ_FIELD_TYPE_NONE);
-}
-
 // ====================== Jira Record ===================
+class JiraRecordPrivate
+{
+public:
+    JiraRecTypeDef *def, *editDef;
+    JiraRecordPrivate()
+    {
+        def = editDef = 0;
+    }
+    ~JiraRecordPrivate()
+    {
+        if(editDef)
+        {
+            delete editDef;
+            editDef = 0;
+        }
+    }
+};
+
 JiraRecord::JiraRecord()
-    : TQRecord(), def(0)
+    : TQRecord(), d(new JiraRecordPrivate())
 {
     isFieldsReaded = false;
     isTextsReaded = false;
 }
 
 JiraRecord::JiraRecord(TQAbstractProject *prj, int rtype, int id)
-    : TQRecord(prj, rtype, id)
+    : TQRecord(prj, rtype, id), d(new JiraRecordPrivate())
 {
     isFieldsReaded = false;
     isTextsReaded = false;
     if(prj)
-        def = dynamic_cast<JiraRecTypeDef*>(prj->recordTypeDef(rtype));
+        d->def = dynamic_cast<JiraRecTypeDef*>(prj->recordTypeDef(rtype));
 }
 
 JiraRecord::JiraRecord(const TQRecord &src)
-    : TQRecord(src)
+    : TQRecord(src), d(new JiraRecordPrivate())
 {
     isFieldsReaded = false;
     isTextsReaded = false;
     if(project())
-        def = dynamic_cast<JiraRecTypeDef*>(project()->recordTypeDef(recordType()));
+        d->def = dynamic_cast<JiraRecTypeDef*>(project()->recordTypeDef(recordType()));
+}
+
+JiraRecord::~JiraRecord()
+{
+    delete d;
 }
 
 QString JiraRecord::jiraKey() const
@@ -2182,7 +2392,7 @@ int JiraRecord::recordInternalId() const
 
 QVariant JiraRecord::value(int vid, int role) const
 {
-    if(def && vid == def->idVid)
+    if(d->def && vid == d->def->d->idVid)
     {
         switch(role)
         {
@@ -2195,7 +2405,7 @@ QVariant JiraRecord::value(int vid, int role) const
         return QVariant();
     }
 #ifdef QT_DEBUG
-    QString fname = def->fieldName(vid);
+    QString fname = d->def->fieldName(vid);
 #endif
     if(!isFieldsReaded)
     {
@@ -2204,7 +2414,7 @@ QVariant JiraRecord::value(int vid, int role) const
     }
     if(role != Qt::DisplayRole && role != Qt::EditRole)
         return QVariant();
-    if(def && vid == def->descVid)
+    if(d->def && vid == d->def->d->descVid)
     {
         if(!isTextsReaded)
         {
@@ -2231,22 +2441,22 @@ QVariant JiraRecord::value(int vid, int role) const
 
 bool JiraRecord::setValue(int vid, const QVariant &newValue)
 {
-    if(!def)
+    if(!d->def)
         return false;
-    if(vid == def->idVid)
+    if(vid == d->def->d->idVid)
         return false;
-    if(vid == def->descVid)
+    if(vid == d->def->d->descVid)
     {
         desc = newValue.toString();
         return true;
     }
-    if(!def->fields.contains(vid))
+    if(!d->def->d->fields.contains(vid))
         return false;
     bool res = TQRecord::setValue(vid, newValue);
     if(res)
     {
         values.insert(vid, newValue);
-        displayValues.insert(vid, def->valueToDisplay(vid, newValue));
+        displayValues.insert(vid, d->def->valueToDisplay(vid, newValue));
         setModified(true);
     }
     return true;
@@ -2301,7 +2511,21 @@ bool JiraRecord::setNote(int index, const QString &newTitle, const QString &newT
 
 const TQAbstractRecordTypeDef *JiraRecord::typeDef() const
 {
-    return def;
+    return d->def;
+}
+
+const TQAbstractRecordTypeDef *JiraRecord::typeEditDef() const
+{
+    if(!d->editDef)
+    {
+        d->editDef = jiraProject()->loadEditRecordDef(this);
+    }
+    return d->editDef;
+}
+
+JiraProject *JiraRecord::jiraProject() const
+{
+    return qobject_cast<JiraProject *>(project());
 }
 
 int JiraRecord::addNote(const QString &noteTitle, const QString &noteText)

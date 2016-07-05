@@ -13,15 +13,15 @@
 #include "ttglobal.h"
 #include "querypage.h"
 
-TrkDecorator *decorator;
+TQDecorator *decorator;
 
-TrkDecorator::TrkDecorator(QObject *parent)
+TQDecorator::TQDecorator(QObject *parent)
     : QObject(parent)
 //    , prj(0)
 {
 }
 
-void TrkDecorator::fillEditPanels(QTabWidget *tabs, const TQAbstractRecordTypeDef * recDef, EditDefList &def, bool onlyView)
+void TQDecorator::fillEditPanels(QTabWidget *tabs, const TQAbstractRecordTypeDef * recDef, EditDefList &def, bool onlyView)
 {
     //QList<EditDef> edits;
     //const QStringList & fieldList = record->fields();
@@ -70,7 +70,7 @@ void TrkDecorator::fillEditPanels(QTabWidget *tabs, const TQAbstractRecordTypeDe
                     //QLineEdit *ie = 0;
                     if(!onlyView && fdef.isChoice())
                     {
-                        TrkChoiceBox *c = new TrkChoiceBox(tabs, fname);
+                        TQChoiceBox *c = new TQChoiceBox(tabs, fname);
                         //c->setInsertPolicy(QComboBox::NoInsert);
                         //ie = new QLineEdit();
                         //c->setLineEdit(ie);
@@ -83,13 +83,14 @@ void TrkDecorator::fillEditPanels(QTabWidget *tabs, const TQAbstractRecordTypeDe
                         w = c;
                     }
                     else if(fdef.simpleType() == TQ::TQ_FIELD_TYPE_DATE)
-                        w = new TrkDateTimeEdit(tabs, fname);
+                        w = new TQDateTimeEdit(tabs, fname);
                     else
-                        w = new TrkStringEdit(tabs, fname);
+                        w = new TQStringEdit(tabs, fname);
                     f.edit = w;
                     //f.internalEditor = ie;
                     f.fieldName = fname;
                     f.title = fname;
+                    f.vid = fdef.virtualID();
                     ed.append(f);
                     //f.fieldcol = fieldList.indexOf(f.title);
                 }
@@ -147,7 +148,7 @@ void TrkDecorator::fillEditPanels(QTabWidget *tabs, const TQAbstractRecordTypeDe
     //return edits;
 }
 
-void TrkDecorator::readValues(TQRecord *record, EditDefList &def)
+void TQDecorator::readValues(TQRecord *record, EditDefList &def)
 {
     def.connectToRecord(record);
     def.readValues();
@@ -164,7 +165,7 @@ void TrkDecorator::readValues(TQRecord *record, EditDefList &def)
     */
 }
 
-void TrkDecorator::updateState(TQRecord *record, EditDefList &def)
+void TQDecorator::updateState(TQRecord *record, EditDefList &def)
 {
     def.connectToRecord(record);
     def.updateState();
@@ -193,7 +194,7 @@ void TrkDecorator::updateState(TQRecord *record, EditDefList &def)
     */
 }
 
-void TrkDecorator::clearEdits(QTabWidget *tabs, EditDefList &def)
+void TQDecorator::clearEdits(QTabWidget *tabs, EditDefList &def)
 {
     EditDef ed;
     foreach(ed, def.edits)
@@ -213,7 +214,7 @@ void TrkDecorator::clearEdits(QTabWidget *tabs, EditDefList &def)
     }
 }
 
-void TrkDecorator::fieldEditChanged()
+void TQDecorator::fieldEditChanged()
 {
 }
 
@@ -241,7 +242,7 @@ static const TQAbstractRecordTypeDef::TQFieldRole basicRoles[6] = {
 };
 
 
-void TrkDecorator::loadViewDef(QueryPage *page)
+void TQDecorator::loadViewDef(QueryPage *page)
 {
     const QString KEY = Settings_Grid;
     //QXmlSimpleReader xmlReader;
@@ -337,7 +338,7 @@ void TrkDecorator::loadViewDef(QueryPage *page)
     //    isDefLoaded = true;
 }
 
-bool TrkDecorator::saveState(QueryPage *page)
+bool TQDecorator::saveState(QueryPage *page)
 {
     const QString KEY = Settings_Grid;
     //QXmlSimpleReader xmlReader;
@@ -349,7 +350,7 @@ bool TrkDecorator::saveState(QueryPage *page)
     return true;
 }
 
-FieldGroupsDef TrkDecorator::loadGroups(const TQAbstractRecordTypeDef *recDef)
+FieldGroupsDef TQDecorator::loadGroups(const TQAbstractRecordTypeDef *recDef)
 {
     FieldGroupsDef res = loadGroupsXML(recDef);
     if(res.isValid())
@@ -380,7 +381,7 @@ FieldGroupsDef TrkDecorator::loadGroups(const TQAbstractRecordTypeDef *recDef)
     return res;
 }
 
-FieldGroupsDef TrkDecorator::loadGroupsXML(const TQAbstractRecordTypeDef *recDef)
+FieldGroupsDef TQDecorator::loadGroupsXML(const TQAbstractRecordTypeDef *recDef)
 {
     FieldGroupsDef res;
     QScopedPointer<QIODevice> file(recDef->defineSource());
@@ -438,17 +439,17 @@ FieldGroupsDef TrkDecorator::loadGroupsXML(const TQAbstractRecordTypeDef *recDef
 }
 
 // ======================= TrkFieldEdit ================================
-TrkFieldEdit::TrkFieldEdit(const QString &fieldName)
+TQFieldEdit::TQFieldEdit(const QString &fieldName)
     : field(fieldName), rec(0)
 {
 }
 
-void TrkFieldEdit::connectToRecord(TQRecord *record)
+void TQFieldEdit::connectToRecord(TQRecord *record, int fieldVid)
 {
     rec = record;
 }
 
-void TrkFieldEdit::valueChanged(const QString &fieldName, const QVariant &newValue)
+void TQFieldEdit::valueChanged(const QString &fieldName, const QVariant &newValue)
 {
 //    if(rec)
 //        rec->setValue(fieldName, newValue);
@@ -456,41 +457,41 @@ void TrkFieldEdit::valueChanged(const QString &fieldName, const QVariant &newVal
 
 
 // ======================= TrkStringEdit ================================
-TrkStringEdit::TrkStringEdit(QWidget *parent, const QString &fieldName)
-    :QLineEdit(parent), TrkFieldEdit(fieldName)
+TQStringEdit::TQStringEdit(QWidget *parent, const QString &fieldName)
+    :QLineEdit(parent), TQFieldEdit(fieldName)
 {
     connect(this,SIGNAL(textChanged(QString)),this,SLOT(onTextChanged(QString)));
 }
 
-void TrkStringEdit::clearValue()
+void TQStringEdit::clearValue()
 {
     clear();
 }
 
-void TrkStringEdit::setValue(const QVariant &value)
+void TQStringEdit::setValue(const QVariant &value)
 {
     setText(value.toString());
 }
 
-QVariant TrkStringEdit::value() const
+QVariant TQStringEdit::value() const
 {
     return QVariant(text());
 }
 
-void TrkStringEdit::setReadOnly(bool readOnly)
+void TQStringEdit::setReadOnly(bool readOnly)
 {
     QLineEdit::setReadOnly(readOnly);
 }
 
-void TrkStringEdit::onTextChanged(const QString &text)
+void TQStringEdit::onTextChanged(const QString &text)
 {
     valueChanged(field, QVariant(text));
 }
 
 // ======================= TrkChoiceBox ================================
 
-TrkChoiceBox::TrkChoiceBox(QWidget *parent, const QString &fieldName)
-    :QComboBox(parent), TrkFieldEdit(fieldName)
+TQChoiceBox::TQChoiceBox(QWidget *parent, const QString &fieldName)
+    :QComboBox(parent), TQFieldEdit(fieldName)
 {
     setInsertPolicy(QComboBox::NoInsert);
     QLineEdit *ie = new QLineEdit();
@@ -501,26 +502,26 @@ TrkChoiceBox::TrkChoiceBox(QWidget *parent, const QString &fieldName)
     connect(this,SIGNAL(currentIndexChanged(QString)),this,SLOT(onEditTextChanged(QString)));
 }
 
-void TrkChoiceBox::clearValue()
+void TQChoiceBox::clearValue()
 {
     setEditText("");
 }
 
-void TrkChoiceBox::setValue(const QVariant &value)
+void TQChoiceBox::setValue(const QVariant &value)
 {
     setEditText(value.toString());
 }
 
-QVariant TrkChoiceBox::value() const
+QVariant TQChoiceBox::value() const
 {
     return QVariant(currentText());
 }
 
-void TrkChoiceBox::setReadOnly(bool /* readOnly */)
+void TQChoiceBox::setReadOnly(bool /* readOnly */)
 {
 }
 
-void TrkChoiceBox::onEditTextChanged(const QString &text)
+void TQChoiceBox::onEditTextChanged(const QString &text)
 {
     valueChanged(field, QVariant(text));
 }
@@ -537,9 +538,9 @@ void EditDefList::connectToRecord(TQRecord *record)
         QList<EditDef>::const_iterator ei;
         for(ei=edits.constBegin(); ei!=edits.constEnd(); ei++)
         {
-            TrkFieldEdit *ed = qobject_cast<TrkFieldEdit *>(ei->edit);
+            TQFieldEdit *ed = qobject_cast<TQFieldEdit *>(ei->edit);
             if(ed)
-                ed->connectToRecord(rec);
+                ed->connectToRecord(rec, ei->vid);
         }
         if(rec)
         {
@@ -556,7 +557,7 @@ void EditDefList::readValues()
     QList<EditDef>::const_iterator ei;
     for(ei=edits.constBegin(); ei!=edits.constEnd(); ei++)
     {
-        TrkFieldEdit *ed = qobject_cast<TrkFieldEdit *>(ei->edit);
+        TQFieldEdit *ed = qobject_cast<TQFieldEdit *>(ei->edit);
         if(ed)
             if(rec)
                 ed->setValue(rec->value(ei->title));
@@ -613,36 +614,64 @@ EditDefList::~EditDefList()
     connectToRecord(0);
 }
 
-//============================ TrkDateTimeEdit ================================
-TrkDateTimeEdit::TrkDateTimeEdit(QWidget *parent, const QString &fieldName)
-    : QDateTimeEdit(parent), TrkFieldEdit(fieldName)
+//============================ TQDateTimeEdit ================================
+TQDateTimeEdit::TQDateTimeEdit(QWidget *parent, const QString &fieldName)
+    : QDateTimeEdit(parent), TQFieldEdit(fieldName)
 {
     setCalendarPopup(true);
     setDisplayFormat(tr("dd.MM.yyyy hh:mm:ss"));
 }
 
-void TrkDateTimeEdit::clearValue()
+void TQDateTimeEdit::clearValue()
 {
     clear();
 }
 
-void TrkDateTimeEdit::setValue(const QVariant &value)
+void TQDateTimeEdit::setValue(const QVariant &value)
 {
     QDateTime dt = value.toDateTime();
     setDateTime(dt);
 }
 
-QVariant TrkDateTimeEdit::value() const
+QVariant TQDateTimeEdit::value() const
 {
     return QVariant(dateTime());
 }
 
-void TrkDateTimeEdit::setReadOnly(bool readOnly)
+void TQDateTimeEdit::setReadOnly(bool readOnly)
 {
     Q_UNUSED(readOnly)
 }
 
-void TrkDateTimeEdit::onDateTimeChanged(const QDateTime &value)
+void TQDateTimeEdit::onDateTimeChanged(const QDateTime &value)
 {
     valueChanged(field, QVariant(value));
+}
+
+//============================= TQChoiceArrayEdit ===============================
+TQChoiceArrayEdit::TQChoiceArrayEdit(QWidget *parent, const QString &fieldName)
+    : TQMultiComboBox(parent), TQFieldEdit(fieldName)
+{
+
+}
+
+void TQChoiceArrayEdit::clearValue()
+{
+    TQMultiComboBox::clear();
+}
+
+void TQChoiceArrayEdit::setValue(const QVariant &value)
+{
+    QVariantList list = value.toList();
+
+}
+
+QVariant TQChoiceArrayEdit::value() const
+{
+    return QVariant();
+}
+
+
+void TQChoiceArrayEdit::setReadOnly(bool readOnly)
+{
 }

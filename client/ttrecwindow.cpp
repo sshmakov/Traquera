@@ -183,7 +183,10 @@ TQRecord *TTRecordWindow::record()
 void TTRecordWindow::setRecord(TQRecord *rec)
 {
     a_record = rec;
-    setRecordTypeDef(rec->typeDef(), rec->mode());
+    if(rec->mode() == TQRecord::Edit)
+        setRecordTypeDef(rec->typeEditDef(), rec->mode());
+    else
+        setRecordTypeDef(rec->typeDef(), rec->mode());
     factory->setRecord(rec);
     refreshValues();
     refreshState();
@@ -269,7 +272,10 @@ void TTRecordWindow::refreshState()
     ui->actionCancelChanges->setEnabled(edit);
     bool changed = editorMode != a_record->mode();
     editorMode = a_record->mode();
-    setRecordTypeDef(a_record->typeDef(), a_record->mode());
+    if(editorMode == TQRecord::Edit)
+        setRecordTypeDef(a_record->typeEditDef(), a_record->mode());
+    else
+        setRecordTypeDef(a_record->typeDef(), a_record->mode());
     if(changed)
         emit modeChanged(editorMode);
 }
@@ -373,7 +379,8 @@ void TTRecordWindow::refreshValues()
 */
 
     ui->titleBox->clear();
-    const TQAbstractRecordTypeDef *def = a_record->typeDef();
+    const TQAbstractRecordTypeDef *def;
+    def = a_record->typeDef();
     if(def)
     {
         ui->titleBox->addItems(def->noteTitleList());
@@ -634,7 +641,7 @@ bool TTRecordWindow::startEditNote(int index)
         return true;
     }
     ui->titleBox->clear();
-    const TQAbstractRecordTypeDef *def = a_record->typeDef();
+    const TQAbstractRecordTypeDef *def = a_record->typeEditDef();
     if(def)
         ui->titleBox->addItems(def->noteTitleList());
     if(index == TQ_NEW_NOTE)

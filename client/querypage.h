@@ -12,7 +12,7 @@
 //#include "trkview.h"
 //#include "plans.h"
 //#include "planproxy.h"
-//#include "trkdecorator.h"
+#include "trkdecorator.h"
 #include "ttfolders.h"
 #include "preview.h"
 #include <tqmodels.h>
@@ -117,7 +117,7 @@ public slots:
 //	void addScrTasks();
 //    void copyScrFromTasks();
 //    void showScrFromTasks();
-	void recordOpen( const QModelIndex & index);
+//	void recordOpen( const QModelIndex & index);
 	void goBack();
 	void goForward();
     void newFilterString();

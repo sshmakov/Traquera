@@ -193,7 +193,7 @@ void TTItemEditor::setEditorData(const QModelIndex &index)
     QPlainTextEdit *pe;
     QSpinBox *sb;
     QComboBox *cb;
-    TQDateTimeEdit *dt;
+    TQDateTimeFieldEdit *dt;
 //    TrkFieldType fdef = panel->fieldDef(index.row());
 //    int type = fdef.fType();
     if(0!=(ed = qobject_cast<QLineEdit*>(subeditor)))
@@ -209,7 +209,7 @@ void TTItemEditor::setEditorData(const QModelIndex &index)
         if(i>=0)
             cb->setCurrentIndex(i);
     }
-    else if(0 != (dt = qobject_cast<TQDateTimeEdit*>(subeditor)))
+    else if(0 != (dt = qobject_cast<TQDateTimeFieldEdit*>(subeditor)))
     {
         QVariant v = index.data(Qt::EditRole);
         QDateTime value = QDateTime::fromString(v.toString(), dt->displayFormat());
@@ -223,7 +223,7 @@ void TTItemEditor::setModelData(const QModelIndex &index)
     QPlainTextEdit *pe;
     QSpinBox *sb;
     QComboBox *cb;
-    TQDateTimeEdit *dt;
+    TQDateTimeFieldEdit *dt;
     QString fieldName = panel->fieldName(index);
     if(fieldName.isEmpty())
         return;
@@ -247,7 +247,7 @@ void TTItemEditor::setModelData(const QModelIndex &index)
             panel->setFieldValue(fieldName,QVariant());
             */
     }
-    else if(0 != (dt = qobject_cast<TQDateTimeEdit*>(subeditor)))
+    else if(0 != (dt = qobject_cast<TQDateTimeFieldEdit*>(subeditor)))
     {
         panel->setFieldValue(fieldName, fdef.displayToValue(dt->text()));
         /*
@@ -268,7 +268,8 @@ QWidget * TTItemEditor::createSubEditor(TQAbstractFieldType &fdef)
     QComboBox *cb;
     QLineEdit *le;
     QSpinBox *sb;
-    TQDateTimeEdit *dt;
+    TQDateTimeFieldEdit *dt;
+    TQMultiComboBox *mc;
 //    QWidget *res;
     QStringList sl;
     int type = fdef.simpleType(); // panel->fieldRow(index.row()).fieldType;
@@ -293,13 +294,18 @@ QWidget * TTItemEditor::createSubEditor(TQAbstractFieldType &fdef)
         //sb->setMaximum(100);
         return sb;
     case TQ::TQ_FIELD_TYPE_DATE:
-        dt = new TQDateTimeEdit(this);
-        QDateTime minDt = fdef.minValue().toDateTime();
+        dt = new TQDateTimeFieldEdit(this);
         dt->setDisplayFormat(fdef.recordDef()->dateTimeFormat());
-        dt->setMinimumDateTime(minDt);
+        dt->setMinimumDateTime(fdef.minValue().toDateTime());
 //        dt->setDisplayFormat(TT_DATETIME_FORMAT);
         return dt;
-
+    case TQ::TQ_FIELD_TYPE_ARRAY:
+        mc = new TQMultiComboBox(this);
+        foreach(TQChoiceItem item, fdef.choiceList())
+        {
+            mc->addItem(item.displayText, false);
+        }
+        return mc;
         /*
     case TRK_FIELD_TYPE_SUBMITTER:
     case TRK_FIELD_TYPE_OWNER:
@@ -369,20 +375,20 @@ void TTItemEditor::initInternal(const QStyleOptionViewItem &option, const QModel
     connect(resetBtn,SIGNAL(clicked()),this,SLOT(doResetClick()));
 }
 
-//===================================== TQDateTimeEdit ======================================
-TQDateTimeEdit::TQDateTimeEdit(QWidget *parent)
+//===================================== TQDateTimeFieldEdit ======================================
+TQDateTimeFieldEdit::TQDateTimeFieldEdit(QWidget *parent)
     : QDateTimeEdit(parent)
 {
     setSpecialValueText(tr("пусто"));
     setCalendarPopup(true);
 }
 
-void TQDateTimeEdit::clear()
+void TQDateTimeFieldEdit::clear()
 {
     QDateTimeEdit::setDateTime(minimumDateTime());
 }
 
-void TQDateTimeEdit::setDateTime(const QDateTime &dateTime)
+void TQDateTimeFieldEdit::setDateTime(const QDateTime &dateTime)
 {
     if(dateTime.isNull())
         clear();
@@ -390,7 +396,7 @@ void TQDateTimeEdit::setDateTime(const QDateTime &dateTime)
         QDateTimeEdit::setDateTime(dateTime);
 }
 
-QDateTime TQDateTimeEdit::dateTime()
+QDateTime TQDateTimeFieldEdit::dateTime()
 {
     QDateTime dt = QDateTimeEdit::dateTime();
     if(dt.isNull() || dt == minimumDateTime())

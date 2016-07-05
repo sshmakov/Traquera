@@ -201,10 +201,15 @@ public:
     QVariant optionValue(const QString &option) const;
     QString jiraProjectKey() const;
 protected:
+    QVariantList fieldList;
+    QVariantList typesList;
     bool doCommitUpdateRecord(TQRecord *record);
     void doParseComments(JiraRecord *rec, const QVariantMap &issue);
 //    TQAbstractRecordTypeDef *loadRecordTypeDef(int recordType);
+    void readRecordDef(JiraRecTypeDef *rdef, int recordType, const QVariantMap &typeMap);
+    void readRecordDef2(JiraRecTypeDef *rdef, const QVariantMap &fieldsMap);
     void loadRecordTypes();
+    JiraRecTypeDef *loadEditRecordDef(const JiraRecord *record);
     TQChoiceList loadChoiceTables(JiraRecTypeDef *rdef, const QString &url);
     void loadQueries();
     void loadUsers();
@@ -217,6 +222,7 @@ protected slots:
 
     friend class JiraDB;
     friend class JiraRecTypeDef;
+    friend class JiraRecord;
 };
 
 struct JiraFieldDesc
@@ -228,6 +234,7 @@ struct JiraFieldDesc
     bool orderable; //: false,
     bool navigable; //: true,
     bool searchable; //: false,
+    bool editable;
     QStringList clauseNames;//: ["watchers"],
     QString schemaType; // type: "array",
     QString schemaItems; //: "watches",
@@ -265,8 +272,13 @@ struct JiraFieldDesc
     }
 };
 
+struct JiraRecTypeDefPrivate;
+
 class JiraRecTypeDef : public TQBaseRecordTypeDef
 {
+private:
+    JiraRecTypeDefPrivate *d;
+    /*
 protected:
     JiraProject *prj;
     int recType;
@@ -282,9 +294,11 @@ protected:
     QMap<QString, int> schemaToSimple;
     int idVid, descVid, summaryVid, assigneeVid, creatorVid, createdVid;
 //    QMap<QString, JiraUser> knownUsers; // by name
+    */
 
 public:
     JiraRecTypeDef(JiraProject *project);
+    JiraRecTypeDef(JiraRecTypeDef *src);
     virtual QStringList fieldNames() const;
     virtual TQAbstractFieldType getFieldType(int vid, bool *ok = 0) const;
     virtual TQAbstractFieldType getFieldType(const QString &name, bool *ok = 0) const;
@@ -319,6 +333,9 @@ public:
     virtual TQAbstractProject *project() const;
     bool hasFieldCustomEditor(int vid) const;
     QWidget *createCustomEditor(int vid, QWidget *parent) const;
+    const JiraFieldDesc &fieldDesc(int vid) const;
+    QString typeName() const;
+
 
     friend class JiraProject;
     friend class JiraRecord;
@@ -338,18 +355,20 @@ protected:
 };
 */
 
+class JiraRecordPrivate;
+
 class JiraRecord: public TQRecord
 {
     Q_OBJECT
     Q_PROPERTY(QString key READ jiraKey)
     Q_PROPERTY(int internalId READ recordInternalId)
 protected:
+    JiraRecordPrivate *d;
     QMap<int, QVariant> values;
     QMap<int, QVariant> displayValues;
     TQNotesCol notesCol;
     QString desc;
     QString key;
-    JiraRecTypeDef *def;
     int internalId;
     QList<TQAttachedFile> files;
     bool isFieldsReaded, isTextsReaded;
@@ -357,6 +376,7 @@ public:
     JiraRecord();
     JiraRecord(TQAbstractProject *prj, int rtype, int id);
     JiraRecord(const TQRecord &src);
+    ~JiraRecord();
     Q_INVOKABLE QString jiraKey() const;
     Q_INVOKABLE int recordInternalId() const;
     QVariant value(int vid, int role = Qt::DisplayRole) const ;
@@ -368,6 +388,8 @@ public:
     int addNote(const QString &noteTitle, const QString &noteText);
     bool removeNote(int index);
     const TQAbstractRecordTypeDef *typeDef() const;
+    const TQAbstractRecordTypeDef *typeEditDef() const;
+    JiraProject *jiraProject()const;
 
     friend class JiraProject;
 };

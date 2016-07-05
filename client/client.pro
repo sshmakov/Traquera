@@ -43,7 +43,6 @@ FORMS += ui/tracksmain.ui ui/querypage.ui ui/filters.ui ui/scrwidg.ui \
 HEADERS += \
         mainwindow.h querypage.h \
         filterpage.h flowlayout.h \
-	scrwidg.h \
     idinput.h \
     trkdecorator.h \
     notedialog.h \
@@ -77,7 +76,8 @@ HEADERS += \
     tqrecordviewcontroller.h \
     tqqueryviewcontroller.h \
     logform.h \
-    queryfields.h
+    queryfields.h \
+    TQMultiComboBox/TQMultiComboBox.h
 
 #    plans.h planproxy.h \
 #    planfiles.h \
@@ -89,7 +89,6 @@ HEADERS += \
 
 SOURCES += database.cpp main.cpp mainwindow.cpp querypage.cpp \
         filterpage.cpp flowlayout.cpp \
-	scrwidg.cpp \
     idinput.cpp \
     trkdecorator.cpp \
     notedialog.cpp \
@@ -122,7 +121,8 @@ SOURCES += database.cpp main.cpp mainwindow.cpp querypage.cpp \
     tqqueryviewcontroller.cpp \
     logform.cpp \
     queryfields.cpp \
-    ../common/ttutils.cpp
+    ../common/ttutils.cpp \
+    TQMultiComboBox/TQMultiComboBox.cpp
 
 #    planfilesform.cpp \
 #    project.cpp projectpage.cpp plans.cpp planproxy.cpp planfiles.cpp \

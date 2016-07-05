@@ -25,7 +25,7 @@
 #include "querypage.h"
 //#include "trkview.h"
 #include "settings.h"
-#include "scrwidg.h"
+//#include "scrwidg.h"
 #include "notedialog.h"
 #include "messager.h"
 #include "ttutils.h"
@@ -986,6 +986,7 @@ void QueryPage::loadDefinition()
     d->isDefLoaded = true;
 }
 
+/*
 void QueryPage::recordOpen(const QModelIndex & index)
 {
 	if(!index.isValid())
@@ -997,6 +998,7 @@ void QueryPage::recordOpen(const QModelIndex & index)
 	scr->setRecord(rec);
 	scr->show();
 }
+*/
 
 void QueryPage::openQuery(TQAbstractProject *prj, const QString &queryName, int recType)
 {
