@@ -51,6 +51,7 @@ JiraPlugin::JiraPlugin(QObject *parent)
     : QObject(parent)
 {
     jira = this;
+    qRegisterMetaType<JiraProject*>("JiraProject*");
 
 }
 
@@ -863,6 +864,26 @@ QVariant JiraDB::sendRequest(const QString &method, const QUrl &url, QVariantMap
     return obj;
 }
 
+QVariant JiraDB::get(const QString &query, QVariantMap bodyMap)
+{
+    return sendRequest("GET", queryUrl(query), bodyMap);
+}
+
+QVariant JiraDB::post(const QString &query, QVariantMap bodyMap)
+{
+    return sendRequest("POST", queryUrl(query), bodyMap);
+}
+
+QVariant JiraDB::put(const QString &query, QVariantMap bodyMap)
+{
+    return sendRequest("PUT", queryUrl(query), bodyMap);
+}
+
+QVariant JiraDB::del(const QString &query, QVariantMap bodyMap)
+{
+    return sendRequest("DELETE", queryUrl(query), bodyMap);
+}
+
 QUrl JiraDB::queryUrl(const QString &query) const
 {
     return QUrl(dbmsServer() + query);
@@ -1209,6 +1230,11 @@ void JiraProject::loadDefinition()
     loadRecordTypes();
     loadQueries();
     loadUsers();
+}
+
+JiraDB *JiraProject::jiraDb() const
+{
+    return db;
 }
 
 TQAbstractRecordTypeDef *JiraProject::recordTypeDef(int recordType)

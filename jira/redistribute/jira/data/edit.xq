@@ -36,7 +36,9 @@ textEditor = new InplaceEditor();
 return
 <body>
 Запрос {$scr/*/fields/field[@role = "id"]/node()} .  <b>{$scr/*/fields/field[@role = "title"]/node()}</b>
-<p id="debug" style="display: visible"></p>
+<p id="debug" style="display: visible">
+	<input type="button" onclick="test();return false;" value="Text"/></p>
+
 	<div>
                 <div>
 			<img src="qrc:/images/edit.png" onclick="textEditor.editDescription()" class="btn" width="12" height="12" title="edit"/>
@@ -83,6 +85,13 @@ return (
 <!--
 r();
 init();
+
+function test()
+{
+	var project = record.project;
+	debugInfo(project.db.get('rest/api/2/issue/TTT-1').fields.summary);
+}
+
 -->
 </script>
 </html> 

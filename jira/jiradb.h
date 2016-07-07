@@ -100,13 +100,17 @@ public:
     virtual TQAbstractProject *openConnection(const QString &connectString);
     void setConnectString(const QString &connectString);
     QVariant sendRequest(const QString &method, const QUrl &url, QVariantMap bodyMap = QVariantMap());
+    Q_INVOKABLE QVariant get(const QString &query, QVariantMap bodyMap = QVariantMap());
+    Q_INVOKABLE QVariant post(const QString &query, QVariantMap bodyMap = QVariantMap());
+    Q_INVOKABLE QVariant put(const QString &query, QVariantMap bodyMap = QVariantMap());
+    Q_INVOKABLE QVariant del(const QString &query, QVariantMap bodyMap = QVariantMap());
     QUrl queryUrl(const QString &query) const;
     QNetworkReply *sendRequestNative(const QUrl &url, const QString &method, const QByteArray &body = QByteArray());
-    int lastHTTPCode() const;
-    QString lastHTTPErrorString() const;
+    Q_INVOKABLE int lastHTTPCode() const;
+    Q_INVOKABLE QString lastHTTPErrorString() const;
     QVariant parseValue(const QVariant &source, const QString &path);
     static TQAbstractDB *createJiraDB(QObject *parent);
-    QVariant sendSimpleRequest(const QString &dbmsType, const QString &method, const QString &query, const QString &body = QString());
+    Q_INVOKABLE QVariant sendSimpleRequest(const QString &dbmsType, const QString &method, const QString &query, const QString &body = QString());
     QDialog *createConnectDialog() const;
     bool oauthLogin();
     QNetworkReply *sendWait(const QString &method, QNetworkRequest &request, const QByteArray &body = QByteArray());
@@ -166,7 +170,7 @@ protected:
 public:
     JiraProject(TQAbstractDB *db);
     void loadDefinition();
-    inline JiraDB *jiraDb() const { return db; }
+    Q_INVOKABLE JiraDB *jiraDb() const;
     //Redefine
     TQAbstractRecordTypeDef *recordTypeDef(int recordType);
     int defaultRecType() const;
@@ -199,7 +203,7 @@ public:
     TQAbstractQWController *queryWidgetController(int rectype);
 
     QVariant optionValue(const QString &option) const;
-    QString jiraProjectKey() const;
+    Q_INVOKABLE QString jiraProjectKey() const;
 protected:
     QVariantList fieldList;
     QVariantList typesList;
@@ -389,7 +393,7 @@ public:
     bool removeNote(int index);
     const TQAbstractRecordTypeDef *typeDef() const;
     const TQAbstractRecordTypeDef *typeEditDef() const;
-    JiraProject *jiraProject()const;
+    Q_INVOKABLE JiraProject *jiraProject()const;
 
     friend class JiraProject;
 };
@@ -405,5 +409,7 @@ public:
 protected:
     virtual QVariant displayColData(const JiraFilter &rec, int col) const;
 };
+
+Q_DECLARE_METATYPE(JiraProject *)
 
 #endif // JIRADB_H

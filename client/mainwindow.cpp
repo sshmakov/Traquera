@@ -65,6 +65,10 @@ MainWindow::MainWindow(QWidget *parent)
     QWebSettings::globalSettings()->setAttribute(QWebSettings::PluginsEnabled, true);
     QWebSettings::globalSettings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
     QWebSettings::globalSettings()->setAttribute(QWebSettings::JavascriptCanAccessClipboard, true);
+    QWebSettings::globalSettings()->setAttribute(QWebSettings::LocalStorageEnabled, true);
+    QWebSettings::globalSettings()->setAttribute(QWebSettings::OfflineStorageDatabaseEnabled, true);
+//    QWebSettings::OfflineWebApplicationCacheEnabled
+
 
     statusLine = new QLabel(this);
 //    am = new QNetworkAccessManager(this);

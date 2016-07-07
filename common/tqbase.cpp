@@ -10,6 +10,7 @@ TQAbstractDB::TQAbstractDB(QObject *parent)
 {
     qRegisterMetaType<TQAbstractRecordTypeDef*>("TQAbstractRecordTypeDef*");
     qRegisterMetaType<TQRecord>("TQRecord");
+    qRegisterMetaType<TQAbstractProject*>("TQAbstractProject*");
 }
 
 void TQAbstractDB::setDbmsType(const QString &dbType)

@@ -238,6 +238,10 @@ class TQAbstractProjectPrivate;
 class TQPLUGIN_SHARED TQAbstractProject: public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(QObject *db READ db)
+    Q_PROPERTY(bool isOpened READ isOpened)
+    Q_PROPERTY(QString currentUser READ currentUser)
+//    Q_PROPERTY(QString projectName READ projectName)
 protected:
     TQAbstractProjectPrivate *d;
 public:
@@ -259,16 +263,16 @@ public:
     virtual TQRecModel *selectedModel(int recType) = 0;
     virtual bool canFieldSubmit(int vid, int recType) = 0;
     virtual bool canFieldUpdate(int vid, int recType) = 0;
-    virtual TQRecord *createRecordById(int id, int rectype) = 0;
-    virtual TQRecord *newRecord(int rectype) = 0;
-    virtual TQAbstractRecordTypeDef *recordTypeDef(int rectype) = 0;
+    Q_INVOKABLE virtual TQRecord *createRecordById(int id, int rectype) = 0;
+    Q_INVOKABLE virtual TQRecord *newRecord(int rectype) = 0;
+    Q_INVOKABLE virtual TQAbstractRecordTypeDef *recordTypeDef(int rectype) = 0;
     virtual QDomDocument recordTypeDefDoc(int rectype) = 0;
 
     virtual TQRecModel *openQueryModel(const QString &queryName, int recType, bool emitEvent = true) = 0;
     virtual bool renameQuery(const QString &oldName, const QString &newName, int recordType);
     virtual bool deleteQuery(const QString &queryName, int recordType);
-    virtual TQRecModel *openIdsModel(const IntList &ids, int recType, bool emitEvent = true) = 0;
-    virtual TQRecModel *openRecords(const QString &queryText, int recType, bool emitEvent = true) = 0;
+    Q_INVOKABLE virtual TQRecModel *openIdsModel(const IntList &ids, int recType, bool emitEvent = true) = 0;
+    Q_INVOKABLE virtual TQRecModel *openRecords(const QString &queryText, int recType, bool emitEvent = true) = 0;
     virtual void refreshModel(QAbstractItemModel *model) = 0;
     virtual QAbstractItemModel *queryModel(int type) = 0;
     virtual TQRecord *recordOfIndex(const QModelIndex &index) = 0;
@@ -283,30 +287,30 @@ public:
     virtual QVariant getFieldValue(const TQRecord *record, int vid, bool *ok = 0) = 0;
     virtual bool setFieldValue(TQRecord *record, const QString &fname, const QVariant &value) = 0;
     //virtual bool insertRecordBegin(TQRecord *record) = 0;
-    virtual bool updateRecordBegin(TQRecord *record) = 0;
-    virtual bool commitRecord(TQRecord *record) = 0;
-    virtual bool cancelRecord(TQRecord *record) = 0;
-    virtual QList<TQAttachedFile> attachedFiles(TQRecord *record) = 0;
-    virtual bool saveFileFromRecord(TQRecord *record, int fileIndex, const QString &dest) = 0;
-    virtual int attachFileToRecord(TQRecord *record, const QString &filePath) = 0;
-    virtual bool removeFileFromRecord(TQRecord *record, int fileIndex) = 0;
-    virtual QStringList historyList(TQRecord *record) = 0;
-    virtual QHash<int,QString> baseRecordFields(int rectype) = 0;
+    Q_INVOKABLE virtual bool updateRecordBegin(TQRecord *record) = 0;
+    Q_INVOKABLE virtual bool commitRecord(TQRecord *record) = 0;
+    Q_INVOKABLE virtual bool cancelRecord(TQRecord *record) = 0;
+    Q_INVOKABLE virtual QList<TQAttachedFile> attachedFiles(TQRecord *record) = 0;
+    Q_INVOKABLE virtual bool saveFileFromRecord(TQRecord *record, int fileIndex, const QString &dest) = 0;
+    Q_INVOKABLE virtual int attachFileToRecord(TQRecord *record, const QString &filePath) = 0;
+    Q_INVOKABLE virtual bool removeFileFromRecord(TQRecord *record, int fileIndex) = 0;
+    Q_INVOKABLE virtual QStringList historyList(TQRecord *record) = 0;
+    Q_INVOKABLE virtual QHash<int,QString> baseRecordFields(int rectype) = 0;
     virtual bool isSystemModel(QAbstractItemModel *model) const = 0;
     virtual TQQueryDef *queryDefinition(const QString &queryName, int rectype) = 0;
     virtual TQQueryDef *createQueryDefinition(int rectype) = 0;
     virtual TQAbstractQWController *queryWidgetController(int rectype) = 0;
     virtual bool saveQueryDefinition(TQQueryDef *queryDefinition, const QString &queryName, int rectype) = 0;
-    virtual QStringList userNames() = 0;
+    Q_INVOKABLE virtual QStringList userNames() = 0;
     virtual QMap<QString, TQUser> userList() = 0;
-    virtual QString userFullName(const QString &login) = 0;
-    virtual QString userFullName(int userId) = 0;
-    virtual QString userLogin(int userId) = 0;
+    Q_INVOKABLE virtual QString userFullName(const QString &login) = 0;
+    Q_INVOKABLE virtual QString userFullName(int userId) = 0;
+    Q_INVOKABLE virtual QString userLogin(int userId) = 0;
     virtual int userId(const QString &login) = 0;
     virtual TQGroupList userGroups() = 0;
     virtual QSettings *projectSettings() const;
-    virtual QVariant optionValue(const QString &option) const;
-    virtual void setOptionValue(const QString &option, const QVariant &value);
+    Q_INVOKABLE virtual QVariant optionValue(const QString &option) const;
+    Q_INVOKABLE virtual void setOptionValue(const QString &option, const QVariant &value);
 signals:
     void openedModel(const QAbstractItemModel *model);
     void recordChanged(int id);
@@ -319,6 +323,7 @@ typedef QSet<int> TQSelectedSet;
 class TQPLUGIN_SHARED TQBaseProject: public TQAbstractProject
 {
     Q_OBJECT
+    Q_PROPERTY(QString projectName READ projectName)
 protected:
     QString name;
     bool opened;
@@ -407,6 +412,9 @@ class TQPLUGIN_SHARED TQRecord: public QObject
     Q_PROPERTY(int mode READ mode WRITE setMode)
     Q_PROPERTY(bool isEditing READ isEditing)
     Q_PROPERTY(QString description READ description WRITE setDescription)
+    Q_PROPERTY(QObject *project READ project)
+    Q_PROPERTY(const TQAbstractRecordTypeDef *typeDef READ typeDef)
+    Q_PROPERTY(const TQAbstractRecordTypeDef *typeEditDef READ typeEditDef)
 public:
     enum TQRecMode {View, Edit, Insert};
 private:
@@ -492,6 +500,7 @@ signals:
 
 };
 
+Q_DECLARE_METATYPE(TQAbstractDB*)
 Q_DECLARE_METATYPE(TQAbstractProject*)
 Q_DECLARE_METATYPE(TQAbstractRecordTypeDef*)
 Q_DECLARE_METATYPE(TQRecord)
