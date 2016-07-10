@@ -185,16 +185,16 @@ public:
     bool readRecordFields(TQRecord *record);
     bool readRecordTexts(TQRecord *record);
     bool readRecordBase(TQRecord *record);
-    QVariant getFieldValue(const TQRecord *record, const QString &fname, bool *ok = 0);
-    QVariant getFieldValue(const TQRecord *record, int vid, bool *ok = 0);
-    bool setFieldValue(TQRecord *record, const QString &fname, const QVariant &value);
-    bool updateRecordBegin(TQRecord *record);
-    bool commitRecord(TQRecord *record);
-    bool cancelRecord(TQRecord *record);
-    TQRecord *newRecord(int rectype);
+    Q_INVOKABLE QVariant getFieldValue(const TQRecord *record, const QString &fname, bool *ok = 0);
+    Q_INVOKABLE QVariant getFieldValue(const TQRecord *record, int vid, bool *ok = 0);
+    Q_INVOKABLE bool setFieldValue(TQRecord *record, const QString &fname, const QVariant &value);
+    Q_INVOKABLE bool updateRecordBegin(TQRecord *record);
+    Q_INVOKABLE bool commitRecord(TQRecord *record);
+    Q_INVOKABLE bool cancelRecord(TQRecord *record);
+    Q_INVOKABLE TQRecord *newRecord(int rectype);
     QList<TQAttachedFile> attachedFiles(TQRecord *record);
-    bool saveFileFromRecord(TQRecord *record, int fileIndex, const QString &dest);
-    QStringList historyList(TQRecord *record);
+    Q_INVOKABLE bool saveFileFromRecord(TQRecord *record, int fileIndex, const QString &dest);
+    Q_INVOKABLE QStringList historyList(TQRecord *record);
     QHash<int,QString> baseRecordFields(int rectype);
     bool isSystemModel(QAbstractItemModel *model) const;
     QSettings *projectSettings() const;
@@ -202,7 +202,7 @@ public:
     TQQueryDef *queryDefinition(const QString &queryName, int rectype);
     TQAbstractQWController *queryWidgetController(int rectype);
 
-    QVariant optionValue(const QString &option) const;
+    Q_INVOKABLE QVariant optionValue(const QString &option) const;
     Q_INVOKABLE QString jiraProjectKey() const;
 protected:
     QVariantList fieldList;
@@ -228,6 +228,8 @@ protected slots:
     friend class JiraRecTypeDef;
     friend class JiraRecord;
 };
+
+Q_DECLARE_METATYPE(JiraProject *)
 
 struct JiraFieldDesc
 {
@@ -347,6 +349,8 @@ protected:
     int schemaToSimpleType(const QString &schemaType);
 };
 
+Q_DECLARE_METATYPE(JiraRecTypeDef*)
+
 /*
 class JiraFieldTypeDef: public TQAbstractFieldType
 {
@@ -383,20 +387,22 @@ public:
     ~JiraRecord();
     Q_INVOKABLE QString jiraKey() const;
     Q_INVOKABLE int recordInternalId() const;
-    QVariant value(int vid, int role = Qt::DisplayRole) const ;
-    bool setValue(int vid, const QVariant &newValue);
+    Q_INVOKABLE QVariant value(int vid, int role = Qt::DisplayRole) const ;
+    Q_INVOKABLE bool setValue(int vid, const QVariant &newValue);
     TQNotesCol notes() const;
-    bool setNoteTitle(int index, const QString &newTitle);
-    bool setNoteText(int index, const QString &newText);
-    bool setNote(int index, const QString &newTitle, const QString &newText);
-    int addNote(const QString &noteTitle, const QString &noteText);
-    bool removeNote(int index);
-    const TQAbstractRecordTypeDef *typeDef() const;
-    const TQAbstractRecordTypeDef *typeEditDef() const;
+    Q_INVOKABLE bool setNoteTitle(int index, const QString &newTitle);
+    Q_INVOKABLE bool setNoteText(int index, const QString &newText);
+    Q_INVOKABLE bool setNote(int index, const QString &newTitle, const QString &newText);
+    Q_INVOKABLE int addNote(const QString &noteTitle, const QString &noteText);
+    Q_INVOKABLE bool removeNote(int index);
+    Q_INVOKABLE const TQAbstractRecordTypeDef *typeDef() const;
+    Q_INVOKABLE const TQAbstractRecordTypeDef *typeEditDef() const;
     Q_INVOKABLE JiraProject *jiraProject()const;
 
     friend class JiraProject;
 };
+
+Q_DECLARE_METATYPE(JiraRecord *)
 
 class JiraFilterModel: public BaseRecModel<JiraFilter>
 {
@@ -409,7 +415,5 @@ public:
 protected:
     virtual QVariant displayColData(const JiraFilter &rec, int col) const;
 };
-
-Q_DECLARE_METATYPE(JiraProject *)
 
 #endif // JIRADB_H

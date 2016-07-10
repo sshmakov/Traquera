@@ -345,7 +345,7 @@ void QueryPage::setQueryModel(TQAbstractProject *prj, TQRecModel *model)
 //    d->xqFile = "data/scr.xq";
     if(prj)
     {
-        TQScopeSettings sets(d->modelProject->projectSettings());
+//        TQScopeSettings sets(d->modelProject->projectSettings());
         d->xqPageFile = prj->optionValue(TQOPTION_VIEW_TEMPLATE).toString();
 //        d->xqFile = sets->value("RecordTemplate", d->xqFile).toString();
     }
@@ -513,6 +513,7 @@ void QueryPage::slotTabTitleChanged(QWidget* widget, const QString & newTitle)
 void QueryPage::populateJavaScriptWindowObject()
 {
     webView_2->page()->mainFrame()->addToJavaScriptWindowObject("query", this);
+    webView_2->page()->mainFrame()->addToJavaScriptWindowObject("view", this);
     webView_2->page()->mainFrame()->addToJavaScriptWindowObject("global", ttglobal());
 }
 

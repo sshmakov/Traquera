@@ -1994,8 +1994,8 @@ void JiraProject::readRecordDef2(JiraRecTypeDef *rdef, const QVariantMap &fields
             rdef->d->schemaTypes.append(f.schemaType);
             rdef->d->nativeTypes.insert(f.schemaType, nativeType++);
         }
-        if(skippedFields.contains(f.id))
-            continue;
+//        if(skippedFields.contains(f.id))
+//            continue;
         f.nativeType = rdef->d->schemaTypes.indexOf(f.schemaType); // not work for issuekey
         f.simpleType = rdef->schemaToSimpleType(f.schemaType);
         if(f.simpleType == TQ::TQ_FIELD_TYPE_USER)

@@ -543,7 +543,9 @@ void TTRecordWindow::on_actionCancelChanges_triggered()
 void TTRecordWindow::populateJavaScriptWindowObject()
 {
     ui->webView->page()->mainFrame()->addToJavaScriptWindowObject("editor", this);
+    ui->webView->page()->mainFrame()->addToJavaScriptWindowObject("view", this);
     ui->webView->page()->mainFrame()->addToJavaScriptWindowObject("record", a_record);
+    ui->webView->page()->mainFrame()->addToJavaScriptWindowObject("global", ttglobal());
 }
 
 

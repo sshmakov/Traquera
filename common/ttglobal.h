@@ -144,6 +144,7 @@ signals:
 };
 
 TQPLUGIN_SHARED TTGlobal *ttglobal();
+Q_DECLARE_METATYPE(TTGlobal*)
 
 inline void ttShowError(const QString &error)
 {
