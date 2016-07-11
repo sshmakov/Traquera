@@ -13,11 +13,11 @@ SUBDIRS += \
     tracker \
     msplans   \
     tqservice  \
+    tqaxfactory \
     jira \
     client \
     trindex \
-    install \
-    tqaxfactory
+    install
 
 msplans.depends = client
 client.depends = tqplugapi

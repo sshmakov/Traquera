@@ -1,34 +1,34 @@
 function r()
 {
-        var list = document.getElementsByClassName('note');
-	//debug2.innerHTML = 'D0';
-	//debug2.innerText = 'Length '+ list.length;
-        var l = list.length;
-        var dd = 'aa ';
-	for(var i = 0; i < l; i++)
-        {
-             var node = list[i];
-            // var index = 0;
-             var index = node.attributes['index'].value;
-             //var title = 'eeeee'; 
-             var title = document.getElementById('title'+index).innerText;
-             dd = dd + index + ', ';
-             var cla = 'an';
-             if (title == 'Analitical Note') cla = 'an';
-             else if (title == 'Engineering Note') cla = 'en';
-             else if (title == 'Manager note') cla = 'mn';
-             else if (title == 'Test Note') cla = 'tn';
-             else if (title == 'Document Note') cla = 'dn';
-             else if ((title == 'Release Note') || (title == 'HotFixEng')) cla = 'rn';
-	     else if (title == 'Tech Support Note') cla = 'sn';
-             else 
-               cla = 'on';
-             node.classList.add(cla)
-             //node.className = 'note ' + cla;
-         }
-	//debug2.innerHTML = 'D2';
-	//debug.innerHTML = dd;
-	//debug2.innerHTML = 'D3';
+    var list = document.getElementsByClassName('note');
+    //debug2.innerHTML = 'D0';
+    //debug2.innerText = 'Length '+ list.length;
+    var l = list.length;
+    var dd = 'aa ';
+    for(var i = 0; i < l; i++)
+    {
+        var node = list[i];
+        // var index = 0;
+        var index = node.attributes['index'].value;
+        //var title = 'eeeee';
+        var title = document.getElementById('title'+index).innerText;
+        dd = dd + index + ', ';
+        var cla = 'an';
+        if (title == 'Analitical Note') cla = 'an';
+        else if (title == 'Engineering Note') cla = 'en';
+        else if (title == 'Manager note') cla = 'mn';
+        else if (title == 'Test Note') cla = 'tn';
+        else if (title == 'Document Note') cla = 'dn';
+        else if ((title == 'Release Note') || (title == 'HotFixEng')) cla = 'rn';
+        else if (title == 'Tech Support Note') cla = 'sn';
+        else
+            cla = 'on';
+        node.classList.add(cla)
+        //node.className = 'note ' + cla;
+    }
+    //debug2.innerHTML = 'D2';
+    //debug.innerHTML = dd;
+    //debug2.innerHTML = 'D3';
 }
 
 function copyToClip(text)
@@ -46,56 +46,56 @@ function openQueryPage(numbers)
 
 function replaceNumbers()
 {
-  //var re = /([\s\b,.])#([0-9]+)/g;
-  var re1 = /^#([0-9]+)/g;
-  var re2 = /([\s\b,.^])#([0-9]+)/g;
-  var pro1 = '<a href="#" onclick="javascript:query.openRecordId(';
-  var pro21 = ');" oncontextmenu="javascript:return menuSCR(';
-  var pro22 = ', event);" >';
-  var pro3 = '<a href="#" onclick="javascript:query.appendId(';
-  var pro4 = ');">';
-  var ep = '</a>';
-  var notes = document.getElementsByClassName('replNums'); //noteText
-  for(var i = 0; i < notes.length; i++)
-  {
-    var s = notes[i].innerHTML;
-    var ns;
-    ns = s.replace(re1,pro1+'$1'+pro21+'$1'+pro22+'#$1'+ep
-	//+'<img src="plus-m.png" onClick="javascript:query.appendId($1);"/>'
-	);
-    ns = ns.replace(re2,'$1'+pro1+'$2'+pro21+'$2'+pro22+'#$2'+ep
-	//+'<img src="plus-m.png" onClick="javascript:query.appendId($2);"/>'
-	);
-    notes[i].innerHTML = ns;
-  }
+    //var re = /([\s\b,.])#([0-9]+)/g;
+    var re1 = /^#([0-9]+)/g;
+    var re2 = /([\s\b,.^])#([0-9]+)/g;
+    var pro1 = '<a href="#" onclick="javascript:query.openRecordId(';
+    var pro21 = ');" oncontextmenu="javascript:return menuSCR(';
+    var pro22 = ', event);" >';
+    var pro3 = '<a href="#" onclick="javascript:query.appendId(';
+    var pro4 = ');">';
+    var ep = '</a>';
+    var notes = document.getElementsByClassName('replNums'); //noteText
+    for(var i = 0; i < notes.length; i++)
+    {
+        var s = notes[i].innerHTML;
+        var ns;
+        ns = s.replace(re1,pro1+'$1'+pro21+'$1'+pro22+'#$1'+ep
+                       //+'<img src="plus-m.png" onClick="javascript:query.appendId($1);"/>'
+                       );
+        ns = ns.replace(re2,'$1'+pro1+'$2'+pro21+'$2'+pro22+'#$2'+ep
+                        //+'<img src="plus-m.png" onClick="javascript:query.appendId($2);"/>'
+                        );
+        notes[i].innerHTML = ns;
+    }
 }
 
 
 function showPerforceFile(filename)
 {
-	//debug.innerHTML = 'starting';
-	var WshShell = filename;
-	//debug.innerHTML = 'creating';
-	WshShell = new window.ActiveXObject("WScript.Shell");
-	//debug.innerHTML = 'result';
-	//debug2.innerHTML = "("+ WshShell + ")";
-	WshShell.Run("%comspec% ");
-	//debug.innerHTML = 'started';
+    //debug.innerHTML = 'starting';
+    var WshShell = filename;
+    //debug.innerHTML = 'creating';
+    WshShell = new window.ActiveXObject("WScript.Shell");
+    //debug.innerHTML = 'result';
+    //debug2.innerHTML = "("+ WshShell + ")";
+    WshShell.Run("%comspec% ");
+    //debug.innerHTML = 'started';
 }
 
 // Функция для определения координат указателя мыши 
 function defPosition(event) { 
-            var x = y = 0; 
-            if (document.attachEvent != null) { // Internet Explorer & Opera 
-            x = window.event.clientX + (document.documentElement.scrollLeft ? document.documentElement.scrollLeft : document.body.scrollLeft); 
-            y = window.event.clientY + (document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop); 
-      } else if (!document.attachEvent && document.addEventListener) { // Gecko 
-            x = event.clientX + window.scrollX; 
-            y = event.clientY + window.scrollY; 
-      } else { 
-            // Do nothing 
-      } 
-      return {x:x, y:y}; 
+    var x = y = 0;
+    if (document.attachEvent != null) { // Internet Explorer & Opera
+        x = window.event.clientX + (document.documentElement.scrollLeft ? document.documentElement.scrollLeft : document.body.scrollLeft);
+        y = window.event.clientY + (document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop);
+    } else if (!document.attachEvent && document.addEventListener) { // Gecko
+        x = event.clientX + window.scrollX;
+        y = event.clientY + window.scrollY;
+    } else {
+        // Do nothing
+    }
+    return {x:x, y:y};
 } 
 
 function menuSCR(scrid, evt) { 
@@ -116,7 +116,7 @@ function menuSCR(scrid, evt) {
         title = "<i>(не найден)</i>";
     if(fix && fix != "0")
     {
-	state = state + " " + fix;
+        state = state + " " + fix;
     }
     //alert(menu);
     //alert(type);
@@ -137,9 +137,9 @@ function menuSCR(scrid, evt) {
         menu.style.top = pos.y;
         var x = pos.x;
         if(x > window.innerWidth - 300)
-          x = window.innerWidth - 300;
+            x = window.innerWidth - 300;
         if(x < 0)
-          x = 0;
+            x = 0;
         menu.style.left = x;
         menu.style.display = "";
     }
@@ -150,17 +150,17 @@ function menuSCR(scrid, evt) {
 // Закрываем контекстное при клике левой или правой кнопкой по документу 
 // Функция для добавления обработчиков событий 
 function addHandler(object, event, handler, useCapture) { 
-      if (object.addEventListener) { 
-            object.addEventListener(event, handler, useCapture ? useCapture : false); 
-      } else if (object.attachEvent) { 
-            object.attachEvent('on' + event, handler); 
-      } //else alert("Add handler is not supported"); 
+    if (object.addEventListener) {
+        object.addEventListener(event, handler, useCapture ? useCapture : false);
+    } else if (object.attachEvent) {
+        object.attachEvent('on' + event, handler);
+    } //else alert("Add handler is not supported");
 } 
 
 addHandler(document, "contextmenu", function() { 
-      contextMenuId.style.display = "none"; 
+    contextMenuId.style.display = "none";
 }); 
 
 addHandler(document, "click", function() { 
-      contextMenuId.style.display = "none"; 
+    contextMenuId.style.display = "none";
 });

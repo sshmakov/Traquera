@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="WINDOWS-1251"?>
+<scr2project>
+    <fields>
+      <field title="Название задачи" src="Title"/>
+      <field title="RSSL SCRs"      src="Id"/>
+      <field title="Severity"   src="Severity"/>
+      <field title="Request Type"   src="Request Type"/>
+      <field title="ДБПО Версия системы"   src="MustFixedInBuild"/>
+      <field title="ДБПО Клиент"   src="Client Name"/>
+    </fields>
+</scr2project>

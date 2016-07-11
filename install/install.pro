@@ -29,7 +29,17 @@ OTHER_FILES += \
     RS/init.xml \
     RS/style2.css \
     RS/style.css \
-    RS/editor.css
+    RS/editor.css \
+    deploy.pri
+
+
+rsfolder.source = RS
+rsfolder.target = .
+DEPLOYMENTFOLDERS = rsfolder
+
+include(deploy.pri)
+qtcAddDeployment()
+
 
 
 win32:CONFIG(release, debug|release): {
@@ -48,9 +58,13 @@ win32:CONFIG(release, debug|release): {
     iss_full.commands = $$INNO /O"$(DESTDIR)"  $$replace(PWD,/,\\)\\$$ISS_FILES /dOutputBaseFilename=$${SETUP}_full /dVARIANT=FULL
     iss_full.depends = $$aspr.target
 
-    QMAKE_EXTRA_TARGETS += aspr iss_rs iss_full
+    iss_fullrs.target  = $(DESTDIR)\\$${SETUP}_fullrs.exe
+    iss_fullrs.commands = $$INNO /O"$(DESTDIR)"  $$replace(PWD,/,\\)\\$$ISS_FILES /dOutputBaseFilename=$${SETUP}_fullrs /dVARIANT=FULLRS
+    iss_fullrs.depends = $$aspr.target
+
+    QMAKE_EXTRA_TARGETS += aspr iss_rs iss_full iss_fullrs
     QMAKE_EXTRA_COMPILERS +=
 
-    OBJECTS = $$iss_rs.target  $$iss_full.target
+    OBJECTS = $$iss_rs.target  $$iss_full.target $$iss_fullrs.target
 }
 

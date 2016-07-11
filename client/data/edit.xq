@@ -25,9 +25,9 @@ xquery version "1.0" encoding "utf-8";
 </script>
 <script>
 <!--
-//textEditor = new InplaceEditor();
+textEditor = new InplaceEditor();
 //textEditor = new WindowEditor();
-textEditor = new WidgetEditor();
+//textEditor = new WidgetEditor();
 -->
 </script>
 </head>
