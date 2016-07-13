@@ -22,6 +22,7 @@ class TTRecordWindowPrivate {
 public:
     TQRecordViewController *controller;
     const TQAbstractRecordTypeDef *recDef;
+    QWebInspector *inspector;
 };
 
 
@@ -33,6 +34,7 @@ TTRecordWindow::TTRecordWindow(QWidget *parent) :
     ui->setupUi(this);
     initWidgets();
     d->controller = new TQRecordViewController(this);
+    d->inspector = new QWebInspector();
 //    connect(this,SIGNAL(recordChanged(TQRecord*)),d->controller,SLOT(onViewRecordChanged(TQRecord*)));
 //    connect(d->controller,SIGNAL(detailTabTitleChanged(QWidget*,QString)),SLOT(setDetailTabTitle(QWidget*,QString)));
 
@@ -79,6 +81,14 @@ TTRecordWindow::TTRecordWindow(QWidget *parent) :
 
 TTRecordWindow::~TTRecordWindow()
 {
+    if(d->inspector)
+    {
+        d->inspector->close();
+//        d->inspector->setPage(0);
+//        delete d->inspector;
+//        d->inspector = 0;
+    }
+    delete ui->webView;
     if(a_record)
     {
         QObject *rec = a_record;
@@ -363,6 +373,8 @@ void TTRecordWindow::refreshValues()
     QString html = xmlToHTML(a_record, xqFile);
     QUrl baseUrl = QUrl::fromUserInput(xqFile);
     ui->webView->setHtml(html, baseUrl);
+    d->inspector->setPage(ui->webView->page());
+
 
 /*
     QAction *action = ui->webView->pageAction(QWebPage::Copy);
