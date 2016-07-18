@@ -11,6 +11,11 @@ QueryFields::QueryFields(QWidget *parent) :
     ui->setupUi(this);
     modifyPanel = new ModifyPanel(this);
     ui->contentLayout->addWidget(modifyPanel);
+//    QShortcut *s;
+//    new QShortcut(QKeySequence("Ctrl+Enter"),this,SLOT(applyChanges()));
+//    new QShortcut(QKeySequence("Ctrl+Return"),this,SLOT(applyChanges()));
+    connect(modifyPanel, SIGNAL(applyButtonPressed()), SLOT(applyChanges()));
+    new QShortcut(QKeySequence("Escape"),this,SLOT(cancelChanges()));
 }
 
 QueryFields::~QueryFields()
@@ -42,10 +47,7 @@ void QueryFields::on_buttonBox_clicked(QAbstractButton *button)
 {
     int role = ui->buttonBox->standardButton(button);
     if(role == QDialogButtonBox::Reset)
-    {
-        modifyPanel->resetAll();
-        modifyPanel->fillValues(controller->selectedRecords());
-    }
+        cancelChanges();
     else if(role == QDialogButtonBox::Apply)
         applyChanges();
 }
@@ -78,6 +80,12 @@ void QueryFields::applyChanges()
                 rec->cancel();
         }
     }
+    modifyPanel->resetAll();
+    modifyPanel->fillValues(controller->selectedRecords());
+}
+
+void QueryFields::cancelChanges()
+{
     modifyPanel->resetAll();
     modifyPanel->fillValues(controller->selectedRecords());
 }

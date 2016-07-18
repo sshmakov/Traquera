@@ -73,12 +73,6 @@ public slots:
     void resetAll();
     void clearField(const QString& fieldName);
 private slots:
-    void on_saveChangesButton_clicked();
-
-    void on_pushButton_clicked();
-
-    void on_repeatButton_clicked();
-
     void on_actionApplyChanges_triggered();
 
     void on_actionRevertChanges_triggered();

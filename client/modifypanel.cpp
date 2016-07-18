@@ -404,21 +404,6 @@ void ModifyPanel::clearField(const QString &fieldName)
         setFieldValue(fieldName, fieldDef(fieldName).defaultValue());
 }
 
-void ModifyPanel::on_saveChangesButton_clicked()
-{
-    emit applyButtonPressed();
-}
-
-void ModifyPanel::on_pushButton_clicked()
-{
-    resetAll();
-}
-
-void ModifyPanel::on_repeatButton_clicked()
-{
-    emit repeatButtonClicked();
-}
-
 void ModifyPanel::on_actionApplyChanges_triggered()
 {
     emit applyButtonPressed();

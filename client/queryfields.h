@@ -25,6 +25,7 @@ public:
     ~QueryFields();
 public slots:
     void applyChanges();
+    void cancelChanges();
     void selectedRecordsChanged();
     void setViewController(TQViewController *viewController, int mode = TQRecord::Edit);
 private slots:
