@@ -38,13 +38,13 @@ public:
     ~TTRecordWindow();
     void setRecordTypeDef(const TQAbstractRecordTypeDef *recDef, int mode);
     const TQAbstractRecordTypeDef *recordTypeDef() const;
-    Q_INVOKABLE TQRecord *record();
+    TQRecord *record();
     void setRecord(TQRecord *rec);
     Q_INVOKABLE QString noteTitle(int index);
     Q_INVOKABLE QString noteText(int index);
     Q_INVOKABLE bool setValue(const QString &field, const QVariant &value);
     Q_INVOKABLE QVariant value(const QString &field);
-    Q_INVOKABLE QString description();
+    QString description();
     Q_INVOKABLE bool enableModify();
     Q_INVOKABLE bool writeChanges();
     Q_INVOKABLE QObjectList getSelectedRecords();

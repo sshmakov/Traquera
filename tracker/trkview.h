@@ -514,7 +514,7 @@ public:
     TQRecModel *openRecords(const QString &queryText, int recType, bool emitEvent = true);
     void refreshModel(QAbstractItemModel *model);
     //NotesCol getNotes(int recId, TRK_RECORD_TYPE type) const;
-    QStringList noteTitleList();
+    Q_INVOKABLE QStringList noteTitleList();
 public:
     // Standard manipulations
     virtual QString fieldVID2Name(int rectype, int vid);
