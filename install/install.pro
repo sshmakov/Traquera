@@ -40,26 +40,25 @@ DEPLOYMENTFOLDERS = rsfolder
 include(deploy.pri)
 qtcAddDeployment()
 
-
-
 win32:CONFIG(release, debug|release): {
     INNO = "C:\\Program Files (x86)\\Inno Setup 5\\iscc.exe"
     ASPROTECT = "C:\\Program Files (x86)\\ASProtect 2.11 SKE\\ASProtect.exe"
+    BUILDPATH=$$replace(OUT_PWD,/,\\)\\..
 
     aspr.target = ..\\client\\release\\traquera-protect.exe
     aspr.commands = $$ASPROTECT -process $$replace(PWD,/,\\)\\TraQuera.aspr2
     aspr.depends = ..\\client\\release\\traquera.exe
 
     iss_rs.target  = $(DESTDIR)\\$${SETUP}.exe
-    iss_rs.commands = $$INNO /O"$(DESTDIR)"  $$replace(PWD,/,\\)\\$$ISS_FILES /dOutputBaseFilename=$${SETUP} /dVARIANT=RS
+    iss_rs.commands = $$INNO /O"$(DESTDIR)"  $$replace(PWD,/,\\)\\$$ISS_FILES /dOutputBaseFilename=$${SETUP} /dVARIANT=RS /dBuildPath=$$BUILDPATH
     iss_rs.depends = $$aspr.target
 
     iss_full.target  = $(DESTDIR)\\$${SETUP}_full.exe
-    iss_full.commands = $$INNO /O"$(DESTDIR)"  $$replace(PWD,/,\\)\\$$ISS_FILES /dOutputBaseFilename=$${SETUP}_full /dVARIANT=FULL
+    iss_full.commands = $$INNO /O"$(DESTDIR)"  $$replace(PWD,/,\\)\\$$ISS_FILES /dOutputBaseFilename=$${SETUP}_full /dVARIANT=FULL /dBuildPath=$$BUILDPATH
     iss_full.depends = $$aspr.target
 
     iss_fullrs.target  = $(DESTDIR)\\$${SETUP}_fullrs.exe
-    iss_fullrs.commands = $$INNO /O"$(DESTDIR)"  $$replace(PWD,/,\\)\\$$ISS_FILES /dOutputBaseFilename=$${SETUP}_fullrs /dVARIANT=FULLRS
+    iss_fullrs.commands = $$INNO /O"$(DESTDIR)"  $$replace(PWD,/,\\)\\$$ISS_FILES /dOutputBaseFilename=$${SETUP}_fullrs /dVARIANT=FULLRS /dBuildPath=$$BUILDPATH
     iss_fullrs.depends = $$aspr.target
 
     QMAKE_EXTRA_TARGETS += aspr iss_rs iss_full iss_fullrs

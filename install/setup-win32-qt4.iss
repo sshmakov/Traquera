@@ -17,8 +17,11 @@
 #endif
 
 #ifndef BuildPath
-#define BuildPath "..\..\build\traquera-main-Desktop-Release"
+//#error BuildPath must be defined
+#define BuildPath ".."
 #endif
+
+#pragma warning "BuildPath = " + BuildPath
 
 #ifndef QTDIR
 #define QTDIR = GetEnv("QTDIR")
@@ -70,6 +73,26 @@ Source: "{#BuildPath}\client\release\traquera.exe"; DestName: "traquera.exe"; De
 #endif
 Source: "{#BuildPath}\client\*.dll"; DestDir: "{app}"; Components: main; Flags: ignoreversion
 Source: "redistribute\*"; DestDir: "{app}"; Components: main; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#QTDIR}\bin\phonon4.dll"; DestDir: "{app}"; Components: main; Flags: ignoreversion
+Source: "{#QTDIR}\bin\Qt3Support4.dll"; DestDir: "{app}"; Components: main; Flags: ignoreversion
+Source: "{#QTDIR}\bin\QtCLucene4.dll"; DestDir: "{app}"; Components: main; Flags: ignoreversion
+Source: "{#QTDIR}\bin\QtCore4.dll"; DestDir: "{app}"; Components: main; Flags: ignoreversion
+Source: "{#QTDIR}\bin\QtDeclarative4.dll"; DestDir: "{app}"; Components: main; Flags: ignoreversion
+Source: "{#QTDIR}\bin\QtDesigner4.dll"; DestDir: "{app}"; Components: main; Flags: ignoreversion
+Source: "{#QTDIR}\bin\QtDesignerComponents4.dll"; DestDir: "{app}"; Components: main; Flags: ignoreversion
+Source: "{#QTDIR}\bin\QtGui4.dll"; DestDir: "{app}"; Components: main; Flags: ignoreversion
+Source: "{#QTDIR}\bin\QtHelp4.dll"; DestDir: "{app}"; Components: main; Flags: ignoreversion
+Source: "{#QTDIR}\bin\QtMultimedia4.dll"; DestDir: "{app}"; Components: main; Flags: ignoreversion
+Source: "{#QTDIR}\bin\QtNetwork4.dll"; DestDir: "{app}"; Components: main; Flags: ignoreversion
+Source: "{#QTDIR}\bin\QtOpenGL4.dll"; DestDir: "{app}"; Components: main; Flags: ignoreversion
+Source: "{#QTDIR}\bin\QtScript4.dll"; DestDir: "{app}"; Components: main; Flags: ignoreversion
+Source: "{#QTDIR}\bin\QtScriptTools4.dll"; DestDir: "{app}"; Components: main; Flags: ignoreversion
+Source: "{#QTDIR}\bin\QtSql4.dll"; DestDir: "{app}"; Components: main; Flags: ignoreversion
+Source: "{#QTDIR}\bin\QtSvg4.dll"; DestDir: "{app}"; Components: main; Flags: ignoreversion
+Source: "{#QTDIR}\bin\QtTest4.dll"; DestDir: "{app}"; Components: main; Flags: ignoreversion
+Source: "{#QTDIR}\bin\QtWebKit4.dll"; DestDir: "{app}"; Components: main; Flags: ignoreversion
+Source: "{#QTDIR}\bin\QtXml4.dll"; DestDir: "{app}"; Components: main; Flags: ignoreversion
+Source: "{#QTDIR}\bin\QtXmlPatterns4.dll"; DestDir: "{app}"; Components: main; Flags: ignoreversion
 Source: "{#QTDIR}\plugins\imageformats\*"; DestDir: "{app}\imageformats"; Components: main; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#QTDIR}\plugins\sqldrivers\*"; DestDir: "{app}\sqldrivers"; Components: main; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\client\data\*"; DestDir: "{app}\data"; Components: main; Flags: ignoreversion recursesubdirs createallsubdirs 
