@@ -241,7 +241,7 @@ class TQPLUGIN_SHARED TQAbstractProject: public QObject
     Q_PROPERTY(QObject *db READ db)
     Q_PROPERTY(bool isOpened READ isOpened)
     Q_PROPERTY(QString currentUser READ currentUser)
-//    Q_PROPERTY(QString projectName READ projectName)
+    Q_PROPERTY(QString projectName READ projectName)
 protected:
     TQAbstractProjectPrivate *d;
 public:
@@ -409,12 +409,18 @@ class TQPLUGIN_SHARED TQRecord: public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString title READ title WRITE setTitle)
-    Q_PROPERTY(int mode READ mode WRITE setMode)
+    Q_PROPERTY(int mode READ mode WRITE setMode NOTIFY changedState)
     Q_PROPERTY(bool isEditing READ isEditing)
+    Q_PROPERTY(bool isModified READ isModified WRITE setModified)
+    Q_PROPERTY(bool isValid READ isValid)
+    Q_PROPERTY(bool isSelected READ isSelected WRITE setSelected)
     Q_PROPERTY(QString description READ description WRITE setDescription)
     Q_PROPERTY(QObject *project READ project)
     Q_PROPERTY(const TQAbstractRecordTypeDef *typeDef READ typeDef)
     Q_PROPERTY(const TQAbstractRecordTypeDef *typeEditDef READ typeEditDef)
+    Q_PROPERTY(int recordType READ recordType)
+    Q_PROPERTY(int recordId READ recordId)
+    Q_PROPERTY(QVariantHash values READ values WRITE setValues)
 public:
     enum TQRecMode {View, Edit, Insert};
 private:
@@ -425,13 +431,13 @@ public:
     TQRecord(const TQRecord &src);
 //    TQRecord & operator = (const TQRecord &src);
     virtual ~TQRecord();
-    Q_INVOKABLE virtual bool isValid() const;
-    Q_INVOKABLE virtual int recordType() const;
-    Q_INVOKABLE virtual int recordId() const;
+    virtual bool isValid() const;
+    virtual int recordType() const;
+    virtual int recordId() const;
 
-    Q_INVOKABLE virtual int mode() const;
-    Q_INVOKABLE virtual void setMode(int newMode);
-    Q_INVOKABLE virtual bool isEditing() const;
+    virtual int mode() const;
+    virtual void setMode(int newMode);
+    virtual bool isEditing() const;
 
 public slots:
     virtual bool updateBegin();
@@ -443,11 +449,11 @@ public:
     virtual bool isModified() const;
 
 public:
-    Q_INVOKABLE virtual QString title() const;
-    Q_INVOKABLE virtual bool setTitle(const QString &newTitle);
+    virtual QString title() const;
+    virtual bool setTitle(const QString &newTitle);
 
-    Q_INVOKABLE virtual QString description() const ;
-    Q_INVOKABLE virtual bool setDescription(const QString &newDesc);
+    virtual QString description() const ;
+    virtual bool setDescription(const QString &newDesc);
 
     virtual TQNotesCol notes() const;
     Q_INVOKABLE virtual QString noteTitle(int index) const;
@@ -473,6 +479,7 @@ public:
     Q_INVOKABLE virtual QVariant value(const QString& fieldName, int role = Qt::DisplayRole) const;
     Q_INVOKABLE virtual bool setValue(int vid, const QVariant& newValue);
     Q_INVOKABLE virtual bool setValues(const QVariantHash &values);
+    virtual QVariantHash values() const;
     Q_INVOKABLE virtual bool seVidValues(const TQFieldValues &values);
     Q_INVOKABLE virtual TQFieldValues vidChanges() const;
     Q_INVOKABLE virtual QVariantHash fieldChanges() const;
@@ -480,7 +487,7 @@ public:
 //    Q_INVOKABLE  int recordId() const { return values[VID_Id].toInt(); } // TRK_UINT
 //    Q_INVOKABLE void setValue(const QString& fieldName, const QVariant& value, int role = Qt::EditRole);
 
-    virtual QDomDocument toXML() const;
+    Q_INVOKABLE virtual QDomDocument toXML() const;
     Q_INVOKABLE virtual QString toJSON();
 //    Q_INVOKABLE virtual QString toHTML(const QString &xqCodeFile);
     Q_INVOKABLE virtual QStringList historyList() const;
@@ -488,8 +495,8 @@ public:
 
     Q_INVOKABLE virtual void addLink();
     Q_INVOKABLE virtual void removeLink(const QObject *receiver=0);
-    Q_INVOKABLE virtual bool isSelected() const;
-    Q_INVOKABLE virtual void setSelected(bool value);
+    virtual bool isSelected() const;
+    virtual void setSelected(bool value);
     Q_INVOKABLE virtual void refresh();
 protected:
     virtual void doSetMode(int newMode) const;

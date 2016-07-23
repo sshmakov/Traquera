@@ -125,12 +125,13 @@ void ModifyPanel::fillTable()
 {
     int line=-1;
     ui->fieldsTableWidget->clearContents();
-    if(!rows.count())
-       ui->fieldsTableWidget->setRowCount(0);
+    ui->fieldsTableWidget->setRowCount(0);
     int wRows = ui->fieldsTableWidget->rowCount();
     QFont disabledFont = ui->fieldsTableWidget->font();
     disabledFont.setWeight(QFont::Light);
-    disabledFont.setItalic(true);
+    QBrush disabledBack;
+    QBrush disabledFront(Qt::darkGray);
+//    QPen disabledPen(Qt::green);
     foreach(const ModifyRow &row, rows)
     {
         if(++line >= wRows)
@@ -138,8 +139,6 @@ void ModifyPanel::fillTable()
         QTableWidgetItem *item;
         item = new QTableWidgetItem(row.fieldName,0);
         item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-        if(!row.isEditable)
-            item->setFont(disabledFont);
         ui->fieldsTableWidget->setItem(line,0,item);
         if(row.isGroup)
         {
@@ -148,12 +147,21 @@ void ModifyPanel::fillTable()
         }
         else
         {
-            item = new QTableWidgetItem(row.displayValue,row.fieldType);
+            QTableWidgetItem *valueItem;
+            valueItem = new QTableWidgetItem(row.displayValue,row.fieldType);
             Qt::ItemFlags flags = Qt::ItemIsSelectable | Qt::ItemIsEnabled;
             if(row.isEditable)
                 flags |= Qt::ItemIsEditable;
-            item->setFlags(flags);
-            ui->fieldsTableWidget->setItem(line,1,item);
+            else
+            {
+                item->setBackground(disabledBack);
+                item->setForeground(disabledFront);
+                valueItem->setBackground(disabledBack);
+//                valueItem->setForeground(disabledFront);
+                item->setFont(disabledFont);
+            }
+            valueItem->setFlags(flags);
+            ui->fieldsTableWidget->setItem(line,1,valueItem);
         }
     }
 }

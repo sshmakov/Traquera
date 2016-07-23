@@ -1060,6 +1060,10 @@ void MainWindow::openQueryById(const QString &numbers, int recordType, bool reus
 void MainWindow::openQueryById(const QList<int> &idList, const QString &title, int recordType, bool reusePage)
 {
     TQAbstractProject *prj = currentProject();
+    if(!prj || !prj->isOpened())
+        return;
+    if(recordType == -1)
+        recordType = prj->defaultRecType();
     QueryPage *page = curQueryPage(); // = qobject_cast<QueryPage *>(w);
     QString newTitle = title;
     if(newTitle.isEmpty())
@@ -1073,6 +1077,24 @@ void MainWindow::openQueryById(const QList<int> &idList, const QString &title, i
     showProgressBar();
     page->openIds(prj,idList,title, recordType);
     hideProgressBar();
+}
+
+void MainWindow::openRecordId(int id, int recordType)
+{
+    TQAbstractProject *prj = currentProject();
+    if(!prj || !prj->isOpened())
+        return;
+    if(recordType == -1)
+        recordType = prj->defaultRecType();
+    TQRecord *rec = prj->createRecordById(id, recordType);
+    if(rec)
+    {
+        TTRecordWindow *win = new TTRecordWindow();
+        //        win->setRecordTypeDef(rec->typeDef());
+        win->setRecord(rec);
+        win->show();
+    }
+    tqInfo() << tr("Открыт запрос %1").arg((intListToString(QList<int>() << id)));
 }
 
 QueryPage *MainWindow::createNewPage(const QString &title)
@@ -1351,6 +1373,13 @@ TQAbstractProject *MainWindow::currentProject()
         }
     }
     return 0;
+}
+
+void MainWindow::setCurrentProjectObj(QObject *prj)
+{
+    TQAbstractProject *p = qobject_cast<TQAbstractProject *>(prj);
+    if(p)
+        setCurrentProject(p);
 }
 
 void MainWindow::setCurrentProject(TQAbstractProject *prj)

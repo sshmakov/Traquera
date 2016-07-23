@@ -13,10 +13,11 @@ bool isMethodValid(const QMetaMethod &method);
 class TQPLUGIN_SHARED TQViewController : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QWidget *view READ view)
-    Q_PROPERTY(TQRecord *currentRecord READ currentRecord NOTIFY currentRecordChanged)
+    Q_PROPERTY(QObject *view READ view)
+    Q_PROPERTY(QObject *currentRecord READ currentRecord NOTIFY currentRecordChanged)
     Q_PROPERTY(QObjectList selectedRecords READ selectedRecords NOTIFY selectedRecordsChanged)
-    Q_PROPERTY(TQAbstractProject *project READ project)
+    Q_PROPERTY(QObject *project READ project)
+    Q_PROPERTY(QList<int> selectedIds READ selectedIds NOTIFY selectedRecordsChanged)
 private:
 //    TQVCPrivate *d;
 public:
@@ -25,6 +26,7 @@ public:
     virtual QWidget *view() const;
     virtual TQRecord *currentRecord() const;
     virtual QObjectList selectedRecords() const;
+    virtual QList<int> selectedIds() const;
     virtual QAbstractItemView *tableView() const;
     virtual bool flag(const QString &flagName) const;
     virtual const TQAbstractRecordTypeDef* recordDef() const;

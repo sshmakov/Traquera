@@ -18,6 +18,7 @@
 #include <tqmodels.h>
 #include "tqhistory.h"
 #include <QXmlQuery>
+#include <tqviewcontroller.h>
 
 /*
 struct TrkHistoryItem 
@@ -45,8 +46,9 @@ class QueryPage : public QWidget, public Ui::queryForm
     Q_PROPERTY(const TQAbstractRecordTypeDef *recordTypeDef READ recordTypeDef)
     Q_PROPERTY(int recordType READ recordType)
     Q_PROPERTY(QAbstractItemView *tableView READ tableView)
-    Q_PROPERTY(TQViewController *controller READ controller)
-    Q_PROPERTY(TQAbstractProject *project READ project())
+    Q_PROPERTY(QObject *controller READ controller)
+    Q_PROPERTY(QObject *project READ project)
+    Q_PROPERTY(QObject * currentRecord READ currentRecord NOTIFY selectedRecordsChanged)
 protected:
     QueryPagePrivate *d;
     QTreeView *planTreeView;
@@ -87,8 +89,8 @@ public:
     Q_INVOKABLE QList<int> selectedIds();
     Q_INVOKABLE QObjectList allRecords();
     Q_INVOKABLE QObjectList markedRecords();
-    Q_INVOKABLE TQAbstractProject *currentProject();
-    Q_INVOKABLE TQRecord *currentRecord();
+//    Q_INVOKABLE TQAbstractProject *currentProject();
+    TQRecord *currentRecord();
     Q_INVOKABLE TQRecord *recordOnIndex(const QModelIndex &index);
     Q_INVOKABLE const TQAbstractRecordTypeDef *recordTypeDef() const;
     int recordType() const;

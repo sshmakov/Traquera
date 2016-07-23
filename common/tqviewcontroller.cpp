@@ -38,9 +38,8 @@ QWidget *TQViewController::view() const
 
 TQRecord *TQViewController::currentRecord() const
 {
-    TQRecord *rec=0;
-    QMetaObject::invokeMethod(view(), "currentRecord",
-                              Q_RETURN_ARG(TQRecord *, rec));
+    QObject *obj = view()->property("currentRecord").value<QObject*>();
+    TQRecord *rec = qobject_cast<TQRecord *>(obj);
     return rec;
 }
 
@@ -50,6 +49,18 @@ QObjectList TQViewController::selectedRecords() const
     QMetaObject::invokeMethod(view(), "selectedRecords",
                               Q_RETURN_ARG(QObjectList, list));
     return list;
+}
+
+QList<int> TQViewController::selectedIds() const
+{
+    QList<int> ids;
+    QObjectList list = selectedRecords();
+    foreach(const QObject *obj, list)
+    {
+        const TQRecord *rec = qobject_cast<const TQRecord *>(obj);
+        ids << rec->recordId();
+    }
+    return ids;
 }
 
 QAbstractItemView *TQViewController::tableView() const

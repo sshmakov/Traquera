@@ -1259,10 +1259,10 @@ QObjectList QueryPage::markedRecords()
     return list;
 }
 
-TQAbstractProject *QueryPage::currentProject()
-{
-    return d->modelProject;
-}
+//TQAbstractProject *QueryPage::currentProject()
+//{
+//    return d->modelProject;
+//}
 
 TQRecord *QueryPage::currentRecord()
 {

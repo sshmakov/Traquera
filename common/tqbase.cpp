@@ -811,6 +811,20 @@ bool TQRecord::setValues(const QVariantHash &values)
     return true;
 }
 
+QVariantHash TQRecord::values() const
+{
+    QVariantHash hash;
+    const TQAbstractRecordTypeDef *def = typeDef();
+    if(!def)
+        return hash;
+    foreach(const QString &fName, def->fieldNames())
+    {
+        QVariant v = value(fName);
+        hash.insert(fName, v);
+    }
+    return hash;
+}
+
 bool TQRecord::seVidValues(const TQFieldValues &values)
 {
     bool res = true;

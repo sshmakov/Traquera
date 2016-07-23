@@ -25,11 +25,11 @@ class TTRecordWindowPrivate;
 class TTRecordWindow : public QMainWindow
 {
     Q_OBJECT
-    Q_PROPERTY(TQRecord *record READ record)
+    Q_PROPERTY(QObject *record READ record)
     Q_PROPERTY(QString description READ description WRITE setDescription)
     Q_PROPERTY(bool changed READ isChanged WRITE setChanged)
     Q_PROPERTY(int mode READ mode NOTIFY modeChanged)
-    Q_PROPERTY(TQViewController *controller READ controller)
+    Q_PROPERTY(QObject *controller READ controller)
     Q_PROPERTY(const TQAbstractRecordTypeDef *recordTypeDef READ recordTypeDef)
 private:
     TTRecordWindowPrivate *d;

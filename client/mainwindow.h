@@ -61,7 +61,7 @@ class QueryFields;
 class MainWindow : public QMainWindow, private Ui::MainWindow
 {
     Q_OBJECT
-    Q_PROPERTY(TQAbstractProject *currentProject READ currentProject)
+    Q_PROPERTY(QObject *currentProject READ currentProject WRITE setCurrentProjectObj)
 public:
 	MainWindow(QWidget *parent = 0);
     virtual ~MainWindow();
@@ -142,7 +142,8 @@ public slots:
 	void readProjects();
     void openQueryByIdClip();
     void openQueryById(const QString &numbers, int recordType=0, bool reusePage=true);
-    void openQueryById(const QList<int> &idList, const QString &title = QString(), int recordType = 0, bool reusePage=true);
+    void openQueryById(const QList<int> &idList, const QString &title = QString(), int recordType = -1, bool reusePage=true);
+    void openRecordId(int id, int recordType = -1);
     void connectTracker();
 //    void connectTrackerParams(const ConnectParams &params);
     void setDbmsType();
@@ -154,10 +155,13 @@ public slots:
     void saveSettings();
     void showProgressBar();
     void hideProgressBar();
+private:
+    void setCurrentProjectObj(QObject *prj);
+
 public:
 	void initProjectModel();
     void loadPlugins();
-    Q_INVOKABLE TQAbstractProject *currentProject();
+    TQAbstractProject *currentProject();
     void setCurrentProject(TQAbstractProject *prj);
     int projectTreeRow(TQAbstractProject *prj);
     void openCurItem(bool reuse);

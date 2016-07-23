@@ -171,6 +171,8 @@ class TQPLUGIN_SHARED TQRecModel: public BaseRecModel<PTQRecord> //QAbstractItem
 {
     Q_OBJECT
     Q_PROPERTY(QString query READ queryName WRITE setQueryName)
+    Q_PROPERTY(QObject* project READ project)
+    Q_PROPERTY(QList<int> idList READ getIdList)
 protected:
     //QList<int> recIds;
     //TrkToolProject *prj;
@@ -198,15 +200,15 @@ public:
 //    bool openQuery(const QString &queryName, qint64 afterTransId=0);
 //    bool openIds(const QList<int> &ids);
     QDomDocument recordXml(int row) const;
-    int rowId(int row) const;
-    int rowOfRecordId(int id) const;
-    TQRecord *recordInRow(int row) const;
+    Q_INVOKABLE int rowId(int row) const;
+    Q_INVOKABLE int rowOfRecordId(int id) const;
+    Q_INVOKABLE TQRecord *recordInRow(int row) const;
 //    bool saveRecord(TQRecord *record);
     virtual Qt::ItemFlags flags ( const QModelIndex & index ) const;
     virtual QVariant data(const QModelIndex & index, int role = Qt::DisplayRole ) const;
     virtual bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole);
     const TQAbstractRecordTypeDef *typeDef();
-    virtual void clearRecords();
+    Q_INVOKABLE virtual void clearRecords();
     QString queryName() const;
     void setQueryName(const QString &queryName);
     QList<int> getIdList() const;
@@ -218,18 +220,12 @@ public:
     bool isQueryType() const { return isQuery; }
     void setQueryType(bool value) { isQuery = value; }
     int recordType() const { return rectype; }
-    /*
-public:
-    bool openScrs(const QList<int> &ids);
-    bool openScrs(const QStringList &lines);
-    bool openScrs(const QString &line);
-    void close();*/
     void append(const PTQRecord &rec);
     void append(const QList<PTQRecord> &list);
-    void appendRecordIds(const QList<int> &ids);
-    void removeRecordIds(const QList<int> &ids);
-    void appendRecordId(int id);
-    void removeRecordId(int id);
+    Q_INVOKABLE void appendRecordIds(const QList<int> &ids);
+    Q_INVOKABLE void removeRecordIds(const QList<int> &ids);
+    Q_INVOKABLE void appendRecordId(int id);
+    Q_INVOKABLE void removeRecordId(int id);
     void refreshQuery();
 protected:
 //    bool appendRecordByHandle(TRK_RECORD_HANDLE recHandle);
