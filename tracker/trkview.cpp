@@ -1735,6 +1735,7 @@ bool TrkToolProject::readRecordBase(TQRecord *record)
 //    return record;
 //}
 
+
 QVariant TrkToolProject::getFieldValue(const TQRecord *record, const QString &fname, bool *ok)
 {
     if(record->mode() == TrkToolRecord::Insert)
@@ -1749,96 +1750,12 @@ QVariant TrkToolProject::getFieldValue(const TQRecord *record, const QString &fn
     bool dummy;
     bool *p =ok ? ok: &dummy;
     return doGetValue(*recHandle, fname, fType, p);
-
-    /*
-
-    TRK_RECORD_HANDLE handle = record->lockHandle;
-    TRK_RECORD_TYPE rectype = record->recordType();
-    char buf[1024];
-    TRK_FIELD_TYPE fType = recordDef[rectype]->fieldType(fname);
-    //QString fname = prj->recordDef[rectype]->fieldName(vid);
-    switch(fType)
-    {
-    case TRK_FIELD_TYPE_DATE:
-        if(isTrkOK(TrkGetStringFieldValue(handle, fname.toLocal8Bit().constData(), sizeof(buf), buf)))
-        {
-            QDateTime dt = QDateTime::fromString(QString::fromLocal8Bit(buf),TT_DATETIME_FORMAT);
-            return QVariant::fromValue<QDateTime>(dt);
-        }
-        return QVariant();
-    case TRK_FIELD_TYPE_CHOICE:
-    case TRK_FIELD_TYPE_SUBMITTER:
-    case TRK_FIELD_TYPE_OWNER:
-    case TRK_FIELD_TYPE_USER:
-    case TRK_FIELD_TYPE_ELAPSED_TIME:
-    case TRK_FIELD_TYPE_STATE:
-    case TRK_FIELD_TYPE_STRING:
-        if(isTrkOK(TrkGetStringFieldValue(handle, fname.toLocal8Bit().constData(), sizeof(buf), buf)))
-            return QVariant::fromValue<QString>(QString::fromLocal8Bit(buf));
-        return QVariant::fromValue<QString>(QString(""));
-    case TRK_FIELD_TYPE_NUMBER:
-        TRK_UINT value;
-        if(isTrkOK(TrkGetNumericFieldValue(handle, fname.toLocal8Bit().constData(), &value)))
-            return QVariant::fromValue<int>(value);
-        return QVariant::fromValue<int>(0);
-    case TRK_FIELD_TYPE_NONE:
-        return QVariant();
-    }
-    return QVariant();
-    */
 }
 
 QVariant TrkToolProject::getFieldValue(const TQRecord *record, int vid, bool *ok)
 {
     QString fname = fieldVID2Name(record->recordType(), vid);
     return getFieldValue(record, fname, ok);
-}
-
-bool TrkToolProject::setFieldValue(TQRecord *record, const QString &fname, const QVariant &value)
-{
-    if(record->mode() != TQRecord::Edit && record->mode() != TQRecord::Insert)
-        return false;
-    TrkToolRecord *trec = qobject_cast<TrkToolRecord *>(record);
-    if(!trec)
-        return false;
-    TrkScopeRecHandle recHandle(this, trec);
-    if(!recHandle.isValid())
-        return false;
-    TRK_RECORD_TYPE rectype = record->recordType();
-//    TRK_FIELD_TYPE fType = recordDef[rectype]->fieldType(fname);
-    TRK_VID vid = fieldName2VID(rectype, fname);
-    TQAbstractFieldType def = recordDef[rectype]->getFieldType(vid);
-    QString s;
-    QDateTime dt;
-    bool res = false;
-    switch(def.nativeType())
-    {
-    case TRK_FIELD_TYPE_DATE:
-        dt = value.toDateTime();
-        s = dt.toString(TT_DATETIME_FORMAT);
-        res = isTrkOK(TrkSetStringFieldValue(*recHandle, fname.toLocal8Bit().constData(), //buf
-                                          s.toLocal8Bit().constData()));
-        break;
-        //case TRK_FIELD_TYPE_NONE:
-    case TRK_FIELD_TYPE_CHOICE:
-    case TRK_FIELD_TYPE_SUBMITTER:
-    case TRK_FIELD_TYPE_OWNER:
-    case TRK_FIELD_TYPE_USER:
-    case TRK_FIELD_TYPE_ELAPSED_TIME:
-    case TRK_FIELD_TYPE_STATE:
-    case TRK_FIELD_TYPE_STRING:
-        s = value.toString();
-        res = isTrkOK(TrkSetStringFieldValue(*recHandle, fname.toLocal8Bit().constData(), //buf
-                                                 s.toLocal8Bit().constData()));
-        break;
-    case TRK_FIELD_TYPE_NUMBER:
-        TRK_UINT uint = value.toUInt();
-        res = isTrkOK(TrkSetNumericFieldValue(*recHandle, fname.toLocal8Bit().constData(), uint));
-        break;
-    }
-    if(res)
-        record->setModified(true);
-    return res;
 }
 
 /*

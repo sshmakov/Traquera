@@ -825,8 +825,8 @@ QString QueryPage::makeRecordsPage(const QObjectList &records, const QString &xq
     xml.save(textOut,4);
 #endif
 
-    QFile trackerXML(project()->optionValue(TQOPTION_GROUP_FIELDS).toString()); // "data/tracker.xml");
-    trackerXML.open(QIODevice::ReadOnly);
+    QFile groupXML(project()->optionValue(TQOPTION_GROUP_FIELDS).toString()); // "data/tracker.xml");
+    bool isGroupXMLOpened = groupXML.open(QIODevice::ReadOnly);
 
     QString page;
     QByteArray baAll, baSingle;
@@ -852,7 +852,8 @@ QString QueryPage::makeRecordsPage(const QObjectList &records, const QString &xq
         xquery.setNetworkAccessManager(d->globalObj->networkManager());
 
     xquery.bindVariable("scrs",&bufAll);
-    xquery.bindVariable("def",&trackerXML);
+    if(isGroupXMLOpened)
+        xquery.bindVariable("def",&groupXML);
     xquery.bindVariable("scrdoc",&bufSingle);
 
     xquery.setQuery(&xq);

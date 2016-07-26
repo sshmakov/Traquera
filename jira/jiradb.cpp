@@ -215,7 +215,7 @@ JiraRecTypeDef::JiraRecTypeDef(JiraProject *project)
     d->schemaToSimple.insert("securitylevel", TQ::TQ_FIELD_TYPE_CHOICE);
     d->schemaToSimple.insert("status", TQ::TQ_FIELD_TYPE_CHOICE);
     d->schemaToSimple.insert("string", TQ::TQ_FIELD_TYPE_STRING);
-    d->schemaToSimple.insert("timetracking", TQ::TQ_FIELD_TYPE_DATE);
+    d->schemaToSimple.insert("timetracking", TQ::TQ_FIELD_TYPE_STRING);
     d->schemaToSimple.insert("user", TQ::TQ_FIELD_TYPE_USER);
     d->schemaToSimple.insert("votes", TQ::TQ_FIELD_TYPE_NUMBER);
     d->schemaToSimple.insert("issuekey", TQ::TQ_FIELD_TYPE_NUMBER);
@@ -441,8 +441,19 @@ int JiraRecTypeDef::recordType() const
 
 QString JiraRecTypeDef::valueToDisplay(int vid, const QVariant &value) const
 {
-    const JiraFieldDesc &desc = d->fields.value(vid);
-    switch(desc.simpleType)
+    const JiraFieldDesc *fdesc = fieldDesc(vid);
+    if(!fdesc)
+        return QString();
+    if(fdesc->schemaSystem == "timetracking")
+    {
+        QVariantMap map = value.toMap();
+        QString orig = map.value("originalEstimate").toString();
+        QString remain = map.value("remainingEstimate").toString();
+        if(!orig.isEmpty())
+            return orig + " / " + remain;
+        return QString();
+    }
+    switch(fdesc->simpleType)
     {
     case TQ::TQ_FIELD_TYPE_NONE:
         return QString();
@@ -478,7 +489,23 @@ QString JiraRecTypeDef::valueToDisplay(int vid, const QVariant &value) const
 QVariant JiraRecTypeDef::displayToValue(int vid, const QString &text) const
 {
     QDateTime dt;
-    int simple = fieldSimpleType(vid);
+    const JiraFieldDesc *fdesc = fieldDesc(vid);
+    if(!fdesc)
+        return QVariant();
+    if(fdesc->schemaSystem == "timetracking")
+    {
+        QStringList list = text.split("/");
+        QString origin = list.value(0,QString()).trimmed();
+        QString remain = list.value(1,QString()).trimmed();
+        QVariantMap map;
+        if(!origin.isEmpty() || !remain.isEmpty())
+        {
+            map.insert("originalEstimate", origin);
+            map.insert("remainingEstimate", remain);
+        }
+        return map;
+    }
+    int simple = fdesc->simpleType;
     switch(simple)
     {
     case TQ::TQ_FIELD_TYPE_DATE:
@@ -598,9 +625,12 @@ QWidget *JiraRecTypeDef::createCustomEditor(int vid, QWidget *parent) const
     */
 }
 
-const JiraFieldDesc &JiraRecTypeDef::fieldDesc(int vid) const
+const JiraFieldDesc *JiraRecTypeDef::fieldDesc(int vid) const
 {
-    return d->fields[vid];
+    if(!d->fields.contains(vid))
+        return 0;
+    const JiraFieldDesc &fdesc = d->fields.value(vid);
+    return &fdesc;
 }
 
 QString JiraRecTypeDef::typeName() const
@@ -1479,32 +1509,6 @@ bool JiraProject::readRecordBase(TQRecord *record)
     return true;
 }
 
-QVariant JiraProject::getFieldValue(const TQRecord *record, const QString &fname, bool *ok)
-{
-    const TQAbstractRecordTypeDef *rdef = record->typeDef();
-    int vid = rdef->fieldVid(name);
-    return getFieldValue(record,vid,ok);
-}
-
-QVariant JiraProject::getFieldValue(const TQRecord *record, int vid, bool *ok)
-{
-    const JiraRecord *rec = qobject_cast<const JiraRecord *>(record);
-    if(!rec)
-        return QVariant();
-    return rec->value(vid, Qt::EditRole);
-}
-
-bool JiraProject::setFieldValue(TQRecord *record, const QString &fname, const QVariant &value)
-{
-    int vid = record->typeDef()->fieldVid(fname);
-    if(vid)
-    {
-        record->setValue(vid, value);
-        return true;
-    }
-    return false; // !!!
-}
-
 bool JiraProject::updateRecordBegin(TQRecord *record)
 {
     JiraRecord *rec = qobject_cast<JiraRecord *>(record);
@@ -1532,22 +1536,22 @@ bool JiraProject::commitRecord(TQRecord *record)
     {
         int vid = i.key();
         QVariant value = i.value();
-        if(!recDef->containFieldVid(vid))
+        const JiraFieldDesc *fdesc = recDef->fieldDesc(vid);
+        if(!fdesc)
             continue;
-        const JiraFieldDesc &fdesc = recDef->fieldDesc(vid);
-        if(fdesc.isUser())
+        if(fdesc->isUser())
         {
             QVariantMap v;
             v.insert("name", value.toString());
             value = v;
         }
-        else if(fdesc.isChoice())
+        else if(fdesc->isChoice())
         {
             QVariantMap v;
             v.insert("id", value.toString());
             value = v;
         }
-        fields.insert(fdesc.id, value);
+        fields.insert(fdesc->id, value);
     }
     QVariantMap v2;
     v2.insert("key", projectKey);
@@ -1640,16 +1644,16 @@ bool JiraProject::doCommitUpdateRecord(TQRecord *record)
     {
         int vid = i.key();
         QVariant value = i.value();
-        if(!recDef->containFieldVid(vid))
+        const JiraFieldDesc *fdesc = recDef->fieldDesc(vid);
+        if(!fdesc)
             continue;
-        const JiraFieldDesc &fdesc = recDef->fieldDesc(vid);
-        if(fdesc.isUser())
+        if(fdesc->isUser())
         {
             QVariantMap v;
             v.insert("id", value.toString());
             value = v;
         }
-        else if(fdesc.isChoice())
+        else if(fdesc->isChoice())
         {
             QVariantMap v;
             v.insert("id", value.toString());
@@ -1659,7 +1663,7 @@ bool JiraProject::doCommitUpdateRecord(TQRecord *record)
 //        QVariantMap fAction;
 //        fAction.insert("set", value);
 //        fChanges.append(fAction);
-        fields.insert(fdesc.id, value);
+        fields.insert(fdesc->id, value);
     }
     /*
     QVariantMap v2;
@@ -2300,9 +2304,36 @@ void JiraProject::storeReadedField(JiraRecord *rec, const JiraRecTypeDef *rdef, 
     int fvid = rdef->fieldVidSystem(fid);
     if(fid == "description")
         rec->desc = value.toString();
+    else if(rdef->d->systemChoices.contains(fid))
+    {
+        int id = value.toMap().value("id").toInt();
+        QString display = value.toMap().value("name").toString();
+        rec->values.insert(fvid, id);
+        rec->displayValues.insert(fvid, display);
+    }
+    else if(fid == "timetracking")
+    {
+        QVariantMap map = value.toMap();
+        QString orig = map.value("originalEstimate").toString();
+        QString remain = map.value("remainingEstimate").toString();
+        rec->values.insert(fvid, value);
+        if(!orig.isEmpty())
+            rec->displayValues.insert(fvid, orig + " / " + remain);
+    }
     else
     {
-        if(rdef->d->systemChoices.contains(fid))
+
+        const JiraFieldDesc &fdef = rdef->d->fields[fvid];
+        if(fdef.isUser())
+        {
+            QVariantMap uMap = value.toMap();
+            QString login = uMap.value("name").toString();
+            QString displayName = uMap.value("displayName").toString();
+            rec->values.insert(fvid, login);
+            rec->displayValues.insert(fvid, displayName);
+            appendUserToKnown(uMap);
+        }
+        else if(value.type() == QVariant::Map)
         {
             int id = value.toMap().value("id").toInt();
             QString display = value.toMap().value("name").toString();
@@ -2311,31 +2342,12 @@ void JiraProject::storeReadedField(JiraRecord *rec, const JiraRecTypeDef *rdef, 
         }
         else
         {
-            const JiraFieldDesc &fdef = rdef->d->fields[fvid];
-            if(fdef.isUser())
-            {
-                QVariantMap uMap = value.toMap();
-                QString login = uMap.value("name").toString();
-                QString displayName = uMap.value("displayName").toString();
-                rec->values.insert(fvid, login);
-                rec->displayValues.insert(fvid, displayName);
-                appendUserToKnown(uMap);
-            }
-            else if(value.type() == QVariant::Map)
-            {
-                int id = value.toMap().value("id").toInt();
-                QString display = value.toMap().value("name").toString();
-                rec->values.insert(fvid, id);
-                rec->displayValues.insert(fvid, display);
-            }
-            else
-            {
-                rec->values.insert(fvid, value);
-                QString displayValue = rdef->valueToDisplay(fvid,value);
-                rec->displayValues.insert(fvid, displayValue);
-            }
+            rec->values.insert(fvid, value);
+            QString displayValue = rdef->valueToDisplay(fvid,value);
+            rec->displayValues.insert(fvid, displayValue);
         }
     }
+
 }
 
 void JiraProject::appendUserToKnown(const QVariantMap &userRec)
@@ -2411,6 +2423,11 @@ QString JiraRecord::jiraKey() const
     return key;
 }
 
+int JiraRecord::recordId() const
+{
+    return TQRecord::recordId();
+}
+
 int JiraRecord::recordInternalId() const
 {
     return internalId;
@@ -2474,10 +2491,16 @@ bool JiraRecord::setValue(int vid, const QVariant &newValue)
     if(vid == d->def->d->descVid)
     {
         desc = newValue.toString();
+        setModified(true);
         return true;
     }
-    if(!d->def->d->fields.contains(vid))
+    const JiraFieldDesc *fdesc  = d->def->fieldDesc(vid);
+    if(!fdesc)
         return false;
+    if(fdesc->schemaSystem == "timetracking")
+    {
+
+    }
     bool res = TQRecord::setValue(vid, newValue);
     if(res)
     {

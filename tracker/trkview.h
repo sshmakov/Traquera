@@ -561,7 +561,6 @@ protected:
 //    virtual TrkToolRecord *createRecordByHandle(TRK_RECORD_HANDLE recHandle, TRK_RECORD_TYPE rectype = TRK_SCR_TYPE);
     QVariant getFieldValue(const TQRecord *record, const QString &fname, bool *ok = 0);
     QVariant getFieldValue(const TQRecord *record, int vid, bool *ok = 0);
-    bool setFieldValue(TQRecord *record, const QString &fname, const QVariant &value);
     //virtual bool insertRecordBegin(TrkToolRecord *record);
     bool updateRecordBegin(TQRecord *record);
     bool commitRecord(TQRecord *record);

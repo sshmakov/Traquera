@@ -324,8 +324,8 @@ static QString xmlToHTML(TQRecord *record, const QString &xqCodeFile)
     QDomDocument xml = record->toXML();
     QFile xq(xqCodeFile);
     xq.open(QIODevice::ReadOnly);
-    QFile trackerXML(record->project()->optionValue(TQOPTION_GROUP_FIELDS).toString()); // "data/tracker.xml");
-    trackerXML.open(QIODevice::ReadOnly);
+    QFile groupXML(record->project()->optionValue(TQOPTION_GROUP_FIELDS).toString()); // "data/tracker.xml");
+    bool isGroupOpened = groupXML.open(QIODevice::ReadOnly);
     QXmlQuery query;
 //#ifdef CLIENT_APP
 //    query.setMessageHandler(sysMessager);
@@ -339,7 +339,8 @@ static QString xmlToHTML(TQRecord *record, const QString &xqCodeFile)
     buf.setData(ba);
     buf.open(QIODevice::ReadOnly);
     query.bindVariable("scrdoc",&buf);
-    query.bindVariable("def",&trackerXML);
+    if(isGroupOpened)
+        query.bindVariable("def",&groupXML);
     query.setQuery(&xq);
     //query.setQuery(&xq, QUrl::fromLocalFile(xq.fileName()));
     query.evaluateTo(&page);

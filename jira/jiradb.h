@@ -185,9 +185,6 @@ public:
     bool readRecordFields(TQRecord *record);
     bool readRecordTexts(TQRecord *record);
     bool readRecordBase(TQRecord *record);
-    Q_INVOKABLE QVariant getFieldValue(const TQRecord *record, const QString &fname, bool *ok = 0);
-    Q_INVOKABLE QVariant getFieldValue(const TQRecord *record, int vid, bool *ok = 0);
-    Q_INVOKABLE bool setFieldValue(TQRecord *record, const QString &fname, const QVariant &value);
     Q_INVOKABLE bool updateRecordBegin(TQRecord *record);
     Q_INVOKABLE bool commitRecord(TQRecord *record);
     Q_INVOKABLE bool cancelRecord(TQRecord *record);
@@ -339,7 +336,7 @@ public:
     virtual TQAbstractProject *project() const;
     bool hasFieldCustomEditor(int vid) const;
     QWidget *createCustomEditor(int vid, QWidget *parent) const;
-    const JiraFieldDesc &fieldDesc(int vid) const;
+    const JiraFieldDesc *fieldDesc(int vid) const;
     QString typeName() const;
 
 
@@ -386,6 +383,7 @@ public:
     JiraRecord(const TQRecord &src);
     ~JiraRecord();
     Q_INVOKABLE QString jiraKey() const;
+    Q_INVOKABLE int recordId() const;
     Q_INVOKABLE int recordInternalId() const;
     Q_INVOKABLE QVariant value(int vid, int role = Qt::DisplayRole) const ;
     Q_INVOKABLE bool setValue(int vid, const QVariant &newValue);

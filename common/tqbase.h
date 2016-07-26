@@ -283,9 +283,6 @@ public:
     virtual bool readRecordTexts(TQRecord *record) = 0;
     virtual bool readRecordBase(TQRecord *record) = 0;
 //    virtual TQRecord *createRecordByHandle(TRK_RECORD_HANDLE recHandle, TRK_RECORD_TYPE rectype = TRK_SCR_TYPE) = 0;
-    virtual QVariant getFieldValue(const TQRecord *record, const QString &fname, bool *ok = 0) = 0;
-    virtual QVariant getFieldValue(const TQRecord *record, int vid, bool *ok = 0) = 0;
-    virtual bool setFieldValue(TQRecord *record, const QString &fname, const QVariant &value) = 0;
     //virtual bool insertRecordBegin(TQRecord *record) = 0;
     Q_INVOKABLE virtual bool updateRecordBegin(TQRecord *record) = 0;
     Q_INVOKABLE virtual bool commitRecord(TQRecord *record) = 0;
