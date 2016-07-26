@@ -1485,7 +1485,7 @@ void MainWindow::readProjectTree()
 {
     QSettings *settings = ttglobal()->settings();
     settings->beginGroup("Projects");
-    foreach(QString key, settings->allKeys())
+    foreach(QString key, settings->childKeys())
     {
         QString connString = settings->value(key).toString();
         if(connString.isEmpty())
