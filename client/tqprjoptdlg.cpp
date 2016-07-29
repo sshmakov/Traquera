@@ -52,7 +52,7 @@ void TQProjectOptionsDialog::setProject(TQAbstractProject *prj)
                     d->project->optionValue(TQOPTION_EMAIL_SCRIPT).toString()));
     ui->leGroups->setText(
                 QDir::toNativeSeparators(
-                    d->project->optionValue(TQOPTION_GROUP_FIELDS).toString()));
+                    d->project->optionValue(TQOPTION_GROUP_FILE).toString()));
 }
 
 int TQProjectOptionsDialog::exec()
@@ -70,7 +70,7 @@ int TQProjectOptionsDialog::exec()
                                    QDir::fromNativeSeparators(ui->leEmail->text()));
         d->project->setOptionValue(TQOPTION_EMAIL_SCRIPT,
                                    QDir::fromNativeSeparators(ui->leEmailScript->text()));
-        d->project->setOptionValue(TQOPTION_GROUP_FIELDS,
+        d->project->setOptionValue(TQOPTION_GROUP_FILE,
                                    QDir::fromNativeSeparators(ui->leGroups->text()));
     }
 }

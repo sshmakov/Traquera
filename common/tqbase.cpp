@@ -179,7 +179,7 @@ QSettings *TQAbstractProject::projectSettings() const
 
 QVariant TQAbstractProject::optionValue(const QString &option) const
 {
-    QSettings *sets = projectSettings();
+    QScopedPointer<QSettings>sets(projectSettings());
     if(sets->contains(option))
         return sets->value(option);
     return ttglobal()->optionDefaultValue(option);
@@ -187,8 +187,8 @@ QVariant TQAbstractProject::optionValue(const QString &option) const
 
 void TQAbstractProject::setOptionValue(const QString &option, const QVariant &value)
 {
-    QSettings *sets = projectSettings();
-    if(!sets)
+    QScopedPointer<QSettings>sets(projectSettings());
+    if(sets.isNull())
         return;
     sets->setValue(option, value);
 }

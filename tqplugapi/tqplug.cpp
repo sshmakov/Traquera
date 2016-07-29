@@ -146,6 +146,17 @@ QStringList TQBaseRecordTypeDef::noteTitleList() const
     return QStringList();
 }
 
+QVariant TQBaseRecordTypeDef::optionValue(const QString &optionName) const
+{
+    QString option = QString("RecordTypes/%1/%2").arg(recordType()).arg(optionName);
+    return project()->optionValue(option);
+}
+
+void TQBaseRecordTypeDef::setOptionValue(const QString &optionName, const QVariant &value) const
+{
+    QString option = QString("RecordTypes/%1/%2").arg(recordType()).arg(optionName);
+    project()->setOptionValue(option, value);
+}
 
 bool TQAbstractFieldType::hasCustomFieldEditor() const
 {

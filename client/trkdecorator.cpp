@@ -263,7 +263,7 @@ void TQDecorator::loadViewDef(QueryPage *page)
     {
 //        hv->restoreState(tempBuf);
 //        QString groupFile = sets->value("GroupFile", "data/tracker.xml").toString();
-        QString groupFile = newPrj->optionValue(TQOPTION_GROUP_FIELDS).toString();
+        QString groupFile = newPrj->optionValue(TQOPTION_GROUP_FILE).toString();
 //        QString groupFile = newPrj->property("groupFile").toString();
         QFile file(groupFile);
         QXmlInputSource source(&file);
@@ -352,6 +352,10 @@ bool TQDecorator::saveState(QueryPage *page)
 
 FieldGroupsDef TQDecorator::loadGroups(const TQAbstractRecordTypeDef *recDef)
 {
+    FieldGroupsDef res;
+    res.setRecordType(recDef);
+    return res;
+    /*
     FieldGroupsDef res = loadGroupsXML(recDef);
     if(res.isValid())
         return res;
@@ -379,6 +383,7 @@ FieldGroupsDef TQDecorator::loadGroups(const TQAbstractRecordTypeDef *recDef)
     res.groups.append(tr("Другие"));
     res.fieldsByGroup.append(fieldList);
     return res;
+    */
 }
 
 FieldGroupsDef TQDecorator::loadGroupsXML(const TQAbstractRecordTypeDef *recDef)
@@ -674,4 +679,195 @@ QVariant TQChoiceArrayEdit::value() const
 
 void TQChoiceArrayEdit::setReadOnly(bool readOnly)
 {
+}
+
+void FieldGroupsDef::clear()
+{
+    groups.clear();
+    fieldsByGroup.clear();
+    other.clear();
+}
+
+void FieldGroupsDef::setRecordType(const TQAbstractRecordTypeDef *recDef)
+{
+    clear();
+    if(!recDef)
+        return;
+    QByteArray buf;
+    buf = recDef->optionValue(TQOPTION_GROUP_XML).toByteArray();
+    if(buf.isEmpty())
+    {
+        QString fileName = recDef->project()->optionValue(TQOPTION_GROUP_FILE).toString();
+        QFile file(fileName);
+        if(!file.exists() || !file.open(QFile::ReadOnly))
+        {
+            loadDefault(recDef);
+            return;
+        }
+        buf = file.readAll();
+    }
+    if(buf.isEmpty() || !loadXML(recDef, buf))
+        loadDefault(recDef);
+}
+
+bool FieldGroupsDef::loadDefault(const TQAbstractRecordTypeDef *recDef)
+{
+    clear();
+    QStringList fieldList = recDef->fieldNames();
+    QStringList baseList = recDef->project()->baseRecordFields(recDef->recordType()).values();
+    QStringList flist;
+    for(int i=0; i<6; i++)
+    {
+        int vid = recDef->roleVid(basicRoles[i]);
+        if(vid != TQ::TQ_NO_VID)
+        {
+            QString flabel = recDef->fieldName(vid);
+            flist.append(flabel);
+            baseList.removeAll(flabel);
+        }
+    }
+    flist += baseList;
+    groups.append(tr("Основные"));
+    fieldsByGroup.append(flist);
+    QSet<QString> fieldSet = fieldList.toSet();
+    QSet<QString> baseSet = flist.toSet();
+    fieldList = (fieldSet - baseSet).toList();
+    qSort(fieldList);
+    groups.append(tr("Другие"));
+    fieldsByGroup.append(fieldList);
+    return true;
+}
+
+bool FieldGroupsDef::loadXML(const TQAbstractRecordTypeDef *recDef, QByteArray &buf)
+{
+    clear();
+    /*
+    QString fileName = recDef->project()->optionValue(TQOPTION_GROUP_FILE).toString();
+    QFile file(fileName);
+    if(!file.exists())
+        return false;
+    QScopedPointer<QXmlInputSource> source(new QXmlInputSource(&file));
+    QDomDocument dom;
+    if(!dom.setContent(source.data(),false))
+        return false;
+    */
+    QDomDocument dom;
+    if(!dom.setContent(buf,false))
+        return false;
+    QDomElement doc = dom.documentElement();
+    if(doc.isNull())
+        return false;
+    QStringList fieldList = recDef->fieldNames();
+    QDomElement panels = doc.firstChildElement("panels");
+    if(panels.isNull())
+        return false;
+    QStringList used;
+    for(QDomElement panel = panels.firstChildElement("panel");
+        !panel.isNull();
+        panel = panel.nextSiblingElement("panel"))
+    {
+        QStringList f_in_p;
+        if(panel.attribute("type") != "other")
+        {
+            for(QDomElement field = panel.firstChildElement("field");
+                !field.isNull();
+                field = field.nextSiblingElement("field"))
+            {
+                QString fname = field.attribute("name");
+                if(!fieldList.contains(fname,Qt::CaseInsensitive))
+                    continue;
+                f_in_p.append(fname);
+            }
+        }
+        else
+        {
+            other = panel.attribute("title",tr("Другие"));
+            for(int i=0; i<fieldList.count(); i++)
+            {
+                QString fname = fieldList[i].trimmed();
+                if(!used.contains(fname,Qt::CaseInsensitive))
+                {
+                    f_in_p.append(fname);
+                }
+            }
+        }
+        if(f_in_p.count())
+        {
+            groups.append(panel.attribute("title", tr("Группа %1").arg(groups.count()+1)));
+            fieldsByGroup.append(f_in_p);
+            used.append(f_in_p);
+        }
+    }
+    if(other.isEmpty())
+    {
+        QStringList f_in_p;
+        other = tr("Другое");
+        for(int i=0; i<fieldList.count(); i++)
+        {
+            QString fname = fieldList[i].trimmed();
+            if(!used.contains(fname,Qt::CaseInsensitive))
+            {
+                f_in_p.append(fname);
+            }
+        }
+        if(f_in_p.count())
+        {
+            groups.append(other);
+            fieldsByGroup.append(f_in_p);
+        }
+    }
+    return true;
+}
+
+QByteArray FieldGroupsDef::toXML() const
+{
+    /*
+<?xml version="1.0" encoding="utf-8"?>
+<tracker>
+  <panels>
+    <panel title="Главное" cols="2">
+      <field name="Id"/>
+      <field name="Title"/>
+      <field name="Request Type"/>
+      <field name="Submitter"/>
+      <field name="Submit Department"/>
+      <field name="Owner"/>
+      <field name="Submit Date"/>
+      <field name="Close Date"/>
+      <field name="State"/>
+      <field name="Current State"/>
+      <field name="Severity"/>
+    </panel>
+
+    <panel title="Источник" cols="2">
+      <field name="Submitter"/>
+      <field name="Found In Build"/>
+      <field name="Found In Update"/>
+    </panel>
+    <panel title="Другое" type="other"/>
+  </panels>
+     */
+    QDomDocument doc("panels");
+    QDomElement root = doc.createElement("panels");
+    doc.appendChild(root);
+    for(int i =0; i<groups.size(); i++)
+    {
+        QString group = groups.value(i);
+        QDomElement tagGroup = doc.createElement("panel");
+        root.appendChild(tagGroup);
+        tagGroup.setAttribute("title", group);
+        if(group == other)
+            tagGroup.setAttribute("type","other");
+        else
+        {
+            QStringList fields = fieldsByGroup.value(i);
+            foreach(QString fname, fields)
+            {
+                QDomElement tagField = doc.createElement("field");
+                tagField.setAttribute("name", fname);
+                tagGroup.appendChild(tagField);
+            }
+        }
+    }
+    return doc.toByteArray();
 }

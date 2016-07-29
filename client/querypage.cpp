@@ -825,7 +825,7 @@ QString QueryPage::makeRecordsPage(const QObjectList &records, const QString &xq
     xml.save(textOut,4);
 #endif
 
-    QFile groupXML(project()->optionValue(TQOPTION_GROUP_FIELDS).toString()); // "data/tracker.xml");
+    QFile groupXML(project()->optionValue(TQOPTION_GROUP_FILE).toString()); // "data/tracker.xml");
     bool isGroupXMLOpened = groupXML.open(QIODevice::ReadOnly);
 
     QString page;

@@ -183,7 +183,7 @@ struct JiraRecTypeDefPrivate {
     JiraProject *prj;
     int recType;
     QString recTypeName;
-    QMap<int, JiraFieldDesc> fields;
+    QMap<int, JiraFieldDesc*> fields;
     QMap<QString, int> systemNames;
     QMap<QString, int> vids;
     QMap<int, QString> roleFields;
@@ -245,11 +245,18 @@ JiraRecTypeDef::JiraRecTypeDef(JiraRecTypeDef *src)
     *d = *(src->d);
 }
 
+JiraRecTypeDef::~JiraRecTypeDef()
+{
+    foreach(int vid, d->fields.keys())
+        delete d->fields.take(vid);
+    delete d;
+}
+
 QStringList JiraRecTypeDef::fieldNames() const
 {
     QStringList list;
-    foreach(const JiraFieldDesc &desc, d->fields)
-        list.append(desc.name);
+    foreach(const JiraFieldDesc *desc, d->fields)
+        list.append(desc->name);
     return list;
 }
 
@@ -281,52 +288,52 @@ QString JiraRecTypeDef::fieldSchemaType(int vid) const
 {
     if(!d->fields.contains(vid))
         return QString();
-    return d->fields[vid].schemaType;
+    return d->fields[vid]->schemaType;
 }
 
 int JiraRecTypeDef::fieldNativeType(int vid) const
 {
     if(!d->fields.contains(vid))
         return 0;
-    return d->fields[vid].nativeType;
+    return d->fields[vid]->nativeType;
 }
 
 int JiraRecTypeDef::fieldSimpleType(int vid) const
 {
     if(!d->fields.contains(vid))
         return TQ::TQ_FIELD_TYPE_NONE;
-    return d->fields[vid].simpleType;
+    return d->fields[vid]->simpleType;
 }
 
 bool JiraRecTypeDef::canFieldSubmit(int vid) const
 {
     if(!d->fields.contains(vid))
         return false;
-    return d->fields[vid].createShow;
+    return d->fields[vid]->createShow;
 }
 
 bool JiraRecTypeDef::canFieldUpdate(int vid) const
 {
     if(!d->fields.contains(vid))
         return false;
-    return d->fields[vid].editable;
+    return d->fields[vid]->editable;
 }
 
 bool JiraRecTypeDef::isNullable(int vid) const
 {
     if(!d->fields.contains(vid))
         return false;
-    const JiraFieldDesc &desc = d->fields[vid];
-    return !desc.createRequired;
+    const JiraFieldDesc *desc = d->fields[vid];
+    return !desc->createRequired;
 }
 
 bool JiraRecTypeDef::hasChoiceList(int vid) const
 {
     if(!d->fields.contains(vid))
         return false;
-    const JiraFieldDesc &desc = d->fields[vid];
-    if(desc.simpleType == TQ::TQ_FIELD_TYPE_USER
-            || desc.simpleType == TQ::TQ_FIELD_TYPE_CHOICE)
+    const JiraFieldDesc *desc = d->fields[vid];
+    if(desc->simpleType == TQ::TQ_FIELD_TYPE_USER
+            || desc->simpleType == TQ::TQ_FIELD_TYPE_CHOICE)
         return true;
     return false;
 }
@@ -358,8 +365,8 @@ TQChoiceList JiraRecTypeDef::choiceTable(const QString &tableName) const
         int vid = d->systemNames.value(fSystemName, -1);
         if(vid<0)
             return TQChoiceList();
-        const JiraFieldDesc &desc = d->fields.value(vid);
-        return desc.choices;
+        const JiraFieldDesc *desc = d->fields.value(vid);
+        return desc->choices;
     }
     return TQChoiceList();
 }
@@ -382,8 +389,8 @@ int JiraRecTypeDef::fieldVidSystem(const QString &systemName) const
 QList<int> JiraRecTypeDef::fieldVids() const
 {
     QList<int> list;
-    foreach(const JiraFieldDesc &desc, d->fields)
-        list.append(desc.vid);
+    foreach(const JiraFieldDesc *desc, d->fields)
+        list.append(desc->vid);
     return list;
 //    return vids.values();
 }
@@ -392,16 +399,16 @@ QString JiraRecTypeDef::fieldName(int vid) const
 {
     if(!d->fields.contains(vid))
         return QString();
-    const JiraFieldDesc &desc = d->fields.value(vid);
-    return desc.name;
+    const JiraFieldDesc *desc = d->fields.value(vid);
+    return desc->name;
 }
 
 QString JiraRecTypeDef::fieldSystemName(int vid) const
 {
     if(!d->fields.contains(vid))
         return QString();
-    const JiraFieldDesc &desc = d->fields.value(vid);
-    return desc.id;
+    const JiraFieldDesc *desc = d->fields.value(vid);
+    return desc->id;
 }
 
 int JiraRecTypeDef::fieldRole(int vid) const
@@ -423,7 +430,7 @@ int JiraRecTypeDef::fieldRole(int vid) const
 
 QIODevice *JiraRecTypeDef::defineSource() const
 {
-    QString fileName = project()->optionValue(TQOPTION_GROUP_FIELDS).toString();
+    QString fileName = project()->optionValue(TQOPTION_GROUP_FILE).toString();
     QFile *file = new QFile(fileName);
     if(!file->exists())
     {
@@ -444,7 +451,7 @@ QString JiraRecTypeDef::valueToDisplay(int vid, const QVariant &value) const
     const JiraFieldDesc *fdesc = fieldDesc(vid);
     if(!fdesc)
         return QString();
-    if(fdesc->schemaSystem == "timetracking")
+    if(!fdesc->schemaSystem.compare("timetracking"))
     {
         QVariantMap map = value.toMap();
         QString orig = map.value("originalEstimate").toString();
@@ -539,30 +546,30 @@ QVariant JiraRecTypeDef::displayToValue(int vid, const QString &text) const
 
 QVariant JiraRecTypeDef::fieldDefaultValue(int vid) const
 {
-    const JiraFieldDesc &desc = d->fields.value(vid);
-    return desc.defaultValue;
+    const JiraFieldDesc *desc = d->fields.value(vid);
+    return desc->defaultValue;
 }
 
 QVariant JiraRecTypeDef::fieldMinValue(int vid) const
 {
-    const JiraFieldDesc &desc = d->fields.value(vid);
-    return desc.minValue;
+    const JiraFieldDesc *desc = d->fields.value(vid);
+    return desc->minValue;
 }
 
 QVariant JiraRecTypeDef::fieldMaxValue(int vid) const
 {
-    const JiraFieldDesc &desc = d->fields.value(vid);
-    return desc.maxValue;
+    const JiraFieldDesc *desc = d->fields.value(vid);
+    return desc->maxValue;
 }
 
 QString JiraRecTypeDef::fieldChoiceTable(int vid) const
 {
-    const JiraFieldDesc &desc = d->fields.value(vid);
-    if(!desc.isValid() || !desc.isChoice())
+    const JiraFieldDesc *desc = d->fields.value(vid);
+    if(!desc->isValid() || !desc->isChoice())
         return QString();
-    if(desc.isUser())
+    if(desc->isUser())
         return "Users";
-    return "Table_" + desc.id;
+    return "Table_" + desc->id;
 }
 
 int JiraRecTypeDef::roleVid(int role) const
@@ -598,10 +605,10 @@ bool JiraRecTypeDef::hasFieldCustomEditor(int vid) const
 QWidget *JiraRecTypeDef::createCustomEditor(int vid, QWidget *parent) const
 {
     JiraUserComboBox *box = new JiraUserComboBox(d->prj, parent);
-    const JiraFieldDesc &desc = d->fields[vid];
-    if(!desc.autoCompleteUrl.isEmpty())
+    const JiraFieldDesc *desc = d->fields[vid];
+    if(!desc->autoCompleteUrl.isEmpty())
     {
-        QString s = desc.autoCompleteUrl;
+        QString s = desc->autoCompleteUrl;
         s.replace(QString("issueKey=null&"),QString("project=%1&").arg(d->prj->jiraProjectKey()));
         box->setCompleteLink(s);
     }
@@ -629,8 +636,8 @@ const JiraFieldDesc *JiraRecTypeDef::fieldDesc(int vid) const
 {
     if(!d->fields.contains(vid))
         return 0;
-    const JiraFieldDesc &fdesc = d->fields.value(vid);
-    return &fdesc;
+    const JiraFieldDesc *fdesc = d->fields.value(vid);
+    return fdesc;
 }
 
 QString JiraRecTypeDef::typeName() const
@@ -1887,7 +1894,7 @@ QVariant JiraProject::optionValue(const QString &option) const
             || option == TQOPTION_EMAIL_TEMPLATE
             )
         return jira->dataDir.absoluteFilePath("issue.xq");
-    if(option == TQOPTION_GROUP_FIELDS)
+    if(option == TQOPTION_GROUP_FILE)
         return jira->dataDir.absoluteFilePath("jira.xml");
     return ttglobal()->optionDefaultValue(option);
 }
@@ -2047,7 +2054,7 @@ void JiraProject::readRecordDef2(JiraRecTypeDef *rdef, const QVariantMap &fields
             while(rdef->d->vids.contains(f.name))
                 f.name = name + " " +QString::number(i++);
             rdef->d->vids.insert(f.name, f.vid);
-            rdef->d->fields.insert(f.vid,f);
+            rdef->d->fields.insert(f.vid, new JiraFieldDesc(f));
         }
     }
 }
@@ -2206,8 +2213,8 @@ JiraRecTypeDef *JiraProject::loadEditRecordDef(const JiraRecord *record)
         int vid = rdef->d->systemNames.value(systemName, TQ::TQ_NO_VID);
         if(vid != TQ::TQ_NO_VID)
         {
-            JiraFieldDesc &fdesc = rdef->d->fields[vid];
-            fdesc.editable = true;
+            JiraFieldDesc *fdesc = rdef->d->fields[vid];
+            fdesc->editable = true;
         }
     }
     return rdef;
@@ -2323,8 +2330,8 @@ void JiraProject::storeReadedField(JiraRecord *rec, const JiraRecTypeDef *rdef, 
     else
     {
 
-        const JiraFieldDesc &fdef = rdef->d->fields[fvid];
-        if(fdef.isUser())
+        const JiraFieldDesc *fdef = rdef->d->fields[fvid];
+        if(fdef->isUser())
         {
             QVariantMap uMap = value.toMap();
             QString login = uMap.value("name").toString();

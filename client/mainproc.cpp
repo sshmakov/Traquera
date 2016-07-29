@@ -79,7 +79,7 @@ QXmlQuery MainProc::makeXmlQuery(TQViewController *controller) const
             root.appendChild(recxml);
         }
 
-        QFile trackerXML(controller->project()->optionValue(TQOPTION_GROUP_FIELDS).toString()); // "data/tracker.xml");
+        QFile trackerXML(controller->project()->optionValue(TQOPTION_GROUP_FILE).toString()); // "data/tracker.xml");
         trackerXML.open(QIODevice::ReadOnly);
 
         QString page;

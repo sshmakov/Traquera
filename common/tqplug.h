@@ -2,7 +2,9 @@
 #define TQPLUG_H
 
 #include <QtCore>
+#include <QtXml>
 #include "tqplugin_global.h"
+#include <tqbase.h>
 
 class TQ
 {
@@ -133,6 +135,8 @@ public:
     virtual bool hasFieldCustomEditor(int vid) const = 0;
     virtual QWidget *createCustomEditor(int vid, QWidget *parent) const = 0;
     virtual QString typeName() const = 0;
+    virtual QVariant optionValue(const QString &optionName) const = 0;
+    virtual void setOptionValue(const QString &optionName, const QVariant &value) const = 0;
 };
 
 class TQBaseRecordTypeDefPrivate;
@@ -143,7 +147,7 @@ private:
     TQBaseRecordTypeDefPrivate *d;
 public:
     TQBaseRecordTypeDef(TQAbstractProject *prj);
-    ~TQBaseRecordTypeDef();
+    virtual ~TQBaseRecordTypeDef();
     TQAbstractFieldType getFieldType(int vid, bool *ok = 0) const;
     TQAbstractFieldType getFieldType(const QString &name, bool *ok = 0) const;
     bool containFieldVid(int vid) const;
@@ -162,6 +166,8 @@ public:
     bool hasFieldCustomEditor(int vid) const;
     QWidget *createCustomEditor(int vid, QWidget *parent) const;
     QStringList noteTitleList() const;
+    QVariant optionValue(const QString &optionName) const;
+    void setOptionValue(const QString &optionName, const QVariant &value) const;
 };
 
 /*class AbstractFieldDef {

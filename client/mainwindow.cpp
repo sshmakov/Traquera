@@ -183,6 +183,10 @@ MainWindow::MainWindow(QWidget *parent)
     setCurrentProject(0);
 
     connect(ttglobal()->networkManager(),
+            SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
+            SLOT(authentication(QNetworkReply*,QAuthenticator*)),
+            Qt::DirectConnection);
+    connect(ttglobal()->networkManager(),
             SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
             SLOT(proxyAuthentication(QNetworkProxy,QAuthenticator*)),
             Qt::DirectConnection);
@@ -811,6 +815,14 @@ QDockWidget *MainWindow::addWidgetToDock(const QString &title, QWidget *widget, 
     connect(dw,SIGNAL(visibilityChanged(bool)),SLOT(slotDockVisibilityChanged(bool)));
     return dw;
 }
+
+void MainWindow::authentication(QNetworkReply *reply, QAuthenticator *auth)
+{
+    TQLoginDlg dlg;
+    dlg.setAuthenticator(auth);
+    if(dlg.exec())
+        dlg.assignToAuthenticator(auth);
+}
 // const TQAbstractRecordTypeDef *typeDef, const QObjectList &records
 /*
 void MainWindow::updateModifyPanel(TQViewController *controller)
@@ -829,7 +841,7 @@ void MainWindow::updateModifyPanel(TQViewController *controller)
 }
 */
 
-void MainWindow::proxyAuthentication(QNetworkProxy proxy, QAuthenticator *auth)
+void MainWindow::proxyAuthentication(const QNetworkProxy &proxy, QAuthenticator *auth)
 {
     TQLoginDlg dlg;
     dlg.setAuthenticator(auth);

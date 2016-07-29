@@ -1,13 +1,13 @@
 #ifndef TQBASE_H
 #define TQBASE_H
 
+#include <QtCore>
+#include <QtXml>
 //#include <QtGui>
 #include <tqplugin_global.h>
 #include <tqplug.h>
 //#include <tqcond.h>
 
-#include <QtCore>
-#include <QtXml>
 
 #define DBPARAM_CLASS "DBClass"
 #define DBPARAM_TYPE "DBType"
@@ -228,12 +228,16 @@ class TQAbstractQWController;
 
 class TQAbstractProjectPrivate;
 
+
 #define TQOPTION_VIEW_TEMPLATE "ViewTemplate"
 #define TQOPTION_EDIT_TEMPLATE "EditTemplate"
 #define TQOPTION_PRINT_TEMPLATE "PrintTemplate"
 #define TQOPTION_EMAIL_TEMPLATE "EmailTemplate"
 #define TQOPTION_EMAIL_SCRIPT "EmailScript"
-#define TQOPTION_GROUP_FIELDS "GroupFields"
+#define TQOPTION_GROUP_FILE "GroupFile"
+#define TQOPTION_GROUP_XML "GroupXML"
+
+class TQAbstractRecordTypeDef;
 
 class TQPLUGIN_SHARED TQAbstractProject: public QObject
 {

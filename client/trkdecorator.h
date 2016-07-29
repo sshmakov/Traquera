@@ -50,17 +50,19 @@ protected slots:
 
 class FieldGroupsDef
 {
+    Q_DECLARE_TR_FUNCTIONS(FieldGroupsDef)
 public:
     QStringList groups;
     QList<QStringList> fieldsByGroup;
+    QString other;
     FieldGroupsDef()
-        : groups(), fieldsByGroup()
+        : groups(), fieldsByGroup(), other()
     {
         groups.clear();
         fieldsByGroup.clear();
     }
     FieldGroupsDef(const FieldGroupsDef &src)
-        : groups(src.groups), fieldsByGroup(src.fieldsByGroup)
+        : groups(src.groups), fieldsByGroup(src.fieldsByGroup), other(src.other)
     {}
     bool isValid()
     {
@@ -72,6 +74,11 @@ public:
         fieldsByGroup = src.fieldsByGroup;
         return *this;
     }
+    void clear();
+    void setRecordType(const TQAbstractRecordTypeDef *recDef);
+    bool loadDefault(const TQAbstractRecordTypeDef *recDef);
+    bool loadXML(const TQAbstractRecordTypeDef *recDef, QByteArray &buf);
+    QByteArray toXML() const;
 };
 
 class QueryPage;

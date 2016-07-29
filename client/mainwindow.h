@@ -222,7 +222,9 @@ public slots:
     QToolBar *addToolBar(const QString &title);
     QDockWidget *addWidgetToDock(const QString &title, QWidget *widget, Qt::DockWidgetArea area = Qt::RightDockWidgetArea);
 //    void updateModifyPanel(TQViewController *controller);
-    void proxyAuthentication(QNetworkProxy proxy ,QAuthenticator* auth);
+private slots:
+    void authentication(QNetworkReply *reply , QAuthenticator* auth);
+    void proxyAuthentication(const QNetworkProxy &proxy , QAuthenticator* auth);
 
 signals:
     void updatingDetails();

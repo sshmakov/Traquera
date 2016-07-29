@@ -3751,7 +3751,7 @@ QString TrkRecordTypeDef::fieldRoleName(int vid) const
 
 QIODevice *TrkRecordTypeDef::defineSource() const
 {
-    QString fileName = project()->optionValue(TQOPTION_GROUP_FIELDS).toString();
+    QString fileName = project()->optionValue(TQOPTION_GROUP_FILE).toString();
     QFile *file = new QFile(fileName);
     if(!file->exists())
     {

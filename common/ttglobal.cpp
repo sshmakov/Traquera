@@ -300,7 +300,7 @@ QVariant TTGlobal::optionDefaultValue(const QString &option) const
         return QDir(d->dataDir).absoluteFilePath("email.js");
     else if(option == TQOPTION_VIEW_TEMPLATE)
         return QDir(d->dataDir).absoluteFilePath("scr.xq");
-    else if(option == TQOPTION_GROUP_FIELDS)
+    else if(option == TQOPTION_GROUP_FILE)
         return QDir(d->dataDir).absoluteFilePath("tracker.xml");
     return QVariant();
 }

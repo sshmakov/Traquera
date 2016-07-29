@@ -302,6 +302,7 @@ protected:
 public:
     JiraRecTypeDef(JiraProject *project);
     JiraRecTypeDef(JiraRecTypeDef *src);
+    virtual ~JiraRecTypeDef();
     virtual QStringList fieldNames() const;
     virtual TQAbstractFieldType getFieldType(int vid, bool *ok = 0) const;
     virtual TQAbstractFieldType getFieldType(const QString &name, bool *ok = 0) const;

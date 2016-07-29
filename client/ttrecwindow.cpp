@@ -324,7 +324,7 @@ static QString xmlToHTML(TQRecord *record, const QString &xqCodeFile)
     QDomDocument xml = record->toXML();
     QFile xq(xqCodeFile);
     xq.open(QIODevice::ReadOnly);
-    QFile groupXML(record->project()->optionValue(TQOPTION_GROUP_FIELDS).toString()); // "data/tracker.xml");
+    QFile groupXML(record->project()->optionValue(TQOPTION_GROUP_FILE).toString()); // "data/tracker.xml");
     bool isGroupOpened = groupXML.open(QIODevice::ReadOnly);
     QXmlQuery query;
 //#ifdef CLIENT_APP
