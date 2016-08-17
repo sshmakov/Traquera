@@ -42,7 +42,7 @@ qtcAddDeployment()
 
 win32:CONFIG(release, debug|release): {
     INNO = "C:\\Program Files (x86)\\Inno Setup 5\\iscc.exe"
-    ASPROTECT = "C:\\Program Files (x86)\\ASProtect 2.11 SKE\\ASProtect.exe"
+    ASPROTECT = "C:\\Program Files (x86)\\ASProtect 32\\ASProtect.exe"
     BUILDPATH=$$replace(OUT_PWD,/,\\)\\..
 
     aspr.target = ..\\client\\release\\traquera-protect.exe

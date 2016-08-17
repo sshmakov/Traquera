@@ -31,6 +31,8 @@ class QAxScript;
 class QAxObject;
 class QSqlDatabase;
 class QSqlError;
+class QXmlQuery;
+class QAbstractMessageHandler;
 
 typedef QVariant (*TQActiveXCreator)(const QString &objectName);
 
@@ -42,6 +44,9 @@ public:
     virtual bool insertViewTab(QWidget *view, QWidget *tab, const QString &title) = 0;
     virtual bool addPropWidget(QWidget *widget) = 0;
     virtual QVariant createActiveX(const QString &objectName, QObject *parent) = 0;
+    virtual QAbstractMessageHandler *messager() const = 0;
+    virtual QString makeXMLController(QXmlQuery *xquery, const QString &xqCodePath, TQViewController *controller=0) const = 0;
+    virtual QString makeXmlQuery(QXmlQuery *xquery, const QString &xqCodePath, const QObjectList &records) const = 0;
 };
 
 

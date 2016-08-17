@@ -3,6 +3,8 @@
 #include "ttrecwindow.h"
 #include "activefactory.h"
 
+#include <QtCore>
+
 MainProc *mainProc;
 
 // =========================================================================
@@ -50,23 +52,25 @@ QVariant MainProc::createActiveX(const QString &objectName, QObject *parent)
     return obj->asVariant();
 }
 
-QAbstractMessageHandler *MainProc::messager()
+QAbstractMessageHandler *MainProc::messager() const
 {
     return messageHandler;
 }
 
-QXmlQuery MainProc::makeXmlQuery(TQViewController *controller) const
+QString MainProc::makeXMLController(QXmlQuery *xquery, const QString &xqCodePath, TQViewController *controller) const
 {
-    QXmlQuery xquery;
-    xquery.setMessageHandler(messageHandler);
-    xquery.setNetworkAccessManager(ttglobal()->networkManager());
+    QString page;
+    xquery->setMessageHandler(messager());
+    QNetworkAccessManager *man = ttglobal()->networkManager();
+    if(man)
+        xquery->setNetworkAccessManager(man);
 
+    TQRecord *firstRecord = 0;
+    QDomDocument xml("records");
+    QDomElement root=xml.createElement("records");
+    xml.appendChild(root);
     if(controller)
     {
-        QDomDocument xml("records");
-        QDomElement root=xml.createElement("records");
-        xml.appendChild(root);
-        TQRecord *firstRecord = 0;
         foreach(QObject *obj, controller->selectedRecords())
         {
             TQRecord *rec = qobject_cast<TQRecord *>(obj);
@@ -79,31 +83,123 @@ QXmlQuery MainProc::makeXmlQuery(TQViewController *controller) const
             root.appendChild(recxml);
         }
 
-        QFile trackerXML(controller->project()->optionValue(TQOPTION_GROUP_FILE).toString()); // "data/tracker.xml");
-        trackerXML.open(QIODevice::ReadOnly);
+        QFile groupXML(controller->project()->optionValue(TQOPTION_GROUP_FILE).toString()); // "data/tracker.xml");
+        bool isGroupXMLOpened = groupXML.open(QIODevice::ReadOnly);
+        if(isGroupXMLOpened)
+            xquery->bindVariable("def",&groupXML);
 
-        QString page;
-        QByteArray baAll, baSingle;
-        QBuffer bufAll, bufSingle;
-        baAll= xml.toByteArray();
-        bufAll.setData(baAll);
-        bufAll.open(QIODevice::ReadOnly);
+    }
+    QByteArray baAll, baSingle;
+    QBuffer bufAll, bufSingle;
+    baAll= xml.toByteArray();
+    bufAll.setData(baAll);
+    bufAll.open(QIODevice::ReadOnly);
 
-        if(firstRecord)
+    if(firstRecord)
+    {
+        xml = firstRecord->toXML();
+        baSingle = xml.toByteArray();
+    }
+    bufSingle.setData(baSingle);
+    bufSingle.open(QIODevice::ReadOnly);
+
+    xquery->bindVariable("scrs",&bufAll);
+    xquery->bindVariable("scrdoc",&bufSingle);
+    QFile xq(xqCodePath);
+    xq.open(QIODevice::ReadOnly);
+    xquery->setQuery(&xq, xqCodePath);
+
+    xquery->evaluateTo(&page);
+    return page;
+}
+
+QString MainProc::makeXmlQuery(QXmlQuery *xquery, const QString &xqCodePath, const QObjectList &records) const
+{
+    QString page;
+    xquery->setMessageHandler(messager());
+    QNetworkAccessManager *man = ttglobal()->networkManager();
+    if(man)
+        xquery->setNetworkAccessManager(man);
+
+    TQRecord *firstRecord = 0;
+    QDomDocument xml("records");
+    QDomElement root=xml.createElement("records");
+    xml.appendChild(root);
+    for(int i = 0; i < records.size(); i++)
+    {
+        QObject *obj = records.value(i);
+        TQRecord *rec = qobject_cast<TQRecord *>(obj);
+        if(!rec)
+            continue;
+        if(!firstRecord)
+            firstRecord = rec;
+        rec->refresh();
+        QDomDocument recxml = rec->toXML();
+        root.appendChild(recxml);
+    }
+    QByteArray baAll, baSingle;
+    QBuffer bufAll, bufSingle;
+    baAll= xml.toByteArray();
+    bufAll.setData(baAll);
+    bufAll.open(QIODevice::ReadOnly);
+    xquery->bindVariable("scrs",&bufAll);
+
+    if(firstRecord)
+    {
+        QDomDocument xml = firstRecord->toXML();
+        baSingle = xml.toByteArray();
+        if(!baSingle.isEmpty())
         {
-            xml = firstRecord->toXML();
-            baSingle = xml.toByteArray();
+            bufSingle.setData(baSingle);
+            bufSingle.open(QIODevice::ReadOnly);
+            xquery->bindVariable("scrdoc",&bufSingle);
         }
+        QFile groupXML(firstRecord->project()->optionValue(TQOPTION_GROUP_FILE).toString()); // "data/tracker.xml");
+        bool isGroupXMLOpened = groupXML.open(QIODevice::ReadOnly);
+        if(isGroupXMLOpened)
+            xquery->bindVariable("def",&groupXML);
+    }
+
+    QFile xq(xqCodePath);
+    xq.open(QIODevice::ReadOnly);
+    xquery->setQuery(&xq, xqCodePath);
+
+    xquery->evaluateTo(&page);
+    return page;
+}
+
+QString MainProc::makeXmlQuery(QXmlQuery *xquery, const QString &xqCodePath, TQRecord *record) const
+{
+    QString page;
+    xquery->setMessageHandler(messager());
+    QNetworkAccessManager *man = ttglobal()->networkManager();
+    if(man)
+        xquery->setNetworkAccessManager(man);
+
+    QByteArray baSingle;
+    QBuffer bufSingle;
+    QDomDocument xml;
+    if(record)
+    {
+        QFile groupXML(record->project()->optionValue(TQOPTION_GROUP_FILE).toString()); // "data/tracker.xml");
+        bool isGroupXMLOpened = groupXML.open(QIODevice::ReadOnly);
+        if(isGroupXMLOpened)
+            xquery->bindVariable("def",&groupXML);
+        xml = record->toXML();
+        baSingle = xml.toByteArray();
         bufSingle.setData(baSingle);
         bufSingle.open(QIODevice::ReadOnly);
-
-//        QFile xq(xqCodePath);
-//        xq.open(QIODevice::ReadOnly);
-
-        xquery.bindVariable("scrs",&bufAll);
-        xquery.bindVariable("def",&trackerXML);
-        xquery.bindVariable("scrdoc",&bufSingle);
+        xquery->bindVariable("scrdoc",&bufSingle);
     }
-    return xquery;
+    else
+    {
+        return QString("<html><head/><body/></html>");
+    }
+    QFile xq(xqCodePath);
+    xq.open(QIODevice::ReadOnly);
+    xquery->setQuery(&xq, xqCodePath);
+
+    xquery->evaluateTo(&page);
+    return page;
 }
 

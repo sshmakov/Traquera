@@ -9,7 +9,7 @@ CONFIG += dll
 #QT       -= gui
 QT += xml network sql script scripttools xmlpatterns
 #QT += axserver
-QT += axcontainer
+#QT += axcontainer
 CONFIG += qaxcontainer
 #CONFIG += qaxserver
 

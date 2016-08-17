@@ -23,6 +23,7 @@ public:
     TQRecordViewController *controller;
     const TQAbstractRecordTypeDef *recDef;
     QWebInspector *inspector;
+    bool isClosing;
 };
 
 
@@ -35,12 +36,14 @@ TTRecordWindow::TTRecordWindow(QWidget *parent) :
     initWidgets();
     d->controller = new TQRecordViewController(this);
     d->inspector = new QWebInspector();
+    d->isClosing = false;
 //    connect(this,SIGNAL(recordChanged(TQRecord*)),d->controller,SLOT(onViewRecordChanged(TQRecord*)));
 //    connect(d->controller,SIGNAL(detailTabTitleChanged(QWidget*,QString)),SLOT(setDetailTabTitle(QWidget*,QString)));
 
     //ui->noteTextEdit->addAction(ui->actionSaveExit);
     changed = false;
 
+//    ui->webView->settings()->setAttribute(QWebSettings::SiteSpecificQuirksEnabled, false);
     QAction *action;
     action = ui->webView->pageAction(QWebPage::Copy);
     if(action)
@@ -81,6 +84,7 @@ TTRecordWindow::TTRecordWindow(QWidget *parent) :
 
 TTRecordWindow::~TTRecordWindow()
 {
+    d->isClosing = true;
     if(d->inspector)
     {
         d->inspector->close();
@@ -101,6 +105,7 @@ TTRecordWindow::~TTRecordWindow()
 
 void TTRecordWindow::closeEvent(QCloseEvent *event)
 {
+    bool needCommit = false;
     if(a_record && a_record->isEditing())
     {
         if(isChanged())
@@ -114,11 +119,12 @@ void TTRecordWindow::closeEvent(QCloseEvent *event)
             switch (ret) {
             case QMessageBox::Save:
                 // Save was clicked
-                commit();
+                needCommit = true;
+//                commit();
                 break;
             case QMessageBox::Discard:
                 // Don't Save was clicked
-                cancel();
+//                cancel();
                 break;
             case QMessageBox::Cancel:
                 // Cancel was clicked
@@ -130,8 +136,13 @@ void TTRecordWindow::closeEvent(QCloseEvent *event)
                 return;
             }
         }
+//        else
+//            a_record->cancel();
+        d->isClosing = true;
+        if(needCommit)
+            commit();
         else
-            a_record->cancel();
+            cancel();
     }
     QSettings *settings = ttglobal()->settings();
     settings->setValue(TTRecordState, saveState());
@@ -303,6 +314,8 @@ void TTRecordWindow::valueChanged()
 
 void TTRecordWindow::recordStateChanged()
 {
+    if(d->isClosing)
+        return;
     if(a_record)
         refreshState();
 }
@@ -361,6 +374,8 @@ static QString xmlToHTML(TQRecord *record, const QString &xqCodeFile)
 
 void TTRecordWindow::refreshValues()
 {
+    if(d->isClosing)
+        return;
     //a_record->refresh();
     ui->recordTitleEdit->blockSignals(true);
     props->fillValues(QObjectList() << a_record);
@@ -371,7 +386,11 @@ void TTRecordWindow::refreshValues()
     ui->recordTitleEdit->blockSignals(false);
 
     QString xqFile = a_record->project()->optionValue(TQOPTION_EDIT_TEMPLATE).toString();
-    QString html = xmlToHTML(a_record, xqFile);
+
+    QString html;
+//    html = xmlToHTML(a_record, xqFile);
+    QXmlQuery xquery;
+    html = ttglobal()->mainProc()->makeXmlQuery(&xquery, xqFile, QObjectList() << a_record );
     QUrl baseUrl = QUrl::fromUserInput(xqFile);
     ui->webView->setHtml(html, baseUrl);
     d->inspector->setPage(ui->webView->page());

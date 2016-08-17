@@ -422,6 +422,7 @@ class TQPLUGIN_SHARED TQRecord: public QObject
     Q_PROPERTY(int recordType READ recordType)
     Q_PROPERTY(int recordId READ recordId)
     Q_PROPERTY(QVariantHash values READ values WRITE setValues)
+    Q_PROPERTY(int noteCount READ noteCount)
 public:
     enum TQRecMode {View, Edit, Insert};
 private:
@@ -457,6 +458,7 @@ public:
     virtual bool setDescription(const QString &newDesc);
 
     virtual TQNotesCol notes() const;
+    int noteCount() const;
     Q_INVOKABLE virtual QString noteTitle(int index) const;
     Q_INVOKABLE virtual QString noteText(int index) const;
     Q_INVOKABLE virtual bool setNoteTitle(int index, const QString &newTitle);

@@ -18,8 +18,10 @@ public:
     virtual bool insertViewTab(QWidget *view, QWidget *tab, const QString &title);
     virtual bool addPropWidget(QWidget *widget);
     QVariant createActiveX(const QString &objectName, QObject *parent);
-    QAbstractMessageHandler *messager();
-    Q_INVOKABLE QXmlQuery makeXmlQuery(TQViewController *controller=0) const;
+    QAbstractMessageHandler *messager() const;
+    QString makeXMLController(QXmlQuery *xquery, const QString &xqCodePath, TQViewController *controller=0) const;
+    QString makeXmlQuery(QXmlQuery *xquery, const QString &xqCodePath, const QObjectList &records) const;
+    QString makeXmlQuery(QXmlQuery *xquery, const QString &xqCodePath, TQRecord *record) const;
 };
 
 extern MainProc *mainProc;

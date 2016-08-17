@@ -15,7 +15,11 @@ QueryFields::QueryFields(QWidget *parent) :
 //    new QShortcut(QKeySequence("Ctrl+Enter"),this,SLOT(applyChanges()));
 //    new QShortcut(QKeySequence("Ctrl+Return"),this,SLOT(applyChanges()));
     connect(modifyPanel, SIGNAL(applyButtonPressed()), SLOT(applyChanges()));
+    connect(modifyPanel, SIGNAL(editButtonClicked()), SLOT(startChange()));
+    connect(modifyPanel, SIGNAL(resetButtonClicked()), SLOT(cancelChanges()));
+    connect(modifyPanel, SIGNAL(activatedField(QString)), SLOT(activatedField(QString)));
     new QShortcut(QKeySequence("Escape"),this,SLOT(cancelChanges()));
+    ui->buttonBox->hide();
 }
 
 QueryFields::~QueryFields()
@@ -23,11 +27,15 @@ QueryFields::~QueryFields()
     delete ui;
 }
 
-void QueryFields::setViewController(TQViewController *viewController, int mode)
+void QueryFields::setViewController(TQViewController *viewController, int viewMode)
 {
     if(controller)
         controller->disconnect(this);
     controller = viewController;
+    if(viewMode == -1)
+        mode = TQRecord::View;
+    else
+        mode = viewMode;
     if(controller)
     {
         connect(controller, SIGNAL(selectedRecordsChanged()), SLOT(selectedRecordsChanged()));
@@ -57,35 +65,71 @@ void QueryFields::controllerDestroyed()
     controller = 0;
 }
 
-void QueryFields::applyChanges()
+void QueryFields::activatedField(const QString &fieldName)
 {
-    QVariantHash lastChanges = modifyPanel->changes();
-    if(lastChanges.isEmpty())
+    if(modifyPanel->mode() != TQRecord::View)
+        return;
+    if(fieldName.isEmpty())
         return;
     if(!controller)
         return;
-    foreach(QObject *obj,controller->selectedRecords())
-    {
-        TQRecord *rec = qobject_cast<TQRecord *>(obj);
-        if(!rec)
-            continue;
-        if(rec->updateBegin())
-        {
-            foreach(const QString &fieldName, lastChanges.keys())
-            {
-                int vid = rec->typeDef()->fieldVid(fieldName);
-                rec->setValue(vid, lastChanges.value(fieldName));
-            }
-            if(!rec->commit())
-                rec->cancel();
-        }
-    }
+    TQRecord *rec = controller->currentRecord();
+    if(!rec)
+        return;
+    const TQAbstractRecordTypeDef *editDef = rec->typeEditDef();
+    modifyPanel->setRecordDef(editDef, TQRecord::Edit);
     modifyPanel->resetAll();
     modifyPanel->fillValues(controller->selectedRecords());
 }
 
+void QueryFields::applyChanges()
+{
+    QVariantHash lastChanges = modifyPanel->changes();
+    if(controller)
+    {
+        if(!lastChanges.isEmpty())
+        {
+            foreach(QObject *obj,controller->selectedRecords())
+            {
+                TQRecord *rec = qobject_cast<TQRecord *>(obj);
+                if(!rec)
+                    continue;
+                if(rec->updateBegin())
+                {
+                    foreach(const QString &fieldName, lastChanges.keys())
+                    {
+                        int vid = rec->typeDef()->fieldVid(fieldName);
+                        rec->setValue(vid, lastChanges.value(fieldName));
+                    }
+                    if(!rec->commit())
+                        rec->cancel();
+                }
+            }
+        }
+        modifyPanel->setRecordDef(controller->recordDef(), mode);
+        modifyPanel->resetAll();
+        modifyPanel->fillValues(controller->selectedRecords());
+    }
+}
+
 void QueryFields::cancelChanges()
 {
+    modifyPanel->setRecordDef(controller->recordDef(), mode);
+    modifyPanel->resetAll();
+    modifyPanel->fillValues(controller->selectedRecords());
+}
+
+void QueryFields::startChange()
+{
+    if(modifyPanel->mode() != TQRecord::View)
+        return;
+    if(!controller)
+        return;
+    TQRecord *rec = controller->currentRecord();
+    if(!rec)
+        return;
+    const TQAbstractRecordTypeDef *editDef = rec->typeEditDef();
+    modifyPanel->setRecordDef(editDef, TQRecord::Edit);
     modifyPanel->resetAll();
     modifyPanel->fillValues(controller->selectedRecords());
 }
@@ -96,6 +140,6 @@ void QueryFields::selectedRecordsChanged()
         return;
     QObjectList records = controller->selectedRecords();
     const TQAbstractRecordTypeDef *typeDef = controller->recordDef();
-    modifyPanel->setRecordDef(typeDef, TQRecord::Edit);
+    modifyPanel->setRecordDef(typeDef, TQRecord::View);
     modifyPanel->fillValues(records);
 }

@@ -80,6 +80,7 @@ void ModifyPanel::setRecordDef(const TQAbstractRecordTypeDef *typeDef, int mode)
         return;
     rdef = typeDef;
     curMode = mode;
+    onModeChanged();
     rows.clear();
     if(rdef)
     {
@@ -111,8 +112,10 @@ void ModifyPanel::setRecordDef(const TQAbstractRecordTypeDef *typeDef, int mode)
                 frow.isChanged = false;
                 if(mode == TQRecord::Insert)
                     frow.isEditable = fType.canSubmit();
-                else
+                else if(mode == TQRecord::Edit)
                     frow.isEditable = fType.canUpdate();
+                else
+                    frow.isEditable = false;
                 //frow.resetBtn = 0;
                 rows.append(frow);
             }
@@ -150,7 +153,7 @@ void ModifyPanel::fillTable()
             QTableWidgetItem *valueItem;
             valueItem = new QTableWidgetItem(row.displayValue,row.fieldType);
             Qt::ItemFlags flags = Qt::ItemIsSelectable | Qt::ItemIsEnabled;
-            if(row.isEditable)
+            if(/*curMode == TQRecord::View || */ row.isEditable)
                 flags |= Qt::ItemIsEditable;
             else
             {
@@ -246,6 +249,11 @@ void ModifyPanel::fillValues(const QObjectList &records)
     }
 }
 
+int ModifyPanel::mode() const
+{
+    return curMode;
+}
+
 QTableWidget *ModifyPanel::tableWidget()
 {
     return ui->fieldsTableWidget;
@@ -302,6 +310,8 @@ void ModifyPanel::setFieldValue(const QString &fieldName, const QVariant &value)
 
 QString ModifyPanel::fieldName(const QModelIndex &index)
 {
+    if(!index.isValid())
+        return QString();
     return rows[index.row()].fieldName;
 }
 
@@ -412,6 +422,13 @@ void ModifyPanel::clearField(const QString &fieldName)
         setFieldValue(fieldName, fieldDef(fieldName).defaultValue());
 }
 
+void ModifyPanel::onModeChanged()
+{
+    ui->tbApply->setEnabled(curMode != TQRecord::View  && rdef);
+    ui->tbCancel->setEnabled(curMode != TQRecord::View && rdef);
+    ui->tbEdit->setEnabled(curMode == TQRecord::View && rdef);
+}
+
 void ModifyPanel::on_actionApplyChanges_triggered()
 {
     emit applyButtonPressed();
@@ -420,6 +437,7 @@ void ModifyPanel::on_actionApplyChanges_triggered()
 void ModifyPanel::on_actionRevertChanges_triggered()
 {
     resetAll();
+    emit resetButtonClicked();
 }
 
 void ModifyPanel::on_actionRepeatChanges_triggered()
@@ -439,7 +457,38 @@ void ModifyPanel::on_actionClearField_triggered()
     QString field = fieldName(ui->fieldsTableWidget->currentIndex());
     if(!field.isEmpty())
         clearField(field);
-
 }
 
+//void ModifyPanel::on_fieldsTableWidget_activated(const QModelIndex &index)
+//{
+//    QString field = fieldName(index);
+//    emit activatedField(field);
+//}
 
+void ModifyPanel::on_fieldsTableWidget_itemActivated(QTableWidgetItem *item)
+{
+    int row = item->row();
+    if(row<0 || row>=rows.size())
+        return;
+    emit activatedField(rows[row].fieldName);
+}
+
+void ModifyPanel::on_tbCancel_clicked()
+{
+    ui->actionRevertChanges->trigger();
+}
+
+void ModifyPanel::on_tbApply_clicked()
+{
+    ui->actionApplyChanges->trigger();
+}
+
+void ModifyPanel::on_tbEdit_clicked()
+{
+    ui->actionEdit->trigger();
+}
+
+void ModifyPanel::on_actionEdit_triggered()
+{
+    emit editButtonClicked();
+}

@@ -1,5 +1,6 @@
 #include "messager.h"
 #include <QMessageBox>
+#include <tqdebug.h>
 
 QAbstractMessageHandler *sysMessager = 0;
 
@@ -26,6 +27,23 @@ void Messager::handleMessage(QtMsgType type, const QString &description, const Q
     {
         text += '\n';
         text += QString("%1 (%2/%3)").arg(sourceLocation.uri().toString()).arg(sourceLocation.line()).arg(sourceLocation.column());
+    }
+    switch (type) {
+    case QtDebugMsg:
+        tqDebug() << text;
+        break;
+    case QtWarningMsg:
+        tqWarning() << text;
+        break;
+    case QtCriticalMsg:
+        tqCritical() << text;
+        break;
+    case QtFatalMsg:
+        tqFatal() << text;
+        break;
+    default:
+        tqInfo() << text;
+        break;
     }
     QMessageBox::information(0, "info", text);
 }

@@ -798,10 +798,16 @@ QString QueryPage::makeRecordPage(const TQRecord *record, QXmlQuery xquery)
 }
 */
 
+#define XQGLOBAL
+
 QString QueryPage::makeRecordsPage(const QObjectList &records, const QString &xqCodePath)
 {
-//    QXmlQuery xquery = ttglobal()->makeXmlQuery(controller());
+    QXmlQuery xquery;
+    QString page;
+#ifdef XQGLOBAL
+    page = ttglobal()->mainProc()->makeXmlQuery(&xquery, xqCodePath, records);
 
+#else
     QDomDocument xml("records");
     QDomElement root=xml.createElement("records");
     xml.appendChild(root);
@@ -828,7 +834,6 @@ QString QueryPage::makeRecordsPage(const QObjectList &records, const QString &xq
     QFile groupXML(project()->optionValue(TQOPTION_GROUP_FILE).toString()); // "data/tracker.xml");
     bool isGroupXMLOpened = groupXML.open(QIODevice::ReadOnly);
 
-    QString page;
     QByteArray baAll, baSingle;
     QBuffer bufAll, bufSingle;
     baAll= xml.toByteArray();
@@ -843,10 +848,6 @@ QString QueryPage::makeRecordsPage(const QObjectList &records, const QString &xq
     bufSingle.setData(baSingle);
     bufSingle.open(QIODevice::ReadOnly);
 
-    QFile xq(xqCodePath);
-    xq.open(QIODevice::ReadOnly);
-
-    QXmlQuery xquery;
     xquery.setMessageHandler(mainProc->messageHandler);
     if(d->globalObj)
         xquery.setNetworkAccessManager(d->globalObj->networkManager());
@@ -855,9 +856,13 @@ QString QueryPage::makeRecordsPage(const QObjectList &records, const QString &xq
     if(isGroupXMLOpened)
         xquery.bindVariable("def",&groupXML);
     xquery.bindVariable("scrdoc",&bufSingle);
-
+    QFile xq(xqCodePath);
+    xq.open(QIODevice::ReadOnly);
     xquery.setQuery(&xq);
+
     xquery.evaluateTo(&page);
+
+#endif
     return page;
 }
 
@@ -872,6 +877,7 @@ void QueryPage::drawNotes()
     if(record)
     {
         QDomDocument xml = record->toXML();
+        record->refresh();
         page = makeRecordsPage(QObjectList() << record, d->xqPageFile);
     }
 #ifdef QT_DEBUG
@@ -1269,6 +1275,8 @@ TQRecord *QueryPage::currentRecord()
 {
     QModelIndex cur = queryView->currentIndex();
     if(!cur.isValid())
+        return NULL;
+    if(!queryView->selectionModel()->isSelected(cur))
         return NULL;
     const QAbstractItemModel *model = cur.model();
     while(const QAbstractProxyModel *proxy =  qobject_cast<const QAbstractProxyModel *>(model))

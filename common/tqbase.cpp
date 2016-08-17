@@ -642,6 +642,11 @@ TQNotesCol TQRecord::notes() const
     return TQNotesCol();
 }
 
+int TQRecord::noteCount() const
+{
+    return notes().size();
+}
+
 QString TQRecord::noteTitle(int index) const
 {
     if(!isValid())

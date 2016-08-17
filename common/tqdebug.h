@@ -88,6 +88,21 @@ inline TQDebug tqInfo()
     return TQDebug((int)TQInfoLevel);
 }
 
+inline TQDebug tqWarning()
+{
+    return TQDebug((int)TQWarningLevel);
+}
+
+inline TQDebug tqCritical()
+{
+    return TQDebug((int)TQCriticalLevel);
+}
+
+inline TQDebug tqFatal()
+{
+    return TQDebug((int)TQFatalLevel);
+}
+
 inline TQDebug tqError()
 {
     return TQDebug((int)TQErrorLevel);

@@ -64,7 +64,10 @@ public:
 signals:
     void applyButtonPressed();
     void repeatButtonClicked();
+    void resetButtonClicked();
+    void editButtonClicked();
     void dataChanged();
+    void activatedField(const QString fieldName);
 protected:
     void fillTable();
 public slots:
@@ -73,6 +76,7 @@ public slots:
     void resetAll();
     void clearField(const QString& fieldName);
 private slots:
+    void onModeChanged();
     void on_actionApplyChanges_triggered();
 
     void on_actionRevertChanges_triggered();
@@ -82,6 +86,18 @@ private slots:
     void on_actionRevertField_triggered();
 
     void on_actionClearField_triggered();
+
+//    void on_fieldsTableWidget_activated(const QModelIndex &index);
+
+    void on_fieldsTableWidget_itemActivated(QTableWidgetItem *item);
+
+    void on_tbCancel_clicked();
+
+    void on_tbApply_clicked();
+
+    void on_tbEdit_clicked();
+
+    void on_actionEdit_triggered();
 
 private:
     Ui::ModifyPanel *ui;

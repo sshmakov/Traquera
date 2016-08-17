@@ -243,6 +243,12 @@ JiraRecTypeDef::JiraRecTypeDef(JiraRecTypeDef *src)
     : TQBaseRecordTypeDef(src->project()), d(new JiraRecTypeDefPrivate())
 {
     *d = *(src->d);
+    d->fields.clear();
+    foreach(int vid, src->d->fields.keys())
+    {
+        const JiraFieldDesc *srcDesc = src->d->fields[vid];
+        d->fields.insert(vid, new JiraFieldDesc(*srcDesc));
+    }
 }
 
 JiraRecTypeDef::~JiraRecTypeDef()
@@ -1657,7 +1663,7 @@ bool JiraProject::doCommitUpdateRecord(TQRecord *record)
         if(fdesc->isUser())
         {
             QVariantMap v;
-            v.insert("id", value.toString());
+            v.insert("name", value.toString());
             value = v;
         }
         else if(fdesc->isChoice())
@@ -1851,10 +1857,13 @@ bool JiraProject::isSystemModel(QAbstractItemModel *model) const
 
 QSettings *JiraProject::projectSettings() const
 {
+    return TQAbstractProject::projectSettings();
+    /*
     QString iniFile = jira->dataDir.absoluteFilePath("jira.ini");
     QSettings *sets = new QSettings(iniFile, QSettings::IniFormat);
     sets->beginGroup(projectName());
     return sets;
+    */
 }
 
 QAbstractItemModel *JiraProject::queryModel(int type)
@@ -1889,11 +1898,12 @@ QVariant JiraProject::optionValue(const QString &option) const
         return v;
 
     if(option == TQOPTION_VIEW_TEMPLATE
-            || option == TQOPTION_EDIT_TEMPLATE
             || option == TQOPTION_PRINT_TEMPLATE
             || option == TQOPTION_EMAIL_TEMPLATE
             )
-        return jira->dataDir.absoluteFilePath("issue.xq");
+        return jira->dataDir.absoluteFilePath("jira-issue.xq");
+    if(option == TQOPTION_EDIT_TEMPLATE)
+        return jira->dataDir.absoluteFilePath("jira-edit.xq");
     if(option == TQOPTION_GROUP_FILE)
         return jira->dataDir.absoluteFilePath("jira.xml");
     return ttglobal()->optionDefaultValue(option);
@@ -2054,7 +2064,8 @@ void JiraProject::readRecordDef2(JiraRecTypeDef *rdef, const QVariantMap &fields
             while(rdef->d->vids.contains(f.name))
                 f.name = name + " " +QString::number(i++);
             rdef->d->vids.insert(f.name, f.vid);
-            rdef->d->fields.insert(f.vid, new JiraFieldDesc(f));
+            JiraFieldDesc *item = new JiraFieldDesc(f);
+            rdef->d->fields.insert(f.vid, item);
         }
     }
 }
@@ -2498,6 +2509,7 @@ bool JiraRecord::setValue(int vid, const QVariant &newValue)
     if(vid == d->def->d->descVid)
     {
         desc = newValue.toString();
+        TQRecord::setValue(vid, desc);
         setModified(true);
         return true;
     }
