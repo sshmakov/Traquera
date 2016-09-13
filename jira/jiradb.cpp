@@ -339,7 +339,9 @@ bool JiraRecTypeDef::hasChoiceList(int vid) const
         return false;
     const JiraFieldDesc *desc = d->fields[vid];
     if(desc->simpleType == TQ::TQ_FIELD_TYPE_USER
-            || desc->simpleType == TQ::TQ_FIELD_TYPE_CHOICE)
+            || desc->simpleType == TQ::TQ_FIELD_TYPE_CHOICE
+            || desc->simpleType == TQ::TQ_FIELD_TYPE_ARRAY
+            )
         return true;
     return false;
 }
@@ -470,6 +472,21 @@ QString JiraRecTypeDef::valueToDisplay(int vid, const QVariant &value) const
     {
     case TQ::TQ_FIELD_TYPE_NONE:
         return QString();
+    case TQ::TQ_FIELD_TYPE_ARRAY:
+    {
+        QVariantList valueList = value.toList();
+        QString table = fieldChoiceTable(vid);
+        if(table.isEmpty())
+            return QString();
+        TQChoiceList list = choiceTable(table);
+        QStringList resultList;
+        foreach(const TQChoiceItem &c, list)
+        {
+            if(valueList.contains(c.fieldValue))
+                resultList.append(c.displayText);
+        }
+        return resultList.join("; ");
+    }
     case TQ::TQ_FIELD_TYPE_CHOICE:
     {
         QString table = fieldChoiceTable(vid);
@@ -538,6 +555,21 @@ QVariant JiraRecTypeDef::displayToValue(int vid, const QString &text) const
         }
         return QVariant(QVariant::String);
     }
+    case TQ::TQ_FIELD_TYPE_ARRAY:
+    {
+        QStringList displayList = text.split(QRegExp("\\s;\\s"));
+        QString table = fieldChoiceTable(vid);
+        if(table.isEmpty())
+            return QVariant();
+        TQChoiceList list = choiceTable(table);
+        QVariantList result;
+        foreach(const TQChoiceItem &c, list)
+        {
+            if(displayList.contains(c.displayText,Qt::CaseInsensitive))
+                result.append(c.fieldValue);
+        }
+        return result;
+    }
     case TQ::TQ_FIELD_TYPE_STRING:
         return text;
     case TQ::TQ_FIELD_TYPE_NUMBER:
@@ -571,11 +603,13 @@ QVariant JiraRecTypeDef::fieldMaxValue(int vid) const
 QString JiraRecTypeDef::fieldChoiceTable(int vid) const
 {
     const JiraFieldDesc *desc = d->fields.value(vid);
-    if(!desc->isValid() || !desc->isChoice())
+    if(!desc->isValid())
         return QString();
     if(desc->isUser())
         return "Users";
-    return "Table_" + desc->id;
+    if(desc->isChoice() || desc->isArray())
+        return "Table_" + desc->id;
+    return QString();
 }
 
 int JiraRecTypeDef::roleVid(int role) const
@@ -610,7 +644,7 @@ bool JiraRecTypeDef::hasFieldCustomEditor(int vid) const
 
 QWidget *JiraRecTypeDef::createCustomEditor(int vid, QWidget *parent) const
 {
-    JiraUserComboBox *box = new JiraUserComboBox(d->prj, parent);
+    JiraUserEdit *box = new JiraUserEdit(d->prj, this, parent);
     const JiraFieldDesc *desc = d->fields[vid];
     if(!desc->autoCompleteUrl.isEmpty())
     {
@@ -624,7 +658,7 @@ QWidget *JiraRecTypeDef::createCustomEditor(int vid, QWidget *parent) const
         items.append(user.displayName);
     }
     items.sort();
-    box->insertItems(0, items);
+//    box->insertItems(0, items);
     return box;
     /*
     QLineEdit *editor = new QLineEdit(parent);
@@ -1564,6 +1598,12 @@ bool JiraProject::commitRecord(TQRecord *record)
             v.insert("id", value.toString());
             value = v;
         }
+        else if(fdesc->isArray())
+        {
+            QVariantMap v;
+            v.insert("id", value);
+            value = v;
+        }
         fields.insert(fdesc->id, value);
     }
     QVariantMap v2;
@@ -1670,6 +1710,12 @@ bool JiraProject::doCommitUpdateRecord(TQRecord *record)
         {
             QVariantMap v;
             v.insert("id", value.toString());
+            value = v;
+        }
+        else if(fdesc->isArray())
+        {
+            QVariantMap v;
+            v.insert("id", value);
             value = v;
         }
 //        QVariantList fChanges;
@@ -1914,6 +1960,20 @@ QString JiraProject::jiraProjectKey() const
     return projectKey;
 }
 
+QString JiraProject::userFullName(const QString &login)
+{
+    if(knownUsers.contains(login))
+    {
+        JiraUser user = knownUsers[login];
+        return user.displayName;
+    }
+    QVariantMap map = db->sendRequest("GET",db->queryUrl(QString("rest/api/2/user?username=%1").arg(login))).toMap();
+    if(!map.contains("displayName"))
+        return login;
+    appendUserToKnown(map);
+    return map.value("displayName").toString();
+}
+
 /*TQAbstractRecordTypeDef *JiraProject::loadRecordTypeDef(int recordType)
 {
     JiraRecTypeDef *rdef = new JiraRecTypeDef(this);
@@ -2021,9 +2081,12 @@ void JiraProject::readRecordDef2(JiraRecTypeDef *rdef, const QVariantMap &fields
         f.simpleType = rdef->schemaToSimpleType(f.schemaType);
         if(f.simpleType == TQ::TQ_FIELD_TYPE_USER)
             f.choiceTable = "Users";
-        else if(f.simpleType == TQ::TQ_FIELD_TYPE_CHOICE)
+        else if(f.simpleType == TQ::TQ_FIELD_TYPE_CHOICE || f.simpleType == TQ::TQ_FIELD_TYPE_ARRAY)
         {
             f.choiceTable = "Table_" + f.id;
+            /*if(map.contains("allowedValues"))
+                f.choices = parseAllowedValues(map.value("allowedValue").toList());
+            else*/
             if(rdef->d->systemChoices.contains(f.id))
                 f.choices = loadChoiceTables(rdef, f.id);
         }
@@ -2035,9 +2098,11 @@ void JiraProject::readRecordDef2(JiraRecTypeDef *rdef, const QVariantMap &fields
             f.createShow = true;
             f.createRequired = createMeta.value("required","false").toString() == "true";
             f.autoCompleteUrl = createMeta.value("autoCompleteUrl").toString();
-            if(createMeta.contains("allowedValues"))
+            if(!rdef->d->systemChoices.contains(f.id) && createMeta.contains("allowedValues"))
             {
                 QVariantList values = createMeta.value("allowedValues").toList();
+                f.choices = parseAllowedValues(values);
+                /*
                 int pos=0;
                 foreach(QVariant v, values)
                 {
@@ -2050,6 +2115,7 @@ void JiraProject::readRecordDef2(JiraRecTypeDef *rdef, const QVariantMap &fields
                     item.order = pos++;
                     f.choices.append(item);
                 }
+                */
             }
         }
         else
@@ -2250,6 +2316,30 @@ TQChoiceList JiraProject::loadChoiceTables(JiraRecTypeDef *rdef, const QString &
     }
     return list;
 }
+
+TQChoiceList JiraProject::parseAllowedValues(const QVariantList &values) const
+{
+    TQChoiceList list;
+    int order = 0;
+    foreach(QVariant value, values)
+    {
+        QVariantMap map = value.toMap();
+        TQChoiceItem item;
+        if(map.contains("value"))
+            item.displayText = map.value("value").toString();
+        else if(map.contains("name"))
+            item.displayText = map.value("name").toString();
+        else
+            item.displayText = map.value("id").toString();
+        item.fieldValue = map.value("id").toInt();
+        item.id = map.value("id").toInt();
+        item.weight = item.id;
+        item.order = order++;
+        list.append(item);
+    }
+    return list;
+}
+
 typedef QPair<QString,QString> QStringPair;
 
 void JiraProject::loadQueries()

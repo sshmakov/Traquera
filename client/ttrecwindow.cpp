@@ -176,6 +176,7 @@ void TTRecordWindow::setRecordTypeDef(const TQAbstractRecordTypeDef *recDef, int
 {
     if(d->recDef == recDef && editorMode == mode)
         return;
+    editorMode = mode;
     d->recDef = recDef;
     Q_ASSERT(recDef != 0);
     props->setRecordDef(recDef, mode);
@@ -292,7 +293,6 @@ void TTRecordWindow::refreshState()
     ui->actionSaveChanges->setEnabled(edit);
     ui->actionCancelChanges->setEnabled(edit);
     bool changed = editorMode != a_record->mode();
-    editorMode = a_record->mode();
     if(editorMode == TQRecord::Edit)
         setRecordTypeDef(a_record->typeEditDef(), a_record->mode());
     else

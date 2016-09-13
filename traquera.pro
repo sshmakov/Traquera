@@ -9,6 +9,7 @@ CONFIG += ordered
 # Directories
 SUBDIRS += \
     tqplugapi \
+    tqgui \
     tqcondapi \
     tracker \
     msplans   \

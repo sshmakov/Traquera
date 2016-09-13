@@ -11,6 +11,7 @@
 #include "flowlayout.h"
 #include "trkdecorator.h"
 #include "ttdelegate.h"
+#include "ttglobal.h"
 
 
 ModifyPanel::ModifyPanel(QWidget *parent) :
@@ -23,8 +24,17 @@ ModifyPanel::ModifyPanel(QWidget *parent) :
     curMode(TQRecord::View)
 {
     ui->setupUi(this);
+
     TTDelegate *del = new TTDelegate(this);
     del->assignToPanel(this);
+    QItemEditorFactory *factory = ttglobal()->mainProc()->fieldEditorFactory();
+    QItemEditorCreatorBase *creator = new QStandardItemEditorCreator<TQDateTimeFieldEdit>();
+    factory->registerEditor(QVariant::DateTime, creator);
+
+//    QStyledItemDelegate *del = new QStyledItemDelegate(this);
+    del->setItemEditorFactory(factory);
+//    ui->fieldsTableWidget->setItemDelegateForColumn(1, del);
+
     ui->fieldsTableWidget->addAction(ui->actionApplyChanges);
     ui->fieldsTableWidget->addAction(ui->actionRevertChanges);
 //    ui->fieldsTableWidget->addAction(ui->actionRepeatChanges);
@@ -106,7 +116,10 @@ void ModifyPanel::setRecordDef(const TQAbstractRecordTypeDef *typeDef, int mode)
                 ModifyRow frow;
                 frow.isGroup = false;
                 frow.fieldName = fname;
-                frow.fieldType = fType.nativeType();
+//                if(fType.nativeType() == TQ::TQ_FIELD_TYPE_DATE)
+//                    frow.fieldType = QVariant::DateTime;
+//                else
+                    frow.fieldType = fType.nativeType();
                 //frow.editor = 0;
                 frow.displayValue = "";
                 frow.isChanged = false;
@@ -151,7 +164,8 @@ void ModifyPanel::fillTable()
         else
         {
             QTableWidgetItem *valueItem;
-            valueItem = new QTableWidgetItem(row.displayValue,row.fieldType);
+//            valueItem = new QTableWidgetItem(row.displayValue,row.fieldType);
+            valueItem = new QTableWidgetItem(row.fieldType);
             Qt::ItemFlags flags = Qt::ItemIsSelectable | Qt::ItemIsEnabled;
             if(/*curMode == TQRecord::View || */ row.isEditable)
                 flags |= Qt::ItemIsEditable;
@@ -164,9 +178,19 @@ void ModifyPanel::fillTable()
                 item->setFont(disabledFont);
             }
             valueItem->setFlags(flags);
+            QVariant v = row.fieldValue;
+            int type = v.userType();
+            setItemData(valueItem, row.displayValue, v);
             ui->fieldsTableWidget->setItem(line,1,valueItem);
         }
     }
+}
+
+void ModifyPanel::setItemData(QTableWidgetItem *item, const QString &displayText, const QVariant &value)
+{
+    item->setData(Qt::DisplayRole, displayText);
+    item->setData(Qt::UserRole, value);
+//    item->setText(displayText);
 }
 
 /*
@@ -230,7 +254,8 @@ void ModifyPanel::fillValues(const QObjectList &records)
                 {
                     row.isDifferent = true;
                     row.displayValue = "...";
-                    row.fieldValue = QVariant();
+                    QVariant v = rec->value(row.fieldName, Qt::EditRole);
+                    row.fieldValue = QVariant(v.type());
 
                 }
                 //row.isEditable = row.isEditable && !rec->isFieldReadOnly(row.fieldName);
@@ -244,8 +269,10 @@ void ModifyPanel::fillValues(const QObjectList &records)
         }
         rows[r] = row;
         QTableWidgetItem *item = ui->fieldsTableWidget->item(r,1);
-        item->setText(row.displayValue);
-        //item->setData(Qt::EditRole, row.fieldValue);
+//        item->setText(row.displayValue);
+        QVariant v = row.fieldValue;
+        int type = v.userType();
+        setItemData(item, row.displayValue, v);
     }
 }
 
@@ -297,7 +324,7 @@ void ModifyPanel::setFieldValue(const QString &fieldName, const QVariant &value)
             frow.newValue = value;
             //item->setData(Qt::EditRole,value);
             frow.displayValue = fieldDef(row).valueToDisplay(value);
-            item->setData(Qt::DisplayRole,frow.displayValue);
+            setItemData(item,frow.displayValue, frow.newValue);
             frow.isChanged = true;
             QTableWidgetItem  *fitem = tableWidget()->item(row,0);
             QFont font = fitem->font();
@@ -373,7 +400,7 @@ void ModifyPanel::resetField(const QString &fieldName)
             if(frow.fieldValue.isNull())
                 item->setData(Qt::DisplayRole, "");
             else
-                item->setData(Qt::DisplayRole, frow.displayValue);
+                setItemData(item, frow.displayValue, frow.fieldValue);
             QTableWidgetItem  *fitem = tableWidget()->item(row,0);
             QFont font = fitem->font();
             font.setBold(false);
@@ -405,7 +432,7 @@ void ModifyPanel::resetAll()
 
                 item->setData(Qt::DisplayRole, "");
             else
-                item->setData(Qt::DisplayRole, frow.displayValue);
+                setItemData(item, frow.displayValue, frow.fieldValue);
             QTableWidgetItem  *fitem = tableWidget()->item(row,0);
             QFont font = fitem->font();
             font.setBold(false);

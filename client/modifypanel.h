@@ -70,6 +70,7 @@ signals:
     void activatedField(const QString fieldName);
 protected:
     void fillTable();
+    void setItemData(QTableWidgetItem * item, const QString &displayText, const QVariant &value);
 public slots:
     void setFieldValue(const QString &fieldName, const QVariant &value);
     void resetField(const QString& fieldName);

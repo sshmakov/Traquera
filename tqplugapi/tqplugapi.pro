@@ -36,7 +36,8 @@ SOURCES += tqplugapi.cpp \
     ../common/tqviewcontroller.cpp \
     tqnetaccessmanager.cpp \
     ../common/tqdebug.cpp \
-    tqplug.cpp
+    tqplug.cpp \
+    ../common/tqfielddelegate.cpp
 
 HEADERS += tqplugapi.h\
     ../common/tqplugin_global.h \
@@ -50,7 +51,8 @@ HEADERS += tqplugapi.h\
     ../common/tqviewcontroller.h \
     tqnetaccessmanager.h \
     ../common/tqdebug.h \
-    ../common/ttutils.h
+    ../common/ttutils.h \
+    ../common/tqfielddelegate.h
 
 unix:!symbian {
     maemo5 {

@@ -176,6 +176,7 @@ class TQChoiceArrayEdit: public TQMultiComboBox, public TQFieldEdit
 {
     Q_OBJECT
     Q_INTERFACES(TQFieldEdit)
+    Q_PROPERTY(QVariant value READ value WRITE setValue USER true)
 public:
     explicit TQChoiceArrayEdit(QWidget *parent, const QString &fieldName);
     virtual void clearValue();

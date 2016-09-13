@@ -201,6 +201,7 @@ public:
 
     Q_INVOKABLE QVariant optionValue(const QString &option) const;
     Q_INVOKABLE QString jiraProjectKey() const;
+    Q_INVOKABLE QString userFullName(const QString &login);
 protected:
     QVariantList fieldList;
     QVariantList typesList;
@@ -212,10 +213,11 @@ protected:
     void loadRecordTypes();
     JiraRecTypeDef *loadEditRecordDef(const JiraRecord *record);
     TQChoiceList loadChoiceTables(JiraRecTypeDef *rdef, const QString &url);
+    TQChoiceList parseAllowedValues(const QVariantList &values) const;
     void loadQueries();
     void loadUsers();
     void storeReadedField(JiraRecord *rec, const JiraRecTypeDef *rdef, const QString &fid, const QVariant &value);
-//    void appendUserToKnown(const TQUser &user);
+    //    void appendUserToKnown(const TQUser &user);
 public slots:
     void appendUserToKnown(const QVariantMap &userRec);
 protected slots:

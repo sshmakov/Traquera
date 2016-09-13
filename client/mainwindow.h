@@ -255,16 +255,15 @@ private:
 
 
 private slots:
-    void on_changedQuery(const QString & projectName, const QString & queryName);
-    void on_tabChanged(int tab);
+    void slotChangedQuery(const QString & projectName, const QString & queryName);
+    void tabChanged(int tab);
     void on_actionPrevious_triggered();
     void on_actionOpen_Query_triggered();
-    void on_queriesView_customContextMenuRequested(const QPoint &pos);
     void on_actionOpen_QueryInNew_triggered();
     void on_actionForward_triggered();
     void on_actionQueryById_triggered();
     void on_actionPrint_Preview_triggered();
-    void on_btnDBMS_clicked();
+//    void on_btnDBMS_clicked();
     void on_journalView_doubleClicked(const QModelIndex &index);
     void on_tabWidget_currentChanged(QWidget *arg1);
     void on_actionPasteNumbers_triggered();
@@ -300,6 +299,7 @@ private slots:
     void on_actionMakeActive_triggered();
     void on_cbCurrentProjectName_currentIndexChanged(int index);
     void on_actionProjectOptions_triggered();
+    void on_actionCopy_triggered();
 };
 
 

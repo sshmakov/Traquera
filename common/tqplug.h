@@ -85,6 +85,7 @@ public:
 class TQAbstractFieldType;
 class TQAbstractProject;
 class TQAbstractRecordTypeDef;
+class TQFieldDelegate;
 
 class TQAbstractRecordTypeDef
 {
@@ -134,6 +135,7 @@ public:
     virtual TQAbstractProject *project() const = 0;
     virtual bool hasFieldCustomEditor(int vid) const = 0;
     virtual QWidget *createCustomEditor(int vid, QWidget *parent) const = 0;
+    virtual TQFieldDelegate *fieldDelegate(int vid) const = 0;
     virtual QString typeName() const = 0;
     virtual QVariant optionValue(const QString &optionName) const = 0;
     virtual void setOptionValue(const QString &optionName, const QVariant &value) const = 0;
@@ -165,6 +167,7 @@ public:
     TQAbstractProject *project() const;
     bool hasFieldCustomEditor(int vid) const;
     QWidget *createCustomEditor(int vid, QWidget *parent) const;
+    TQFieldDelegate *fieldDelegate(int vid) const;
     QStringList noteTitleList() const;
     QVariant optionValue(const QString &optionName) const;
     void setOptionValue(const QString &optionName, const QVariant &value) const;
@@ -438,6 +441,7 @@ public:
             if(!table.isEmpty())
             {
                 TQChoiceList res;
+                /*
                 if(isNullable())
                 {
                     TQChoiceItem ch;
@@ -447,6 +451,7 @@ public:
                     ch.weight = 0;
                     res.append(ch);
                 }
+                */
                 res.append(def->choiceTable(table));
                 return res;
             }

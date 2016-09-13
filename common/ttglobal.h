@@ -24,7 +24,9 @@ class TQOAuth;
 class QueryPage;
 class TTRecordWindow;
 class TQViewController;
+class TQEditorFactory;
 
+class QItemEditorFactory;
 class QScriptEngine;
 class QAxScriptManager;
 class QAxScript;
@@ -39,6 +41,7 @@ typedef QVariant (*TQActiveXCreator)(const QString &objectName);
 class TTMainProc
 {
 public:
+    virtual ~TTMainProc() {}
     virtual QMainWindow *mainWindow() = 0;
     virtual TQAbstractProject *currentProject() = 0;
     virtual bool insertViewTab(QWidget *view, QWidget *tab, const QString &title) = 0;
@@ -47,6 +50,7 @@ public:
     virtual QAbstractMessageHandler *messager() const = 0;
     virtual QString makeXMLController(QXmlQuery *xquery, const QString &xqCodePath, TQViewController *controller=0) const = 0;
     virtual QString makeXmlQuery(QXmlQuery *xquery, const QString &xqCodePath, const QObjectList &records) const = 0;
+    virtual TQEditorFactory *fieldEditorFactory() const = 0;
 };
 
 

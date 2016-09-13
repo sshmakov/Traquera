@@ -154,6 +154,7 @@ void TQMultiComboBox::addItem ( const QString & text, bool checked)
 void TQMultiComboBox::clear()
 {
     vlist_.clear();
+    setDisplayText(QString());
 }
 
 

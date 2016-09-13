@@ -2,9 +2,148 @@
 //#include "trkview.h"
 #include "tqbase.h"
 #include "modifypanel.h"
+#include <ttglobal.h>
+#include <tqdebug.h>
 
 #include <QtGui>
 
+typedef QPair<const TQAbstractRecordTypeDef *,int> FieldKey;
+typedef QMap<FieldKey, QItemEditorCreatorBase *> FieldMap;
+
+class TQEditorFactoryPrivate
+{
+public:
+    FieldMap simpleMap;
+    FieldMap nativeMap;
+    FieldMap fieldMap;
+    QMap<const QWidget *,  QItemEditorCreatorBase *> editorMap;
+};
+
+
+/*!
+ * \brief TQEditorFactory::TQEditorFactory
+ */
+TQEditorFactory::TQEditorFactory()
+    : QItemEditorFactory(), d(new TQEditorFactoryPrivate())
+{
+
+}
+
+TQEditorFactory::~TQEditorFactory()
+{
+    QSet<QItemEditorCreatorBase *> set;
+    set = d->fieldMap.values().toSet();
+    qDeleteAll(set);
+    set = d->nativeMap.values().toSet();
+    qDeleteAll(set);
+    set = d->simpleMap.values().toSet();
+    qDeleteAll(set);
+    delete d;
+}
+
+QWidget *TQEditorFactory::createEditor(QVariant::Type type, QWidget *parent) const
+{
+    return QItemEditorFactory::createEditor(type, parent);
+}
+
+QWidget *TQEditorFactory::createSimpleEditor(const TQAbstractRecordTypeDef *recordDef, int simpleType, QWidget *parent) const
+{
+    FieldMap::iterator it = d->simpleMap.find(FieldKey(recordDef, simpleType));
+    if(it == d->simpleMap.end())
+        return 0;
+    QWidget *w = it.value()->createWidget(parent);
+    if(w)
+        d->editorMap.insert(w, it.value());
+    return w;
+}
+
+QWidget *TQEditorFactory::createNativeEditor(const TQAbstractRecordTypeDef *recordDef, int nativeType, QWidget *parent) const
+{
+    FieldMap::iterator it = d->nativeMap.find(FieldKey(recordDef, nativeType));
+    if(it == d->nativeMap.end())
+        return 0;
+    QWidget *w = it.value()->createWidget(parent);
+    if(w)
+        d->editorMap.insert(w, it.value());
+    return w;
+}
+
+QWidget *TQEditorFactory::createFieldEditor(const TQAbstractRecordTypeDef *recordDef, int vid, QWidget *parent) const
+{
+    FieldMap::iterator it = d->fieldMap.find(FieldKey(recordDef, vid));
+    if(it == d->fieldMap.end())
+        return 0;
+    QWidget *w = it.value()->createWidget(parent);
+    if(w)
+        d->editorMap.insert(w, it.value());
+    return w;
+}
+
+void TQEditorFactory::registerSimpleEditor(const TQAbstractRecordTypeDef *recordDef, int simpleType, QItemEditorCreatorBase *creator)
+{
+    FieldMap::iterator it = d->simpleMap.find(FieldKey(recordDef, simpleType));
+    if(it != d->simpleMap.end())
+    {
+        QItemEditorCreatorBase *old = it.value();
+        d->simpleMap.erase(it);
+        delete old;
+    }
+    d->simpleMap.insert(FieldKey(recordDef, simpleType), creator);
+}
+
+void TQEditorFactory::registerNativeEditor(const TQAbstractRecordTypeDef *recordDef, int nativeType, QItemEditorCreatorBase *creator)
+{
+    FieldMap::iterator it = d->nativeMap.find(FieldKey(recordDef, nativeType));
+    if(it != d->nativeMap.end())
+    {
+        QItemEditorCreatorBase *old = it.value();
+        d->nativeMap.erase(it);
+        delete old;
+    }
+    d->nativeMap.insert(FieldKey(recordDef, nativeType), creator);
+}
+
+void TQEditorFactory::registerFieldEditor(const TQAbstractRecordTypeDef *recordDef, int vid, QItemEditorCreatorBase *creator)
+{
+    FieldMap::iterator it = d->fieldMap.find(FieldKey(recordDef, vid));
+    if(it != d->fieldMap.end())
+    {
+        QItemEditorCreatorBase *old = it.value();
+        d->fieldMap.erase(it);
+        delete old;
+    }
+    d->fieldMap.insert(FieldKey(recordDef, vid), creator);
+}
+
+QItemEditorCreatorBase *TQEditorFactory::editorCreator(QWidget *editor) const
+{
+    return d->editorMap.value(editor);
+}
+
+QByteArray TQEditorFactory::valuePropertyName(QWidget *editor) const
+{
+    QByteArray name;
+    QItemEditorCreatorBase *creator = editorCreator(editor);
+    if(creator)
+        name = creator->valuePropertyName();
+    if(name.isEmpty())
+        name = editor->metaObject()->userProperty().name();
+    return name;
+}
+
+void TQEditorFactory::editorDestroyed(QObject *editor)
+{
+    QWidget *w = qobject_cast<QWidget*>(editor);
+    if(w)
+        d->editorMap.remove(w);
+}
+
+/*!
+  ====================================================================================
+ * \brief TTDelegate::TTDelegate
+ * \param parent
+ * ===================================================================================
+ */
 TTDelegate::TTDelegate(QObject *parent) :
     QStyledItemDelegate(parent)
 {
@@ -12,10 +151,20 @@ TTDelegate::TTDelegate(QObject *parent) :
 
 QWidget *TTDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
+    /*
+    QWidget *ed = QStyledItemDelegate::createEditor(parent, option, index);
+    return ed;
+    */
+
+
     TTItemEditor *te = (TTItemEditor*)(TTItemEditor::createEditor(parent, panel, option, index));
     connect(te,SIGNAL(resetItem(QString)),this,SLOT(onToolBtn()));
     connect(te,SIGNAL(clearItem(QString)),this,SLOT(onToolBtn()));
+    QWidget *sub = createSubEditor(index, te);
+    connect(sub,SIGNAL(destroyed(QObject*)),SLOT(editorDestroyed(QObject*)));
+    te->setSubEditor(sub);
     return te;
+
     /*
     QComboBox *cb;
     QLineEdit *le;
@@ -58,13 +207,113 @@ QWidget *TTDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &o
     */
 }
 
+QWidget * TTDelegate::createSubEditor(const QModelIndex &index, QWidget *parent) const
+{
+    TQAbstractFieldType fdef = fieldDef(index);
+    QWidget *res = 0;
+    if(fdef.hasCustomFieldEditor())
+    {
+        res = fdef.createFieldEditor(parent);
+        /*
+        if(subeditor)
+        {
+            isCustomEditor = true;
+            QHBoxLayout *lay = new QHBoxLayout(this);
+            lay->setContentsMargins(0,0,0,0);
+            lay->setSpacing(0);
+            lay->addWidget(subeditor);
+            return;
+        }
+        */
+    }
+    if(res)
+        return res;
+    TQEditorFactory *factory = editorFactory();
+    res = factory->createFieldEditor(fdef.recordDef(), fdef.virtualID(), parent);
+    if(res)
+        return res;
+    res = factory->createNativeEditor(fdef.recordDef(), fdef.nativeType(), parent);
+    if(res)
+        return res;
+    res = factory->createSimpleEditor(fdef.recordDef(), fdef.simpleType(), parent);
+    if(res)
+        return res;
+    TQChoiceEditor *ce;
+    QLineEdit *le;
+    QSpinBox *sb;
+    TQDateTimeFieldEdit *dt;
+    TQChoiceArrayEdit *mc;
+    QStringList sl;
+    int type = fdef.simpleType(); // panel->fieldRow(index.row()).fieldType;
+    switch(type)
+    {
+    case TQ::TQ_FIELD_TYPE_USER:
+    case TQ::TQ_FIELD_TYPE_CHOICE:
+        ce = new TQChoiceEditor(parent);
+        ce->setField(fdef.recordDef(), fdef.virtualID());
+//        cb = new QComboBox(parent);
+//        sl = fdef.choiceStringList(true);
+//        cb->addItems(sl);
+//        cb->setEditable(false);
+//        cb->setInsertPolicy(QComboBox::NoInsert);
+        return ce;
+    case TQ::TQ_FIELD_TYPE_STRING:
+        le = new QLineEdit(parent);
+        return le;
+
+    case TQ::TQ_FIELD_TYPE_NUMBER:
+        sb = new QSpinBox(parent);
+        sb->setMinimum(fdef.minValueInt());
+        sb->setMaximum(fdef.maxValueInt());
+        //sb->setMaximum(100);
+        return sb;
+    case TQ::TQ_FIELD_TYPE_DATE:
+        dt = new TQDateTimeFieldEdit(parent);
+        dt->setDisplayFormat(fdef.recordDef()->dateTimeFormat());
+        dt->setMinimumDateTime(fdef.minValue().toDateTime());
+//        dt->setDisplayFormat(TT_DATETIME_FORMAT);
+        return dt;
+    case TQ::TQ_FIELD_TYPE_ARRAY:
+        mc = new TQChoiceArrayEdit(parent, fdef.name());
+        foreach(TQChoiceItem item, fdef.choiceList())
+        {
+            mc->addItem(item.displayText, false);
+        }
+        return mc;
+//    case TRK_FIELD_TYPE_SUBMITTER:
+//    case TRK_FIELD_TYPE_OWNER:
+//    case TRK_FIELD_TYPE_USER:
+//        cb = new QComboBox(parent);
+//        cb->addItems(fdef->choiceStringList());
+//        cb->setEditable(false);
+//        return cb;
+    //case TRK_FIELD_TYPE_ELAPSED_TIME:
+    }
+    QVariant::Type t = static_cast<QVariant::Type>(index.data(Qt::EditRole).userType());
+    return factory->createEditor(t, parent);
+}
+
+TQAbstractFieldType TTDelegate::fieldDef(const QModelIndex &index) const
+{
+    return panel->fieldDef(index.row());
+
+}
+
+
+
 void TTDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
 {
     TTItemEditor* te = qobject_cast<TTItemEditor*>(editor);
     if(te)
     {
-        te->setEditorData(index);
+        QWidget *sub = te->subEditor();
+        TQEditorFactory *factory = editorFactory();
+        QByteArray name = factory->valuePropertyName(sub);
+        sub->setProperty(name.constData(), index.data(Qt::UserRole));
+//        te->setEditorData(index);
     }
+    else
+        QStyledItemDelegate::setEditorData(editor, index);
     /*
     QLineEdit *ed;
     QPlainTextEdit *pe;
@@ -97,8 +346,18 @@ void TTDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const 
     TTItemEditor* te = qobject_cast<TTItemEditor*>(editor);
     if(te)
     {
-        te->setModelData(index);
+        TQAbstractFieldType fdef = fieldDef(index);
+        if(!fdef.isValid())
+            return;
+        QString fieldName = fdef.name();
+        QWidget *sub = te->subEditor();
+        TQEditorFactory *factory = editorFactory();
+        QByteArray name = factory->valuePropertyName(sub);
+        panel->setFieldValue(fieldName, sub->property(name));
+//        te->setModelData(index);
     }
+    else
+        QStyledItemDelegate::setModelData(editor, model, index);
     /*
     QLineEdit *ed;
     QPlainTextEdit *pe;
@@ -158,6 +417,11 @@ QSize TTDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex
         return QStyledItemDelegate::sizeHint(option, index);
 }
 
+TQEditorFactory *TTDelegate::editorFactory() const
+{
+    return ttglobal()->mainProc()->fieldEditorFactory();
+}
+
 void TTDelegate::assignToPanel(ModifyPanel *apanel)
 {
     panel = apanel;
@@ -171,19 +435,25 @@ void TTDelegate::onToolBtn()
     emit closeEditor(editor);
 }
 
+void TTDelegate::editorDestroyed(QObject *editor)
+{
+    editorFactory()->editorDestroyed(editor);
+}
 
+// ================= TTItemEditor ========================
 TTItemEditor::TTItemEditor(QWidget *parent, ModifyPanel *apanel, const QString &itemName)
-    : QWidget(parent), panel(apanel)
+    : QWidget(parent), panel(apanel), subeditor(0), btnPlace(0)
 {
     this->itemName = itemName;
     connect(this,SIGNAL(resetItem(QString)),panel,SLOT(resetField(QString)));
     connect(this,SIGNAL(clearItem(QString)),panel,SLOT(clearField(QString)));
+    initInternal();
 }
 
-QWidget *TTItemEditor::createEditor(QWidget *parent, ModifyPanel *apanel, const QStyleOptionViewItem &option, const QModelIndex &index)
+QWidget *TTItemEditor::createEditor(QWidget *parent, ModifyPanel *apanel,
+                                    const QStyleOptionViewItem &option, const QModelIndex &index)
 {
     TTItemEditor *editor = new TTItemEditor(parent, apanel, apanel->fieldName(index));
-    editor->initInternal(option, index);
     return editor;
 }
 
@@ -260,28 +530,119 @@ void TTItemEditor::setModelData(const QModelIndex &index)
             panel->setFieldValue(fieldName,QDateTime());
             */
     }
+    else
+    {
+        QString displayValue = subeditor->property("text").toString();
+        panel->setFieldValue(fieldName,  fdef.displayToValue(displayValue));
+    }
 }
 
+void TTItemEditor::setSubEditor(QWidget *editor)
+{
+    if(subeditor == editor)
+        return;
+    if(subeditor)
+        delete subeditor;
+    subeditor = editor;
+    if(subeditor)
+    {
+        lay->insertWidget(0, subeditor);
+        setFocusProxy(subeditor);
+    }
+}
 
+QWidget *TTItemEditor::subEditor()
+{
+    return subeditor;
+}
+
+bool TTItemEditor::event(QEvent *ev)
+{
+    return QWidget::event(ev);
+}
+
+bool TTItemEditor::eventFilter(QObject *obj, QEvent *ev)
+{
+    if(obj == win && ev->type() == QEvent::UpdateRequest && isVisible())
+        showPanel();
+    return QWidget::eventFilter(obj, ev);
+}
+
+void TTItemEditor::showEvent(QShowEvent *ev)
+{
+    showPanel();
+    if(isToolBar())
+        win->installEventFilter(this);
+    return QWidget::showEvent(ev);
+}
+
+void TTItemEditor::hideEvent(QHideEvent *ev)
+{
+    btnPlace->hide();
+    if(isToolBar())
+        win->removeEventFilter(this);
+    return QWidget::hideEvent(ev);
+}
+
+void TTItemEditor::showPanel()
+{
+    if(!btnPlace)
+        return;
+    if(isToolBar())
+    {
+        btnPlace->show();
+        return;
+    }
+    QRect thisRect = QRect(QPoint(0,0),size());
+//    QRect screen = d->popupGeometry(QApplication::desktop()->screenNumber(this));
+    QPoint below = mapToGlobal(thisRect.bottomRight());
+//    int belowHeight = screen.bottom() - below.y();
+    QPoint above = mapToGlobal(thisRect.topRight());
+//    int aboveHeight = above.y() - screen.y();
+//    bool boundToScreen = !window()->testAttribute(Qt::WA_DontShowOnScreen);
+
+    QSize s = btnPlace->size();
+//    below -= QPoint(s.width(), 0);
+    QPoint p = above;
+    p -= QPoint(s.width(), s.height());
+    QRect rec =  QRect(p, above);
+//    QRect rec = btnPlace->geometry();
+//    rec.setTopLeft(above);
+//    rec.setWidth(1);
+//    rec.setHeight(1);
+//    btnPlace->setGeometry(rec);
+    btnPlace->move(p);
+    btnPlace->show();
+    btnPlace->raise();
+    QApplication::processEvents();
+
+    s = btnPlace->size();
+    p = above;
+    p -= QPoint(s.width(), s.height());
+    rec =  QRect(p, above);
+    btnPlace->move(p);
+    QApplication::processEvents();
+}
+
+/*
 QWidget * TTItemEditor::createSubEditor(TQAbstractFieldType &fdef)
 {
-    QComboBox *cb;
+    TQChoiceEditor *cb;
     QLineEdit *le;
     QSpinBox *sb;
     TQDateTimeFieldEdit *dt;
-    TQMultiComboBox *mc;
-//    QWidget *res;
+    TQChoiceArrayEdit *mc;
     QStringList sl;
     int type = fdef.simpleType(); // panel->fieldRow(index.row()).fieldType;
     switch(type)
     {
     case TQ::TQ_FIELD_TYPE_USER:
     case TQ::TQ_FIELD_TYPE_CHOICE:
-        cb = new QComboBox(this);
-        sl = fdef.choiceStringList(true);
-        cb->addItems(sl);
-        cb->setEditable(false);
-        cb->setInsertPolicy(QComboBox::NoInsert);
+        cb = new TQChoiceEditor(this);
+//        sl = fdef.choiceStringList(true);
+//        cb->addItems(sl);
+//        cb->setEditable(false);
+//        cb->setInsertPolicy(QComboBox::NoInsert);
         return cb;
     case TQ::TQ_FIELD_TYPE_STRING:
         le = new QLineEdit(this);
@@ -300,27 +661,27 @@ QWidget * TTItemEditor::createSubEditor(TQAbstractFieldType &fdef)
 //        dt->setDisplayFormat(TT_DATETIME_FORMAT);
         return dt;
     case TQ::TQ_FIELD_TYPE_ARRAY:
-        mc = new TQMultiComboBox(this);
+        mc = new TQChoiceArrayEdit(this, fdef.name());
         foreach(TQChoiceItem item, fdef.choiceList())
         {
             mc->addItem(item.displayText, false);
         }
         return mc;
-        /*
-    case TRK_FIELD_TYPE_SUBMITTER:
-    case TRK_FIELD_TYPE_OWNER:
-    case TRK_FIELD_TYPE_USER:
-        cb = new QComboBox(parent);
-        cb->addItems(fdef->choiceStringList());
-        cb->setEditable(false);
-        return cb;
-        */
+
+//    case TRK_FIELD_TYPE_SUBMITTER:
+//    case TRK_FIELD_TYPE_OWNER:
+//    case TRK_FIELD_TYPE_USER:
+//        cb = new QComboBox(parent);
+//        cb->addItems(fdef->choiceStringList());
+//        cb->setEditable(false);
+//        return cb;
+
 
     //case TRK_FIELD_TYPE_ELAPSED_TIME:
     }
-    //return new QPlainTextEdit(parent);
     return new QLineEdit(this);
 }
+*/
 
 void TTItemEditor::doResetClick()
 {
@@ -334,45 +695,37 @@ void TTItemEditor::doClearClick()
 }
 
 
-void TTItemEditor::initInternal(const QStyleOptionViewItem &option, const QModelIndex &index)
+void TTItemEditor::initInternal()
 {
-    TQAbstractFieldType fdef = panel->fieldDef(index.row());
-    subeditor = 0;
-    if(fdef.hasCustomFieldEditor())
-    {
-        subeditor = fdef.createFieldEditor(this);
-        /*
-        if(subeditor)
-        {
-            isCustomEditor = true;
-            QHBoxLayout *lay = new QHBoxLayout(this);
-            lay->setContentsMargins(0,0,0,0);
-            lay->setSpacing(0);
-            lay->addWidget(subeditor);
-            return;
-        }
-        */
-    }
-    if(!subeditor)
-        subeditor = createSubEditor(fdef);
-    isCustomEditor = false;
-    clearBtn = new QToolButton(this);
+    win = window();
+    btnPlace = new QFrame(0/*, Qt::ToolTip*/);
+    btnPlace->setGeometry(0,0,10,10);
+
+    clearBtn = new QToolButton(btnPlace);
     clearBtn->setContentsMargins(0,0,0,0);
     clearBtn->setIcon(QIcon(":/images/cleartext.png"));
-    resetBtn = new QToolButton(this);
+    resetBtn = new QToolButton(btnPlace);
     resetBtn->setContentsMargins(0,0,0,0);
     resetBtn->setIcon(QIcon(":/images/resetproperty.png"));
-    QHBoxLayout *lay = new QHBoxLayout(this);
+    QHBoxLayout *btnLay = new QHBoxLayout(btnPlace);
+    btnLay->setMargin(0);
+    btnLay->setSpacing(0);
+    btnLay->addWidget(clearBtn);
+    btnLay->addWidget(resetBtn);
+
+    lay = new QHBoxLayout(this);
     lay->setContentsMargins(0,0,0,0);
     lay->setSpacing(0);
-    lay->addWidget(subeditor);
-    lay->addWidget(clearBtn);
-    lay->addWidget(resetBtn);
-    setLayout(lay);
+    lay->addWidget(btnPlace);
+//    setLayout(lay);
     //setVisible(true);
-    setFocusProxy(subeditor);
     connect(clearBtn,SIGNAL(clicked()),this,SLOT(doClearClick()));
     connect(resetBtn,SIGNAL(clicked()),this,SLOT(doResetClick()));
+}
+
+bool TTItemEditor::isToolBar()
+{
+    return ((int)btnPlace->windowFlags() & Qt::Popup | Qt::Tool | Qt::ToolTip);
 }
 
 //===================================== TQDateTimeFieldEdit ======================================
@@ -404,4 +757,60 @@ QDateTime TQDateTimeFieldEdit::dateTime()
     return dt;
 }
 
+class TQChoiceEditorPrivate
+{
+public:
+    TQChoiceList list;
+    const TQAbstractRecordTypeDef *recordDef;
+    int vid;
+};
+
+TQChoiceEditor::TQChoiceEditor(QWidget *parent)
+    : QComboBox(parent)
+{
+    d = new TQChoiceEditorPrivate();
+    setEditable(false);
+    setInsertPolicy(QComboBox::NoInsert);
+}
+
+TQChoiceEditor::~TQChoiceEditor()
+{
+    delete d;
+}
+
+QVariant TQChoiceEditor::currentValue() const
+{
+    int i = currentIndex();
+    if(i<0 || i>=d->list.size())
+        return d->recordDef->displayToValue(d->vid, currentText());
+    tqDebug() << d->list[i].fieldValue.toString();
+    return d->list[i].fieldValue;
+}
+
+void TQChoiceEditor::setCurrentValue(const QVariant &value)
+{
+    tqDebug() << "setCurrentValue" << value.toString();
+    for(int i = 0; i<d->list.size(); i++)
+    {
+        const TQChoiceItem &item = d->list[i];
+        if(value == item.fieldValue)
+        {
+            setCurrentIndex(i);
+            return;
+        }
+    }
+    setEditText(d->recordDef->valueToDisplay(d->vid, value));
+}
+
+void TQChoiceEditor::setField(const TQAbstractRecordTypeDef *recordDef, int vid)
+{
+    clear();
+    clearEditText();
+    QString table = recordDef->fieldChoiceTable(vid);
+    d->recordDef = recordDef;
+    d->vid = vid;
+    d->list = recordDef->choiceTable(table);
+    foreach(const TQChoiceItem &item, d->list)
+        addItem(item.displayText);
+}
 

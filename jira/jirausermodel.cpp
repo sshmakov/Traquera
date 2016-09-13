@@ -1,6 +1,7 @@
 #include "jirausermodel.h"
 #include <tqbase.h>
 #include <jiradb.h>
+#include <tqdebug.h>
 
 class JiraUserModelPrivate
 {
@@ -30,7 +31,7 @@ QVariant JiraUserModel::data(const QModelIndex &index, int role) const
         return QVariant();
     if(role == Qt::DisplayRole)
         return d->users.value(index.row());
-    if(role == Qt::EditRole)
+    if(role == Qt::EditRole || role == Qt::UserRole)
         return d->keys.value(index.row());
     return QVariant();
 }
@@ -63,10 +64,11 @@ void JiraUserModel::refresh(const QString &firstChars)
             QVariantMap userMap = v.toMap();
             QString key = userMap.value("key").toString();
             QString displayName = userMap.value("displayName").toString();
+            tqDebug() << "key:" << key << "displayName:" << displayName;
             d->keys.append(key);
             d->users.append(displayName);
-            d->keys.append(displayName);
-            d->users.append(displayName);
+//            d->keys.append(displayName);
+//            d->users.append(displayName);
 //            d->prj->appendUserToKnown(userMap);
         }
     }

@@ -2,16 +2,39 @@
 #include "mainwindow.h"
 #include "ttrecwindow.h"
 #include "activefactory.h"
+#include "ttdelegate.h"
 
 #include <QtCore>
 
 MainProc *mainProc;
 
+class MainProcPrivate
+{
+public:
+    TQEditorFactory *factory;
+    MainProcPrivate()
+    {
+        factory = new TQEditorFactory();
+        QItemEditorCreatorBase *creator;
+        creator = new QStandardItemEditorCreator<TQDateTimeFieldEdit>();
+        factory->registerEditor(QVariant::DateTime, creator);
+    }
+    ~MainProcPrivate()
+    {
+        delete factory;
+    }
+};
+
 // =========================================================================
 MainProc::MainProc(MainWindow *win)
-    : mainWin(win)
+    : mainWin(win), d(new MainProcPrivate())
 {
     mainProc = this;
+}
+
+MainProc::~MainProc()
+{
+    delete d;
 }
 
 QMainWindow *MainProc::mainWindow()
@@ -201,5 +224,10 @@ QString MainProc::makeXmlQuery(QXmlQuery *xquery, const QString &xqCodePath, TQR
 
     xquery->evaluateTo(&page);
     return page;
+}
+
+TQEditorFactory *MainProc::fieldEditorFactory() const
+{
+    return d->factory;
 }
 

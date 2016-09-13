@@ -141,6 +141,11 @@ QWidget *TQBaseRecordTypeDef::createCustomEditor(int vid, QWidget *parent) const
     return 0;
 }
 
+TQFieldDelegate *TQBaseRecordTypeDef::fieldDelegate(int vid) const
+{
+    return 0;
+}
+
 QStringList TQBaseRecordTypeDef::noteTitleList() const
 {
     return QStringList();

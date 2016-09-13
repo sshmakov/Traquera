@@ -105,7 +105,7 @@ MainWindow::MainWindow(QWidget *parent)
     selectionTimer = new QTimer(this);
     selectionTimer->setSingleShot(true);
     selectionTimer->setInterval(0);
-    connect(selectionTimer,SIGNAL(timeout()),this,SLOT(refreshSelection()));
+//    connect(selectionTimer,SIGNAL(timeout()),this,SLOT(refreshSelection()));
     connect(ttglobal(),SIGNAL(viewOpened(QWidget*,TQViewController*)),SLOT(slotViewOpened(QWidget*,TQViewController*)));
 
     ttglobal()->loadPlugins();
@@ -141,7 +141,7 @@ MainWindow::MainWindow(QWidget *parent)
     tabWidget->setCornerWidget(closeBtn);
 
 	connect(tabWidget,SIGNAL(tabCloseRequested(int)),this,SLOT(closeTab(int)));
-    connect(tabWidget,SIGNAL(currentChanged(int)),this,SLOT(on_tabChanged(int)),Qt::QueuedConnection);
+    connect(tabWidget,SIGNAL(currentChanged(int)),this,SLOT(tabChanged(int)),Qt::QueuedConnection);
     connect(closeBtn,SIGNAL(clicked()),this,SLOT(closeCurTab()));
 
     //createConnection();
@@ -1114,7 +1114,7 @@ QueryPage *MainWindow::createNewPage(const QString &title)
 	QueryPage *page=new QueryPage();
     tabWidget->setCurrentIndex(tabWidget->insertTab(tabWidget->count()-1, page, QIcon(":/images/trackerTable.png"), title));
     //page->setPlanModel(&planModel);
-	connect(page,SIGNAL(changedQuery(QString,QString)),this,SLOT(on_changedQuery(QString,QString)));
+    connect(page,SIGNAL(changedQuery(QString,QString)),this,SLOT(slotChangedQuery(QString,QString)));
     connect(page,SIGNAL(selectedRecordsChanged()),this,SLOT(curSelectionChanged()));
     connect(page,SIGNAL(openRecordsClicked(QSet<int>)),this,SLOT(slotOpenRecordsClicked(QSet<int>)));
     return page;
@@ -1740,17 +1740,13 @@ void MainWindow::on_actionOpen_Query_triggered()
 {
     openCurItem(true);
 }
-void MainWindow::on_queriesView_customContextMenuRequested(const QPoint &pos)
-{
-    //menuQueryList->popup(queriesView->mapToGlobal(pos));
-}
 
 void MainWindow::on_actionOpen_QueryInNew_triggered()
 {
     openCurItem(false);
 }
 
-void MainWindow::on_changedQuery(const QString & /*projectName*/, const QString & queryName)
+void MainWindow::slotChangedQuery(const QString & /*projectName*/, const QString & queryName)
 {
     QueryPage *qpage = qobject_cast<QueryPage *>(sender());
     if(!qpage)
@@ -1762,7 +1758,7 @@ void MainWindow::on_changedQuery(const QString & /*projectName*/, const QString 
         setCurrentProject(qpage->project());
 }
 
-void MainWindow::on_tabChanged(int tab)
+void MainWindow::tabChanged(int tab)
 {
     QObject *w = tabWidget->currentWidget();
     QueryPage *qpage = qobject_cast<QueryPage *>(w);
@@ -1802,10 +1798,10 @@ void MainWindow::on_actionPrint_Preview_triggered()
     qpage->printPreview();
 }
 
-void MainWindow::on_btnDBMS_clicked()
-{
-    readDbms();
-}
+//void MainWindow::on_btnDBMS_clicked()
+//{
+//    readDbms();
+//}
 
 void MainWindow::on_journalView_doubleClicked(const QModelIndex &index)
 {
@@ -2439,4 +2435,9 @@ void MainWindow::on_actionProjectOptions_triggered()
     TQProjectOptionsDialog dlg;
     dlg.setProject(selectedTreeItem.prj);
     dlg.exec();
+}
+
+void MainWindow::on_actionCopy_triggered()
+{
+
 }
