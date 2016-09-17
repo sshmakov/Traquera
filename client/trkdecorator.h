@@ -123,9 +123,9 @@ protected:
 public:
     explicit TQFieldEdit(const QString &fieldName);
     virtual void connectToRecord(TQRecord *record, int fieldVid);
-    virtual void clearValue() = 0;
-    virtual void setValue(const QVariant &value) = 0;
-    virtual QVariant value() const = 0;
+    virtual void clearValues() = 0;
+    virtual void setValues(const QVariant &values) = 0;
+    virtual QVariant values() const = 0;
     virtual void setReadOnly(bool readOnly) = 0;
     void valueChanged(const QString &fieldName, const QVariant &newValue);
 };
@@ -136,9 +136,9 @@ class TQStringEdit: public QLineEdit, public TQFieldEdit
     Q_INTERFACES(TQFieldEdit)
 public:
     explicit TQStringEdit(QWidget *parent, const QString &fieldName);
-    virtual void TQFieldEdit::clearValue();
-    virtual void setValue(const QVariant &value);
-    virtual QVariant value() const;
+    virtual void TQFieldEdit::clearValues();
+    virtual void setValues(const QVariant &values);
+    virtual QVariant values() const;
     virtual void setReadOnly(bool readOnly);
 protected slots:
     void onTextChanged(const QString &text);
@@ -150,9 +150,9 @@ class TQChoiceBox: public QComboBox, public TQFieldEdit
     Q_INTERFACES(TQFieldEdit)
 public:
     explicit TQChoiceBox(QWidget *parent, const QString &fieldName);
-    virtual void clearValue();
-    virtual void setValue(const QVariant &value);
-    virtual QVariant value() const;
+    virtual void clearValues();
+    virtual void setValues(const QVariant &values);
+    virtual QVariant values() const;
     virtual void setReadOnly(bool readOnly);
 protected slots:
     void onEditTextChanged(const QString &text);
@@ -164,24 +164,29 @@ class TQDateTimeEdit: public QDateTimeEdit, public TQFieldEdit
     Q_INTERFACES(TQFieldEdit)
 public:
     explicit TQDateTimeEdit(QWidget *parent, const QString &fieldName);
-    virtual void clearValue();
-    virtual void setValue(const QVariant &value);
-    virtual QVariant value() const;
+    virtual void clearValues();
+    virtual void setValues(const QVariant &values);
+    virtual QVariant values() const;
     virtual void setReadOnly(bool readOnly);
 protected slots:
-    void onDateTimeChanged(const QDateTime &value);
+    void onDateTimeChanged(const QDateTime &values);
 };
 
-class TQChoiceArrayEdit: public TQMultiComboBox, public TQFieldEdit
+class TQChoiceArrayEditPrivate;
+class TQChoiceArrayEdit: public TQMultiComboBox
 {
     Q_OBJECT
-    Q_INTERFACES(TQFieldEdit)
-    Q_PROPERTY(QVariant value READ value WRITE setValue USER true)
+//    Q_INTERFACES(TQFieldEdit)
+    Q_PROPERTY(QVariantList values READ values WRITE setValues USER true)
+private:
+    TQChoiceArrayEditPrivate *d;
 public:
-    explicit TQChoiceArrayEdit(QWidget *parent, const QString &fieldName);
-    virtual void clearValue();
-    virtual void setValue(const QVariant &value);
-    virtual QVariant value() const;
+    explicit TQChoiceArrayEdit(QWidget *parent);
+    ~TQChoiceArrayEdit();
+    void setFieldDef(const TQAbstractFieldType &fieldDef);
+    virtual void clearValues();
+    virtual void setValues(const QVariantList &values);
+    virtual QVariantList values() const;
     virtual void setReadOnly(bool readOnly);
 
 };

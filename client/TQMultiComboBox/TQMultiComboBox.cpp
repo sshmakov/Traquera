@@ -140,7 +140,7 @@ void TQMultiComboBox::hidePopup()
 }
 
 
-void TQMultiComboBox::addItem ( const QString & text, bool checked)
+int TQMultiComboBox::addItem ( const QString & text, bool checked)
 {
     QListWidgetItem* wi = new QListWidgetItem(text);
     wi->setFlags(wi->flags() | Qt::ItemIsUserCheckable);
@@ -149,6 +149,7 @@ void TQMultiComboBox::addItem ( const QString & text, bool checked)
     else
         wi->setCheckState(Qt::Unchecked);
     vlist_.addItem(wi);
+    return vlist_.count()-1;
 }
 
 void TQMultiComboBox::clear()
@@ -183,11 +184,19 @@ QString TQMultiComboBox::itemText(int row)
 }
 
 
-QVariant TQMultiComboBox::itemData(int row)
+Qt::CheckState TQMultiComboBox::itemCheckState(int row)
 {
     QListWidgetItem* item = vlist_.item(row);
-    if (item->checkState() == Qt::Checked) return QVariant(true);
-    return QVariant(false);
+    if(!item)
+        return Qt::Unchecked;
+    return item->checkState();
+}
+
+void TQMultiComboBox::setItemChecked(int row, Qt::CheckState state)
+{
+    QListWidgetItem* item = vlist_.item(row);
+    if(item)
+        item->setCheckState(state);
 }
 
 

@@ -274,11 +274,8 @@ QWidget * TTDelegate::createSubEditor(const QModelIndex &index, QWidget *parent)
 //        dt->setDisplayFormat(TT_DATETIME_FORMAT);
         return dt;
     case TQ::TQ_FIELD_TYPE_ARRAY:
-        mc = new TQChoiceArrayEdit(parent, fdef.name());
-        foreach(TQChoiceItem item, fdef.choiceList())
-        {
-            mc->addItem(item.displayText, false);
-        }
+        mc = new TQChoiceArrayEdit(parent);
+        mc->setFieldDef(fdef);
         return mc;
 //    case TRK_FIELD_TYPE_SUBMITTER:
 //    case TRK_FIELD_TYPE_OWNER:
@@ -710,12 +707,14 @@ void TTItemEditor::initInternal()
     QHBoxLayout *btnLay = new QHBoxLayout(btnPlace);
     btnLay->setMargin(0);
     btnLay->setSpacing(0);
+    btnLay->setContentsMargins(0,0,0,0);
     btnLay->addWidget(clearBtn);
     btnLay->addWidget(resetBtn);
 
     lay = new QHBoxLayout(this);
     lay->setContentsMargins(0,0,0,0);
     lay->setSpacing(0);
+    btnPlace->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
     lay->addWidget(btnPlace);
 //    setLayout(lay);
     //setVisible(true);

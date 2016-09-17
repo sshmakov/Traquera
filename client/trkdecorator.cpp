@@ -1,3 +1,4 @@
+#include "trkdecorator.h"
 #include <QtGui>
 #include <QStringList>
 #include <QDomElement>
@@ -8,7 +9,6 @@
 //#include <QHeaderView>
 //#include <QScrollArea>
 //#include "trkview.h"
-#include "trkdecorator.h"
 #include "settings.h"
 #include "ttglobal.h"
 #include "querypage.h"
@@ -468,17 +468,17 @@ TQStringEdit::TQStringEdit(QWidget *parent, const QString &fieldName)
     connect(this,SIGNAL(textChanged(QString)),this,SLOT(onTextChanged(QString)));
 }
 
-void TQStringEdit::clearValue()
+void TQStringEdit::clearValues()
 {
     clear();
 }
 
-void TQStringEdit::setValue(const QVariant &value)
+void TQStringEdit::setValues(const QVariant &value)
 {
     setText(value.toString());
 }
 
-QVariant TQStringEdit::value() const
+QVariant TQStringEdit::values() const
 {
     return QVariant(text());
 }
@@ -507,17 +507,17 @@ TQChoiceBox::TQChoiceBox(QWidget *parent, const QString &fieldName)
     connect(this,SIGNAL(currentIndexChanged(QString)),this,SLOT(onEditTextChanged(QString)));
 }
 
-void TQChoiceBox::clearValue()
+void TQChoiceBox::clearValues()
 {
     setEditText("");
 }
 
-void TQChoiceBox::setValue(const QVariant &value)
+void TQChoiceBox::setValues(const QVariant &value)
 {
     setEditText(value.toString());
 }
 
-QVariant TQChoiceBox::value() const
+QVariant TQChoiceBox::values() const
 {
     return QVariant(currentText());
 }
@@ -565,9 +565,9 @@ void EditDefList::readValues()
         TQFieldEdit *ed = qobject_cast<TQFieldEdit *>(ei->edit);
         if(ed)
             if(rec)
-                ed->setValue(rec->value(ei->title));
+                ed->setValues(rec->value(ei->title));
             else
-                ed->clearValue();
+                ed->clearValues();
     }
     updateState();
 }
@@ -627,18 +627,18 @@ TQDateTimeEdit::TQDateTimeEdit(QWidget *parent, const QString &fieldName)
     setDisplayFormat(tr("dd.MM.yyyy hh:mm:ss"));
 }
 
-void TQDateTimeEdit::clearValue()
+void TQDateTimeEdit::clearValues()
 {
     clear();
 }
 
-void TQDateTimeEdit::setValue(const QVariant &value)
+void TQDateTimeEdit::setValues(const QVariant &value)
 {
     QDateTime dt = value.toDateTime();
     setDateTime(dt);
 }
 
-QVariant TQDateTimeEdit::value() const
+QVariant TQDateTimeEdit::values() const
 {
     return QVariant(dateTime());
 }
@@ -654,31 +654,65 @@ void TQDateTimeEdit::onDateTimeChanged(const QDateTime &value)
 }
 
 //============================= TQChoiceArrayEdit ===============================
-TQChoiceArrayEdit::TQChoiceArrayEdit(QWidget *parent, const QString &fieldName)
-    : TQMultiComboBox(parent), TQFieldEdit(fieldName)
+class TQChoiceArrayEditPrivate
+{
+public:
+    QVariantList values;
+    TQAbstractFieldType fieldDef;
+    TQChoiceList choices;
+//    TQChoiceArrayEditPrivate() {}
+};
+
+TQChoiceArrayEdit::TQChoiceArrayEdit(QWidget *parent)
+    : TQMultiComboBox(parent), d(new TQChoiceArrayEditPrivate())
 {
 
 }
 
-void TQChoiceArrayEdit::clearValue()
+TQChoiceArrayEdit::~TQChoiceArrayEdit()
 {
+    delete d;
+}
+
+void TQChoiceArrayEdit::setFieldDef(const TQAbstractFieldType &fieldDef)
+{
+    Q_ASSERT(&fieldDef);
+    d->fieldDef = fieldDef;
+    d->choices = d->fieldDef.choiceList();
+    foreach(TQChoiceItem item, d->choices)
+        addItem(item.displayText, false);
+}
+
+void TQChoiceArrayEdit::clearValues()
+{
+    d->values.clear();
     TQMultiComboBox::clear();
 }
 
-void TQChoiceArrayEdit::setValue(const QVariant &value)
+void TQChoiceArrayEdit::setValues(const QVariantList &values)
 {
-    QVariantList list = value.toList();
-
+    d->values = values;
+    QString display = d->fieldDef.valueToDisplay(d->values);
+    setEditText(display);
+    for(int i = 0; i<d->choices.size(); i++)
+    {
+        TQChoiceItem item = d->choices[i];
+        if(d->values.contains(item.fieldValue))
+            setItemChecked(i, Qt::Checked);
+        else
+            setItemChecked(i, Qt::Unchecked);
+    }
 }
 
-QVariant TQChoiceArrayEdit::value() const
+QVariantList TQChoiceArrayEdit::values() const
 {
-    return QVariant();
+    return d->values;
 }
 
 
 void TQChoiceArrayEdit::setReadOnly(bool readOnly)
 {
+    TQMultiComboBox::setEnabled(!readOnly);
 }
 
 void FieldGroupsDef::clear()

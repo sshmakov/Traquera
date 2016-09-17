@@ -36,7 +36,7 @@ public:
     QString displayText() const;
 
     /// add a item to the list
-    void addItem(const QString& text, bool checked);
+    int addItem(const QString& text, bool checked);
 
     void clear();
 
@@ -55,7 +55,8 @@ public:
     void setCurrentIndex(int index);
     QString currentText();
     QString itemText(int row);
-    QVariant itemData(int row);
+    Qt::CheckState itemCheckState(int row);
+    void setItemChecked(int row, Qt::CheckState state);
 
 signals:
     /// item changed
