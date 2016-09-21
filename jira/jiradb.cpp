@@ -13,6 +13,7 @@
 #include "jiraquerydialog.h"
 #include <ttglobal.h>
 #include <tqdebug.h>
+#include <QtCore>
 #include "jirafinduser.h"
 //#include <ttutils.h>
 
@@ -2447,6 +2448,23 @@ void JiraProject::storeReadedField(JiraRecord *rec, const JiraRecTypeDef *rdef, 
             QString display = value.toMap().value("name").toString();
             rec->values.insert(fvid, id);
             rec->displayValues.insert(fvid, display);
+        }
+        else if(fdef->schemaType == "array")
+        {
+            QVariantList list = value.toList();
+            QVariantList idList;
+            QStringList displayList;
+            foreach(QVariant v, list)
+            {
+//                if(v.type() == QVariant::Map)
+                QVariantMap map = v.toMap();
+                int id = map.value("id").toInt();
+                QString display = map.value("value").toString();
+                idList.append(id);
+                displayList.append(display);
+            }
+            rec->values.insert(fvid, idList);
+            rec->displayValues.insert(fvid, displayList.join(", "));
         }
         else
         {

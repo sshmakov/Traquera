@@ -12,15 +12,18 @@ TEMPLATE = lib
 DEFINES += TQGUI_LIBRARY
 
 SOURCES += tqgui.cpp \
-    tqsearchbox.cpp
+    tqsearchbox.cpp \
+    tqchoicearrayedit.cpp
 
 HEADERS += tqgui.h\
         tqgui_global.h \
-    tqsearchbox.h
+    tqsearchbox.h \
+    tqchoicearrayedit.h
 
 unix {
     target.path = /usr/lib
     INSTALLS += target
 }
-
+INCLUDEPATH = ../common
+win32:LIBS += -L../client -ltqplugapi
 DESTDIR = ../client

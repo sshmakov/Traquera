@@ -653,68 +653,6 @@ void TQDateTimeEdit::onDateTimeChanged(const QDateTime &value)
     valueChanged(field, QVariant(value));
 }
 
-//============================= TQChoiceArrayEdit ===============================
-class TQChoiceArrayEditPrivate
-{
-public:
-    QVariantList values;
-    TQAbstractFieldType fieldDef;
-    TQChoiceList choices;
-//    TQChoiceArrayEditPrivate() {}
-};
-
-TQChoiceArrayEdit::TQChoiceArrayEdit(QWidget *parent)
-    : TQMultiComboBox(parent), d(new TQChoiceArrayEditPrivate())
-{
-
-}
-
-TQChoiceArrayEdit::~TQChoiceArrayEdit()
-{
-    delete d;
-}
-
-void TQChoiceArrayEdit::setFieldDef(const TQAbstractFieldType &fieldDef)
-{
-    Q_ASSERT(&fieldDef);
-    d->fieldDef = fieldDef;
-    d->choices = d->fieldDef.choiceList();
-    foreach(TQChoiceItem item, d->choices)
-        addItem(item.displayText, false);
-}
-
-void TQChoiceArrayEdit::clearValues()
-{
-    d->values.clear();
-    TQMultiComboBox::clear();
-}
-
-void TQChoiceArrayEdit::setValues(const QVariantList &values)
-{
-    d->values = values;
-    QString display = d->fieldDef.valueToDisplay(d->values);
-    setEditText(display);
-    for(int i = 0; i<d->choices.size(); i++)
-    {
-        TQChoiceItem item = d->choices[i];
-        if(d->values.contains(item.fieldValue))
-            setItemChecked(i, Qt::Checked);
-        else
-            setItemChecked(i, Qt::Unchecked);
-    }
-}
-
-QVariantList TQChoiceArrayEdit::values() const
-{
-    return d->values;
-}
-
-
-void TQChoiceArrayEdit::setReadOnly(bool readOnly)
-{
-    TQMultiComboBox::setEnabled(!readOnly);
-}
-
 void FieldGroupsDef::clear()
 {
     groups.clear();

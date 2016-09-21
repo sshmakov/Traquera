@@ -7,6 +7,8 @@
 
 #include <QtGui>
 
+#include <../tqgui/tqchoicearrayedit.h>
+
 typedef QPair<const TQAbstractRecordTypeDef *,int> FieldKey;
 typedef QMap<FieldKey, QItemEditorCreatorBase *> FieldMap;
 
@@ -306,7 +308,8 @@ void TTDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
         QWidget *sub = te->subEditor();
         TQEditorFactory *factory = editorFactory();
         QByteArray name = factory->valuePropertyName(sub);
-        sub->setProperty(name.constData(), index.data(Qt::UserRole));
+        QVariant value = index.data(Qt::UserRole);
+        sub->setProperty(name.constData(), value);
 //        te->setEditorData(index);
     }
     else

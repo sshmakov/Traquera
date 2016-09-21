@@ -172,23 +172,4 @@ protected slots:
     void onDateTimeChanged(const QDateTime &values);
 };
 
-class TQChoiceArrayEditPrivate;
-class TQChoiceArrayEdit: public TQMultiComboBox
-{
-    Q_OBJECT
-//    Q_INTERFACES(TQFieldEdit)
-    Q_PROPERTY(QVariantList values READ values WRITE setValues USER true)
-private:
-    TQChoiceArrayEditPrivate *d;
-public:
-    explicit TQChoiceArrayEdit(QWidget *parent);
-    ~TQChoiceArrayEdit();
-    void setFieldDef(const TQAbstractFieldType &fieldDef);
-    virtual void clearValues();
-    virtual void setValues(const QVariantList &values);
-    virtual QVariantList values() const;
-    virtual void setReadOnly(bool readOnly);
-
-};
-
 #endif // TRKDECORATOR_H
