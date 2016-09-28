@@ -10,6 +10,8 @@
 #include "jira_global.h"
 #include <QtNetwork>
 
+#define JIRAPARAM_METHOD "ConnectMethod"
+
 class QNetworkReply;
 
 class QMainWindow;
@@ -167,6 +169,8 @@ protected:
     QMap<QString, int> favSearch;
     JiraFilterModel *filters;
     QMap<QString,JiraUser> knownUsers; // by name
+    QStringList systemChoices;
+    QHash<QString, TQChoiceList> systemChoicesList;
 public:
     JiraProject(TQAbstractDB *db);
     void loadDefinition();

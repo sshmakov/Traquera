@@ -16,6 +16,7 @@ JiraLogin::JiraLogin(QWidget *parent) :
 {
     ui->setupUi(this);
     d->plugin = JiraPlugin::plugin();
+    ui->cbMethod->setCurrentIndex(1);
 }
 
 /*
@@ -57,10 +58,12 @@ QString JiraLogin::connectString() const
     params.insert(DBPARAM_CLASS, "Jira");
 //    params.insert(DBPARAM_TYPE, "");
     params.insert(DBPARAM_SERVER,  ui->cbServerLink->currentText());
-    params.insert("ConnectMethod", ui->cbMethod->currentIndex());
-    params.insert(DBPARAM_USER, ui->leUser->text());
-    params.insert(DBPARAM_PASSWORD, ui->lePassword->text());
-//    params.insert("SavePassword", ui->cSavePass->isChecked());
+    params.insert(JIRAPARAM_METHOD, ui->cbMethod->currentIndex());
+    if(!ui->chAnonimus->isChecked())
+    {
+        params.insert(DBPARAM_USER, ui->leUser->text());
+        params.insert(DBPARAM_PASSWORD, ui->lePassword->text());
+    }
     params.insert(PRJPARAM_NAME,ui->cbProject->currentText());
     params.insert(PRJPARAM_AUTOLOGIN, ui->cAutoLogin->isChecked());
     QString connectString = TQJson().toString(params);
@@ -73,12 +76,16 @@ QString JiraLogin::connectSaveString() const
     params.insert(DBPARAM_CLASS, "Jira");
 //    params.insert("DBType", "");
     params.insert(DBPARAM_SERVER,  ui->cbServerLink->currentText());
-    params.insert("ConnectMethod", ui->cbMethod->currentIndex());
-    params.insert(DBPARAM_USER, ui->leUser->text());
-    if(ui->cSavePass->isChecked())
+    params.insert(JIRAPARAM_METHOD, ui->cbMethod->currentIndex());
+    if(!ui->chAnonimus->isChecked())
     {
+        params.insert(DBPARAM_USER, ui->leUser->text());
         params.insert(DBPARAM_PASSWORD, ui->lePassword->text());
-//        params.insert("SavePassword", ui->cSavePass->isChecked());
+        params.insert(DBPARAM_USER, ui->leUser->text());
+        if(ui->cSavePass->isChecked())
+        {
+            params.insert(DBPARAM_PASSWORD, ui->lePassword->text());
+        }
     }
     params.insert(PRJPARAM_NAME,ui->cbProject->currentText());
     params.insert(PRJPARAM_AUTOLOGIN, ui->cAutoLogin->isChecked());
@@ -91,9 +98,13 @@ void JiraLogin::setConnectString(const QString &string)
     TQJson parser;
     QVariantMap params = parser.toVariant(string).toMap();
     ui->cbServerLink->setEditText(params.value(DBPARAM_SERVER).toString());
-    ui->cbMethod->setCurrentIndex(params.value("ConnectMethod").toInt());
-    ui->leUser->setText(params.value(DBPARAM_USER).toString());
+    ui->cbMethod->setCurrentIndex(params.value(JIRAPARAM_METHOD,(int)JiraDB::CookieAuth).toInt());
+    QString user = params.value(DBPARAM_USER).toString().trimmed();
+    ui->leUser->setText(user);
     ui->lePassword->setText(params.value(DBPARAM_PASSWORD).toString());
+    ui->chAnonimus->setChecked(user.isEmpty());
+    ui->leUser->setEnabled(!user.isEmpty());
+    ui->lePassword->setEnabled(!user.isEmpty());
     ui->cSavePass->setChecked(params.contains(DBPARAM_PASSWORD));
     ui->cbProject->setEditText(params.value(PRJPARAM_NAME).toString());
     ui->cAutoLogin->setChecked(params.contains(PRJPARAM_AUTOLOGIN) && params.value(PRJPARAM_AUTOLOGIN).toBool());
@@ -122,4 +133,10 @@ void JiraLogin::on_tbRefreshProjects_clicked()
     ui->cbProject->addItems(projects);
     int index = projects.indexOf(text);
     ui->cbProject->setCurrentIndex(index);
+}
+
+void JiraLogin::on_chAnonimus_clicked()
+{
+    ui->leUser->setEnabled(!ui->chAnonimus->isChecked());
+    ui->lePassword->setEnabled(!ui->chAnonimus->isChecked());
 }

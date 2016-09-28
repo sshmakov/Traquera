@@ -26,6 +26,7 @@ public:
 private slots:
     void on_cbMethod_currentIndexChanged(int index);
     void on_tbRefreshProjects_clicked();
+    void on_chAnonimus_clicked();
 
 private:
     Ui::JiraLogin *ui;

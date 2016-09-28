@@ -188,7 +188,8 @@ struct JiraRecTypeDefPrivate {
     QMap<QString, int> systemNames;
     QMap<QString, int> vids;
     QMap<int, QString> roleFields;
-    QStringList systemChoices;
+//    QStringList systemChoices;
+//    QHash<QString, TQChoiceList> systemChoicesList;
     //    QHash<int,int> fIndexByVid;
     QStringList schemaTypes;
     QMap<QString, int> nativeTypes; // schema type to native type
@@ -230,6 +231,7 @@ JiraRecTypeDef::JiraRecTypeDef(JiraProject *project)
     d->roleFields.insert(TQAbstractRecordTypeDef::OwnerField, "assignee");
     d->roleFields.insert(TQAbstractRecordTypeDef::IdFriendlyField,"key");
 
+    /*
     d->systemChoices
             << "status"
             << "issuetype"
@@ -238,6 +240,7 @@ JiraRecTypeDef::JiraRecTypeDef(JiraProject *project)
             << "project"
 //            << "issueLinkTypes"
                ;
+               */
 }
 
 JiraRecTypeDef::JiraRecTypeDef(JiraRecTypeDef *src)
@@ -695,7 +698,8 @@ int JiraRecTypeDef::schemaToSimpleType(const QString &schemaType)
 JiraDB::JiraDB(QObject *parent)
     : TQAbstractDB(parent), webForm(0), oa(new TQOAuth(this)), parser(new TQJson(this)),
       d(new JiraDBPrivate()),
-      timeOutSecs(10)
+      timeOutSecs(10),
+      connectMethod(CookieAuth)
 {
     parser->setCharset("UTF-8");
     man =
@@ -891,7 +895,8 @@ QVariant JiraDB::sendRequest(const QString &method, const QUrl &url, QVariantMap
         if(false && d->isLogged)
         {
             QVariantMap headers = bodyMap.value("headers", QVariantMap()).toMap();
-            headers.insert("cookie", QString("JSESSIONID=") + d->session.jsessionId);
+            if(!d->session.jsessionId.isEmpty())
+                headers.insert("cookie", QString("JSESSIONID=") + d->session.jsessionId);
             bodyMap.insert("headers", headers);
         }
         QByteArray body = parser->toByteArray(bodyMap);
@@ -1210,6 +1215,11 @@ bool JiraDB::showLoginPage(const QString &server, const QString &user, const QSt
 
 bool JiraDB::loginCookie(const QString &user, const QString &pass)
 {
+    if(user.isEmpty())
+    {
+        d->isLogged = true;
+        return true;
+    }
 //    bool res = false;
     QVariantMap reqMap;
     reqMap.insert("username", user);
@@ -1301,6 +1311,14 @@ JiraProject::JiraProject(TQAbstractDB *db)
     : TQBaseProject(db), filters(new JiraFilterModel(this))
 {
     this->db = qobject_cast<JiraDB *>(db);
+    systemChoices
+            << "status"
+            << "issuetype"
+            << "priority"
+            << "resolution"
+            << "project"
+//            << "issueLinkTypes"
+               ;
 }
 
 void JiraProject::loadDefinition()
@@ -2088,8 +2106,16 @@ void JiraProject::readRecordDef2(JiraRecTypeDef *rdef, const QVariantMap &fields
             /*if(map.contains("allowedValues"))
                 f.choices = parseAllowedValues(map.value("allowedValue").toList());
             else*/
-            if(rdef->d->systemChoices.contains(f.id))
-                f.choices = loadChoiceTables(rdef, f.id);
+            if(systemChoices.contains(f.id))
+            {
+                if(systemChoicesList.contains(f.id))
+                    f.choices = systemChoicesList.value(f.id);
+                else
+                {
+                    f.choices = loadChoiceTables(rdef, f.id);
+                    systemChoicesList.insert(f.id, f.choices);
+                }
+            }
         }
         else
             f.choiceTable = QString();
@@ -2099,7 +2125,7 @@ void JiraProject::readRecordDef2(JiraRecTypeDef *rdef, const QVariantMap &fields
             f.createShow = true;
             f.createRequired = createMeta.value("required","false").toString() == "true";
             f.autoCompleteUrl = createMeta.value("autoCompleteUrl").toString();
-            if(!rdef->d->systemChoices.contains(f.id) && createMeta.contains("allowedValues"))
+            if(!systemChoices.contains(f.id) && createMeta.contains("allowedValues"))
             {
                 QVariantList values = createMeta.value("allowedValues").toList();
                 f.choices = parseAllowedValues(values);
@@ -2360,21 +2386,28 @@ void JiraProject::loadQueries()
     QList<QStringPair > preDef;
     preDef
             << qMakePair(tr("Мои открытые запросы"),
-                         QString("assignee = currentUser() AND resolution = Unresolved ORDER BY updatedDate DESC"))
+                         QString("project = '%1' AND assignee = currentUser() AND resolution = Unresolved ORDER BY updatedDate DESC")
+                         .arg(name))
             << qMakePair(tr("Созданные мной"),
-                         QString("reporter = currentUser() ORDER BY createdDate DESC"))
+                         QString("project = '%1' AND reporter = currentUser() ORDER BY createdDate DESC")
+                         .arg(name))
 //            << qMakePair(tr("Последние просмотренные"),
 //                         QString("issuekey in issueHistory() ORDER BY lastViewed DESC"))
             << qMakePair(tr("Все запросы"),
-                         QString("ORDER BY createdDate DESC"))
+                         QString("project = '%1' ORDER BY createdDate DESC")
+                         .arg(name))
             << qMakePair(tr("Открытые запросы"),
-                         QString("resolution = Unresolved order by priority DESC,updated DESC"))
+                         QString("project = '%1' AND resolution = Unresolved order by priority DESC,updated DESC")
+                         .arg(name))
             << qMakePair(tr("Добавленные недавно"),
-                         QString("created >= -1w order by created DESC"))
+                         QString("project = '%1' AND created >= -1w order by created DESC")
+                         .arg(name))
             << qMakePair(tr("Решенные недавно"),
-                         QString("resolutiondate >= -1w order by updated DESC"))
+                         QString("project = '%1' AND resolutiondate >= -1w order by updated DESC")
+                         .arg(name))
             << qMakePair(tr("Обновленные недавно"),
-                         QString("updated >= -1w order by updated DESC"))
+                         QString("project = '%1' AND updated >= -1w order by updated DESC")
+                         .arg(name))
                ;
 
     foreach(const QStringPair &def, preDef)
@@ -2413,7 +2446,7 @@ void JiraProject::storeReadedField(JiraRecord *rec, const JiraRecTypeDef *rdef, 
     int fvid = rdef->fieldVidSystem(fid);
     if(fid == "description")
         rec->desc = value.toString();
-    else if(rdef->d->systemChoices.contains(fid))
+    else if(systemChoices.contains(fid))
     {
         int id = value.toMap().value("id").toInt();
         QString display = value.toMap().value("name").toString();
