@@ -108,4 +108,40 @@ inline TQDebug tqError()
     return TQDebug((int)TQErrorLevel);
 }
 
+class TQPLUGIN_SHARED TQDummyDebug
+{
+public:
+    inline TQDummyDebug()    {}
+    inline TQDummyDebug(int )
+    {}
+    inline ~TQDummyDebug()
+    {
+    }
+    inline TQDummyDebug &operator <<(const QString &)
+    {
+        return *this;
+    }
+    inline TQDummyDebug &operator <<(const QUrl &)
+    {
+        return *this;
+    }
+
+    inline QString space()
+    {
+        return QString();
+    }
+};
+
+inline TQDebug tqDummyDebug(int initLevel)
+{
+    return TQDebug(initLevel);
+}
+
+
+#ifdef QT_DEBUG
+#define tqProfile() (qDebug() << QTime::currentTime().toString("hh:mm:ss.zzz") <<__FUNCTION__ << __LINE__)
+#else
+#define tqProfile() (tqDummyDebug())
+#endif
+
 #endif // TQDEBUG_H
