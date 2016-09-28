@@ -104,8 +104,8 @@ MainWindow::MainWindow(QWidget *parent)
 //	trkproject = 0;
     selectionTimer = new QTimer(this);
     selectionTimer->setSingleShot(true);
-    selectionTimer->setInterval(0);
-//    connect(selectionTimer,SIGNAL(timeout()),this,SLOT(refreshSelection()));
+    selectionTimer->setInterval(200);
+    connect(selectionTimer,SIGNAL(timeout()),this,SLOT(refreshSelection()));
     connect(ttglobal(),SIGNAL(viewOpened(QWidget*,TQViewController*)),SLOT(slotViewOpened(QWidget*,TQViewController*)));
 
     ttglobal()->loadPlugins();
@@ -1512,7 +1512,8 @@ void MainWindow::saveProjectTree()
 {
     QSettings *settings = ttglobal()->settings();
     settings->beginGroup("Projects");
-    settings->remove("");
+    foreach(QString key, settings->childKeys())
+        settings->remove(key);
     int index = 1;
     foreach(QAbstractItemModel *m, treeModel->sourceModels())
     {

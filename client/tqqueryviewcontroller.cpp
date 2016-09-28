@@ -1,5 +1,6 @@
 #include "tqqueryviewcontroller.h"
 #include "querypage.h"
+#include <tqdebug.h>
 
 class TQQVCPrivate
 {
@@ -21,6 +22,7 @@ TQQueryViewController::~TQQueryViewController()
 
 void TQQueryViewController::emitCurrentRecordChanged(TQRecord *record)
 {
+//    tqProfile();
     emit currentRecordChanged(record);
 }
 

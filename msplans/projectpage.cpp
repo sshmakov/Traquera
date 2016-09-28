@@ -20,7 +20,7 @@ ProjectPage::ProjectPage(PrjItemModel *projectModel, QWidget *parent)
 {
 	setupUi(this);
     selectionTimer = new QTimer(this);
-    selectionTimer->setInterval(0);
+    selectionTimer->setInterval(200);
     selectionTimer->setSingleShot(true);
     connect(selectionTimer,SIGNAL(timeout()),this,SLOT(updateDetails()));
 	isDefLoaded = false;

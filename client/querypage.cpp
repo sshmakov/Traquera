@@ -121,12 +121,12 @@ QueryPage::QueryPage(QWidget *parent)
     d->qryFilterModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
     d->qryFilterModel->setSortRole(Qt::EditRole);
     d->detailsTimer = new QTimer(this);
-    d->detailsTimer->setInterval(0);
+    d->detailsTimer->setInterval(200);
     d->detailsTimer->setSingleShot(true);
     connect(d->detailsTimer,SIGNAL(timeout()),this,SLOT(updateDetails()));
 
     d->previewTimer = new QTimer(this);
-    d->previewTimer->setInterval(0);
+    d->previewTimer->setInterval(200);
     d->previewTimer->setSingleShot(true);
     connect(d->previewTimer,SIGNAL(timeout()),this,SLOT(slotFilePreview()));
 
@@ -499,6 +499,7 @@ void QueryPage::slotTabTitleChanged()
 
 void QueryPage::slotTabTitleChanged(QWidget* widget, const QString & newTitle)
 {
+//    tqProfile();
     foreach(const DetailPages &item, d->pages)
     {
         if(widget == item.titleObj)
@@ -876,16 +877,20 @@ void QueryPage::drawNotes()
 //    const TQRecModel *model = qobject_cast<const TQRecModel *>(qryIndex.model());
     if(record)
     {
+//        tqProfile() << "record->toXml";
         QDomDocument xml = record->toXML();
+//        tqProfile() << "record->refresh";
         record->refresh();
+//        tqProfile() << "makeRecordsPage";
         page = makeRecordsPage(QObjectList() << record, d->xqPageFile);
     }
-#ifdef QT_DEBUG
+#ifdef TQ_QT_DEBUG
     QFile testRes("!testResult.html");
     testRes.open(QIODevice::WriteOnly | QIODevice::Text);
     //QTextStream textOutHTML(&testRes);
     testRes.write(page.toLocal8Bit());
 #endif
+//    tqProfile() << "webView_2->setHtml";
     webView_2->setHtml(page, baseUrl);
 }
 
@@ -1492,7 +1497,9 @@ void QueryPage::updateDetails()
     if(record)
         decorator->readValues(record, fieldEdits);
 #endif
+//    tqProfile() << "before draw";
     drawNotes();
+//    tqProfile() << "after draw";
 
 //    filesPage->setRecord(record);
     d->controller->emitCurrentRecordChanged(record);

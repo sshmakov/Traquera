@@ -1,4 +1,5 @@
 #include "tqviewcontroller.h"
+#include <tqdebug.h>
 
 QMetaMethod notifyMethod(QObject *object, const char *property)
 {
@@ -7,7 +8,6 @@ QMetaMethod notifyMethod(QObject *object, const char *property)
     QMetaProperty prop = meta->property(index);
     return prop.notifySignal();
 }
-
 
 QByteArray notifySignature(QObject *object, const char *property)
 {
@@ -117,6 +117,7 @@ void TQViewController::addDetailWidgets(QWidget *topWidget, QWidget *pageWidget,
 
 void TQViewController::onSelectedRecordsChanged()
 {
+//    tqProfile();
     emit selectedRecordsChanged();
 }
 
