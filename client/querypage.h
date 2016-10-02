@@ -185,6 +185,7 @@ private slots:
     void on_actionSelectMarked_triggered();
     void on_actionCopyMarkedRecords_triggered();
     void on_toolButton_clicked();
+    void onAppQuit();
 
 public slots:
     void addDetailTab(QWidget *tab, const QString &title, const QIcon &icon = QIcon());

@@ -6,6 +6,12 @@ class TQQVCPrivate
 {
 public:
     QWidget *widget;
+    QPointer<TQRecord> record;
+    int modifyLocks;
+    TQQVCPrivate() : modifyLocks(0)
+    {
+
+    }
 };
 
 TQQueryViewController::TQQueryViewController(QObject *parent) :
@@ -22,68 +28,38 @@ TQQueryViewController::~TQQueryViewController()
 
 void TQQueryViewController::emitCurrentRecordChanged(TQRecord *record)
 {
-//    tqProfile();
+    tqProfile();
+    if(d->record)
+        disconnect(d->record);
+    d->record = record;
     emit currentRecordChanged(record);
+    if(d->record)
+        connect(d->record.data(),SIGNAL(changedState(int)),SIGNAL(recordModeChanged(int)));
 }
 
-/*
-QWidget *TQQueryViewController::view() const
+bool TQQueryViewController::canInstantEdit() const
 {
-    return d->widget;
+    return true;
 }
 
-TQRecord *TQQueryViewController::currentRecord() const
+bool TQQueryViewController::beginModifySection()
 {
-    TQRecord *rec=0;
-    QMetaObject::invokeMethod(d->widget, "currentRecord",
-                              Q_RETURN_ARG(TQRecord *, rec));
-    return rec;
+    if(!d->record)
+        return false;
+    if(!d->record->isEditing() && !d->record->updateBegin())
+        return false;
+    d->modifyLocks++;
+    return true;
 }
 
-QObjectList TQQueryViewController::selectionRecords() const
+void TQQueryViewController::submitModifySection()
 {
-    QObjectList list;
-    QMetaObject::invokeMethod(d->widget, "selectedRecords",
-                              Q_RETURN_ARG(QObjectList, list));
-    return list;
+    if(!--d->modifyLocks)
+        d->record->commit();
 }
 
-void TQQueryViewController::addDetailTab(QWidget *tab, const QString &title, const QIcon &icon)
+void TQQueryViewController::cancelModifySection()
 {
-    QMetaObject::invokeMethod(d->widget, "addDetailTab",
-                              Q_ARG(QWidget *, tab),
-                              Q_ARG(const QString &, title),
-                              Q_ARG(const QIcon &, icon));
-    QMetaMethod titleSignal = notifyMethod(tab ,"title");
-    if(isMethodValid(titleSignal))
-    {
-        int i = this->metaObject()->indexOfSlot("onDetailTitleChanged()");
-        QMetaMethod slot = this->metaObject()->method(i);
-        connect(tab, titleSignal, this, slot);
-    }
+    if(!--d->modifyLocks)
+        d->record->cancel();
 }
-
-void TQQueryViewController::addDetailWidgets(QWidget *topWidget, QWidget *pageWidget, const QString &title, const QIcon &icon)
-{
-    QMetaObject::invokeMethod(d->widget, "addDetailWidgets",
-                              Q_ARG(QWidget *, topWidget),
-                              Q_ARG(QWidget *, pageWidget),
-                              Q_ARG(const QString &, title),
-                              Q_ARG(const QIcon &, icon));
-}
-
-void TQQueryViewController::onSelectedRecordsChanged()
-{
-    emit selectedRecordsChanged();
-}
-
-void TQQueryViewController::onDetailTitleChanged()
-{
-    QObject *obj = sender();
-    QWidget *tab = qobject_cast<QWidget*>(obj);
-    if(!tab)
-        return;
-    QString title = tab->property("title").toString();
-    emit detailTabTitleChanged(tab, title);
-}
-*/

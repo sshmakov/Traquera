@@ -21,6 +21,10 @@ public:
     ~TQQueryViewController();
 private:
     void emitCurrentRecordChanged(TQRecord *record);
+    bool canInstantEdit() const;
+    bool beginModifySection();
+    void submitModifySection();
+    void cancelModifySection();
 //    QWidget *view() const;
 //    TQRecord *currentRecord() const;
 //    QObjectList selectionRecords() const;

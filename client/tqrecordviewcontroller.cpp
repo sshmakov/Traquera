@@ -7,7 +7,12 @@ public:
     TTRecordWindow *view;
     QWidget *widget;
     QObject *object;
-    TQRecord *record;
+    QPointer<TQRecord> record;
+    int modifyLocks;
+    TQRVCPrivate()
+    {
+        modifyLocks = 0;
+    }
 };
 
 TQRecordViewController::TQRecordViewController(QObject *parent) :
@@ -29,17 +34,23 @@ TQRecordViewController::~TQRecordViewController()
 
 TTRecordWindow *TQRecordViewController::recView() const
 {
-    return (TTRecordWindow *)view();
+    return qobject_cast<TTRecordWindow *>(view());
 }
 
 const TQAbstractRecordTypeDef *TQRecordViewController::recordDef() const
 {
-    return recView()->recordTypeDef();
+    TTRecordWindow *win = recView();
+    if(!win)
+        return 0;
+    return win->recordTypeDef();
 }
 
 TQRecord *TQRecordViewController::currentRecord() const
 {
-    return recView()->record();
+    TTRecordWindow *win = recView();
+    if(!win)
+        return 0;
+    return win->record();
 }
 
 QObjectList TQRecordViewController::selectedRecords() const
@@ -52,66 +63,33 @@ QObjectList TQRecordViewController::selectedRecords() const
 
 void TQRecordViewController::onViewRecordChanged(TQRecord *record)
 {
+    if(d->record)
+        disconnect(d->record.data());
+    d->record = record;
     emit currentRecordChanged(record);
     emit selectedRecordsChanged();
+    if(d->record)
+        connect(d->record.data(), SIGNAL(changedState(int)), SIGNAL(recordModeChanged(int)));
 }
 
-/*
-QWidget *TQRecordViewController::view() const
+bool TQRecordViewController::canInstantEdit() const
 {
-    return d->widget;
+    return false;
 }
 
-TQRecord *TQRecordViewController::currentRecord() const
+bool TQRecordViewController::beginModifySection()
 {
-    return d->record;
+    TTRecordWindow *win = recView();
+    if(!win)
+        return false;
+    return win->enableModify();
 }
 
-void TQRecordViewController::setView(QWidget *view)
+void TQRecordViewController::submitModifySection()
 {
-    d->widget = view;
-
-
 }
 
-void TQRecordViewController::addDetailTab(QWidget *tab, const QString &title, const QIcon &icon)
+void TQRecordViewController::cancelModifySection()
 {
-    QMetaObject::invokeMethod(d->widget, "addDetailTab",
-                              Q_ARG(QWidget *, tab),
-                              Q_ARG(const QString &, title),
-                              Q_ARG(const QIcon &, icon));
-    QMetaMethod titleSignal = notifyMethod(tab ,"title");
-    if(isMethodValid(titleSignal))
-    {
-        int i = this->metaObject()->indexOfSlot("onDetailTitleChanged()");
-        QMetaMethod slot = this->metaObject()->method(i);
-        connect(tab, titleSignal, this, slot);
-    }
-
 }
 
-void TQRecordViewController::addDetailWidgets(QWidget *topWidget, QWidget *pageWidget, const QString &title, const QIcon &icon)
-{
-    QMetaObject::invokeMethod(d->widget, "addDetailWidgets",
-                              Q_ARG(QWidget *, topWidget),
-                              Q_ARG(QWidget *, pageWidget),
-                              Q_ARG(const QString &, title),
-                              Q_ARG(const QIcon &, icon));
-}
-
-void TQRecordViewController::onViewRecordChanged(TQRecord *record)
-{
-    d->record = record;
-    emit recordChanged(record);
-}
-
-void TQRecordViewController::onDetailTitleChanged()
-{
-    QObject *obj = sender();
-    QWidget *tab = qobject_cast<QWidget*>(obj);
-    if(!tab)
-        return;
-    QString title = tab->property("title").toString();
-    emit detailTabTitleChanged(tab, title);
-}
-*/

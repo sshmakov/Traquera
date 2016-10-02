@@ -115,6 +115,8 @@ QVariant TQRecModel::data(const QModelIndex & index, int role) const
 {
     if(!index.isValid())
         return QVariant();
+    if(index.row()<0 || index.row()>=records.size())
+        return QVariant();
     if(role == Qt::CheckStateRole && index.column()==idCol)
     {
         bool isSel = records[index.row()]->isSelected();
@@ -135,6 +137,8 @@ QVariant TQRecModel::data(const QModelIndex & index, int role) const
 
 bool TQRecModel::setData(const QModelIndex & index, const QVariant & value, int role)
 {
+    if(index.row()<0 || index.row()>=records.size())
+        return false;
     if(role == Qt::CheckStateRole && index.isValid() /*&& index.column()==idCol*/)
     {
         Qt::CheckState state = (Qt::CheckState)value.toInt();
@@ -246,7 +250,7 @@ void TQRecModel::recordDestroyed(QObject *rec)
 
 QDomDocument TQRecModel::recordXml(int row) const
 {
-    TQRecord * rec = at(row);
+    TQRecord * rec = recordInRow(row);
     if(!rec)
         return QDomDocument();
     rec->refresh();
@@ -293,6 +297,8 @@ int TQRecModel::rowOfRecordId(int id) const
 
 TQRecord *TQRecModel::recordInRow(int row) const
 {
+    if(row<0 || row>=records.size())
+        return 0;
     return at(row);
 }
 
@@ -301,7 +307,9 @@ Qt::ItemFlags TQRecModel::flags ( const QModelIndex & index ) const
     if(!index.isValid())
         return Qt::NoItemFlags;
     Qt::ItemFlags res = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
-    const TQRecord *rec = at(index.row());
+    const TQRecord *rec = recordInRow(index.row());
+    if(!rec)
+        return Qt::NoItemFlags;
     if(!index.column())
         res |= Qt::ItemIsUserCheckable;
     if(rec->mode() == TQRecord::View)

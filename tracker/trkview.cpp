@@ -1086,7 +1086,7 @@ TQRecord *TrkToolProject::recordOfIndex(const QModelIndex &index)
     const TQRecModel *model = qobject_cast<const TQRecModel *>(index.model());
     if(!model)
         return 0;
-    return model->at(index.row());
+    return model->recordInRow(index.row());
 }
 
 bool TrkToolProject::isSystemModel(QAbstractItemModel *model) const
@@ -1948,7 +1948,16 @@ int TrkToolProject::attachFileToRecord(TQRecord *record, const QString &filePath
                 nextIndex++;
         }
     if(isTrkOK(TrkAddNewAttachedFile(attHandle, filePath.toLocal8Bit(), TRK_FILE_BINARY)))
+    {
         res = nextIndex;
+        TQAttachedFile file;
+        file.fileName = filePath;
+        file.isAdded = true;
+        file.isChanged = false;
+        file.isDeleted = false;
+        file.id = trec->files.count();
+        trec->files.append(file);
+    }
     TrkAttachedFileHandleFree(&attHandle);
     if(res != -1)
         record->setModified(true);
@@ -2664,6 +2673,7 @@ void TrkToolRecord::refresh()
 {
     if(mode() == Insert)
         return;
+    filesReaded = false;
     prj->readRecordWhole(this);
     valuesReloaded();
 }

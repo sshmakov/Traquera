@@ -91,6 +91,26 @@ TQAbstractProject *TQViewController::project() const
     return def->project();
 }
 
+bool TQViewController::canInstantEdit() const
+{
+    return false;
+}
+
+bool TQViewController::beginModifySection()
+{
+    return false;
+}
+
+void TQViewController::submitModifySection()
+{
+
+}
+
+void TQViewController::cancelModifySection()
+{
+
+}
+
 void TQViewController::addDetailTab(QWidget *tab, const QString &title, const QIcon &icon)
 {
     QMetaObject::invokeMethod(view(), "addDetailTab",

@@ -20,7 +20,8 @@ SOURCES += jiradb.cpp \
     jiraquerydialog.cpp \
     jiraqry.cpp \
     jirafinduser.cpp \
-    jirausermodel.cpp
+    jirausermodel.cpp \
+    jirarecmodel.cpp
 
 HEADERS += jiradb.h\
         jira_global.h \
@@ -31,7 +32,8 @@ HEADERS += jiradb.h\
     jiraquerydialog.h \
     jiraqry.h \
     jirafinduser.h \
-    jirausermodel.h
+    jirausermodel.h \
+    jirarecmodel.h
 
 INCLUDEPATH += ../common
 

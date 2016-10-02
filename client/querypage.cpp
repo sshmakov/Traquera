@@ -107,6 +107,8 @@ QueryPage::QueryPage(QWidget *parent)
     d->controller = new TQQueryViewController(this);
     connect(this,SIGNAL(selectedRecordsChanged()),d->controller,SLOT(onSelectedRecordsChanged()));
     connect(d->controller,SIGNAL(detailTabTitleChanged(QWidget*,QString)),this,SLOT(slotTabTitleChanged(QWidget*,QString)));
+    QApplication *app = qApp;
+    connect(app, SIGNAL(aboutToQuit()), SLOT(onAppQuit()));
     d->globalObj = ttglobal();
     d->modelProject = 0;
     d->tmodel = 0;
@@ -877,11 +879,13 @@ void QueryPage::drawNotes()
 //    const TQRecModel *model = qobject_cast<const TQRecModel *>(qryIndex.model());
     if(record)
     {
-//        tqProfile() << "record->toXml";
-        QDomDocument xml = record->toXML();
 //        tqProfile() << "record->refresh";
-        record->refresh();
-//        tqProfile() << "makeRecordsPage";
+//        record->refresh();
+//        tqProfile() << "record->toXml";
+//        QDomDocument xml = record->toXML();
+        if(d->detailsTimer->isActive())
+            return;
+        tqProfile() << "makeRecordsPage";
         page = makeRecordsPage(QObjectList() << record, d->xqPageFile);
     }
 #ifdef TQ_QT_DEBUG
@@ -890,7 +894,9 @@ void QueryPage::drawNotes()
     //QTextStream textOutHTML(&testRes);
     testRes.write(page.toLocal8Bit());
 #endif
-//    tqProfile() << "webView_2->setHtml";
+    tqProfile() << "webView_2->setHtml";
+    if(d->detailsTimer->isActive())
+        return;
     webView_2->setHtml(page, baseUrl);
 }
 
@@ -1184,7 +1190,7 @@ TQRecord *QueryPage::recordOnIndex(const QModelIndex &index)
     const TQRecModel *trkmodel = qobject_cast<const TQRecModel *>(model);
     if(!trkmodel)
         return 0;
-    return trkmodel->at(f.row());
+    return trkmodel->recordInRow(f.row());
 }
 
 const TQAbstractRecordTypeDef *QueryPage::recordTypeDef() const
@@ -1292,7 +1298,7 @@ TQRecord *QueryPage::currentRecord()
     const TQRecModel *trkmodel = qobject_cast<const TQRecModel *>(model);
     if(!trkmodel)
         return NULL;
-    return trkmodel->at(cur.row());
+    return trkmodel->recordInRow(cur.row());
 }
 
 void QueryPage::on_actionAdd_Note_triggered()
@@ -1475,6 +1481,11 @@ void QueryPage::on_filterFieldComboBox_currentIndexChanged(int index)
 }
 
 
+extern void notesDrawning(QueryPage *page)
+{
+    page->drawNotes();
+}
+
 void QueryPage::updateDetails()
 {
     //int linkCol=getColNum(linkField);
@@ -1497,9 +1508,14 @@ void QueryPage::updateDetails()
     if(record)
         decorator->readValues(record, fieldEdits);
 #endif
-//    tqProfile() << "before draw";
+    tqProfile() << "before draw";
+    if(d->detailsTimer->isActive())
+        return;
+    QueryPage *page = this;
+//    QFuture<void> future = QtConcurrent::run(notesDrawning, page);
     drawNotes();
-//    tqProfile() << "after draw";
+
+    tqProfile() << "after draw";
 
 //    filesPage->setRecord(record);
     d->controller->emitCurrentRecordChanged(record);
@@ -1839,4 +1855,10 @@ void QueryPage::on_toolButton_clicked()
         return;
     d->xqPageFile = newFile;
     updateDetails();
+}
+
+void QueryPage::onAppQuit()
+{
+    d->detailsTimer->stop();
+    d->previewTimer->stop();
 }

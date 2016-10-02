@@ -6,6 +6,7 @@
 #include <QFileDialog>
 #include <QDesktopServices>
 #include <QMessageBox>
+#include <tqviewcontroller.h>
 
 class FilesPagePrivate
 {
@@ -16,9 +17,11 @@ public:
     int curFileIndex;
     bool modifyEnabled;
     QString title;
+    TQViewController *controller;
+
 //    FilesListWidget *fileView;
     FilesPagePrivate()
-        : rec(0), def(0), modifyEnabled(false), curFileIndex(-1)
+        : rec(0), def(0), modifyEnabled(false), curFileIndex(-1), controller(0)
     {
         previewTimer.setSingleShot(true);
     }
@@ -86,6 +89,12 @@ QList<int> FilesPage::currentRows() const
 QString FilesPage::title() const
 {
     return d->title.arg(ui->filesTable->rowCount());
+}
+
+void FilesPage::setViewController(TQViewController *contr)
+{
+    d->controller = contr;
+    connect(d->controller, SIGNAL(currentRecordChanged(TQRecord*)), SLOT(setRecord(TQRecord*)));
 }
 
 void FilesPage::setRecord(TQRecord *record)
@@ -238,16 +247,20 @@ void FilesPage::saveCurrentFiles()
 
 void FilesPage::appendFiles()
 {
-    if(!d->rec || !d->modifyEnabled)
+    if(!d->controller->beginModifySection())
         return;
     QStringList list = QFileDialog::getOpenFileNames(this);
     if(list.isEmpty())
+    {
+        d->controller->cancelModifySection();
         return;
+    }
     foreach(QString filePath, list)
     {
-        if(!d->rec->appendFile(filePath))
+        if(d->rec->appendFile(filePath) < 0)
             break;
     }
+    d->controller->submitModifySection();
     refreshFiles();
 }
 
@@ -344,6 +357,7 @@ void FilesPage::on_viewBtn_clicked()
 
 void FilesPage::on_addBtn_clicked()
 {
+//    emit addFileClicked();
     appendFiles();
 }
 

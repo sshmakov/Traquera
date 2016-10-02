@@ -11,6 +11,7 @@
 #include <tqcond.h>
 #include "jiraqry.h"
 #include "jiraquerydialog.h"
+#include "jirarecmodel.h"
 #include <ttglobal.h>
 #include <tqdebug.h>
 #include <QtCore>
@@ -1352,6 +1353,16 @@ TQRecModel *JiraProject::openQueryModel(const QString &queryName, int recType, b
     int index = favSearch.value(queryName);
     const JiraFilter &fitem = filters->at(index);
     QString jql = fitem.jql;
+    JiraRecModel *model = new JiraRecModel(this, recType, this);
+    model->setJQuery(jql);
+    model->open();
+    return model;
+/*
+    if(!favSearch.contains(queryName))
+        return 0;
+    int index = favSearch.value(queryName);
+    const JiraFilter &fitem = filters->at(index);
+    QString jql = fitem.jql;
     QVariantMap map = db->sendRequest("GET",db->queryUrl(QString("rest/api/2/search?jql=%1").arg(jql))).toMap();
     QVariantList issueList = map.value("issues").toList();
     TQRecModel *model = new TQRecModel(this, recType, this);
@@ -1367,6 +1378,7 @@ TQRecModel *JiraProject::openQueryModel(const QString &queryName, int recType, b
         model->append(rec);
     }
     return model;
+*/
 }
 
 TQRecModel *JiraProject::openIdsModel(const IntList &ids, int recType, bool emitEvent)
@@ -1449,7 +1461,7 @@ TQRecord *JiraProject::recordOfIndex(const QModelIndex &index)
     const TQRecModel *model = qobject_cast<const TQRecModel*>(index.model());
     if(!model)
         return 0;
-    return model->at(index.row());
+    return model->recordInRow(index.row());
 }
 
 QList<int> JiraProject::getQueryIds(const QString &name, int type, qint64 afterTransId)

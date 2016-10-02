@@ -155,7 +155,7 @@ public:
         headers.clear();
         endResetModel();
     }
-    const R & at(int row) const
+    virtual const R & at(int row) const
     {
         return records.at(row);
     }

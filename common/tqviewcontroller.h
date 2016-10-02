@@ -28,9 +28,13 @@ public:
     virtual QObjectList selectedRecords() const;
     virtual QList<int> selectedIds() const;
     virtual QAbstractItemView *tableView() const;
-    virtual bool flag(const QString &flagName) const;
+    Q_INVOKABLE virtual bool flag(const QString &flagName) const;
     virtual const TQAbstractRecordTypeDef* recordDef() const;
     TQAbstractProject *project() const;
+    virtual bool canInstantEdit() const;
+    Q_INVOKABLE virtual bool beginModifySection();
+    Q_INVOKABLE virtual void submitModifySection();
+    Q_INVOKABLE virtual void cancelModifySection();
 
 signals:
     /* from view to clients */
@@ -38,6 +42,7 @@ signals:
     void selectedRecordsChanged();
     /* from tab to view */
     void detailTabTitleChanged(QWidget *tab, const QString &title);
+    void recordModeChanged(int newMode);
 
 public slots:
     virtual void addDetailTab(QWidget *tab, const QString &title, const QIcon &icon = QIcon());

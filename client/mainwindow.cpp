@@ -520,7 +520,7 @@ void MainWindow::slotViewOpened(QWidget *widget, TQViewController *controller)
         return;
     FilesPage *tab = new FilesPage();
     controller->addDetailTab(tab, "Files");
-    connect(controller,SIGNAL(currentRecordChanged(TQRecord*)),tab,SLOT(setRecord(TQRecord*)));
+    tab->setViewController(controller);
 }
 
 void MainWindow::slotDockVisibilityChanged(bool visible)

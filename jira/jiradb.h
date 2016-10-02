@@ -405,6 +405,7 @@ public:
     Q_INVOKABLE JiraProject *jiraProject()const;
 
     friend class JiraProject;
+    friend class JiraRecModel;
 };
 
 Q_DECLARE_METATYPE(JiraRecord *)

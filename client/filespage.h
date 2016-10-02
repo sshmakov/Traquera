@@ -15,6 +15,7 @@ class QModelIndex;
 class FilesPagePrivate;
 class QTableWidgetItem;
 class FileListWidget;
+class TQViewController;
 
 class FilesPage : public QWidget
 {
@@ -30,6 +31,7 @@ public:
     bool isModifyEnabled() const;
     QList<int> currentRows() const;
     QString title() const;
+    void setViewController(TQViewController *contr);
 protected:
 //    void dropEvent(QDropEvent *e);
 
@@ -66,7 +68,8 @@ private slots:
     void on_delBtn_clicked();
 
     void on_filesTable_doubleClicked(const QModelIndex &index);
-
+signals:
+    void addFileClicked();
 private:
     Ui::FilesPage *ui;
 };
