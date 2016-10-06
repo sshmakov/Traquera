@@ -132,9 +132,9 @@ public:
     }
 };
 
-inline TQDebug tqDummyDebug(int initLevel)
+inline TQDummyDebug tqDummyDebug(int initLevel = TQDebugLevel)
 {
-    return TQDebug(initLevel);
+    return TQDummyDebug();
 }
 
 

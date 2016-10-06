@@ -878,6 +878,7 @@ void JiraDB::setConnectString(const QString &connectString)
 
 QVariant JiraDB::sendRequest(const QString &method, const QUrl &url, QVariantMap bodyMap)
 {
+    tqProfile() << method << url.toString();
 //    QString link(dbmsServer() + url);
 //    QUrl url(link);
     QNetworkRequest req;

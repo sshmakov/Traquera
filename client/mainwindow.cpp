@@ -1309,6 +1309,7 @@ void MainWindow::readSelectedTreeItem()
 
 QModelIndex MainWindow::mapFolderIndexToTree(const QModelIndex &index)
 {
+
     QModelIndex prjIndex = selectedTreeItem.prjModel->mapFromSource(index);
     QModelIndex treeIndex = treeModel->mapFromSource(prjIndex);
     return treeIndex;
@@ -1947,7 +1948,8 @@ void MainWindow::on_actionNewFolder_triggered()
     readSelectedTreeItem();
     if(!selectedTreeItem.isFolderSelected && !selectedTreeItem.isFoldersGroupSelected)
         return;
-    QPersistentModelIndex pIndex(selectedTreeItem.folderIndex);
+//    QPersistentModelIndex pIndex(selectedTreeItem.folderIndex);
+    QPersistentModelIndex treeIndex(selectedTreeItem.curIndex);
     QString title = tr("Новая папка");
     bool ok;
     title = QInputDialog::getText(this,
@@ -1958,13 +1960,14 @@ void MainWindow::on_actionNewFolder_triggered()
                                           &ok).trimmed();
     if(!ok || title.isEmpty())
         return;
-    if(!selectedTreeItem.folderModel->insertRow(0,selectedTreeItem.folderIndex))
+    QAbstractItemModel *model = treeView->model();
+    int nextRow = model->rowCount(treeIndex);
+    if(!model->insertRow(nextRow,treeIndex))
         return;
-    QModelIndex nIndex = selectedTreeItem.folderModel->index(0,0,pIndex);
-    QModelIndex tIndex = mapFolderIndexToTree(nIndex);
-    selectedTreeItem.folderModel->setData(nIndex,title);
-    treeView->setCurrentIndex(tIndex);
-
+    QModelIndex nIndex = model->index(nextRow, 0, treeIndex);
+    QPersistentModelIndex ptIndex(nIndex);
+    model->setData(nIndex,title);
+    treeView->setCurrentIndex(ptIndex);
 }
 
 void MainWindow::on_actionDeleteFolder_triggered()
@@ -1978,7 +1981,9 @@ void MainWindow::on_actionDeleteFolder_triggered()
                                                 tr("Удалить папку '%1'?").arg(folderTitle),
                                                 QMessageBox::Ok,QMessageBox::Cancel))
         return;
-    selectedTreeItem.folderModel->removeRow(selectedTreeItem.folderIndex.row());
+    QAbstractItemModel *model = treeView->model();
+    model->removeRow(selectedTreeItem.curIndex.row(), selectedTreeItem.curIndex.parent());
+//    selectedTreeItem.folderModel->removeRow(selectedTreeItem.folderIndex.row());
 }
 
 void MainWindow::on_actionRenameFolder_triggered()

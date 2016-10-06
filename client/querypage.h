@@ -107,6 +107,7 @@ protected:
     //void setQueryModel(TQAbstractProject *prj, TrkToolModel *model);
     void setQueryModel(TQAbstractProject *prj, TQRecModel *model);
     QModelIndex mapIndexToModel(const QModelIndex &index) const;
+    void paintEvent(QPaintEvent *ev);
 public slots:
 //	void changedView(const QModelIndex &index, const QModelIndex &prev);
 	void headerChanged();

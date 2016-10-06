@@ -1,4 +1,5 @@
 #include "tqmodels.h"
+#include <tqdebug.h>
 //#ifdef CLIENT_APP
     #include <QFont>
 //#endif
@@ -113,6 +114,7 @@ void TQRecModel::removeRecordId(int id)
 
 QVariant TQRecModel::data(const QModelIndex & index, int role) const
 {
+//    tqProfile() << index.row() << role;
     if(!index.isValid())
         return QVariant();
     if(index.row()<0 || index.row()>=records.size())

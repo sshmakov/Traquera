@@ -19,20 +19,17 @@ public:
     bool isValid() { return id>=0; }
 };
 
-
+class UnionModelPrivate;
 class UnionModel : public QAbstractProxyModel
 {
     Q_OBJECT
+private:
+    UnionModelPrivate *d;
 protected:
-    QList<QAbstractItemModel *>models;
-    QStringList titles;
-    int maxColCount;
-    QAbstractItemModel *selModel;
-    mutable QHash<int, MapInfo> info;
-    mutable QMutex mutex;
 //    QSignalMapper mapper;
 public:
     explicit UnionModel(QObject *parent = 0);
+    ~UnionModel();
     virtual QModelIndex mapFromSource(const QModelIndex &sourceIndex) const;
     virtual QModelIndex mapToSource(const QModelIndex &proxyIndex) const;
     virtual QVariant	data ( const QModelIndex & proxyIndex, int role = Qt::DisplayRole ) const;
@@ -60,8 +57,6 @@ public:
     void setMaxColCount(int value);
     void clear();
     //Qt::DropActions supportedDragActions () const;
-private:
-    MapInfo findInfo(int row, const QModelIndex &parent) const;
 signals:
     
 private slots:

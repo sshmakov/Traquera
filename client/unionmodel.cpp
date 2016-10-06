@@ -3,9 +3,43 @@
 #include <QFont>
 #include <QtCore>
 
-UnionModel::UnionModel(QObject *parent) :
-    QAbstractProxyModel(parent),models(),maxColCount(0)
+class UnionModelPrivate
 {
+public:
+    int nextId;
+    QHash<int, MapInfo> info;
+    QList<QAbstractItemModel *>models;
+    QStringList titles;
+    int maxColCount;
+    QAbstractItemModel *selModel;
+    mutable QMutex mutex;
+
+    UnionModelPrivate() : nextId(0), models(),maxColCount(0)
+    {}
+
+    MapInfo findInfo(int row, const QModelIndex &parent) const
+    {
+        int pid = -1;
+        if(parent.isValid())
+            pid = parent.internalId();
+        foreach(const MapInfo &m, info)
+            if(m.row == row && m.parentId == pid)
+            {
+                return m;
+            }
+        return MapInfo();
+    }
+
+};
+
+UnionModel::UnionModel(QObject *parent) :
+    QAbstractProxyModel(parent), d(new UnionModelPrivate)
+{
+}
+
+UnionModel::~UnionModel()
+{
+    delete d;
 }
 
 QModelIndex UnionModel::mapFromSource(const QModelIndex &sourceIndex) const
@@ -13,7 +47,7 @@ QModelIndex UnionModel::mapFromSource(const QModelIndex &sourceIndex) const
     if(!sourceIndex.isValid())
         return QModelIndex();
     QAbstractItemModel *model = const_cast<QAbstractItemModel *>(sourceIndex.model());
-    int id = models.indexOf(model);
+    int id = d->models.indexOf(model);
     if(id == -1)
         return QModelIndex();
     QModelIndex p, sp = sourceIndex.parent();
@@ -33,7 +67,7 @@ QModelIndex UnionModel::mapToSource(const QModelIndex &proxyIndex) const
     if(p.isValid())
     {
         QModelIndex sp = mapToSource(p);
-        const MapInfo &m = info.value(proxyIndex.internalId());
+        MapInfo m = d->info.value(proxyIndex.internalId());
         QAbstractItemModel *model = m.model;
         return model->index(proxyIndex.row(),proxyIndex.column(),sp);
     }
@@ -52,20 +86,20 @@ QVariant UnionModel::data(const QModelIndex &proxyIndex, int role) const
     if(!proxyIndex.isValid())
         return QVariant();
     int id = proxyIndex.internalId();
-    if(!info.contains(id))
+    if(!d->info.contains(id))
         return QVariant();
-    const MapInfo &m = info.value(id);
+    MapInfo m = d->info.value(id);
     if(m.parentId<0)
     {
-        if(proxyIndex.column()==0 && proxyIndex.row()<titles.count())
+        if(proxyIndex.column()==0 && proxyIndex.row()<d->titles.count())
         {
             switch(role)
             {
             case Qt::DisplayRole:
-                return titles[proxyIndex.row()];
+                return d->titles[proxyIndex.row()];
             case Qt::FontRole:
                 QFont boldFont;
-                if(m.model == selModel)
+                if(m.model == d->selModel)
                     boldFont.setBold(true);
                 return boldFont;
             }
@@ -88,9 +122,10 @@ Qt::ItemFlags UnionModel::flags(const QModelIndex &index) const
     if(!index.isValid())
         return 0;
     int id = index.internalId();
-    if(!info.contains(id))
-        return 0;
-    const MapInfo &m = info.value(id);
+    if(!d->info.contains(id))
+//        return 0;
+        return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+    MapInfo m = d->info.value(id);
     if(m.parentId<0)
         return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
     QModelIndex si = mapToSource(index);
@@ -102,14 +137,15 @@ QModelIndex UnionModel::parent(const QModelIndex &child) const
     if(!child.isValid())
         return QModelIndex();
     int infoIndex = child.internalId();
-    if(!info.contains(infoIndex))
+    if(!d->info.contains(infoIndex))
         return QModelIndex();
-    const MapInfo &m = info[infoIndex];
+    MapInfo m = d->info[infoIndex];
     if(m.parentId<0)
         return QModelIndex();
-    if(!info.contains(m.parentId))
+    if(!d->info.contains(m.parentId))
         return QModelIndex();
-    return createIndex(info.value(m.parentId).row,0,info.value(m.parentId).id);
+    m = d->info[m.parentId];
+    return createIndex(m.row,0,m.id);
     /*
     int parentId = child.internalId();
     if(!parentId)
@@ -138,11 +174,11 @@ QModelIndex UnionModel::parent(const QModelIndex &child) const
 bool UnionModel::hasChildren(const QModelIndex &parent) const
 {
     if(!parent.isValid())
-        return models.count()>0;
+        return d->models.count()>0;
     int id = parent.internalId();
-    if(!info.contains(id))
+    if(!d->info.contains(id))
         return false;
-    MapInfo m = info.value(id);
+    MapInfo m = d->info.value(id);
     QModelIndex sp = mapToSource(parent);
     if(sp.isValid())
         return m.model->hasChildren(sp);
@@ -151,28 +187,32 @@ bool UnionModel::hasChildren(const QModelIndex &parent) const
 
 QModelIndex UnionModel::index(int row, int column, const QModelIndex &parent) const
 {
-    QMutexLocker lock(&mutex);
+    QMutexLocker lock(&d->mutex);
     if(!parent.isValid())
     {
-        if(row<0 || row >= models.count() || column!=0)
+        if(row<0 || row >= d->models.count() || column!=0)
             return QModelIndex();
-        MapInfo m2 = findInfo(row,parent);
+        MapInfo m2 = d->findInfo(row, QModelIndex());
         if(!m2.isValid())
             return QModelIndex();
         return createIndex(row,column,m2.id);
-        /*
-        return createIndex(row,column,-1);
-        */
     }
-    MapInfo m = findInfo(row,parent);
+    int parentId = parent.internalId();
+    if(!d->info.contains(parentId))
+        return QModelIndex();
+    MapInfo pm = d->info.value(parentId);
+    MapInfo m = d->findInfo(row,parent);
     if(!m.isValid())
     {
-        const MapInfo &p = info.value(parent.internalId());
-        m.id = info.count();
-        m.parentId = p.id;
+        QAbstractItemModel *source = pm.model;
+        QModelIndex sourceParent = mapToSource(parent);
+        if(row<0 || row>=source->rowCount(sourceParent) || column<0 || column>=source->columnCount(sourceParent))
+            return QModelIndex();
+        m.id = d->nextId++;
+        m.parentId = parentId;
         m.row = row;
-        m.model = p.model;
-        info.insert(m.id,m);
+        m.model = source;
+        d->info.insert(m.id,m);
     }
     return createIndex(row,column,m.id);
     /*
@@ -187,13 +227,13 @@ QModelIndex UnionModel::index(int row, int column, const QModelIndex &parent) co
 int UnionModel::rowCount(const QModelIndex &parent) const
 {
     if(!parent.isValid())
-        return models.count();
-    if(!models.count())
+        return d->models.count();
+    if(!d->models.count())
         return 0;
     int id = parent.internalId();
-    if(!info.contains(id))
+    if(!d->info.contains(id))
         return 0;
-    MapInfo m = info.value(id);
+    MapInfo m = d->info.value(id);
     QModelIndex sp = mapToSource(parent);
     return m.model->rowCount(sp);
 }
@@ -201,7 +241,7 @@ int UnionModel::rowCount(const QModelIndex &parent) const
 int UnionModel::columnCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
-    return maxColCount;
+    return d->maxColCount;
 }
 
 bool UnionModel::insertRows(int row, int count, const QModelIndex &parent)
@@ -269,7 +309,7 @@ QMimeData *UnionModel::mimeData(const QModelIndexList &indexes) const
 QStringList UnionModel::mimeTypes() const
 {
     QStringList res;
-    foreach(const QAbstractItemModel *model,models)
+    foreach(const QAbstractItemModel *model,d->models)
     {
         res.append(model->mimeTypes());
     }
@@ -297,19 +337,19 @@ bool UnionModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int 
 QModelIndex UnionModel::appendSourceModel(QAbstractItemModel *model, const QString &title)
 {
 //    beginResetModel();
-    QMutexLocker lock(&mutex);
+    QMutexLocker lock(&d->mutex);
 //    emit layoutAboutToBeChanged();
     int cols = model->columnCount();
-    if(maxColCount < cols)
-        maxColCount = cols;
+    if(d->maxColCount < cols)
+        d->maxColCount = cols;
     MapInfo m;
-    m.id = info.count();
+    m.id = d->nextId++;
     m.parentId = -1;
-    m.row = models.count();
+    m.row = d->models.count();
     m.model = model;
-    info.insert(m.id,m);
-    models << model;
-    titles << title;
+    d->info.insert(m.id,m);
+    d->models << model;
+    d->titles << title;
     connect(model,SIGNAL(dataChanged(QModelIndex,QModelIndex)),this,SLOT(do_dataChanged(QModelIndex,QModelIndex)));
     connect(model,SIGNAL(headerDataChanged(Qt::Orientation,int,int)),this,SLOT(do_headerDataChanged(Qt::Orientation,int,int)));
     connect(model,SIGNAL(layoutAboutToBeChanged()),this,SLOT(do_layoutAboutToBeChanged()));
@@ -341,23 +381,23 @@ QModelIndex UnionModel::appendSourceModel(QAbstractItemModel *model, const QStri
 
 void UnionModel::removeSourceModel(QAbstractItemModel *model)
 {
-    QMutexLocker lock(&mutex);
+    QMutexLocker lock(&d->mutex);
     //emit layoutAboutToBeChanged();
-    int row = models.indexOf(model);
+    int row = d->models.indexOf(model);
     if(row == -1)
         return;
     disconnect(model);
     beginRemoveRows(QModelIndex(), row, row);
     QList<int> ids;
-    foreach(MapInfo m, info)
+    foreach(MapInfo m, d->info)
     {
         if(m.model == model)
             ids.append(m.id);
     }
-    models.removeAt(row);
-    titles.removeAt(row);
+    d->models.removeAt(row);
+    d->titles.removeAt(row);
     foreach(int id, ids)
-        info.remove(id);
+        d->info.remove(id);
 
 //    emit layoutChanged();
     endRemoveRows();
@@ -369,9 +409,9 @@ QAbstractItemModel *UnionModel::sourceModel(const QModelIndex &proxyIndex) const
         return 0;
     int pid = proxyIndex.internalId();
 
-    if(!info.contains(pid))
+    if(!d->info.contains(pid))
         return 0;
-    const MapInfo &m = info.value(pid);
+    const MapInfo &m = d->info.value(pid);
     return m.model;
     /*
     if(!proxyIndex.isValid())
@@ -388,60 +428,47 @@ QAbstractItemModel *UnionModel::sourceModel(const QModelIndex &proxyIndex) const
 
 QAbstractItemModel *UnionModel::sourceModel(int index) const
 {
-    if(index<0 || index >= models.size())
+    if(index<0 || index >= d->models.size())
         return 0;
-    QAbstractItemModel *m = models.value(index, 0);
+    QAbstractItemModel *m = d->models.value(index, 0);
     return m;
 }
 
 QList<QAbstractItemModel *> UnionModel::sourceModels() const
 {
-    return models;
+    return d->models;
 }
 
 int UnionModel::sourceModelIndex(QAbstractItemModel *model) const
 {
-    return models.indexOf(model);
+    return d->models.indexOf(model);
 }
 
 void UnionModel::setSelectedModel(QAbstractItemModel *model)
 {
-    int row = models.indexOf(model);
+    int row = d->models.indexOf(model);
     if(row == -1)
-        selModel = 0;
+        d->selModel = 0;
     else
-        selModel = model;
+        d->selModel = model;
     emit dataChanged(index(row,0,QModelIndex()), index(row,0,QModelIndex()));
 }
 
 void UnionModel::setMaxColCount(int value)
 {
     emit layoutAboutToBeChanged();
-    maxColCount = value;
+    d->maxColCount = value;
     emit layoutChanged();
 }
 
 void UnionModel::clear()
 {
     emit layoutAboutToBeChanged();
-    models.clear();
-    titles.clear();
-    maxColCount = 1;
-    info.clear();
+    d->models.clear();
+    d->titles.clear();
+    d->maxColCount = 1;
+    d->info.clear();
     emit layoutChanged();
-}
-
-MapInfo UnionModel::findInfo(int row, const QModelIndex &parent) const
-{
-    int pid = -1;
-    if(parent.isValid())
-        pid = parent.internalId();
-    foreach(const MapInfo &m, info)
-        if(m.row == row && m.parentId == pid)
-        {
-            return m;
-        }
-    return MapInfo();
 }
 
 void UnionModel::do_modelAboutToBeReset()
@@ -461,7 +488,7 @@ void UnionModel::do_rowsAboutToBeInserted(const QModelIndex &parent, int start, 
     if(parent.isValid())
         pparent = mapFromSource(parent);
     else
-        pparent = index(models.indexOf(sModel),0);
+        pparent = index(d->models.indexOf(sModel),0);
     int pStartRow, pEndRow;
     if(start >= sModel->rowCount(parent))
         pStartRow = rowCount(pparent);

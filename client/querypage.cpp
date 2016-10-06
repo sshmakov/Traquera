@@ -430,6 +430,12 @@ QModelIndex QueryPage::mapIndexToModel(const QModelIndex &index) const
     return qryIndex;
 }
 
+void QueryPage::paintEvent(QPaintEvent *ev)
+{
+//    tqProfile();
+    QWidget::paintEvent(ev);
+}
+
 /*void QueryPage::changedView(const QModelIndex &index, const QModelIndex &prev)
 {
 	if(prev.row() == index.row())
@@ -515,9 +521,12 @@ void QueryPage::slotTabTitleChanged(QWidget* widget, const QString & newTitle)
 
 void QueryPage::populateJavaScriptWindowObject()
 {
-    webView_2->page()->mainFrame()->addToJavaScriptWindowObject("query", this);
-    webView_2->page()->mainFrame()->addToJavaScriptWindowObject("view", this);
-    webView_2->page()->mainFrame()->addToJavaScriptWindowObject("global", ttglobal());
+    QWebFrame *frame = webView_2->page()->mainFrame();
+    if(!frame)
+        return;
+    frame->addToJavaScriptWindowObject("query", this);
+    frame->addToJavaScriptWindowObject("view", this);
+    frame->addToJavaScriptWindowObject("global", ttglobal());
 }
 
 void QueryPage::slotUnsupportedContent(QNetworkReply *reply)
@@ -894,9 +903,9 @@ void QueryPage::drawNotes()
     //QTextStream textOutHTML(&testRes);
     testRes.write(page.toLocal8Bit());
 #endif
-    tqProfile() << "webView_2->setHtml";
     if(d->detailsTimer->isActive())
         return;
+    tqProfile() << "webView_2->setHtml";
     webView_2->setHtml(page, baseUrl);
 }
 

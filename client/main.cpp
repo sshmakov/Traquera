@@ -5,6 +5,7 @@
 #include "settings.h"
 #include "logform.h"
 #include "ttglobal.h"
+#include "tqapplication.h"
 #include <tqdebug.h>
 
 int main(int argc, char *argv[])
@@ -13,7 +14,7 @@ int main(int argc, char *argv[])
     //Q_INIT_RESOURCE(masterdetail);
 
 //    QCoreApplication::addLibraryPath("C:/gits/build/traquera-main-Desktop-Debug/plugins/tracker");
-    QApplication app(argc, argv);
+    TQApplication app(argc, argv);
 //    QTextCodec::setCodecForCStrings(QTextCodec::codecForName("windows-1251"));
 //    QTextCodec::setCodecForTr(QTextCodec::codecForName("windows-1251"));
     QTextCodec *codec = QTextCodec::codecForName("UTF-8");

@@ -239,7 +239,7 @@ bool TTFolderModel::insertRows(int row, int count, const QModelIndex &parent)
             SQLError(q.lastError());
     }
     endInsertRows();
-    emit dataChanged(parent,parent);
+//    emit dataChanged(parent,parent);
 
     //emit dataChanged(index(0,0,parent),index(folders[pid].childrens.count(),1,parent));
     //emit dataChanged(parent,parent);

@@ -77,7 +77,8 @@ HEADERS += \
     tqqueryviewcontroller.h \
     logform.h \
     queryfields.h \
-    TQMultiComboBox/TQMultiComboBox.h
+    TQMultiComboBox/TQMultiComboBox.h \
+    tqapplication.h
 
 #    plans.h planproxy.h \
 #    planfiles.h \
@@ -122,7 +123,8 @@ SOURCES += database.cpp main.cpp mainwindow.cpp querypage.cpp \
     logform.cpp \
     queryfields.cpp \
     ../common/ttutils.cpp \
-    TQMultiComboBox/TQMultiComboBox.cpp
+    TQMultiComboBox/TQMultiComboBox.cpp \
+    tqapplication.cpp
 
 #    planfilesform.cpp \
 #    project.cpp projectpage.cpp plans.cpp planproxy.cpp planfiles.cpp \
