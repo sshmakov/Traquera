@@ -46,6 +46,7 @@ class TQRecModel;
 
 class TQAbstractProject;
 class TQRecord;
+typedef QList<TQRecord*> TQRecordList;
 
 struct TQNote
 {
@@ -78,9 +79,14 @@ struct TQAttachedFile
     bool isAdded;
     bool isDeleted;
     bool isChanged;
-    int id;
+    int index;
     QVariant data;
     int size;
+    TQAttachedFile()
+        : isAdded(false), isChanged(false), isDeleted(false),index(0), size(0)
+    {
+
+    }
 };
 
 struct TQUser
@@ -126,8 +132,8 @@ private:
 public:
     typedef TQAbstractDB *(*createDbFunc)(QObject *);
     TQAbstractDB(QObject *parent = 0);
-    virtual QStringList dbmsTypes() = 0;
-    virtual QStringList projects(const QString &dbmsType,
+    Q_INVOKABLE virtual QStringList dbmsTypes() = 0;
+    Q_INVOKABLE virtual QStringList projects(const QString &dbmsType,
                                  const QString &user = QString(),
                                  const QString &pass = QString()) = 0;
     virtual TQAbstractProject *openProject(
@@ -139,11 +145,11 @@ public:
             const QString &connectionString
             ) = 0;
     virtual void setDbmsType(const QString &dbType);
-    virtual QString dbmsType() const;
+    Q_INVOKABLE virtual QString dbmsType() const;
     virtual void setDbmsServer(const QString &server);
-    virtual QString dbmsServer() const;
+    Q_INVOKABLE virtual QString dbmsServer() const;
     virtual void setDbmsUser(const QString &dbmsUser, const QString &dbmsPass = QString());
-    virtual QString dbmsUser() const;
+    Q_INVOKABLE virtual QString dbmsUser() const;
     virtual QString dbmsPass() const;
     virtual void setConnectString(const QString &connectString);
     virtual QWidget *createConnectWidget() const;
@@ -223,6 +229,8 @@ public:
 };
 
 
+class QAction;
+class TQViewController;
 class TQQueryDef;
 class TQAbstractQWController;
 
@@ -253,24 +261,24 @@ public:
     ~TQAbstractProject();
     // Standard manipulations
     TQAbstractDB *db() const;
-    virtual bool isOpened() const = 0;
-    virtual QString currentUser() const = 0;
-    virtual QString projectName() const = 0;
-    virtual QString fieldVID2Name(int rectype, int vid) = 0;
-    virtual int fieldName2VID(int rectype, const QString &fname) = 0;
-    virtual int defaultRecType() const = 0;
-    virtual bool isSelectedId(int id, int recType) const = 0;
-    virtual void setSelectedId(int id, bool value, int recType) = 0;
-    virtual void clearSelected(int recType) = 0;
+    Q_INVOKABLE virtual bool isOpened() const = 0;
+    Q_INVOKABLE virtual QString currentUser() const = 0;
+    Q_INVOKABLE virtual QString projectName() const = 0;
+    Q_INVOKABLE virtual QString fieldVID2Name(int rectype, int vid) = 0;
+    Q_INVOKABLE virtual int fieldName2VID(int rectype, const QString &fname) = 0;
+    Q_INVOKABLE virtual int defaultRecType() const = 0;
+    Q_INVOKABLE virtual bool isSelectedId(int id, int recType) const = 0;
+    Q_INVOKABLE virtual void setSelectedId(int id, bool value, int recType) = 0;
+    Q_INVOKABLE virtual void clearSelected(int recType) = 0;
     virtual void initQueryModel(int recType) = 0;
-    virtual int fieldNativeType(const QString &name, int recType) = 0;
+    Q_INVOKABLE virtual int fieldNativeType(const QString &name, int recType) = 0;
     virtual TQRecModel *selectedModel(int recType) = 0;
-    virtual bool canFieldSubmit(int vid, int recType) = 0;
-    virtual bool canFieldUpdate(int vid, int recType) = 0;
+    Q_INVOKABLE virtual bool canFieldSubmit(int vid, int recType) = 0;
+    Q_INVOKABLE virtual bool canFieldUpdate(int vid, int recType) = 0;
     Q_INVOKABLE virtual TQRecord *createRecordById(int id, int rectype) = 0;
     Q_INVOKABLE virtual TQRecord *newRecord(int rectype) = 0;
     Q_INVOKABLE virtual TQAbstractRecordTypeDef *recordTypeDef(int rectype) = 0;
-    virtual QDomDocument recordTypeDefDoc(int rectype) = 0;
+    Q_INVOKABLE virtual QDomDocument recordTypeDefDoc(int rectype) = 0;
 
     virtual TQRecModel *openQueryModel(const QString &queryName, int recType, bool emitEvent = true) = 0;
     virtual bool renameQuery(const QString &oldName, const QString &newName, int recordType);
@@ -312,6 +320,9 @@ public:
     virtual QSettings *projectSettings() const;
     Q_INVOKABLE virtual QVariant optionValue(const QString &option) const;
     Q_INVOKABLE virtual void setOptionValue(const QString &option, const QVariant &value);
+    virtual QList<QAction*> actions(const TQRecordList &records);
+public slots:
+    virtual void onActionTriggered(TQViewController *controller, QAction *action);
 signals:
     void openedModel(const QAbstractItemModel *model);
     void recordChanged(int id);
@@ -501,6 +512,7 @@ public:
     virtual bool isSelected() const;
     virtual void setSelected(bool value);
     Q_INVOKABLE virtual void refresh();
+//    virtual QList<QAction *> actionList() const;
 protected:
     virtual void doSetMode(int newMode) const;
     virtual void doSetRecordId(int id) const;

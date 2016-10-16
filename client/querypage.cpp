@@ -85,6 +85,7 @@ public:
     TQQueryViewController *controller;
     QueryFields *fieldsPanel;
     TTGlobal *globalObj;
+    QList<QAction*> recordActions;
     /*QXmlQuery loadXQ(const QString &filePath)
     {
         QFile xq(filePath);
@@ -432,7 +433,6 @@ QModelIndex QueryPage::mapIndexToModel(const QModelIndex &index) const
 
 void QueryPage::paintEvent(QPaintEvent *ev)
 {
-//    tqProfile();
     QWidget::paintEvent(ev);
 }
 
@@ -507,7 +507,6 @@ void QueryPage::slotTabTitleChanged()
 
 void QueryPage::slotTabTitleChanged(QWidget* widget, const QString & newTitle)
 {
-//    tqProfile();
     foreach(const DetailPages &item, d->pages)
     {
         if(widget == item.titleObj)
@@ -580,6 +579,13 @@ void QueryPage::showHeaderPopupMenu(const QPoint &pos)
         subMenu->addAction(action);
     }
     menu.exec(queryView->mapToGlobal(pos));
+}
+
+void QueryPage::recordActionTriggered(QAction *action)
+{
+    if(d->recordActions.contains(action))
+        project()->onActionTriggered(controller(), action);
+
 }
 
 void QueryPage::resetPlanFilter()
@@ -888,13 +894,8 @@ void QueryPage::drawNotes()
 //    const TQRecModel *model = qobject_cast<const TQRecModel *>(qryIndex.model());
     if(record)
     {
-//        tqProfile() << "record->refresh";
-//        record->refresh();
-//        tqProfile() << "record->toXml";
-//        QDomDocument xml = record->toXML();
         if(d->detailsTimer->isActive())
             return;
-        tqProfile() << "makeRecordsPage";
         page = makeRecordsPage(QObjectList() << record, d->xqPageFile);
     }
 #ifdef TQ_QT_DEBUG
@@ -905,7 +906,6 @@ void QueryPage::drawNotes()
 #endif
     if(d->detailsTimer->isActive())
         return;
-    tqProfile() << "webView_2->setHtml";
     webView_2->setHtml(page, baseUrl);
 }
 
@@ -1247,6 +1247,20 @@ QObjectList QueryPage::selectedRecords()
     return list;
 }
 
+TQRecordList QueryPage::selectedTQRecords()
+{
+    TQRecordList list;
+    QModelIndexList ii = selectedRows();
+    foreach(QModelIndex f, ii)
+    {
+        TQRecord *rec = recordOnIndex(f);
+        if(!rec)
+            continue;
+        list.append(rec);
+    }
+    return list;
+}
+
 QList<int> QueryPage::selectedIds()
 {
     QList<int> list;
@@ -1517,14 +1531,12 @@ void QueryPage::updateDetails()
     if(record)
         decorator->readValues(record, fieldEdits);
 #endif
-    tqProfile() << "before draw";
     if(d->detailsTimer->isActive())
         return;
     QueryPage *page = this;
 //    QFuture<void> future = QtConcurrent::run(notesDrawning, page);
     drawNotes();
 
-    tqProfile() << "after draw";
 
 //    filesPage->setRecord(record);
     d->controller->emitCurrentRecordChanged(record);
@@ -1726,6 +1738,20 @@ void QueryPage::on_queryView_customContextMenuRequested(const QPoint &pos)
     //queryView->addAction(actionCopyTable);
     menu.addAction(actionAdd_Note);
     menu.addAction(actionTest);
+
+    d->recordActions.clear();
+    TQRecordList recs = selectedTQRecords();
+    QList<QAction*> actions = project()->actions(recs);
+    if(!actions.isEmpty())
+    {
+        menu.addSeparator();
+        foreach(QAction *a, actions)
+        {
+            menu.addAction(a);
+            d->recordActions.append(a);
+        }
+        connect(&menu, SIGNAL(triggered(QAction*)), SLOT(recordActionTriggered(QAction*)));
+    }
     menu.exec(queryView->mapToGlobal(pos));
 }
 

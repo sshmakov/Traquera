@@ -1863,7 +1863,7 @@ QList<TQAttachedFile> TrkToolProject::attachedFiles(TQRecord *record)
             file.isAdded = false;
             file.isChanged = false;
             file.isDeleted = false;
-            file.id = id++;
+            file.index = id++;
             /*
                 TRK_FILE_STORAGE_MODE mode;
                 TRK_UINT sz;
@@ -1955,10 +1955,11 @@ int TrkToolProject::attachFileToRecord(TQRecord *record, const QString &filePath
         file.isAdded = true;
         file.isChanged = false;
         file.isDeleted = false;
-        file.id = trec->files.count();
+        file.index = trec->files.count();
         trec->files.append(file);
     }
     TrkAttachedFileHandleFree(&attHandle);
+    trec->filesReaded = false;
     if(res != -1)
         record->setModified(true);
     return res;
@@ -1980,9 +1981,12 @@ bool TrkToolProject::removeFileFromRecord(TQRecord *record, int fileIndex)
             if(nextIndex++ == fileIndex)
             {
                 res = isTrkOK(TrkDeleteAttachedFile(attHandle));
+                if(res)
+                    trec->files.removeAt(fileIndex);
                 break;
             }
     TrkAttachedFileHandleFree(&attHandle);
+    trec->filesReaded = false;
     if(res)
         record->setModified(true);
     return res;
@@ -2667,6 +2671,13 @@ int TrkToolRecord::appendFile(const QString &filePath)
     if(isEditing())
         return prj->attachFileToRecord(this, filePath);
     return -1;
+}
+
+bool TrkToolRecord::removeFile(int fileIndex)
+{
+    if(!isEditing())
+        return false;
+    return prj->removeFileFromRecord(this, fileIndex);
 }
 
 void TrkToolRecord::refresh()

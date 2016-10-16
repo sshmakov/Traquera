@@ -1738,6 +1738,14 @@ void MainWindow::openCurItem(bool reuse)
     }
 }
 
+TQViewController *MainWindow::currentController()
+{
+    QueryPage *page = curQueryPage();
+    if(!page)
+        return 0;
+    return page->controller();
+}
+
 void MainWindow::on_actionOpen_Query_triggered()
 {
     openCurItem(true);

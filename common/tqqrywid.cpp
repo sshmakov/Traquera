@@ -22,12 +22,19 @@ void TQQueryWidget::setRecordTypeDef(TQAbstractRecordTypeDef *def)
     ui->lwFields->clear();
     if(def)
     {
-        foreach(int vid, def->fieldVids())
+        foreach(QString fname, def->fieldNames())
         {
-            QString fname = def->fieldName(vid);
+            int vid = def->fieldVid(fname);
             QListWidgetItem *item= new QListWidgetItem(fname, ui->lwFields);
             item->setData(Qt::UserRole, vid);
         }
+
+//        foreach(int vid, def->fieldVids())
+//        {
+//            QString fname = def->fieldName(vid);
+//            QListWidgetItem *item= new QListWidgetItem(fname, ui->lwFields);
+//            item->setData(Qt::UserRole, vid);
+//        }
         ui->lwFields->sortItems();
     }
 }

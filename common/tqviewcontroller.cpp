@@ -137,7 +137,6 @@ void TQViewController::addDetailWidgets(QWidget *topWidget, QWidget *pageWidget,
 
 void TQViewController::onSelectedRecordsChanged()
 {
-//    tqProfile();
     emit selectedRecordsChanged();
 }
 

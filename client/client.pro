@@ -137,7 +137,6 @@ RESOURCES += resources/tracks.qrc
 win32: LIBS += -lshell32 -lshlwapi -L../lib -ltqgui
 # win32: LIBS += -lodbc32
 
-
 #INCLUDEPATH += $$PWD/../trktool
 #DEPENDPATH += $$PWD/../trktool
 
@@ -191,5 +190,8 @@ win32:INCLUDEPATH += C:/OpenSSL-Win32/include
 #win32:LIBS += -LC:/OpenSSL-Win32/lib -LC:/OpenSSL-Win32/bin -llibeay32 -lssleay32
 win32:LIBS += -LC:/OpenSSL-Win32/bin
 LIBS += -L../lib -ltqplugapi -ltqcondapi
+
+#win32:INCLUDEPATH += "C:/Program Files (x86)/Visual Leak Detector/include/"
+#win32:LIBS += -L"C:/Program Files (x86)/Visual Leak Detector/lib/Win64/"
 
 

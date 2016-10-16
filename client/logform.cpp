@@ -53,9 +53,13 @@ static void messageOutput(QtMsgType type, const char *msg)
             handler.cursor.insertText(QString("Warning: %1\n").arg(msg));
         break;
     case QtCriticalMsg:
+    {
         if(TQDebug::verboseLevel() >= TQCriticalLevel)
             handler.cursor.insertText(QString("Critical: %1\n").arg(msg));
+        QErrorMessage *errMess = QErrorMessage::qtHandler();
+        errMess->showMessage(msg);
         break;
+    }
     case QtFatalMsg:
         if(TQDebug::verboseLevel() >= TQFatalLevel)
             handler.cursor.insertText(QString("Fatal: %1\n").arg(msg));

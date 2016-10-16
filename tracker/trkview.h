@@ -785,6 +785,7 @@ public:
     QList<TQAttachedFile> fileList();
     bool saveFile(int fileIndex, const QString &dest);
     int appendFile(const QString &filePath);
+    bool removeFile(int fileIndex);
     TrkToolProject *project() const
     {
         return prj;

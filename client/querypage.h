@@ -86,6 +86,7 @@ public:
     void printPreview();
     Q_INVOKABLE QModelIndexList selectedRows();
     Q_INVOKABLE QObjectList selectedRecords(); //Q_INVOKABLE QList<TrkToolRecord *> selectedRecords();
+    TQRecordList selectedTQRecords();
     Q_INVOKABLE QList<int> selectedIds();
     Q_INVOKABLE QObjectList allRecords();
     Q_INVOKABLE QObjectList markedRecords();
@@ -148,6 +149,7 @@ protected slots:
     void slotUnsupportedContent(QNetworkReply *reply);
     void columnVisibleToggle();
     void showHeaderPopupMenu(const QPoint &pos);
+    void recordActionTriggered(QAction *action);
     //void recordChanged(int recordId);
 signals:
     void changedQuery(const QString & projectName, const QString & queryName);

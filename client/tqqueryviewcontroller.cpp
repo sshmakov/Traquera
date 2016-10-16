@@ -28,7 +28,6 @@ TQQueryViewController::~TQQueryViewController()
 
 void TQQueryViewController::emitCurrentRecordChanged(TQRecord *record)
 {
-    tqProfile();
     if(d->record == record)
         return;
     if(d->record)

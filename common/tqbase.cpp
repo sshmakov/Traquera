@@ -193,6 +193,18 @@ void TQAbstractProject::setOptionValue(const QString &option, const QVariant &va
     sets->setValue(option, value);
 }
 
+QList<QAction *> TQAbstractProject::actions(const TQRecordList &records)
+{
+    Q_UNUSED(records)
+    return QList<QAction *>();
+}
+
+void TQAbstractProject::onActionTriggered(TQViewController *controller, QAction *action)
+{
+    Q_UNUSED(controller);
+    Q_UNUSED(action);
+}
+
 /*  TQBaseProject  */
 TQBaseProject::TQBaseProject(TQAbstractDB *db)
     :TQAbstractProject(db)
@@ -1112,6 +1124,11 @@ void TQRecord::refresh()
         return;
     project()->readRecordWhole(this);
 }
+
+//QList<QAction *> TQRecord::actionList() const
+//{
+//    return QList<QAction *>();
+//}
 
 void TQRecord::doSetMode(int newMode) const
 {

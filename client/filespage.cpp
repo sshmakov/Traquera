@@ -128,12 +128,17 @@ void FilesPage::refreshFiles()
         int row=0;
         foreach(const TQAttachedFile &file, files)
         {
-            QFileInfo f(file.fileName);
-            ui->filesTable->insertRow(row);
-            ui->filesTable->setItem(row,FP_NAME,new QTableWidgetItem(prov.icon(f),f.fileName()));
-            ui->filesTable->setItem(row,FP_CHANGE,new QTableWidgetItem(file.createDateTime.toString(d->def->dateTimeFormat())));
-            ui->filesTable->setItem(row,FP_ORIGINALPATH,new QTableWidgetItem(f.dir().path()));
-            row++;
+            if(!file.isDeleted)
+            {
+                QFileInfo f(file.fileName);
+                ui->filesTable->insertRow(row);
+                ui->filesTable->setItem(row,FP_NAME,new QTableWidgetItem(prov.icon(f),f.fileName()));
+                ui->filesTable->setItem(row,FP_CHANGE,new QTableWidgetItem(file.createDateTime.toString(d->def->dateTimeFormat())));
+                ui->filesTable->setItem(row,FP_ORIGINALPATH,new QTableWidgetItem(f.dir().path()));
+                QTableWidgetItem *item = ui->filesTable->item(row,0);
+                item->setData(Qt::UserRole, file.index);
+                row++;
+            }
         }
         setModifyEnabled(d->rec->mode() != TQRecord::View);
     }
@@ -181,9 +186,12 @@ void FilesPage::previewCurrentFile()
     {
         if(d->rec)
         {
-            QString fileName = fileItem->text();
+            int row = fileItem->row();
+            QTableWidgetItem *item = ui->filesTable->item(row,FP_NAME);
+            int index = item->data(Qt::UserRole).toInt();
+            QString fileName = item->text();
             QString tempFile = QDir::temp().absoluteFilePath(fileName);
-            if(d->rec->saveFile(fileItem->row(), tempFile))
+            if(d->rec->saveFile(index, tempFile))
             {
                 previewWidget->setSourceFile(tempFile);
                 return;
@@ -201,9 +209,12 @@ void FilesPage::openCurrentFile()
     stopPreview();
     if(!d->rec)
         return;
-    QString fileName = ui->filesTable->item(fileIndex.row(),FP_NAME)->text();
+    int row = fileIndex.row();
+    QTableWidgetItem *item = ui->filesTable->item(row,FP_NAME);
+    QString fileName = item->text();
+    int index = item->data(Qt::UserRole).toInt();
     QString tempFile = QDir::temp().absoluteFilePath(fileName);
-    if(d->rec->saveFile(fileIndex.row(), tempFile))
+    if(d->rec->saveFile(index, tempFile))
     {
         tempFile = QDir::toNativeSeparators(tempFile);
         //QUrl url = QUrl::fromUserInput(tempFile);
@@ -225,8 +236,9 @@ void FilesPage::saveCurrentFiles()
         fileName = QFileDialog::getSaveFileName(this,
                                               QString() /*"Сохранить файл..."*/,
                                               fileName);
+        int index = item->data(Qt::UserRole).toInt();
         if(!fileName.isEmpty())
-            d->rec->saveFile(item->row(), fileName);
+            d->rec->saveFile(index, fileName);
         return;
     }
     QString path = QFileDialog::getExistingDirectory(this);
@@ -240,7 +252,8 @@ void FilesPage::saveCurrentFiles()
             return;
         QString fileName = item->text();
         fileName = dir.filePath(fileName);
-        if(!d->rec->saveFile(row, fileName))
+        int index = item->data(Qt::UserRole).toInt();
+        if(!d->rec->saveFile(index, fileName))
             return;
     }
 }
@@ -279,15 +292,25 @@ void FilesPage::deleteCurrentFiles()
     else
         text = tr("Удалить файл: %1").arg(rows.size());
 
-    if(QMessageBox::Ok == QMessageBox::question(this, tr("Удаление файлов"),text))
+    if(!d->controller->beginModifySection())
+        return;
+    if(QMessageBox::Ok == QMessageBox::question(this, tr("Удаление файлов"),text,
+                                                QMessageBox::StandardButtons(
+                                                    QMessageBox::Yes
+                                                    | QMessageBox::No
+                                                    ),
+                                                QMessageBox::No))
     {
         qSort(rows.begin(), rows.end(), qGreater<int>());
         foreach(int row, rows)
         {
-            if(!d->rec->removeFile(row))
+            QTableWidgetItem *item = ui->filesTable->item(row, FP_NAME);
+            int index = item->data(Qt::UserRole).toInt();
+            if(!d->rec->removeFile(index))
                 break;
         }
     }
+    d->controller->submitModifySection();
     refreshFiles();
 }
 

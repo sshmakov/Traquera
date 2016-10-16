@@ -5,6 +5,7 @@
 #include "jiraoptions.h"
 #include <tqplugui.h>
 #include <tqoauth.h>
+#include <tqviewcontroller.h>
 #include "webform.h"
 #include <tqjson.h>
 #include "jiralogin.h"
@@ -12,6 +13,7 @@
 #include "jiraqry.h"
 #include "jiraquerydialog.h"
 #include "jirarecmodel.h"
+#include "uniondevice.h"
 #include <ttglobal.h>
 #include <tqdebug.h>
 #include <QtCore>
@@ -162,6 +164,13 @@ struct SavedSession
 
 static QMultiHash<QString, SavedSession> logins; //by dbServer
 
+static QStringList skippedFields = QStringList()
+        << "attachment"
+        << "description"
+        << "comment"
+        << "worklog"
+           ;
+
 class JiraDBPrivate
 {
 public:
@@ -174,6 +183,8 @@ public:
     QList<QNetworkCookie> lastCookies;
     int lastHTTPCode;
     QString lastHTTPError;
+    QString tempFolder;
+
 
     JiraDBPrivate() : isLogged(false), lastHTTPCode(0)
     {
@@ -197,6 +208,7 @@ struct JiraRecTypeDefPrivate {
     QMap<QString, int> schemaToSimple;
     int idVid, descVid, summaryVid, assigneeVid, creatorVid, createdVid;
     //    QMap<QString, JiraUser> knownUsers; // by name
+
 };
 
 JiraRecTypeDef::JiraRecTypeDef(JiraProject *project)
@@ -267,7 +279,10 @@ QStringList JiraRecTypeDef::fieldNames() const
 {
     QStringList list;
     foreach(const JiraFieldDesc *desc, d->fields)
+    {
+        if(!skippedFields.contains(desc->id))
         list.append(desc->name);
+    }
     return list;
 }
 
@@ -690,6 +705,16 @@ QString JiraRecTypeDef::typeName() const
     return d->recTypeName;
 }
 
+int JiraRecTypeDef::idVid() const
+{
+    return d->idVid;
+}
+
+int JiraRecTypeDef::descVid() const
+{
+    return d->descVid;
+}
+
 int JiraRecTypeDef::schemaToSimpleType(const QString &schemaType)
 {
     return d->schemaToSimple.value(schemaType,TQ::TQ_FIELD_TYPE_NONE);
@@ -878,7 +903,6 @@ void JiraDB::setConnectString(const QString &connectString)
 
 QVariant JiraDB::sendRequest(const QString &method, const QUrl &url, QVariantMap bodyMap)
 {
-    tqProfile() << method << url.toString();
 //    QString link(dbmsServer() + url);
 //    QUrl url(link);
     QNetworkRequest req;
@@ -946,6 +970,7 @@ QVariant JiraDB::sendRequest(const QString &method, const QUrl &url, QVariantMap
     QVariant obj;
     if(!contType.compare("application/json",Qt::CaseInsensitive))
         obj = parser->toVariant(buf);
+    r->deleteLater();
     return obj;
 }
 
@@ -999,6 +1024,78 @@ QNetworkReply *JiraDB::sendRequestNative(const QUrl &url, const QString &method,
     }
     dumpReply(r, QByteArray());
     return r;
+}
+
+QVariant JiraDB::sendFile(const QUrl &url, const QString &fileName, QIODevice *file)
+{
+    /*
+    QHttpMultiPart multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
+    QNetworkRequest request(url);
+    QString bound(multiPart.boundary());
+    bound = "A1234";
+    request.setHeader(QNetworkRequest::ContentTypeHeader, QString("multipart/form-data; boundary=")+bound);
+    request.setRawHeader("X-Atlassian-Token", "nocheck");
+//    request.setHeader(QNetworkRequest::ContentLengthHeader, 166);
+    QByteArray begin, end;
+    begin.append(QString("\r\n--%1\r\n").arg(bound));
+    begin.append(QString("Content-Disposition: form-data; name=\"file\"; filename=\"%1\"\r\n").arg(fileName));
+    begin.append(QString("Content-Type: application/octet-stream\r\n"));
+    begin.append("\r\n");
+    end.append(QString("\r\n--%1--\r\n").arg(bound));
+
+    QBuffer bufBegin(&begin), bufEnd(&end);
+    bufBegin.open(QIODevice::ReadOnly);
+    bufEnd.open(QIODevice::ReadOnly);
+    UnionDevice *dev = new UnionDevice(this);
+    dev->appendDevice(&bufBegin);
+    dev->appendDevice(file);
+    dev->appendDevice(&bufEnd);
+    dev->open(QIODevice::ReadOnly);
+
+    QByteArray body = dev->readAll();
+
+    dumpRequest(&request, "POST", body);
+
+    QNetworkReply *reply = man->post(request, body);
+    dev->setParent(reply);
+*/
+
+    QHttpMultiPart *multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
+    QHttpPart filePart;
+    filePart.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("application/octet-stream"));
+    filePart.setHeader(QNetworkRequest::ContentDispositionHeader, QString("form-data; name=\"file\"; filename=\"%1\"").arg(fileName));
+    filePart.setBodyDevice(file);
+    file->setParent(multiPart); // we cannot delete the file now, so delete it with the multiPart
+
+    multiPart->append(filePart);
+
+    QNetworkRequest request(url);
+    request.setRawHeader("X-Atlassian-Token", "nocheck");
+//    QList<QNetworkCookie> list = man->cookieJar()->cookiesForUrl(dbmsServer());
+//    if(list.size())
+//        request.setHeader(QNetworkRequest::SetCookieHeader, QVariant::fromValue(list));
+
+    dumpRequest(&request, "post", QByteArray());
+
+    QNetworkReply *reply = man->post(request, multiPart);
+    multiPart->setParent(reply); // delete the multiPart with the reply
+
+    waitReply(reply);
+
+    d->lastHTTPCode = reply->error();
+    d->lastHTTPError = reply->errorString();
+    QString contType = reply->header(QNetworkRequest::ContentTypeHeader).toString();
+    if(contType.contains(';'))
+        contType = contType.split(';').value(0);
+    contType = contType.trimmed();
+    QByteArray buf = reply->readAll();
+
+    dumpReply(reply, buf);
+    QVariant obj;
+    if(!contType.compare("application/json",Qt::CaseInsensitive))
+        obj = parser->toVariant(buf);
+    reply->deleteLater();
+    return obj;
 }
 
 int JiraDB::lastHTTPCode() const
@@ -1065,6 +1162,17 @@ QNetworkReply *JiraDB::sendWaitOp(QNetworkAccessManager::Operation op, QNetworkR
 TQJson *JiraDB::jsonParser()
 {
     return parser;
+}
+
+QString JiraDB::tempFolder()
+{
+    if(d->tempFolder.isEmpty())
+    {
+        QDir temp = QDir::temp();
+        d->tempFolder = temp.absoluteFilePath("tqjira");
+        temp.mkpath(d->tempFolder);
+    }
+    return d->tempFolder;
 }
 
 bool JiraDB::waitReply(QNetworkReply *reply)
@@ -1267,7 +1375,9 @@ void JiraDB::dumpRequest(QNetworkRequest *req, const QString &method, const QByt
     foreach(const QByteArray &header, req->rawHeaderList())
     {
         QByteArray value = req->rawHeader(header);
-        tqDebug() << header << value;
+        QByteArray h = header;
+        h+=":";
+        tqDebug() << h  << value;
     }
     tqDebug() << body;
     tqDebug() << "---";
@@ -1309,8 +1419,15 @@ void JiraDB::callbackClicked()
 }
 
 // ======================== JiraProject ==================================
+class JiraProjectPrivate
+{
+public:
+    QHash<QString, QAction *> actions; // actions by id
+};
+
+
 JiraProject::JiraProject(TQAbstractDB *db)
-    : TQBaseProject(db), filters(new JiraFilterModel(this))
+    : TQBaseProject(db), filters(new JiraFilterModel(this)), d(new JiraProjectPrivate())
 {
     this->db = qobject_cast<JiraDB *>(db);
     systemChoices
@@ -1483,14 +1600,12 @@ bool JiraProject::readRecordWhole(TQRecord *record)
     QVariantMap issue = db->sendRequest("GET",db->queryUrl(QString("rest/api/2/issue/%1?fields=*all&expand=attachment").arg(rec->jiraKey()))).toMap();
     QVariantMap fields = issue.value("fields").toMap();
     QVariantMap::iterator i;
-    rec->values.clear();
-    rec->displayValues.clear();
+    rec->clearReadedFields();
     for(i = fields.begin(); i!=fields.end(); i++)
-        storeReadedField(rec, rdef, i.key(), i.value());
+        rec->storeReadedField(i.key(), i.value());
     rec->isFieldsReaded = true;
     doParseComments(rec, issue);
     rec->isTextsReaded = true;
-
     rec->files.clear();
     if(fields.contains("attachment"))
     {
@@ -1500,10 +1615,13 @@ bool JiraProject::readRecordWhole(TQRecord *record)
             QVariantMap map = f.toMap();
             TQAttachedFile file;
             file.fileName = map.value("filename").toString();
-            file.id = map.value("id").toInt();
+            file.index = rec->files.size();
             file.size = map.value("size").toInt();
-            file.data = map.value("content");
+            file.data = map;
             file.createDateTime = map.value("created").toDateTime();
+            file.isAdded = false;
+            file.isChanged = false;
+            file.isDeleted = false;
             rec->files.append(file);
         }
     }
@@ -1528,8 +1646,9 @@ bool JiraProject::readRecordFields(TQRecord *record)
     rec->internalId = issue.value("id").toInt();
     QVariantMap fields = issue.value("fields").toMap();
     QVariantMap::iterator i;
+    rec->clearReadedFields();
     for(i = fields.begin(); i!=fields.end(); i++)
-        storeReadedField(rec, rdef, i.key(), i.value());
+        rec->storeReadedField(i.key(), i.value());
     rec->isFieldsReaded = true;
 //    emit recordChanged(rec->recordId());
 //    emit rec->changed(rec->recordId());
@@ -1584,7 +1703,7 @@ bool JiraProject::readRecordBase(TQRecord *record)
     QVariantMap fields = issue.value("fields").toMap();
     QVariantMap::iterator i;
     for(i = fields.begin(); i!=fields.end(); i++)
-        storeReadedField(rec, rdef, i.key(), i.value());
+        rec->storeReadedField(i.key(), i.value());
     return true;
 }
 
@@ -1595,6 +1714,18 @@ bool JiraProject::updateRecordBegin(TQRecord *record)
         return false;
     rec->setMode(TQRecord::Edit);
     return true;
+}
+
+static QVariant arrayValue(const QVariant &value)
+{
+    QVariantList list;
+    foreach(QVariant item, value.toList())
+    {
+        QVariantMap v;
+        v.insert("id", item.toString());
+        list.append(v);
+    }
+    return list;
 }
 
 bool JiraProject::commitRecord(TQRecord *record)
@@ -1631,11 +1762,7 @@ bool JiraProject::commitRecord(TQRecord *record)
             value = v;
         }
         else if(fdesc->isArray())
-        {
-            QVariantMap v;
-            v.insert("id", value);
-            value = v;
-        }
+            value = arrayValue(value);
         fields.insert(fdesc->id, value);
     }
     QVariantMap v2;
@@ -1745,11 +1872,7 @@ bool JiraProject::doCommitUpdateRecord(TQRecord *record)
             value = v;
         }
         else if(fdesc->isArray())
-        {
-            QVariantMap v;
-            v.insert("id", value);
-            value = v;
-        }
+            value = arrayValue(value);
 //        QVariantList fChanges;
 //        QVariantMap fAction;
 //        fAction.insert("set", value);
@@ -1880,7 +2003,7 @@ bool JiraProject::saveFileFromRecord(TQRecord *record, int fileIndex, const QStr
     if(fileIndex<0 || fileIndex >= rec->files.size())
         return false;
     const TQAttachedFile &f = rec->files.at(fileIndex);
-    QNetworkReply *r = db->sendRequestNative(f.data.toString(), "GET");
+    QNetworkReply *r = db->sendRequestNative(f.data.toMap().value("content").toString(), "GET");
     if(!r)
         return false;
     QFile destFile(dest);
@@ -2059,12 +2182,6 @@ QString JiraProject::userFullName(const QString &login)
 
 void JiraProject::readRecordDef2(JiraRecTypeDef *rdef, const QVariantMap &fieldsMap)
 {
-    static QStringList skippedFields = QStringList()
-            << "attachment"
-            << "description"
-            << "comment"
-            << "worklog"
-               ;
     int vid = 1;
     int nativeType = 1;
     foreach(QVariant v, fieldList)
@@ -2107,8 +2224,6 @@ void JiraProject::readRecordDef2(JiraRecTypeDef *rdef, const QVariantMap &fields
             rdef->d->schemaTypes.append(f.schemaType);
             rdef->d->nativeTypes.insert(f.schemaType, nativeType++);
         }
-//        if(skippedFields.contains(f.id))
-//            continue;
         f.nativeType = rdef->d->schemaTypes.indexOf(f.schemaType); // not work for issuekey
         f.simpleType = rdef->schemaToSimpleType(f.schemaType);
         if(f.simpleType == TQ::TQ_FIELD_TYPE_USER)
@@ -2283,6 +2398,12 @@ void JiraProject::loadRecordTypes()
 {
     QVariant obj = db->sendRequest("GET", db->queryUrl("rest/api/2/field"));
     fieldList = obj.toList();
+//    for(QMutableListIterator<QVariant> i(fieldList); i.hasNext(); )
+//    {
+//        QVariantMap map = i.next().toMap();
+//        if(skippedFields.contains(map.value("id").toString()))
+//            i.remove();
+//    }
     typesList = db->sendRequest("GET",db->queryUrl("rest/api/2/issuetype")).toList();
     foreach(const QVariant &t, typesList)
     {
@@ -2454,72 +2575,68 @@ void JiraProject::loadUsers()
     }
 }
 
-void JiraProject::storeReadedField(JiraRecord *rec, const JiraRecTypeDef *rdef, const QString &fid, const QVariant &value)
+QVariant JiraProject::postFile(JiraRecord *record, const QString &fileName, QFile *src)
 {
-    int fvid = rdef->fieldVidSystem(fid);
-    if(fid == "description")
-        rec->desc = value.toString();
-    else if(systemChoices.contains(fid))
-    {
-        int id = value.toMap().value("id").toInt();
-        QString display = value.toMap().value("name").toString();
-        rec->values.insert(fvid, id);
-        rec->displayValues.insert(fvid, display);
-    }
-    else if(fid == "timetracking")
-    {
-        QVariantMap map = value.toMap();
-        QString orig = map.value("originalEstimate").toString();
-        QString remain = map.value("remainingEstimate").toString();
-        rec->values.insert(fvid, value);
-        if(!orig.isEmpty())
-            rec->displayValues.insert(fvid, orig + " / " + remain);
-    }
-    else
-    {
+    QVariant res = db->sendFile(db->queryUrl(QString("rest/api/2/issue/%1/attachments").arg(record->jiraKey())), fileName, src);
+//    bool wasError = db->lastHTTPCode() && db->lastHTTPCode() != 200 ;
+//    return wasError;
+    return res;
+}
 
-        const JiraFieldDesc *fdef = rdef->d->fields[fvid];
-        if(fdef->isUser())
-        {
-            QVariantMap uMap = value.toMap();
-            QString login = uMap.value("name").toString();
-            QString displayName = uMap.value("displayName").toString();
-            rec->values.insert(fvid, login);
-            rec->displayValues.insert(fvid, displayName);
-            appendUserToKnown(uMap);
+bool JiraProject::removeFile(int fileId)
+{
+    QVariant res = db->sendRequest("DELETE", db->queryUrl(QString("rest/api/2/attachment/%1").arg(fileId)));
+    bool wasError = db->lastHTTPCode() && db->lastHTTPCode() != 204 ;
+    return wasError;
+}
+
+QList<QAction *> JiraProject::actions(const TQRecordList &records)
+{
+    QList<QAction *> list;
+    foreach(TQRecord *rec, records)
+    {
+        JiraRecord *jrec = qobject_cast<JiraRecord *>(rec);
+        if(!jrec)
+            continue;
+        QList<QAction *> reclist = recordActionList(jrec);
+        foreach (QAction *a, reclist) {
+            if(!list.contains(a))
+                list.append(a);
         }
-        else if(value.type() == QVariant::Map)
-        {
-            int id = value.toMap().value("id").toInt();
-            QString display = value.toMap().value("name").toString();
-            rec->values.insert(fvid, id);
-            rec->displayValues.insert(fvid, display);
-        }
-        else if(fdef->schemaType == "array")
-        {
-            QVariantList list = value.toList();
-            QVariantList idList;
-            QStringList displayList;
-            foreach(QVariant v, list)
-            {
-//                if(v.type() == QVariant::Map)
-                QVariantMap map = v.toMap();
-                int id = map.value("id").toInt();
-                QString display = map.value("value").toString();
-                idList.append(id);
-                displayList.append(display);
-            }
-            rec->values.insert(fvid, idList);
-            rec->displayValues.insert(fvid, displayList.join(", "));
-        }
+    }
+    return list;
+}
+
+QList<QAction *> JiraProject::recordActionList(const JiraRecord *record)
+{
+    if(record->mode() == TQRecord::Insert)
+        return QList<QAction *>();
+    QList<QAction *> list;
+    QVariant res = db->sendRequest("GET", db->queryUrl(QString("rest/api/2/issue/%1/transitions?expand=transitions.fields")
+                                                       .arg(record->jiraKey())));
+    bool wasError = db->lastHTTPCode();
+    if(wasError)
+        return list;
+    QVariantList tList = res.toMap().value("transitions").toList();
+    foreach(QVariant item, tList)
+    {
+        QVariantMap map = item.toMap();
+        QString id = map.value("id").toString();
+        if(id.isEmpty())
+            continue;
+        if(d->actions.contains(id))
+            list.append(d->actions.value(id));
         else
         {
-            rec->values.insert(fvid, value);
-            QString displayValue = rdef->valueToDisplay(fvid,value);
-            rec->displayValues.insert(fvid, displayValue);
+            QAction *action = new QAction(this);
+            action->setText(map.value("name").toString());
+            action->setData(id);
+            d->actions.insert(id, action);
+            list.append(action);
+//            connect(action, SIGNAL(triggered(bool)), SLOT(recordActionTrggered()));
         }
     }
-
+    return list;
 }
 
 void JiraProject::appendUserToKnown(const QVariantMap &userRec)
@@ -2536,240 +2653,42 @@ void JiraProject::appendUserToKnown(const QVariantMap &userRec)
     knownUsers.insert(name, item);
 }
 
+void JiraProject::onActionTriggered(TQViewController *controller, QAction *action)
+{
+    if(!d->actions.values().contains(action))
+        return;
+    QString id = action->data().toString();
+    if(id.isEmpty() || !d->actions.contains(id))
+        return;
+    QObjectList list = controller->selectedRecords();
+    foreach (QObject *obj, list) {
+        JiraRecord *rec = qobject_cast<JiraRecord *>(obj);
+        recordActionTrggered(rec, action);
+    }
+}
+
 void JiraProject::showSelectUser()
 {
 }
 
-
-// ====================== Jira Record ===================
-class JiraRecordPrivate
+void JiraProject::recordActionTrggered(JiraRecord *record, QAction *action)
 {
-public:
-    JiraRecTypeDef *def, *editDef;
-    JiraRecordPrivate()
-    {
-        def = editDef = 0;
-    }
-    ~JiraRecordPrivate()
-    {
-        if(editDef)
-        {
-            delete editDef;
-            editDef = 0;
-        }
-    }
-};
-
-JiraRecord::JiraRecord()
-    : TQRecord(), d(new JiraRecordPrivate())
-{
-    isFieldsReaded = false;
-    isTextsReaded = false;
-}
-
-JiraRecord::JiraRecord(TQAbstractProject *prj, int rtype, int id)
-    : TQRecord(prj, rtype, id), d(new JiraRecordPrivate())
-{
-    isFieldsReaded = false;
-    isTextsReaded = false;
-    if(prj)
-        d->def = dynamic_cast<JiraRecTypeDef*>(prj->recordTypeDef(rtype));
-}
-
-JiraRecord::JiraRecord(const TQRecord &src)
-    : TQRecord(src), d(new JiraRecordPrivate())
-{
-    isFieldsReaded = false;
-    isTextsReaded = false;
-    if(project())
-        d->def = dynamic_cast<JiraRecTypeDef*>(project()->recordTypeDef(recordType()));
-}
-
-JiraRecord::~JiraRecord()
-{
-    delete d;
-}
-
-QString JiraRecord::jiraKey() const
-{
-    return key;
-}
-
-int JiraRecord::recordId() const
-{
-    return TQRecord::recordId();
-}
-
-int JiraRecord::recordInternalId() const
-{
-    return internalId;
-}
-
-QVariant JiraRecord::value(int vid, int role) const
-{
-    if(d->def && vid == d->def->d->idVid)
-    {
-        switch(role)
-        {
-        case Qt::DisplayRole:
-            //return QString("%1-%2").arg(def->prj->projectKey).arg(recordId());
-            return jiraKey();
-        case Qt::EditRole:
-            return recordId();
-        }
-        return QVariant();
-    }
-#ifdef QT_DEBUG
-    QString fname = d->def->fieldName(vid);
-#endif
-    if(!isFieldsReaded)
-    {
-        TQRecord *rec = const_cast<JiraRecord *>(this);
-        project()->readRecordFields(rec);
-    }
-    if(role != Qt::DisplayRole && role != Qt::EditRole)
-        return QVariant();
-    if(d->def && vid == d->def->d->descVid)
-    {
-        if(!isTextsReaded)
-        {
-            TQRecord *rec = const_cast<JiraRecord *>(this);
-            project()->readRecordTexts(rec);
-        }
-        return desc;
-    }
-    QVariant value;
-    switch(role)
-    {
-    case Qt::DisplayRole:
-        value = displayValues.value(vid, QVariant());
-        break;
-    case Qt::EditRole:
-        value = values.value(vid, QVariant());
-    }
-#ifdef QT_DEBUG
-    QString s = value.toString();
-#endif
-
-    return value;
-}
-
-bool JiraRecord::setValue(int vid, const QVariant &newValue)
-{
-    if(!d->def)
-        return false;
-    if(vid == d->def->d->idVid)
-        return false;
-    if(vid == d->def->d->descVid)
-    {
-        desc = newValue.toString();
-        TQRecord::setValue(vid, desc);
-        setModified(true);
-        return true;
-    }
-    const JiraFieldDesc *fdesc  = d->def->fieldDesc(vid);
-    if(!fdesc)
-        return false;
-    if(fdesc->schemaSystem == "timetracking")
-    {
-
-    }
-    bool res = TQRecord::setValue(vid, newValue);
-    if(res)
-    {
-        values.insert(vid, newValue);
-        displayValues.insert(vid, d->def->valueToDisplay(vid, newValue));
-        setModified(true);
-    }
-    return true;
-}
-
-TQNotesCol JiraRecord::notes() const
-{
-    if(!isTextsReaded)
-    {
-        JiraRecord *rec = const_cast<JiraRecord *>(this);
-        project()->readRecordTexts(rec);
-    }
-    return notesCol;
-}
-
-bool JiraRecord::setNoteTitle(int index, const QString &newTitle)
-{
-    if(!isEditing())
-        return false;
-    if(index<0 || index >=notesCol.size())
-        return false;
-    notesCol[index].title = newTitle;
-    notesCol[index].isChanged = true;
-    setModified(true);
-    return true;
-}
-
-bool JiraRecord::setNoteText(int index, const QString &newText)
-{
-    if(!isEditing())
-        return false;
-    if(index<0 || index >=notesCol.size())
-        return false;
-    notesCol[index].text = newText;
-    notesCol[index].isChanged = true;
-    setModified(true);
-    return true;
-}
-
-bool JiraRecord::setNote(int index, const QString &newTitle, const QString &newText)
-{
-    if(!isEditing())
-        return false;
-    if(index<0 || index >=notesCol.size())
-        return false;
-    notesCol[index].title = newTitle;
-    notesCol[index].text = newText;
-    notesCol[index].isChanged = true;
-    setModified(true);
-    return true;
-}
-
-const TQAbstractRecordTypeDef *JiraRecord::typeDef() const
-{
-    return d->def;
-}
-
-const TQAbstractRecordTypeDef *JiraRecord::typeEditDef() const
-{
-    if(!d->editDef)
-    {
-        d->editDef = jiraProject()->loadEditRecordDef(this);
-    }
-    return d->editDef;
-}
-
-JiraProject *JiraRecord::jiraProject() const
-{
-    return qobject_cast<JiraProject *>(project());
-}
-
-int JiraRecord::addNote(const QString &noteTitle, const QString &noteText)
-{
-    if(mode() == TQRecord::View)
-        return -1;
-    TQNote note;
-    note.isAdded = true;
-    note.title = noteTitle;
-    note.text = noteText;
-    notesCol.append(note);
-    setModified(true);
-    return notesCol.size()-1;
-}
-
-bool JiraRecord::removeNote(int index)
-{
-    if(index<0 ||index >= notesCol.size())
-        return false;
-    notesCol[index].isDeleted = true;
-    setModified(true);
-    return true;
+//    QAction *action = qobject_cast<QAction*>(sender());
+    if(!action)
+        return;
+    QString id = action->data().toString();
+    if(id.isEmpty())
+        return;
+    QVariantMap body, t;
+    t["id"] = id;
+    body["transition"] = t;
+    QVariant res = db->sendRequest("POST", db->queryUrl(QString("rest/api/2/issue/%1/transitions")
+                                                        .arg(record->jiraKey())),
+                                   body);
+    bool wasError = db->lastHTTPCode();
+    if(wasError)
+        return;
+    record->refresh();
 }
 
 

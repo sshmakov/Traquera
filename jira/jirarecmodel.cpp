@@ -56,7 +56,9 @@ void JiraRecModel::fetchMore(const QModelIndex &parent)
     body["jql"] = d->jql;
     body["startAt"] = d->nextIndex;
     QVariantList fList;
-    fList << "key" << "id";
+    QStringList baseFields = d->project->baseRecordFields(d->recType).values();
+    foreach(QString field, baseFields)
+        fList << field;
     body["fields"] = fList;
     QVariantMap map = d->db->sendRequest("POST",d->db->queryUrl("rest/api/2/search"), body).toMap();
     QVariantList issueList = map.value("issues").toList();
@@ -71,6 +73,9 @@ void JiraRecModel::fetchMore(const QModelIndex &parent)
         JiraRecord *rec = new JiraRecord(d->project, d->recType, id);
         rec->key = key;
         rec->internalId = issue.value("id").toInt();
+        QVariantMap fieldsMap = issue.value("fields").toMap();
+        for(QVariantMap::iterator i = fieldsMap.begin(); i!=fieldsMap.end(); i++)
+            rec->storeReadedField(i.key(), i.value());
 //        d->project->readRecordFields(rec);  // !!! надо убрать !!!
         records.append(rec);
     }

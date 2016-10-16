@@ -8,6 +8,7 @@
 #include <tqmodels.h>
 
 #include "jira_global.h"
+#include "jirarecord.h"
 #include <QtNetwork>
 
 #define JIRAPARAM_METHOD "ConnectMethod"
@@ -108,6 +109,7 @@ public:
     Q_INVOKABLE QVariant del(const QString &query, QVariantMap bodyMap = QVariantMap());
     QUrl queryUrl(const QString &query) const;
     QNetworkReply *sendRequestNative(const QUrl &url, const QString &method, const QByteArray &body = QByteArray());
+    QVariant sendFile(const QUrl &url, const QString &fileName, QIODevice *file);
     Q_INVOKABLE int lastHTTPCode() const;
     Q_INVOKABLE QString lastHTTPErrorString() const;
     QVariant parseValue(const QVariant &source, const QString &path);
@@ -118,6 +120,7 @@ public:
     QNetworkReply *sendWait(const QString &method, QNetworkRequest &request, const QByteArray &body = QByteArray());
     QNetworkReply *sendWaitOp(QNetworkAccessManager::Operation op, QNetworkRequest &request, const QByteArray &body  = QByteArray());
     TQJson *jsonParser();
+    Q_INVOKABLE QString tempFolder();
 protected:
     QList<QNetworkReply*> readyReplies;
     QList<QNetworkCookie> cookies;
@@ -157,10 +160,15 @@ struct JiraUser
     bool isActive;
 };
 
+class TQViewController;
+
+class JiraProjectPrivate;
+
 class JiraProject: public TQBaseProject
 {
     Q_OBJECT
 protected:
+    JiraProjectPrivate *d;
     JiraDB *db;
 //    QString dbmsServer;
     QMap<int,JiraRecTypeDef *> recordDefs;
@@ -220,12 +228,18 @@ protected:
     TQChoiceList parseAllowedValues(const QVariantList &values) const;
     void loadQueries();
     void loadUsers();
-    void storeReadedField(JiraRecord *rec, const JiraRecTypeDef *rdef, const QString &fid, const QVariant &value);
+//    void storeReadedField(JiraRecord *rec, const JiraRecTypeDef *rdef, const QString &fid, const QVariant &value);
     //    void appendUserToKnown(const TQUser &user);
+    QVariant postFile(JiraRecord *record, const QString &fileName, QFile *src);
+    bool removeFile(int fileId);
+    QList<QAction *> actions(const TQRecordList &records);
+    QList<QAction *> recordActionList(const JiraRecord *record);
 public slots:
     void appendUserToKnown(const QVariantMap &userRec);
+    void onActionTriggered(TQViewController *controller, QAction *action);
 protected slots:
     void showSelectUser();
+    void recordActionTrggered(JiraRecord *record, QAction *action);
 
     friend class JiraDB;
     friend class JiraRecTypeDef;
@@ -345,6 +359,8 @@ public:
     QWidget *createCustomEditor(int vid, QWidget *parent) const;
     const JiraFieldDesc *fieldDesc(int vid) const;
     QString typeName() const;
+    int idVid() const;
+    int descVid() const;
 
 
     friend class JiraProject;
@@ -367,48 +383,6 @@ protected:
 };
 */
 
-class JiraRecordPrivate;
-
-class JiraRecord: public TQRecord
-{
-    Q_OBJECT
-    Q_PROPERTY(QString key READ jiraKey)
-    Q_PROPERTY(int internalId READ recordInternalId)
-protected:
-    JiraRecordPrivate *d;
-    QMap<int, QVariant> values;
-    QMap<int, QVariant> displayValues;
-    TQNotesCol notesCol;
-    QString desc;
-    QString key;
-    int internalId;
-    QList<TQAttachedFile> files;
-    bool isFieldsReaded, isTextsReaded;
-public:
-    JiraRecord();
-    JiraRecord(TQAbstractProject *prj, int rtype, int id);
-    JiraRecord(const TQRecord &src);
-    ~JiraRecord();
-    Q_INVOKABLE QString jiraKey() const;
-    Q_INVOKABLE int recordId() const;
-    Q_INVOKABLE int recordInternalId() const;
-    Q_INVOKABLE QVariant value(int vid, int role = Qt::DisplayRole) const ;
-    Q_INVOKABLE bool setValue(int vid, const QVariant &newValue);
-    TQNotesCol notes() const;
-    Q_INVOKABLE bool setNoteTitle(int index, const QString &newTitle);
-    Q_INVOKABLE bool setNoteText(int index, const QString &newText);
-    Q_INVOKABLE bool setNote(int index, const QString &newTitle, const QString &newText);
-    Q_INVOKABLE int addNote(const QString &noteTitle, const QString &noteText);
-    Q_INVOKABLE bool removeNote(int index);
-    Q_INVOKABLE const TQAbstractRecordTypeDef *typeDef() const;
-    Q_INVOKABLE const TQAbstractRecordTypeDef *typeEditDef() const;
-    Q_INVOKABLE JiraProject *jiraProject()const;
-
-    friend class JiraProject;
-    friend class JiraRecModel;
-};
-
-Q_DECLARE_METATYPE(JiraRecord *)
 
 class JiraFilterModel: public BaseRecModel<JiraFilter>
 {

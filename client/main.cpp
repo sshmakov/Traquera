@@ -6,7 +6,8 @@
 #include "logform.h"
 #include "ttglobal.h"
 #include "tqapplication.h"
-#include <tqdebug.h>
+//#include <tqdebug.h>
+//#include <vld.h>
 
 int main(int argc, char *argv[])
 {

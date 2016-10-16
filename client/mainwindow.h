@@ -165,6 +165,7 @@ public:
     void setCurrentProject(TQAbstractProject *prj);
     int projectTreeRow(TQAbstractProject *prj);
     void openCurItem(bool reuse);
+    TQViewController *currentController();
     void calcCountRecords();
     //ProjectPage *openPlanPage(const QString &fileName);
     void findTrkRecords(const QString &line, bool reuse=true);

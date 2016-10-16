@@ -20,7 +20,12 @@ TQRecModel::TQRecModel(TQAbstractProject *project, int type, QObject *parent)
         idFieldName = prj->fieldVID2Name(rectype,idVid); //.toLocal8Bit().constData();
         //QHash<int, TrkFieldDef>::const_iterator fi;
         headers = recDef->fieldNames();
-        vids = recDef->fieldVids();
+        foreach(QString fname, headers)
+        {
+            int vid = recDef->fieldVid(fname);
+            vids << vid;
+        }
+//        vids = recDef->fieldVids();
         idCol = vids.indexOf(idVid);
     }
     connect(project,SIGNAL(recordChanged(int)),this,SLOT(recordChanged(int)));
@@ -114,7 +119,6 @@ void TQRecModel::removeRecordId(int id)
 
 QVariant TQRecModel::data(const QModelIndex & index, int role) const
 {
-//    tqProfile() << index.row() << role;
     if(!index.isValid())
         return QVariant();
     if(index.row()<0 || index.row()>=records.size())

@@ -2,6 +2,7 @@
 #include "ui_queryfields.h"
 #include <modifypanel.h>
 #include <tqviewcontroller.h>
+#include <tqdebug.h>
 
 QueryFields::QueryFields(QWidget *parent) :
     QWidget(parent),
