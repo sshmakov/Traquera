@@ -144,14 +144,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(tabWidget,SIGNAL(currentChanged(int)),this,SLOT(tabChanged(int)),Qt::QueuedConnection);
     connect(closeBtn,SIGNAL(clicked()),this,SLOT(closeCurTab()));
 
-    //createConnection();
-	//trkdb = new TrkDb();
-	/*
-	trkdb = TrkConnect::connectTracker();
-	if(!trkdb)
-		return;
-	tabWidget->setCurrentIndex(tabWidget->insertTab(0, new QueryPage(), "Query"));
-	*/
     logForm = new LogForm(this);
     logForm->setObjectName("LogForm");
     QDockWidget *dw = addWidgetToDock(logForm->windowTitle(), logForm, Qt::BottomDockWidgetArea);
@@ -163,22 +155,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(this, SIGNAL(controllerChanged(TQViewController*)), queryFields, SLOT(setViewController(TQViewController*)));
 
     loadSettings();
-    /*
-    dbClassComboBox->addItems(TQAbstractDB::registeredDbClasses());
-    connect(readProjectsBtn, SIGNAL(clicked()),this,SLOT(readProjects()));
-	connect(connectButton, SIGNAL(clicked()),this,SLOT(connectTracker()));
-	connect(trustedUserBox, SIGNAL(stateChanged(int)), this, SLOT(trustChanged(int)));
-    */
-    //readFilters();
+
     setupToolbar();
     treeView->addAction(actionOpen_Query);
-    //Preview *prev = new Preview(this);
-    //prev->setSourceFile("C:/1/Doc1.doc");
 
-
-//    connectWidget = new TQConnectWidget(this);
-//    gridLayout->addWidget(connectWidget,0,0,-1,-1);
-//    connect(connectWidget,SIGNAL(connectClicked(ConnectParams)),SLOT(connectTrackerParams(ConnectParams)));
     readProjectTree();
     setCurrentProject(0);
 
@@ -212,12 +192,6 @@ MainWindow::MainWindow(QWidget *parent)
     }
     layDBClasses->addStretch();
     connect(openMapper, SIGNAL(mapped(QString)), SLOT(slotNewDBConnect(QString)));
-//    QBoxLayout *l = qobject_cast<QBoxLayout *>(scrollAreaWidgetContents->layout());
-//    if(l)
-//        l->addStretch(0);
-//    tbNewConnect->setMenu(menuConnect);
-//    connect(ttglobal(),SIGNAL(recordOpened(QWidget*,QString)),SLOT(slotRecordWindowOpened(QWidget*,QString)));
-//    connect(ttglobal(),SIGNAL(recordOpened(TQRecordViewController*)),SLOT(slotRecordWindowOpened(TQRecordViewController*)));
     autoConnect();
 }
 
@@ -228,12 +202,6 @@ MainWindow::~MainWindow()
 {
     if(journal)
         delete journal;
-     /*
-    if(trkproject)
-        delete trkproject;
-    if(trkdb)
-        delete trkdb;
-        */
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -2234,18 +2202,6 @@ void MainWindow::on_actionNewQuery_triggered()
             selectedTreeItem.prj->refreshModel(selectedTreeItem.qryModel->sourceModel());
         }
     }
-    /*
-    TQQueryWidget dlg;
-    TQQueryDef *qDef = selectedTreeItem.prj->createQueryDefinition(selectedTreeItem.recordType);
-    if(!qDef)
-        return;
-    dlg.setQueryDefinition(qDef);
-    if(dlg.exec() == QDialog::Accepted)
-    {
-        selectedTreeItem.prj->saveQueryDefinition(dlg.queryDefinition(), dlg.queryName(), selectedTreeItem.recordType);
-        selectedTreeItem.prj->refreshModel(selectedTreeItem.qryModel->sourceModel());
-    }
-    */
 }
 
 void MainWindow::on_actionSettings_triggered()
@@ -2293,12 +2249,9 @@ void MainWindow::on_actionEditProject_triggered()
     {
         dlg = new QDialog();
         QHBoxLayout *lay = new QHBoxLayout(dlg);
-        QWidget *w = db->createConnectWidget();
-        if(!w)
-        {
-            w = new TQConnectWidget();
-        }
+        TQConnectWidget *w = new TQConnectWidget();
         lay->addWidget(w);
+        connect(w,SIGNAL(buttonClicked(int)), dlg, SLOT(done(int)));
         connWidget = w;
     }
     else
@@ -2327,12 +2280,9 @@ void MainWindow::slotNewDBConnect(const QString &dbClass)
     {
         dlg = new QDialog();
         QHBoxLayout *lay = new QHBoxLayout(dlg);
-        QWidget *w = db->createConnectWidget();
-        if(!w)
-        {
-            w = new TQConnectWidget();
-        }
+        TQConnectWidget *w = new TQConnectWidget();
         lay->addWidget(w);
+        connect(w,SIGNAL(buttonClicked(int)), dlg, SLOT(done(int)));
         connWidget = w;
     }
     else
@@ -2340,22 +2290,15 @@ void MainWindow::slotNewDBConnect(const QString &dbClass)
     connWidget->setProperty("connectString", QString("{%1: \"%2\"}").arg(DBPARAM_CLASS,dbClass));
     if(dlg->exec())
     {
+        int result = dlg->result();
         QString connString = connWidget->property("connectString").toString();
         QString saveString = connWidget->property("connectSaveString").toString();
         int row = addProjectItem(saveString);
         TQOneProjectTree *tree = qobject_cast<TQOneProjectTree *>(treeModel->sourceModel(row));
         treeView->setCurrentIndex(treeModel->index(row,0));
         readSelectedTreeItem();
-        bool res = openProjectTree(tree, connString);
-//        if(tree->open(connString))
-//        {
-
-//            treeView->expand(selectedTreeItem.curIndex);
-//            TQAbstractProject *prj = tree->project();
-//            cbCurrentProjectName->addItem(prj->projectName(), QVariant((int)prj));
-//            setActiveProject(prj);
-//        }
-//        actionOpen_Project->trigger();
+        if(result == QMessageBox::Open)
+            openProjectTree(tree, connString);
         saveProjectTree();
     }
     delete dlg;
@@ -2363,30 +2306,12 @@ void MainWindow::slotNewDBConnect(const QString &dbClass)
 
 void MainWindow::on_actionDelete_Project_triggered()
 {
-//    readSelectedTreeItem();
     TQAbstractProject *nextprj=0;
     TQOneProjectTree *tree = selectedTreeItem.prjModel;
     QString prjTitle = tree->projectTitle();
     if(QMessageBox::Ok == QMessageBox::question(this, tr("Удаление проекта"), tr("Удалить проект '%1'").arg(prjTitle),
                           QMessageBox::Ok | QMessageBox::Cancel))
-    {
         deleteProjectTree(tree);
-//        TQAbstractProject *prj = tree->project();
-//        if(prj)
-//        {
-//            int index = cbCurrentProjectName->findData((int)prj);
-//            if(index != -1)
-//            {
-//                cbCurrentProjectName->removeItem(index);
-//                index = cbCurrentProjectName->currentIndex();
-//                if(index != -1)
-//                    nextprj = qobject_cast< TQAbstractProject *>((QObject*)cbCurrentProjectName->itemData(index).toInt());
-//            }
-//        }
-//        if(tree->isOpened())
-//            tree->close();
-//        treeModel->removeProject(tree);
-    }
     if(nextprj)
         setCurrentProject(nextprj);
 }

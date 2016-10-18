@@ -434,7 +434,6 @@ public:
         const QString &pass = QString());
     virtual TQAbstractProject *openConnection(const QString &connectString
             );
-    virtual QWidget *createConnectWidget() const;
     TQAbstractProject *getProject(const QString &projectName);
 protected:
     QSqlDatabase openSqlDatabase();

@@ -381,11 +381,6 @@ TQAbstractProject *TrkToolDB::openConnection(const QString &connectString)
     return prj;
 }
 
-QWidget *TrkToolDB::createConnectWidget() const
-{
-    return 0;
-}
-
 QHash<QString, TrkToolProject *> TrkToolDB::openedProjects;
 
 TQAbstractProject *TrkToolDB::getProject(const QString &projectName)

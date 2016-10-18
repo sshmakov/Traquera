@@ -50,13 +50,12 @@ public:
     void loadSettings();
 
 signals:
-//    void connectClicked(ConnectParams params);
-    void connectClicked();
+    void buttonClicked(int result);
 
 private slots:
 //    void slotCurrentRowChanged(QModelIndex current, QModelIndex previous);
     void on_btnOpen_clicked();
-    void on_btnClose_clicked();
+    void on_btnCancel_clicked();
 
 
     void on_btnDBMS_clicked();
@@ -66,6 +65,8 @@ private slots:
     void on_btnProjects_clicked();
 
     void on_trustedUserBox_toggled(bool checked);
+
+    void on_btnSave_clicked();
 
 protected:
 //    static void recordToParams(const QSqlRecord &rec, ConnectParams &params);

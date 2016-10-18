@@ -237,21 +237,18 @@ void TQConnectWidget::slotCurrentRowChanged(QModelIndex current, QModelIndex pre
 
 void TQConnectWidget::on_btnOpen_clicked()
 {
-    emit connectClicked();
-    if(!isWindow())
-    {
-        QDialog *dlg = qobject_cast<QDialog*>(window());
-        if(dlg)
-            dlg->accept();
-    }
-
-//    ConnectParams params = currentParams();
-//    emit connectClicked(params);
+    emit buttonClicked(QMessageBox::Open);
+//    if(!isWindow())
+//    {
+//        QDialog *dlg = qobject_cast<QDialog*>(window());
+//        if(dlg)
+//            dlg->accept();
+//    }
 }
 
-void TQConnectWidget::on_btnClose_clicked()
+void TQConnectWidget::on_btnCancel_clicked()
 {
-
+    emit buttonClicked(QDialog::Rejected);
 }
 
 /*
@@ -420,4 +417,9 @@ void TQConnectWidget::on_trustedUserBox_toggled(bool checked)
 {
     ui->sqlUserEdit->setEnabled(!checked);
     ui->sqlPassEdit->setEnabled(!checked);
+}
+
+void TQConnectWidget::on_btnSave_clicked()
+{
+    emit buttonClicked(QMessageBox::Save);
 }

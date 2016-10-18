@@ -152,7 +152,6 @@ public:
     Q_INVOKABLE virtual QString dbmsUser() const;
     virtual QString dbmsPass() const;
     virtual void setConnectString(const QString &connectString);
-    virtual QWidget *createConnectWidget() const;
     virtual QDialog *createConnectDialog() const;
     static TQAbstractProject *getProject(const QString &projectName);
 protected:

@@ -57,11 +57,6 @@ void TQAbstractDB::setConnectString(const QString &connectString)
     setDbmsUser(params.value(DBPARAM_USER).toString(), params.value(DBPARAM_PASSWORD).toString());
 }
 
-QWidget *TQAbstractDB::createConnectWidget() const
-{
-    return 0;
-}
-
 QDialog *TQAbstractDB::createConnectDialog() const
 {
     return 0;
