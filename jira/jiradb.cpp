@@ -1769,9 +1769,6 @@ bool JiraProject::commitRecord(TQRecord *record)
     v2.insert("key", projectKey);
     fields.insert("project", v2);
     v2.clear();
-    v2.insert("name", jRec->typeDef()->typeName());
-    fields.insert("issuetype", v2);
-    v2.clear();
     fields.insert("summary",jRec->title());
     fields.insert("description",jRec->description());
     issue.insert("fields", fields);
@@ -1798,11 +1795,6 @@ bool JiraProject::commitRecord(TQRecord *record)
         wasError = db->lastHTTPCode() && db->lastHTTPCode() != 200;// !res.contains("id");
         if(!wasError)
         {
-            /*{
-                "id": "10000",
-                "key": "TST-24",
-                "self": "http://www.example.com/jira/rest/api/2/issue/10000"
-            }*/
             QString key = res.value("key").toString();
             bool ok = false;
             int id = key.mid(key.indexOf("-")+1).toInt(&ok);
@@ -1873,24 +1865,8 @@ bool JiraProject::doCommitUpdateRecord(TQRecord *record)
         }
         else if(fdesc->isArray())
             value = arrayValue(value);
-//        QVariantList fChanges;
-//        QVariantMap fAction;
-//        fAction.insert("set", value);
-//        fChanges.append(fAction);
         fields.insert(fdesc->id, value);
     }
-    /*
-    QVariantMap v2;
-    v2.insert("key", projectKey);
-    fields.insert("project", v2);
-    v2.clear();
-    v2.insert("name", jRec->def->recTypeName);
-    fields.insert("issuetype", v2);
-    v2.clear();
-    fields.insert("summary",jRec->title());
-    fields.insert("description",jRec->description());
-    issue.insert("fields", fields);
-    */
     QVariantMap res;
     bool wasError = false;
     if(!fields.isEmpty())
