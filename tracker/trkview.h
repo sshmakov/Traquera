@@ -502,6 +502,7 @@ public:
     QStringList queryList(TRK_RECORD_TYPE type = TRK_SCR_TYPE) const;
 	void close();
     QAbstractItemModel *queryModel(int type);
+    TQQueryGroups queryGroups(int type);
 #ifdef CLIENT_APP
     //QAbstractItemModel *createProxyQueryModel(int filter, QObject *parent=0, int type);
 #endif

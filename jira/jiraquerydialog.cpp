@@ -1,6 +1,7 @@
 #include "jiraquerydialog.h"
 #include "ui_jiraquerydialog.h"
 #include "jiraqry.h"
+#include "jiradb.h"
 
 JiraQueryDialog::JiraQueryDialog(QWidget *parent) :
     QDialog(parent),
@@ -16,13 +17,18 @@ JiraQueryDialog::~JiraQueryDialog()
 
 void JiraQueryDialog::on_buttonBox_accepted()
 {
-    jQry->setName(ui->leName->text());
-    jQry->setQueryLine(ui->leName->text());
+    if(jQry)
+    {
+        jQry->setName(ui->leName->text());
+        jQry->setQueryLine(ui->pleJQL->toPlainText());
+    }
 }
 
-JiraQueryDialogController::JiraQueryDialogController(QObject *parent)
+JiraQueryDialogController::JiraQueryDialogController(JiraProject *project, int recType)
+    : TQAbstractQWController(project)
 {
     dlg = new JiraQueryDialog();
+    dlg->jQry = new JiraQry(project, recType);
 }
 
 JiraQueryDialogController::~JiraQueryDialogController()
@@ -32,8 +38,9 @@ JiraQueryDialogController::~JiraQueryDialogController()
 
 void JiraQueryDialogController::setQueryDefinition(TQQueryDef *def)
 {
-    dlg->jQry = qobject_cast<JiraQry *>(def);
-    if(!dlg->jQry)
+    JiraQry *q = qobject_cast<JiraQry *>(def);
+    dlg->jQry = q;
+    if(!q)
     {
         dlg->ui->leName->clear();
         dlg->ui->pleJQL->clear();
@@ -63,6 +70,8 @@ QString JiraQueryDialogController::queryName() const
 void JiraQueryDialogController::setQueryName(const QString &name)
 {
     dlg->ui->leName->setText(name);
+    if(dlg->jQry)
+        dlg->jQry->setName(name);
 }
 
 

@@ -155,6 +155,20 @@ public:
         headers.clear();
         endResetModel();
     }
+    virtual bool removeRows(int row, int count, const QModelIndex &parent)
+    {
+        if(parent.isValid())
+            return false;
+        if(count <= 0 || row<0)
+            return false;
+        if(row + count - 1 > rowCount())
+            return false;
+        beginRemoveRows(QModelIndex(), row, row+count-1);
+        for(int i=row+count-1; i>=row; i--)
+            records.removeAt(i);
+        endRemoveRows();
+    }
+
     virtual const R & at(int row) const
     {
         return records.at(row);

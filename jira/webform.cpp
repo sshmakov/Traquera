@@ -64,8 +64,8 @@ bool WebForm::request(const QUrl &url, const QRegExp &callbackUrl)
     execMode = true;
 
     show();
-    ui->webView->load(url);
     d->eventLoop = &eventLoop;
+    ui->webView->load(url);
     QPointer<WebForm> guard = this;
     (void) eventLoop.exec(QEventLoop::DialogExec);
     bool res = false;
@@ -95,6 +95,11 @@ QList<QNetworkCookie> WebForm::cookies(const QUrl &url)
     return jar->cookiesForUrl(url);
 }
 
+void WebForm::setNetworkAccessManager(QNetworkAccessManager *man)
+{
+    ui->webView->page()->setNetworkAccessManager(man);
+}
+
 void WebForm::closeEvent(QCloseEvent *event)
 {
     if(d->eventLoop)
@@ -106,7 +111,7 @@ void WebForm::onLinkClicked(const QUrl &url)
 {
     QString newUrl = url.toString();
     qDebug() << newUrl;
-    if(newUrl.contains(checkedLink))
+    if(!checkedLink.isEmpty() && newUrl.contains(checkedLink))
     {
         d->callbackPressed = true;
         d->foundUrl = url;

@@ -43,9 +43,10 @@ public:
     ~WebForm();
     bool openUrl(const QUrl &url);
 //    void setCheckedLink(const QString &link);
-    bool request(const QUrl &url, const QRegExp &callbackUrl);
+    bool request(const QUrl &url, const QRegExp &callbackUrl = QRegExp());
     QUrl foundUrl() const;
     QList<QNetworkCookie> cookies(const QUrl &url);
+    void setNetworkAccessManager(QNetworkAccessManager *man);
 protected:
     void closeEvent(QCloseEvent *event);
 //    static authorize()

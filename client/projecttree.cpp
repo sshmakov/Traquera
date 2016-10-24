@@ -175,7 +175,7 @@ bool TQOneProjectTree::open(const QString &connectString)
     if(!info.open(connectString))
         return false;
     emit projectOpened();
-    beginResetModel();
+//    beginResetModel();
     folders = new TTFolderModel(this);
     QSqlDatabase db = ttglobal()->userDatabase();
     folders->setDatabaseTable(db,"folders",project()->projectName());
@@ -190,20 +190,22 @@ bool TQOneProjectTree::open(const QString &connectString)
     queries = project()->queryModel(recordType());
     if(queries)
     {
-        QMap<QString,int> groups;
-        for(int r=0; r<queries->rowCount(); r++)
-        {
-            QVariant v = queries->index(r,grCol).data();
-            QString group = v.toString();
-            groups[group] = 1;
-        }
-        foreach(QString group, groups.keys())
+       TQQueryGroups groups = project()->queryGroups(recordType());
+       if(groups.size())
+        foreach(const TQQueryGroup &group, groups)
         {
             groupModel = new TQQryFilter(this);
-            groupModel->setSourceQueryModel(queries, group, grCol);
-            appendSourceModel(groupModel, group);
+            groupModel->setSourceQueryModel(queries, group.filterString, grCol);
+            appendSourceModel(groupModel, group.name);
             queryModels.append(groupModel);
         }
+       else
+       {
+           groupModel = new TQQryFilter(this);
+           groupModel->setSourceQueryModel(queries, QString(), grCol);
+           appendSourceModel(groupModel, tr("Выборки"));
+           queryModels.append(groupModel);
+       }
     }
     /*
     TQQryFilter *userModel, *publicModel;
@@ -228,7 +230,7 @@ bool TQOneProjectTree::open(const QString &connectString)
     }
     */
     setMaxColCount(1);    
-    endResetModel();
+//    endResetModel();
 
     return true;
 }

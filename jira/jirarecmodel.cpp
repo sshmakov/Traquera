@@ -80,7 +80,7 @@ void JiraRecModel::fetchMore(const QModelIndex &parent)
         records.append(rec);
     }
     d->totalCount = map.value("total").toInt();
-    d->nextIndex = map.value("startAt").toInt() + records.size();
+    d->nextIndex = map.value("startAt").toInt() + issueList.size();
     qDebug() << d->nextIndex << d->totalCount;
     append(records);
 }

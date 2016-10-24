@@ -1375,6 +1375,26 @@ QAbstractItemModel *TrkToolProject::queryModel(int type)
     return theQueryModel[type];
 }
 
+TQQueryGroups TrkToolProject::queryGroups(int type)
+{
+    TQQueryGroups list;
+    TQQueryGroup item;
+    item.name = tr("Public queries");
+    item.isCreateEnabled = false;
+    item.isModifyEnabled = false;
+    item.isDeleteEnabled = false;
+    item.filterString = "true";
+    list.append(item);
+
+    item.name = tr("Private queries");
+    item.isCreateEnabled = true;
+    item.isModifyEnabled = true;
+    item.isDeleteEnabled = true;
+    item.filterString = "false";
+    list.append(item);
+    return list;
+}
+
 #ifdef CLIENT_APP
 /*
 QAbstractItemModel *TrkToolProject::createProxyQueryModel(int filter, QObject *parent, TRK_RECORD_TYPE type )
@@ -3328,9 +3348,9 @@ TrkToolQryModel::TrkToolQryModel(QObject *parent)
 {
     headers
             << tr("Название выборки")
-            << tr("Группа")
-            << tr("Тип записи")
             << tr("Публичная")
+//            << tr("Группа")
+            << tr("Тип записи")
                ;
 
 }
@@ -3380,7 +3400,7 @@ QVariant TrkToolQryModel::displayColData(const TrkQuery &rec, int col) const
     case 0:
         return rec.qryName;
     case 1:
-        return rec.isPublic ? tr("Public queries") : tr("Private queries");
+        return rec.isPublic ? "true" : "false";
     case 2:
         return rec.qryTypeId;
     case 3:

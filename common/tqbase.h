@@ -235,6 +235,18 @@ class TQAbstractQWController;
 
 class TQAbstractProjectPrivate;
 
+struct TQQueryGroup
+{
+    QString name;
+    bool isCreateEnabled;
+    bool isModifyEnabled;
+    bool isDeleteEnabled;
+    QString filterString;
+    QVariant data;
+};
+
+typedef QList<TQQueryGroup> TQQueryGroups;
+
 
 #define TQOPTION_VIEW_TEMPLATE "ViewTemplate"
 #define TQOPTION_EDIT_TEMPLATE "EditTemplate"
@@ -286,6 +298,7 @@ public:
     Q_INVOKABLE virtual TQRecModel *openRecords(const QString &queryText, int recType, bool emitEvent = true) = 0;
     virtual void refreshModel(QAbstractItemModel *model) = 0;
     virtual QAbstractItemModel *queryModel(int type) = 0;
+    virtual TQQueryGroups queryGroups(int type);
     virtual TQRecord *recordOfIndex(const QModelIndex &index) = 0;
     //virtual QAbstractItemModel *createProxyQueryModel(TQQueryFilter filter, QObject *parent=0, int type) = 0;
     virtual QList<int> getQueryIds(const QString &name, int type, qint64 afterTransId = 0) = 0;

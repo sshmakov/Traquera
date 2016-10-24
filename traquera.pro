@@ -8,6 +8,7 @@ CONFIG += ordered
 
 # Directories
 SUBDIRS += \
+    tqtests \
     tqplugapi \
     tqgui \
     tqcondapi \
@@ -21,7 +22,7 @@ SUBDIRS += \
     install
 
 msplans.depends = client
-client.depends = tqplugapi
+client.depends = tqplugapi tqtests
 
 
 TARGET = traquera

@@ -7,6 +7,7 @@
 #include <QString>
 #include <QSqlDatabase>
 #include <QSqlQuery>
+#include <tqbase.h>
 
 TTFolderModel::TTFolderModel(QObject *parent) :
     QAbstractItemModel(parent), db(QSqlDatabase())
@@ -577,12 +578,14 @@ bool TTFolder::setRecords(const QString &records)
 
 TQQryFilter::TQQryFilter(QObject *parent)
     : QSortFilterProxyModel(parent),
-      filter(All), queryIcon(":/images/query.png")
+//      filter(All),
+      queryIcon(":/images/query.png")
 {
     setDynamicSortFilter(true);
     sort(0);
 }
 
+/*
 void TQQryFilter::setSourceQueryModel(QAbstractItemModel *sourceModel, TQQryFilter::Filter filter)
 {
     QSortFilterProxyModel::setSourceModel(sourceModel);
@@ -606,13 +609,14 @@ void TQQryFilter::setSourceQueryModel(QAbstractItemModel *sourceModel, TQQryFilt
     }
     sort(0);
 }
+*/
 
-void TQQryFilter::setSourceQueryModel(QAbstractItemModel *sourceModel, QString value, int column)
+void TQQryFilter::setSourceQueryModel(QAbstractItemModel *sourceModel, const QString &filterText, int column)
 {
     QSortFilterProxyModel::setSourceModel(sourceModel);
-    setFilterRegExp(value);
+    setFilterFixedString(filterText);
     setFilterKeyColumn(column);
-    curFilter = filter;
+//    curFilter = filter;
     sort(0);
 }
 

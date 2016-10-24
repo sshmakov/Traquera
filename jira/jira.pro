@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += xml network webkit
+QT       += xml network webkit sql
 
 TARGET = jira
 TEMPLATE = lib

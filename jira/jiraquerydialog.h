@@ -9,6 +9,7 @@ class JiraQueryDialog;
 }
 
 class JiraQry;
+class JiraProject;
 
 class JiraQueryDialog : public QDialog
 {
@@ -31,7 +32,7 @@ class JiraQueryDialogController : public TQAbstractQWController
 {
     Q_OBJECT
 public:
-    JiraQueryDialogController(QObject *parent = 0);
+    JiraQueryDialogController(JiraProject *project, int recType);
     ~JiraQueryDialogController();
     void setQueryDefinition(TQQueryDef *def);
     TQQueryDef *queryDefinition();

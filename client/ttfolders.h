@@ -70,6 +70,7 @@ public slots:
 };
 
 #ifdef CLIENT_APP
+struct TQQueryGroup;
 
 class TQQryFilter: public QSortFilterProxyModel
 {
@@ -77,13 +78,13 @@ class TQQryFilter: public QSortFilterProxyModel
 protected:
     QIcon queryIcon;
 public:
-    enum Filter {All, UserOnly, PublicOnly} filter;
+//    enum Filter {All, UserOnly, PublicOnly} filter;
     TQQryFilter(QObject *parent=0);
-    void setSourceQueryModel(QAbstractItemModel *sourceModel, Filter filter);
-    void setSourceQueryModel(QAbstractItemModel *sourceModel, QString value, int column);
+//    void setSourceQueryModel(QAbstractItemModel *sourceModel, Filter filter);
+    void setSourceQueryModel(QAbstractItemModel *sourceModel, const QString &filterText, int column);
     virtual QVariant data(const QModelIndex &index, int role) const;
 private:
-    Filter curFilter;
+//    Filter curFilter;
 };
 #endif
 

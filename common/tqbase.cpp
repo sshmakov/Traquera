@@ -164,6 +164,18 @@ bool TQAbstractProject::deleteQuery(const QString &queryName, int recordType)
     return false;
 }
 
+TQQueryGroups TQAbstractProject::queryGroups(int type)
+{
+//    TQQueryGroups list;
+//    TQQueryGroup item;
+//    item.name = tr("Выборки");
+//    item.isCreateEnabled = false;
+//    item.isModifyEnabled = false;
+//    list << item;
+//    return list;
+    return TQQueryGroups();
+}
+
 QSettings *TQAbstractProject::projectSettings() const
 {
     QSettings *set = new QSettings();

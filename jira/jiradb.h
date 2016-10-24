@@ -38,6 +38,8 @@ public:
     Q_INVOKABLE bool saveSettings();
     Q_INVOKABLE bool loadSettings();
     static JiraPlugin *plugin();
+public slots:
+    void showError(int code, const QString &errorText);
 signals:
     void error(const QString &pluginName,const QString &errorText);
 };
@@ -134,7 +136,7 @@ protected:
     void dumpRequest(QNetworkRequest *req, const QString &method, const QByteArray &body);
     void dumpReply(QNetworkReply *reply, const QByteArray &buf);
 protected slots:
-    void	replyFinished(QNetworkReply * reply);
+    void replyFinished(QNetworkReply * reply);
     void callbackClicked();
 private:
 
@@ -208,12 +210,16 @@ public:
     bool isSystemModel(QAbstractItemModel *model) const;
     QSettings *projectSettings() const;
     QAbstractItemModel *queryModel(int type);
+    TQQueryGroups queryGroups(int type);
     TQQueryDef *queryDefinition(const QString &queryName, int rectype);
+    TQQueryDef *createQueryDefinition(int rectype);
+    bool saveQueryDefinition(TQQueryDef *queryDefinition, const QString &queryName, int rectype);
     TQAbstractQWController *queryWidgetController(int rectype);
 
     Q_INVOKABLE QVariant optionValue(const QString &option) const;
     Q_INVOKABLE QString jiraProjectKey() const;
     Q_INVOKABLE QString userFullName(const QString &login);
+    Q_INVOKABLE bool isAnonymousUser() const;
 protected:
     QVariantList fieldList;
     QVariantList typesList;
@@ -392,6 +398,7 @@ public:
 //    void appendFilter(const QString &filterName, bool isServerStored=false, int rectype = TRK_SCR_TYPE);
 //    void appendFilter(const QStringList &queryList, bool isPublic=false, TRK_UINT rectype = TRK_SCR_TYPE);
 //    void removeFilter(const QString &queryName, TRK_UINT rectype = TRK_SCR_TYPE);
+    const JiraFilter *filter(const QString &filterName) const;
 protected:
     virtual QVariant displayColData(const JiraFilter &rec, int col) const;
 };
