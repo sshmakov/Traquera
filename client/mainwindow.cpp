@@ -2327,10 +2327,7 @@ void MainWindow::on_actionRename_Item_triggered()
                                                 QLineEdit::Normal,
                                                 selectedTreeItem.queryName);
         if(!newName.isEmpty() && newName != selectedTreeItem.queryName)
-        {
             selectedTreeItem.prj->renameQuery(selectedTreeItem.queryName, newName, selectedTreeItem.recordType);
-            selectedTreeItem.prj->refreshModel(selectedTreeItem.qryModel->sourceModel());
-        }
     }
 }
 
@@ -2345,11 +2342,12 @@ void MainWindow::on_actionRefreshQueryList_triggered()
 void MainWindow::on_actionDeleteQuery_triggered()
 {
     readSelectedTreeItem();
-    if(selectedTreeItem.isQuerySelected)
-    {
+    if(selectedTreeItem.isQuerySelected
+            && QMessageBox::question(this,
+                                     tr("Удаление выборки"),
+                                     tr("Удалить '%1'?").arg(selectedTreeItem.queryName),
+                                     QMessageBox::Ok | QMessageBox::Cancel) == QMessageBox::Ok)
         selectedTreeItem.prj->deleteQuery(selectedTreeItem.queryName, selectedTreeItem.recordType);
-        selectedTreeItem.prj->refreshModel(selectedTreeItem.qryModel->sourceModel());
-    }
 }
 
 void MainWindow::on_actionMakeActive_triggered()

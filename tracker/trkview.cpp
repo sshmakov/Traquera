@@ -1379,14 +1379,14 @@ TQQueryGroups TrkToolProject::queryGroups(int type)
 {
     TQQueryGroups list;
     TQQueryGroup item;
-    item.name = tr("Public queries");
+    item.name = tr("Общие выборки");
     item.isCreateEnabled = false;
     item.isModifyEnabled = false;
     item.isDeleteEnabled = false;
     item.filterString = "true";
     list.append(item);
 
-    item.name = tr("Private queries");
+    item.name = tr("Личные выборки");
     item.isCreateEnabled = true;
     item.isModifyEnabled = true;
     item.isDeleteEnabled = true;

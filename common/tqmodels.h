@@ -177,6 +177,10 @@ public:
     {
         return at(i);
     }
+    virtual R &operator [](int i)
+    {
+        return records[i];
+    }
 };
 
 typedef TQRecord * PTQRecord;

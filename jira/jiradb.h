@@ -214,6 +214,8 @@ public:
     TQQueryDef *queryDefinition(const QString &queryName, int rectype);
     TQQueryDef *createQueryDefinition(int rectype);
     bool saveQueryDefinition(TQQueryDef *queryDefinition, const QString &queryName, int rectype);
+    bool renameQuery(const QString &oldName, const QString &newName, int recordType);
+    bool deleteQuery(const QString &queryName, int recordType);
     TQAbstractQWController *queryWidgetController(int rectype);
 
     Q_INVOKABLE QVariant optionValue(const QString &option) const;

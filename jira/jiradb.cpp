@@ -2103,39 +2103,49 @@ TQQueryDef *JiraProject::createQueryDefinition(int rectype)
     return new JiraQry(this, rectype);
 }
 
+static QVariant strValue(const QString &str)
+{
+    if(str.isNull())
+        return QString("");
+    return QVariant(str);
+}
+
 bool JiraProject::saveQueryDefinition(TQQueryDef *queryDefinition, const QString &queryName, int rectype)
 {
     JiraQry *def = qobject_cast<JiraQry*>(queryDefinition);
     if(!def)
         return false;
+    QString oldName;
+    bool isModify = false;
     QSqlDatabase udb = ttglobal()->userDatabase();
+    if(!udb.open())
+        return false;
     QSqlQuery query(udb);
     udb.transaction();
     query.prepare("select name from jiraqueries where project = ? and login = ?");
-    query.bindValue(0, this->projectName());
-    query.bindValue(1, this->currentUser());
+    query.bindValue(0, strValue(this->projectName()));
+    query.bindValue(1, strValue(this->currentUser()));
     query.exec();
-    QString oldName;
-    bool isModify = false;
     while(query.next())
     {
         oldName = query.value(0).toString();
         if(oldName.compare(queryName,Qt::CaseInsensitive) == 0)
         {
-            query.prepare("delete from jiraqueries where project = ? and login = ? and name = ?");
-            query.bindValue(0, this->projectName());
-            query.bindValue(1, this->currentUser());
-            query.bindValue(2, oldName);
-            query.exec();
+            QSqlQuery q(udb);
+            q.prepare("delete from jiraqueries where project = ? and login = ? and name = ?");
+            q.bindValue(0, strValue(this->projectName()));
+            q.bindValue(1, strValue(this->currentUser()));
+            q.bindValue(2, strValue(oldName));
+            q.exec();
             isModify = true;
             break;
         }
     }
     query.prepare("insert into jiraqueries(project, login, name, jql) values(?,?,?,?)");
-    query.bindValue(0, this->projectName());
-    query.bindValue(1, this->currentUser());
-    query.bindValue(2, queryName);
-    query.bindValue(3, def->queryLine());
+    query.bindValue(0, strValue(this->projectName()));
+    query.bindValue(1, strValue(this->currentUser()));
+    query.bindValue(2, strValue(queryName));
+    query.bindValue(3, strValue(def->queryLine()));
     if(!query.exec())
     {
         udb.rollback();
@@ -2159,6 +2169,55 @@ bool JiraProject::saveQueryDefinition(TQQueryDef *queryDefinition, const QString
     f.name = queryName;
     filters->append(f);
     return true;
+}
+
+bool JiraProject::renameQuery(const QString &oldName, const QString &newName, int recordType)
+{
+    QSqlDatabase udb = ttglobal()->userDatabase();
+    if(!udb.open())
+        return false;
+    QSqlQuery query(udb);
+    query.prepare("update jiraqueries set name = ? where project = ? and login = ? and name = ?");
+    query.bindValue(0, strValue(newName));
+    query.bindValue(1, strValue(this->projectName()));
+    query.bindValue(2, strValue(this->currentUser()));
+    query.bindValue(3, strValue(oldName));
+    if(query.exec())
+        for(int r = 0; r<filters->rowCount(); r++)
+        {
+            JiraFilter &f = filters->operator [](r);
+            if(f.name.compare(oldName, Qt::CaseInsensitive) == 0)
+            {
+                filters->setData(filters->index(r,0), newName);
+                f.name = newName;
+//                filters->dataChanged(, filters->index(r,0));
+                return true;
+            }
+        }
+    return false;
+}
+
+bool JiraProject::deleteQuery(const QString &queryName, int recordType)
+{
+    QSqlDatabase udb = ttglobal()->userDatabase();
+    if(!udb.open())
+        return false;
+    QSqlQuery query(udb);
+    query.prepare("delete from jiraqueries where project = ? and login = ? and name = ?");
+    query.bindValue(0, strValue(this->projectName()));
+    query.bindValue(1, strValue(this->currentUser()));
+    query.bindValue(2, strValue(queryName));
+    if(query.exec())
+        for(int r = 0; r<filters->rowCount(); r++)
+        {
+            JiraFilter &f = filters->operator [](r);
+            if(f.name.compare(queryName, Qt::CaseInsensitive) == 0)
+            {
+                filters->removeRow(r);
+                return true;
+            }
+        }
+    return false;
 }
 
 TQAbstractQWController *JiraProject::queryWidgetController(int rectype)
@@ -2600,6 +2659,7 @@ void JiraProject::loadQueries()
         favSearch.insert(item.name, filters->rowCount()-1);
     }
     QSqlDatabase udb = ttglobal()->userDatabase();
+    udb.open();
     d->hasLocalDb = udb.isValid() && udb.isOpen();
     bool an = isAnonymousUser();
     bool needFillDb = false;
@@ -2611,12 +2671,12 @@ void JiraProject::loadQueries()
             needFillDb = udb.lastError().type() == QSqlError::NoError;
             udb.exec("create index jiraqueries_1 on jiraqueries(project, login)");
         }
-        if(udb.tables().contains("jiraqueries"))
+        else
         {
             QSqlQuery q(udb);
             q.prepare("select count(*) from jiraqueries where project = ? and login =?");
-            q.bindValue(0, this->projectName());
-            q.bindValue(1, this->currentUser());
+            q.bindValue(0, strValue(this->projectName()));
+            q.bindValue(1, strValue(this->currentUser()));
             q.exec();
             needFillDb = !q.next() || !q.value(0).toInt();
         }
@@ -2625,7 +2685,6 @@ void JiraProject::loadQueries()
     QList<QStringPair > preDef;
     if(needFillDb)
     {
-        QSqlQuery query(udb);
         if(!an)
         {
             preDef
@@ -2654,13 +2713,14 @@ void JiraProject::loadQueries()
                              .arg(name))
                    ;
 
+        QSqlQuery query(udb);
         query.prepare("insert into jiraqueries(project, login, name, jql) values(?,?,?,?)");
         foreach(const QStringPair &def, preDef)
         {
-            query.bindValue(0, this->projectName());
-            query.bindValue(1, this->currentUser());
-            query.bindValue(2, def.first);
-            query.bindValue(3, def.second);
+            query.bindValue(0, strValue(this->projectName()));
+            query.bindValue(1, strValue(this->currentUser()));
+            query.bindValue(2, strValue(def.first));
+            query.bindValue(3, strValue(def.second));
             query.exec();
         }
     }
@@ -2668,8 +2728,8 @@ void JiraProject::loadQueries()
     {
         QSqlQuery query(udb);
         query.prepare("select name, jql from jiraqueries where project = ? and login = ?");
-        query.bindValue(0, this->projectName());
-        query.bindValue(1, this->currentUser());
+        query.bindValue(0, strValue(this->projectName()));
+        query.bindValue(1, strValue(this->currentUser()));
         query.exec();
         while(query.next())
             preDef << qMakePair(query.value(0).toString(), query.value(1).toString());
