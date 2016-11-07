@@ -519,6 +519,13 @@ void MainWindow::slotDockAction()
     }
 }
 
+void MainWindow::slotProjectError(int errorCode, const QString &errorMessage)
+{
+    TQAbstractProject *prj = qobject_cast<TQAbstractProject *>(sender());
+    QString prjName = prj ? prj->projectName() : "";
+    ttglobal()->showError(tr("Ошибка в проекте %1\n%2").arg(prjName, errorMessage));
+}
+
 bool MainWindow::openProjectTree(TQOneProjectTree *pm, const QString &connString)
 {
     if(pm->isOpened())
@@ -529,6 +536,7 @@ bool MainWindow::openProjectTree(TQOneProjectTree *pm, const QString &connString
         TQAbstractProject *prj = pm->project();
         cbCurrentProjectName->addItem(prj->projectName(), (int)prj);
         setCurrentProjectTree(pm);
+        connect(prj, SIGNAL(error(int,QString)), SLOT(slotProjectError(int,QString)));
     }
     if(res)
         tqInfo() << tr("Открытие проекта %1 - успешно").arg(pm->projectTitle());

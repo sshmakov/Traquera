@@ -247,6 +247,7 @@ private slots:
     void slotViewOpened(QWidget *widget, TQViewController *controller);
     void slotDockVisibilityChanged(bool visible);
     void slotDockAction();
+    void slotProjectError(int errorCode, const QString &errorMessage);
 
 private:
     bool openProjectTree(TQOneProjectTree *pm, const QString &connString = QString());

@@ -1407,13 +1407,12 @@ QAbstractItemModel *TrkToolProject::createProxyQueryModel(int filter, QObject *p
     */
 #endif
 
-TQRecModel *TrkToolProject::openQueryModel(const QString &name, int type, bool emitEvent)
+TQRecModel *TrkToolProject::openQueryModel(const QString &name, int type)
 {
     TQRecModel *model = new TQRecModel(this, type, this);
     fillModel(model, name, type);
-//	model->openQuery(name);
-    if(emitEvent)
-        emit openedModel(model);
+//    if(emitEvent)
+//        emit openedModel(model);
     return model;
 }
 

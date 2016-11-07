@@ -232,6 +232,7 @@ bool JiraRecord::removeFile(int fileIndex)
     if(fileIndex<0 || fileIndex>=files.size())
         return false;
     files[fileIndex].isDeleted = true;
+    return true;
 }
 
 bool JiraRecord::commit()
@@ -276,6 +277,8 @@ int JiraRecord::addNote(const QString &noteTitle, const QString &noteText)
     note.isAdded = true;
     note.title = noteTitle;
     note.text = noteText;
+    note.crdate = QDateTime::currentDateTime();
+    note.mddate = QDateTime::currentDateTime();
     notesCol.append(note);
     setModified(true);
     return notesCol.size()-1;

@@ -134,6 +134,7 @@ public:
 
 inline TQDummyDebug tqDummyDebug(int initLevel = TQDebugLevel)
 {
+    Q_UNUSED(initLevel)
     return TQDummyDebug();
 }
 

@@ -506,7 +506,7 @@ public:
 #ifdef CLIENT_APP
     //QAbstractItemModel *createProxyQueryModel(int filter, QObject *parent=0, int type);
 #endif
-    TQRecModel *openQueryModel(const QString &name, int type, bool emitEvent = true);
+    TQRecModel *openQueryModel(const QString &name, int type);
     QList<int> getQueryIds(const QString &name, int type,
                            qint64 afterTransId = 0);
     //TrkToolModel *openRecentModel(int afterTransId, const QString &name, TRK_RECORD_TYPE type = TRK_SCR_TYPE);

@@ -108,10 +108,12 @@ void JiraOptions::on_tbKeyFileBrowse_clicked()
 
 void JiraOptions::on_leKeyFile_textChanged(const QString &arg1)
 {
+    Q_UNUSED(arg1)
     isModified = true;
 }
 
 void JiraOptions::on_leKeyPassword_textChanged(const QString &arg1)
 {
+    Q_UNUSED(arg1)
     isModified = true;
 }

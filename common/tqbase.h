@@ -167,6 +167,7 @@ public:
 signals:
     void dbAuthenticationRequired(TQAbstractDB *db, const QString &projectName, QAuthenticator *authenticator);
     void projectAuthenticationRequired(TQAbstractDB *db, const QString &projectName, QAuthenticator *authenticator);
+    void error(int errorCode, const QString& errorMessage);
 
 
     friend class TQAbstractProject;
@@ -291,7 +292,7 @@ public:
     Q_INVOKABLE virtual TQAbstractRecordTypeDef *recordTypeDef(int rectype) = 0;
     Q_INVOKABLE virtual QDomDocument recordTypeDefDoc(int rectype) = 0;
 
-    virtual TQRecModel *openQueryModel(const QString &queryName, int recType, bool emitEvent = true) = 0;
+    virtual TQRecModel *openQueryModel(const QString &queryName, int recType) = 0;
     virtual bool renameQuery(const QString &oldName, const QString &newName, int recordType);
     virtual bool deleteQuery(const QString &queryName, int recordType);
     Q_INVOKABLE virtual TQRecModel *openIdsModel(const IntList &ids, int recType, bool emitEvent = true) = 0;
@@ -340,6 +341,7 @@ signals:
     void recordChanged(int id);
     void recordValuesLoaded(int recId) const;
     void recordStateChanged(int recId);
+    void error(int errorCode, const QString &errorText);
 };
 
 typedef QSet<int> TQSelectedSet;

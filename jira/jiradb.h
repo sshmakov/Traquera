@@ -105,10 +105,10 @@ public:
     virtual TQAbstractProject *openConnection(const QString &connectString);
     void setConnectString(const QString &connectString);
     QVariant sendRequest(const QString &method, const QUrl &url, QVariantMap bodyMap = QVariantMap());
-    Q_INVOKABLE QVariant get(const QString &query, QVariantMap bodyMap = QVariantMap());
-    Q_INVOKABLE QVariant post(const QString &query, QVariantMap bodyMap = QVariantMap());
-    Q_INVOKABLE QVariant put(const QString &query, QVariantMap bodyMap = QVariantMap());
-    Q_INVOKABLE QVariant del(const QString &query, QVariantMap bodyMap = QVariantMap());
+//    Q_INVOKABLE QVariant get(const QString &query, QVariantMap bodyMap = QVariantMap());
+//    Q_INVOKABLE QVariant post(const QString &query, QVariantMap bodyMap = QVariantMap());
+//    Q_INVOKABLE QVariant put(const QString &query, QVariantMap bodyMap = QVariantMap());
+//    Q_INVOKABLE QVariant del(const QString &query, QVariantMap bodyMap = QVariantMap());
     QUrl queryUrl(const QString &query) const;
     QNetworkReply *sendRequestNative(const QUrl &url, const QString &method, const QByteArray &body = QByteArray());
     QVariant sendFile(const QUrl &url, const QString &fileName, QIODevice *file);
@@ -116,7 +116,7 @@ public:
     Q_INVOKABLE QString lastHTTPErrorString() const;
     QVariant parseValue(const QVariant &source, const QString &path);
     static TQAbstractDB *createJiraDB(QObject *parent);
-    Q_INVOKABLE QVariant sendSimpleRequest(const QString &dbmsType, const QString &method, const QString &query, const QString &body = QString());
+//    Q_INVOKABLE QVariant sendSimpleRequest(const QString &dbmsType, const QString &method, const QString &query, const QString &body = QString());
     QDialog *createConnectDialog() const;
     bool oauthLogin();
     QNetworkReply *sendWait(const QString &method, QNetworkRequest &request, const QByteArray &body = QByteArray());
@@ -128,9 +128,9 @@ protected:
     QList<QNetworkCookie> cookies;
     bool waitReply(QNetworkReply *reply);
     JiraPrjInfoList getProjectList();
-    bool showLoginPage(const QString &server,
+/*    bool showLoginPage(const QString &server,
                      const QString &user = QString(),
-                     const QString &pass = QString());
+                     const QString &pass = QString());*/
     bool loginCookie(const QString &user = QString(),
                      const QString &pass = QString());
     void dumpRequest(QNetworkRequest *req, const QString &method, const QByteArray &body);
@@ -188,7 +188,7 @@ public:
     //Redefine
     TQAbstractRecordTypeDef *recordTypeDef(int recordType);
     int defaultRecType() const;
-    TQRecModel *openQueryModel(const QString &queryName, int recType, bool emitEvent = true);
+    TQRecModel *openQueryModel(const QString &queryName, int recType);
     TQRecModel *openIdsModel(const IntList &ids, int recType, bool emitEvent = true);
     TQRecModel *openRecords(const QString &queryText, int recType, bool emitEvent = true);
     TQRecord *createRecordById(int id, int rectype);
@@ -222,6 +222,10 @@ public:
     Q_INVOKABLE QString jiraProjectKey() const;
     Q_INVOKABLE QString userFullName(const QString &login);
     Q_INVOKABLE bool isAnonymousUser() const;
+    Q_INVOKABLE QVariant serverGet(const QString &urlPath);
+    Q_INVOKABLE QVariant serverPut(const QString &urlPath, const QVariantMap &bodyMap);
+    Q_INVOKABLE QVariant serverPost(const QString &urlPath, const QVariantMap &bodyMap);
+    Q_INVOKABLE QVariant serverDelete(const QString &urlPath);
 protected:
     QVariantList fieldList;
     QVariantList typesList;

@@ -33,7 +33,7 @@ void TQPlansWidget::initWidgets()
     connect(planTreeView->header(),SIGNAL(sectionMoved(int,int,int)),SLOT(headerChanged()));
     connect(planTreeView->header(),SIGNAL(sectionResized(int,int,int)),SLOT(headerChanged()));
     detailsTimer = new QTimer(this);
-    detailsTimer->setInterval(0);
+    detailsTimer->setInterval(200);
     detailsTimer->setSingleShot(true);
     connect(detailsTimer,SIGNAL(timeout()),this,SLOT(filterForRecords()));
     planTreeView->setModel(&planViewModel);
@@ -239,6 +239,9 @@ void TQPlansWidget::showScrFromTasks()
 
 void TQPlansWidget::filterForRecords()
 {
+    if(!planViewModel.rowCount())
+        return;
+    detailsTimer->stop();
     QStringList keys;
     //QList<TrkToolRecord *> selected = selectedRecords();
     foreach(QObject *obj, curRecords)

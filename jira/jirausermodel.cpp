@@ -51,11 +51,7 @@ void JiraUserModel::refresh(const QString &firstChars)
     beginResetModel();
     d->users.clear();
     d->keys.clear();
-    QVariant reply = d->prj->jiraDb()->sendRequest("GET",
-                                                   QUrl(
-                                                       QString(d->autoCompleteUrl +"%1").arg(firstChars)
-                                                       )
-                                                   );
+    QVariant reply = d->prj->serverGet(QString(d->autoCompleteUrl +"%1").arg(firstChars));
     if(reply.type() == QVariant::List)
     {
         QVariantList list = reply.toList();

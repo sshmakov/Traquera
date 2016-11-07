@@ -3,6 +3,30 @@
 <TS version="2.0" language="ru_RU">
 <defaultcodec>UTF-8</defaultcodec>
 <context>
+    <name>FieldGroupsDef</name>
+    <message>
+        <location filename="../trkdecorator.cpp" line="702"/>
+        <source>Основные</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../trkdecorator.cpp" line="708"/>
+        <location filename="../trkdecorator.cpp" line="756"/>
+        <source>Другие</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../trkdecorator.cpp" line="768"/>
+        <source>Группа %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../trkdecorator.cpp" line="776"/>
+        <source>Другое</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>FilesPage</name>
     <message>
         <location filename="../filespage.ui" line="14"/>
@@ -10,73 +34,73 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../filespage.ui" line="57"/>
+        <location filename="../filespage.ui" line="60"/>
         <source>Файл</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../filespage.ui" line="62"/>
+        <location filename="../filespage.ui" line="65"/>
         <source>Изменен</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../filespage.ui" line="67"/>
+        <location filename="../filespage.ui" line="70"/>
         <source>Путь</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../filespage.ui" line="79"/>
-        <location filename="../filespage.ui" line="159"/>
+        <location filename="../filespage.ui" line="82"/>
+        <location filename="../filespage.ui" line="164"/>
         <source>Просмотр</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../filespage.ui" line="86"/>
+        <location filename="../filespage.ui" line="89"/>
         <source>Добавить...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../filespage.ui" line="97"/>
+        <location filename="../filespage.ui" line="100"/>
         <source>Сохранить...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../filespage.ui" line="108"/>
+        <location filename="../filespage.ui" line="111"/>
         <source>Удалить...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../filespage.ui" line="142"/>
+        <location filename="../filespage.ui" line="138"/>
         <source>Описание</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../filespage.ui" line="194"/>
+        <location filename="../filespage.ui" line="211"/>
         <source>Сохранить файл...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../filespage.cpp" line="53"/>
+        <location filename="../filespage.cpp" line="56"/>
         <source>Файлы (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../filespage.cpp" line="264"/>
+        <location filename="../filespage.cpp" line="290"/>
         <source>Удалить файл &apos;%1&apos;?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../filespage.cpp" line="267"/>
+        <location filename="../filespage.cpp" line="293"/>
         <source>Удалить файл: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../filespage.cpp" line="269"/>
+        <location filename="../filespage.cpp" line="297"/>
         <source>Удаление файлов</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../filespage.cpp" line="332"/>
+        <location filename="../filespage.cpp" line="368"/>
         <source>Файл: %1
 Изменен: %2</source>
         <translation type="unfinished"></translation>
@@ -124,494 +148,493 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="112"/>
+        <location filename="../ui/tracksmain.ui" line="121"/>
         <source>Подключиться к новому проекту:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="128"/>
+        <location filename="../ui/tracksmain.ui" line="137"/>
         <source>Текущий проект:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="183"/>
+        <location filename="../ui/tracksmain.ui" line="192"/>
         <source>toolBar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="213"/>
+        <location filename="../ui/tracksmain.ui" line="222"/>
         <source>Вид</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="223"/>
+        <location filename="../ui/tracksmain.ui" line="231"/>
         <source>Проект</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="227"/>
+        <location filename="../ui/tracksmain.ui" line="235"/>
         <source>Подключить проект</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="238"/>
+        <location filename="../ui/tracksmain.ui" line="246"/>
         <source>Список</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="247"/>
+        <location filename="../ui/tracksmain.ui" line="255"/>
         <source>Запрос</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="262"/>
-        <location filename="../ui/tracksmain.ui" line="556"/>
+        <location filename="../ui/tracksmain.ui" line="270"/>
+        <location filename="../ui/tracksmain.ui" line="546"/>
         <source>Выборки и папки</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="314"/>
-        <location filename="../ui/tracksmain.ui" line="567"/>
-        <source>Свойства</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/tracksmain.ui" line="335"/>
+        <location filename="../ui/tracksmain.ui" line="328"/>
         <source>toolBar_2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="346"/>
+        <location filename="../ui/tracksmain.ui" line="339"/>
         <source>Open Tracker...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="351"/>
+        <location filename="../ui/tracksmain.ui" line="344"/>
         <source>Close Tracker...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="356"/>
+        <location filename="../ui/tracksmain.ui" line="349"/>
         <source>Exit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="361"/>
+        <location filename="../ui/tracksmain.ui" line="354"/>
         <source>Открыть проект</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="366"/>
-        <location filename="../ui/tracksmain.ui" line="369"/>
+        <location filename="../ui/tracksmain.ui" line="359"/>
+        <location filename="../ui/tracksmain.ui" line="362"/>
         <source>Закрыть проект</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="378"/>
+        <location filename="../ui/tracksmain.ui" line="371"/>
         <source>Копировать</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="381"/>
-        <source>Ctrl+C</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/tracksmain.ui" line="386"/>
+        <location filename="../ui/tracksmain.ui" line="376"/>
         <source>Вырезать</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="389"/>
+        <location filename="../ui/tracksmain.ui" line="379"/>
         <source>Ctrl+X</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="394"/>
+        <location filename="../ui/tracksmain.ui" line="384"/>
         <source>Вставить</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="397"/>
+        <location filename="../ui/tracksmain.ui" line="387"/>
         <source>Ctrl+V</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="402"/>
+        <location filename="../ui/tracksmain.ui" line="392"/>
         <source>Удалить</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="407"/>
+        <location filename="../ui/tracksmain.ui" line="397"/>
         <source>Read Filters</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="412"/>
+        <location filename="../ui/tracksmain.ui" line="402"/>
         <source>Выбрать запросы по Id...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="421"/>
+        <location filename="../ui/tracksmain.ui" line="411"/>
         <source>Выбрать запросы по Id из буфера</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="430"/>
+        <location filename="../ui/tracksmain.ui" line="420"/>
         <source>Отправить...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="439"/>
+        <location filename="../ui/tracksmain.ui" line="429"/>
         <source>Назад</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="442"/>
+        <location filename="../ui/tracksmain.ui" line="432"/>
         <source>Alt+Left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="451"/>
+        <location filename="../ui/tracksmain.ui" line="441"/>
         <source>Вперед</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="454"/>
+        <location filename="../ui/tracksmain.ui" line="444"/>
         <source>Alt+Right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="459"/>
-        <location filename="../mainwindow.cpp" line="290"/>
+        <location filename="../ui/tracksmain.ui" line="449"/>
+        <location filename="../mainwindow.cpp" line="272"/>
         <source>Открыть</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="462"/>
+        <location filename="../ui/tracksmain.ui" line="452"/>
         <source>Return</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="470"/>
-        <location filename="../mainwindow.cpp" line="301"/>
+        <location filename="../ui/tracksmain.ui" line="460"/>
+        <location filename="../mainwindow.cpp" line="283"/>
         <source>Открыть в новой вкладке</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="479"/>
+        <location filename="../ui/tracksmain.ui" line="469"/>
         <source>Предварительный просмотр</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="482"/>
+        <location filename="../ui/tracksmain.ui" line="472"/>
         <source>Ctrl+P</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="491"/>
+        <location filename="../ui/tracksmain.ui" line="481"/>
         <source>Refresh Query </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="496"/>
+        <location filename="../ui/tracksmain.ui" line="486"/>
         <source>Вставить только номера</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="499"/>
+        <location filename="../ui/tracksmain.ui" line="489"/>
         <source>Ctrl+Shift+V</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="507"/>
-        <location filename="../mainwindow.cpp" line="1777"/>
+        <location filename="../ui/tracksmain.ui" line="497"/>
+        <location filename="../mainwindow.cpp" line="1819"/>
         <source>Новая вкладка</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="510"/>
-        <location filename="../ui/tracksmain.ui" line="597"/>
+        <location filename="../ui/tracksmain.ui" line="500"/>
+        <location filename="../ui/tracksmain.ui" line="576"/>
         <source>Ctrl+N</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="515"/>
+        <location filename="../ui/tracksmain.ui" line="505"/>
         <source>Закрыть вкладку</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="518"/>
+        <location filename="../ui/tracksmain.ui" line="508"/>
         <source>Ctrl+F4</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="523"/>
+        <location filename="../ui/tracksmain.ui" line="513"/>
         <source>Открыть отмеченные записи</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="528"/>
+        <location filename="../ui/tracksmain.ui" line="518"/>
         <source>Добавить выделенные запросы</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="533"/>
-        <location filename="../mainwindow.cpp" line="1886"/>
+        <location filename="../ui/tracksmain.ui" line="523"/>
+        <location filename="../mainwindow.cpp" line="1929"/>
         <source>Новая папка</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="538"/>
-        <location filename="../mainwindow.cpp" line="1927"/>
+        <location filename="../ui/tracksmain.ui" line="528"/>
+        <location filename="../mainwindow.cpp" line="1973"/>
         <source>Переименовать папку</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="543"/>
+        <location filename="../ui/tracksmain.ui" line="533"/>
         <source>Удалить папку</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="548"/>
+        <location filename="../ui/tracksmain.ui" line="538"/>
         <source>Открыть Id</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="559"/>
+        <location filename="../ui/tracksmain.ui" line="549"/>
         <source>Ctrl+1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="570"/>
-        <source>Ctrl+2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/tracksmain.ui" line="575"/>
+        <location filename="../ui/tracksmain.ui" line="554"/>
         <source>Редактировать содержимое папки...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="580"/>
+        <location filename="../ui/tracksmain.ui" line="559"/>
         <source>Планы</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="585"/>
+        <location filename="../ui/tracksmain.ui" line="564"/>
         <source>Настройки</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="594"/>
+        <location filename="../ui/tracksmain.ui" line="573"/>
         <source>Новый запрос</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="602"/>
+        <location filename="../ui/tracksmain.ui" line="581"/>
         <source>Изменить выборку...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="605"/>
+        <location filename="../ui/tracksmain.ui" line="584"/>
         <source>Изменить выборку</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="610"/>
+        <location filename="../ui/tracksmain.ui" line="589"/>
         <source>Новая выборка...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="615"/>
+        <location filename="../ui/tracksmain.ui" line="594"/>
         <source>Новое соединение...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="620"/>
+        <location filename="../ui/tracksmain.ui" line="599"/>
         <source>Jira</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="625"/>
+        <location filename="../ui/tracksmain.ui" line="604"/>
         <source>Удалить проект</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="630"/>
+        <location filename="../ui/tracksmain.ui" line="609"/>
         <source>Переименовать...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="635"/>
+        <location filename="../ui/tracksmain.ui" line="614"/>
         <source>Обновить список</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="640"/>
+        <location filename="../ui/tracksmain.ui" line="619"/>
         <source>Удалить выборку</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="645"/>
+        <location filename="../ui/tracksmain.ui" line="624"/>
         <source>Изменить проект...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="650"/>
-        <location filename="../ui/tracksmain.ui" line="653"/>
+        <location filename="../ui/tracksmain.ui" line="629"/>
+        <location filename="../ui/tracksmain.ui" line="632"/>
         <source>Сделать текущим</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tracksmain.ui" line="658"/>
+        <location filename="../ui/tracksmain.ui" line="637"/>
         <source>Настройки проекта</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="134"/>
+        <location filename="../mainwindow.cpp" line="139"/>
         <source>Ctrl+F4</source>
         <comment>Tab|Close</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="180"/>
+        <location filename="../mainwindow.cpp" line="154"/>
+        <source>Поля</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="174"/>
         <source>Сеть</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="180"/>
-        <source>Прокси</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="284"/>
+        <location filename="../mainwindow.cpp" line="266"/>
         <source>&amp;Id или текст: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="307"/>
+        <location filename="../mainwindow.cpp" line="289"/>
         <source>Добавить</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="313"/>
+        <location filename="../mainwindow.cpp" line="295"/>
         <source>Убрать</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="550"/>
+        <location filename="../mainwindow.cpp" line="534"/>
         <source>Открытие проекта %1 - успешно</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="552"/>
+        <location filename="../mainwindow.cpp" line="536"/>
         <source>Открытие проекта %1 - не удалось</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="590"/>
+        <location filename="../mainwindow.cpp" line="574"/>
         <source>Закрытие проекта %1 - успешно</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="710"/>
+        <location filename="../mainwindow.cpp" line="700"/>
         <source>Search</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="810"/>
+        <location filename="../mainwindow.cpp" line="826"/>
         <source>Запросов: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="813"/>
+        <location filename="../mainwindow.cpp" line="829"/>
         <source>Выделено: %1 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1389"/>
+        <location filename="../mainwindow.cpp" line="1077"/>
+        <source>Открыт запрос %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1426"/>
         <source>О программе</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1390"/>
+        <location filename="../mainwindow.cpp" line="1427"/>
         <source>Работает...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1464"/>
+        <location filename="../mainwindow.cpp" line="1502"/>
         <source>Соединение с проектами...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1465"/>
+        <location filename="../mainwindow.cpp" line="1503"/>
         <source>Прервать</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1468"/>
+        <location filename="../mainwindow.cpp" line="1506"/>
         <source>Соединение</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1480"/>
+        <location filename="../mainwindow.cpp" line="1518"/>
         <source>Соединение с проектом %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1647"/>
+        <location filename="../mainwindow.cpp" line="1685"/>
         <source>Папка</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1799"/>
+        <location filename="../mainwindow.cpp" line="1841"/>
         <source>Отмеченные</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1889"/>
+        <location filename="../mainwindow.cpp" line="1932"/>
         <source>Создание новой папки</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1890"/>
+        <location filename="../mainwindow.cpp" line="1933"/>
         <source>Название новой папки</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1912"/>
+        <location filename="../mainwindow.cpp" line="1956"/>
         <source>Удаление папки</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1913"/>
+        <location filename="../mainwindow.cpp" line="1957"/>
         <source>Удалить папку &apos;%1&apos;?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1928"/>
+        <location filename="../mainwindow.cpp" line="1974"/>
         <source>Новое название</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2292"/>
+        <location filename="../mainwindow.cpp" line="2312"/>
         <source>Удаление проекта</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2292"/>
+        <location filename="../mainwindow.cpp" line="2312"/>
         <source>Удалить проект &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2322"/>
+        <location filename="../mainwindow.cpp" line="2325"/>
         <source>Переименовать выборку...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2323"/>
+        <location filename="../mainwindow.cpp" line="2326"/>
         <source>Новое имя</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="2347"/>
+        <source>Удаление выборки</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="2348"/>
+        <source>Удалить &apos;%1&apos;?</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -623,64 +646,95 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/modifypanel.ui" line="72"/>
+        <location filename="../ui/modifypanel.ui" line="69"/>
         <source>Поле</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/modifypanel.ui" line="77"/>
+        <location filename="../ui/modifypanel.ui" line="74"/>
         <source>Значение</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/modifypanel.ui" line="125"/>
+        <location filename="../ui/modifypanel.ui" line="210"/>
         <source>F4</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/modifypanel.ui" line="92"/>
+        <location filename="../ui/modifypanel.ui" line="177"/>
         <source>Ctrl+Return</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/modifypanel.ui" line="89"/>
-        <source>Применить все изменения к выделенным запросам</source>
+        <location filename="../ui/modifypanel.ui" line="106"/>
+        <source>Отменить изменения</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/modifypanel.ui" line="104"/>
-        <source>Отменить все изменения</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/modifypanel.ui" line="107"/>
-        <source>Shift+Backspace</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/modifypanel.ui" line="119"/>
-        <location filename="../ui/modifypanel.ui" line="122"/>
-        <source>Повторить предыдущие изменения</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/modifypanel.ui" line="133"/>
-        <source>Отменить изменение в поле</source>
+        <location filename="../ui/modifypanel.ui" line="109"/>
+        <source>Сбросить</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/modifypanel.ui" line="136"/>
+        <source>Применить изменения</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/modifypanel.ui" line="139"/>
+        <source>Применить</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/modifypanel.ui" line="153"/>
+        <location filename="../ui/modifypanel.ui" line="244"/>
+        <source>Изменить</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/modifypanel.ui" line="174"/>
+        <source>Применить все изменения к выделенным запросам</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/modifypanel.ui" line="189"/>
+        <source>Отменить все изменения</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/modifypanel.ui" line="192"/>
+        <source>Shift+Backspace</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/modifypanel.ui" line="204"/>
+        <location filename="../ui/modifypanel.ui" line="207"/>
+        <source>Повторить предыдущие изменения</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/modifypanel.ui" line="218"/>
+        <source>Отменить изменение в поле</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/modifypanel.ui" line="221"/>
         <source>Ctrl+Z</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/modifypanel.ui" line="144"/>
+        <location filename="../ui/modifypanel.ui" line="229"/>
         <source>Очистить поле</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/modifypanel.ui" line="147"/>
+        <location filename="../ui/modifypanel.ui" line="232"/>
         <source>Del</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/modifypanel.ui" line="247"/>
+        <source>F2</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -836,111 +890,122 @@
 <context>
     <name>QueryPage</name>
     <message>
-        <location filename="../querypage.cpp" line="138"/>
+        <location filename="../querypage.cpp" line="142"/>
         <source>Поля</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../querypage.cpp" line="172"/>
+        <location filename="../querypage.cpp" line="176"/>
         <source>Текст</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../querypage.cpp" line="273"/>
+        <location filename="../querypage.cpp" line="276"/>
         <source>Инфо %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../querypage.cpp" line="361"/>
+        <location filename="../querypage.cpp" line="364"/>
         <source>Любое поле</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../querypage.cpp" line="547"/>
+        <location filename="../querypage.cpp" line="546"/>
+        <location filename="../querypage.cpp" line="665"/>
         <source>Настройка столбцов...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../querypage.cpp" line="788"/>
-        <location filename="../querypage.cpp" line="798"/>
+        <location filename="../querypage.cpp" line="553"/>
+        <source>Скрыть столбец &apos;%1&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../querypage.cpp" line="559"/>
+        <source>Столбцы</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../querypage.cpp" line="924"/>
+        <location filename="../querypage.cpp" line="934"/>
         <source>Ошибка</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../querypage.cpp" line="789"/>
+        <location filename="../querypage.cpp" line="925"/>
         <source>Нет доступа к Outlook</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../querypage.cpp" line="799"/>
+        <location filename="../querypage.cpp" line="935"/>
         <source>Не создается письмо в Outlook</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../querypage.cpp" line="811"/>
+        <location filename="../querypage.cpp" line="947"/>
         <source>Запрос %1. %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../querypage.cpp" line="815"/>
+        <location filename="../querypage.cpp" line="951"/>
         <source>Запросы </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../querypage.cpp" line="904"/>
+        <location filename="../querypage.cpp" line="1042"/>
         <source>Открыта выборка &quot;%1&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../querypage.cpp" line="926"/>
-        <location filename="../querypage.cpp" line="946"/>
+        <location filename="../querypage.cpp" line="1064"/>
+        <location filename="../querypage.cpp" line="1084"/>
         <source>Открыт список запросов %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../querypage.cpp" line="971"/>
+        <location filename="../querypage.cpp" line="1109"/>
         <source>Открыта папка &quot;%1&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../querypage.cpp" line="1211"/>
+        <location filename="../querypage.cpp" line="1365"/>
         <source>В запрос(-ы) %1 добавлена нота &quot;%2&quot;:
 %3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../querypage.cpp" line="1214"/>
+        <location filename="../querypage.cpp" line="1368"/>
         <source>В запрос(-ы) %1 не удалось добавить ноту &quot;%2&quot;:
 %3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../querypage.cpp" line="1276"/>
+        <location filename="../querypage.cpp" line="1430"/>
         <source>Добавлены в список запросы %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../querypage.cpp" line="1283"/>
+        <location filename="../querypage.cpp" line="1437"/>
         <source>Удалены из списка запросы %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../querypage.cpp" line="1311"/>
+        <location filename="../querypage.cpp" line="1465"/>
         <source>Открыт запрос %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../querypage.cpp" line="1559"/>
+        <location filename="../querypage.cpp" line="1723"/>
         <source>Отмеченные запросы</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../querypage.cpp" line="1708"/>
+        <location filename="../querypage.cpp" line="1886"/>
         <source>Выберите файл шаблона страницы</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../querypage.cpp" line="1710"/>
+        <location filename="../querypage.cpp" line="1888"/>
         <source>XQuery (*.xq);;Все файлы (*.*)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1136,12 +1201,12 @@
 <context>
     <name>TQConnectModel</name>
     <message>
-        <location filename="../tqconnectwidget.cpp" line="296"/>
+        <location filename="../tqconnectwidget.cpp" line="293"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tqconnectwidget.cpp" line="297"/>
+        <location filename="../tqconnectwidget.cpp" line="294"/>
         <source>Salary</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1154,74 +1219,84 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tqconnectwidget.ui" line="72"/>
+        <location filename="../tqconnectwidget.ui" line="87"/>
         <source>Пользователь БД</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tqconnectwidget.ui" line="79"/>
+        <location filename="../tqconnectwidget.ui" line="142"/>
         <source>Пароль БД</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tqconnectwidget.ui" line="86"/>
+        <location filename="../tqconnectwidget.ui" line="135"/>
         <location filename="../tqconnectwidget.cpp" line="40"/>
         <source>Сервер</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tqconnectwidget.ui" line="93"/>
+        <location filename="../tqconnectwidget.ui" line="156"/>
         <source>Источник</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tqconnectwidget.ui" line="103"/>
+        <location filename="../tqconnectwidget.ui" line="149"/>
         <location filename="../tqconnectwidget.cpp" line="37"/>
         <source>Проект</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tqconnectwidget.ui" line="110"/>
+        <location filename="../tqconnectwidget.ui" line="108"/>
         <location filename="../tqconnectwidget.cpp" line="38"/>
         <source>Система</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tqconnectwidget.ui" line="117"/>
+        <location filename="../tqconnectwidget.ui" line="101"/>
         <location filename="../tqconnectwidget.cpp" line="41"/>
         <source>Логин</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tqconnectwidget.ui" line="124"/>
+        <location filename="../tqconnectwidget.ui" line="128"/>
         <location filename="../tqconnectwidget.cpp" line="42"/>
         <source>Пароль</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tqconnectwidget.ui" line="134"/>
+        <location filename="../tqconnectwidget.ui" line="118"/>
         <source>Авторизация Windows</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tqconnectwidget.ui" line="144"/>
+        <location filename="../tqconnectwidget.ui" line="73"/>
         <source>Соединяться автоматически при входе</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tqconnectwidget.ui" line="164"/>
-        <location filename="../tqconnectwidget.ui" line="201"/>
+        <location filename="../tqconnectwidget.ui" line="173"/>
+        <location filename="../tqconnectwidget.ui" line="180"/>
         <source>Запомнить пароль</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tqconnectwidget.ui" line="171"/>
-        <location filename="../tqconnectwidget.ui" line="185"/>
+        <location filename="../tqconnectwidget.ui" line="166"/>
+        <location filename="../tqconnectwidget.ui" line="196"/>
         <source>...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tqconnectwidget.ui" line="215"/>
+        <location filename="../tqconnectwidget.ui" line="233"/>
+        <source>Сохранить</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tqconnectwidget.ui" line="240"/>
+        <source>Отмена</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tqconnectwidget.ui" line="247"/>
         <source>Открыть</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1259,7 +1334,15 @@
 <context>
     <name>TQDateTimeEdit</name>
     <message>
-        <location filename="../ttdelegate.cpp" line="376"/>
+        <location filename="../trkdecorator.cpp" line="627"/>
+        <source>dd.MM.yyyy hh:mm:ss</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>TQDateTimeFieldEdit</name>
+    <message>
+        <location filename="../ttdelegate.cpp" line="737"/>
         <source>пусто</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1325,6 +1408,11 @@
     <message>
         <location filename="../projecttree.cpp" line="182"/>
         <source>Личные папки</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../projecttree.cpp" line="206"/>
+        <source>Выборки</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1409,12 +1497,12 @@
 <context>
     <name>TTFolderModel</name>
     <message>
-        <location filename="../ttfolders.cpp" line="207"/>
+        <location filename="../ttfolders.cpp" line="208"/>
         <source>Папка</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ttfolders.cpp" line="220"/>
+        <location filename="../ttfolders.cpp" line="221"/>
         <source>Папка %1(%2)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1542,54 +1630,33 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ttrecwindow.cpp" line="99"/>
+        <location filename="../ttrecwindow.cpp" line="114"/>
         <source>Запрос был изменен</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ttrecwindow.cpp" line="100"/>
+        <location filename="../ttrecwindow.cpp" line="115"/>
         <source>Хотите записать изменения?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ttrecwindow.cpp" line="168"/>
+        <location filename="../ttrecwindow.cpp" line="190"/>
         <source>Тема:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ttrecwindow.cpp" line="190"/>
+        <location filename="../ttrecwindow.cpp" line="215"/>
         <source>Запрос %1 %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ttrecwindow.cpp" line="694"/>
+        <location filename="../ttrecwindow.cpp" line="735"/>
         <source>New note</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ttrecwindow.cpp" line="735"/>
+        <location filename="../ttrecwindow.cpp" line="776"/>
         <source>Свойства</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>TrkDateTimeEdit</name>
-    <message>
-        <location filename="../trkdecorator.cpp" line="621"/>
-        <source>dd.MM.yyyy hh:mm:ss</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>TrkDecorator</name>
-    <message>
-        <location filename="../trkdecorator.cpp" line="372"/>
-        <source>Основные</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../trkdecorator.cpp" line="378"/>
-        <source>Другие</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1612,97 +1679,92 @@
     </message>
     <message>
         <location filename="../ui/querypage.ui" line="72"/>
-        <location filename="../ui/querypage.ui" line="258"/>
+        <location filename="../ui/querypage.ui" line="303"/>
         <source>Фильтр</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/querypage.ui" line="170"/>
+        <location filename="../ui/querypage.ui" line="188"/>
         <source>...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/querypage.ui" line="245"/>
+        <location filename="../ui/querypage.ui" line="290"/>
         <source>Добавить запросы как задачи</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/querypage.ui" line="250"/>
+        <location filename="../ui/querypage.ui" line="295"/>
         <source>Добавить ноту...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/querypage.ui" line="263"/>
-        <location filename="../ui/querypage.ui" line="341"/>
+        <location filename="../ui/querypage.ui" line="308"/>
+        <location filename="../ui/querypage.ui" line="380"/>
         <source>Копировать номера запросов</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/querypage.ui" line="274"/>
-        <location filename="../ui/querypage.ui" line="346"/>
+        <location filename="../ui/querypage.ui" line="319"/>
+        <location filename="../ui/querypage.ui" line="385"/>
         <source>Копировать запросы как таблицу</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/querypage.ui" line="279"/>
-        <location filename="../ui/querypage.ui" line="282"/>
+        <location filename="../ui/querypage.ui" line="324"/>
+        <location filename="../ui/querypage.ui" line="327"/>
         <source>Отметить</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/querypage.ui" line="287"/>
+        <location filename="../ui/querypage.ui" line="332"/>
         <source>Сбросить отметку</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/querypage.ui" line="292"/>
-        <location filename="../ui/querypage.ui" line="351"/>
+        <location filename="../ui/querypage.ui" line="337"/>
+        <location filename="../ui/querypage.ui" line="390"/>
         <source>Удалить из списка</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/querypage.ui" line="295"/>
+        <location filename="../ui/querypage.ui" line="340"/>
         <source>Shift+F5</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/querypage.ui" line="303"/>
+        <location filename="../ui/querypage.ui" line="348"/>
         <source>Удалить из папки</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/querypage.ui" line="306"/>
+        <location filename="../ui/querypage.ui" line="351"/>
         <source>F8</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/querypage.ui" line="314"/>
+        <location filename="../ui/querypage.ui" line="359"/>
         <source>Открыть</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/querypage.ui" line="319"/>
+        <location filename="../ui/querypage.ui" line="364"/>
         <source>Инвертировать отметку</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/querypage.ui" line="322"/>
+        <location filename="../ui/querypage.ui" line="367"/>
         <source>Ins</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/querypage.ui" line="330"/>
-        <location filename="../ui/querypage.ui" line="361"/>
+        <location filename="../ui/querypage.ui" line="375"/>
+        <location filename="../ui/querypage.ui" line="400"/>
         <source>Копировать запросы</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/querypage.ui" line="333"/>
-        <source>Ctrl+C</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/querypage.ui" line="356"/>
+        <location filename="../ui/querypage.ui" line="395"/>
         <source>Выделить</source>
         <translation type="unfinished"></translation>
     </message>

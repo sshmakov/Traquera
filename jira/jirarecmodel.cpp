@@ -64,7 +64,7 @@ void JiraRecModel::fetchMore(const QModelIndex &parent)
         fList << field;
     }
     body["fields"] = fList;
-    QVariantMap map = d->db->sendRequest("POST",d->db->queryUrl("rest/api/2/search"), body).toMap();
+    QVariantMap map = d->project->serverPost("rest/api/2/search", body).toMap();
     QVariantList issueList = map.value("issues").toList();
     setHeaders(d->rdef->fieldNames());
     QList<TQRecord*> records;
