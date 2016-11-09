@@ -1,4 +1,4 @@
-﻿/*
+/*
 doc = ActiveXObject("Word.Document");     
 app = ActiveXObject(doc.Application);
 app.Visible = true;
@@ -20,14 +20,14 @@ email();
 function email()
 {
 //debugger;
-var app = ActiveXObject("Outlook.Application");
-var ns = ActiveXObject(app.GetNamespace("MAPI"));
-var myFolder = ActiveXObject(ns.GetDefaultFolder(4));
-var myFolder_2 = ActiveXObject(ns.GetDefaultFolder(5));
+var app = new ActiveXObject("Outlook.Application");
+var ns = app.GetNamespace("MAPI");
+var myFolder = ns.GetDefaultFolder(4);
+var myFolder_2 = ns.GetDefaultFolder(5);
    
 //itemType1 = app.olMailItem;
 itemType = 0;
-mail = ActiveXObject(app.CreateItem(itemType));
+mail = app.CreateItem(itemType);
 if(mail == null)
 	return;
 //Global.saveObjectDocumentation(mail, "data/mail.htm");
@@ -43,15 +43,17 @@ format = 2;
 //if(!format.isValid())
 //    format=2;
 mail.BodyFormat = format;
-s = query.makeRecordsPage(records, "data/email.xq");
+//debugger;
+var template = query.project.optionValue("EmailTemplate");
+s = query.makeRecordsPage(records, template);
 mail.HTMLBody = s;
 
 
 subject ="";
-if(records.length == 1)
+if(records.length === 1)
 {
     var rec = records[0];
-    subject = "Запрос " + rec.recordId() + " " + rec.value("Title");
+    subject = "Запрос " + rec.recordId + " " + rec.value("Title");
 }
 else
 {
@@ -61,7 +63,7 @@ else
         var rec = records[i];
         if(i)
             subject += ", ";
-        subject += rec.recordId();
+        subject += rec.recordId;
     }
 }
 mail.Subject = subject;

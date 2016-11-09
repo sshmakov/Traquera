@@ -11,6 +11,7 @@ QT       -= gui
 #QT += axcontainer
 CONFIG += qaxcontainer
 CONFIG += qaxserver qaxserver_no_postlink
+QT += script scripttools
 
 TARGET = tqaxfactory
 TEMPLATE = lib
@@ -21,11 +22,13 @@ RC_FILE  = qaxserver.rc
 DEFINES += TQAXFACTORY_LIBRARY
 
 SOURCES += tqaxfactory.cpp \
-    activefactory.cpp
+    activefactory.cpp \
+    axscriptable.cpp
 
 HEADERS += tqaxfactory.h\
         tqaxfactory_global.h \
-    activefactory.h
+    activefactory.h \
+    axscriptable.h
 
 unix:!symbian {
     maemo5 {

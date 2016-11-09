@@ -28,6 +28,7 @@
 #include <windows.h>
 #endif
 
+#include <axscriptable.h>
 #include <tqviewcontroller.h>
 
 #ifdef Q_WS_WIN
@@ -266,11 +267,12 @@ QMap<QString, GetOptionsWidgetFunc> TTGlobal::optionsWidgets() const
     return d->optionsRegs;
 }
 
-QVariant TTGlobal::CreateObject(const QString &objectName)
+QVariant TTGlobal::CreateObject(const QString &objectName, QObject *parent)
 {
     if(!d->proc)
         return QVariant();
-    return d->proc->createActiveX(objectName, this);
+    QObject *p = parent ? parent : this;
+    return d->proc->createActiveX(objectName, p);
 }
 
 QString TTGlobal::saveObjectDocumentation(QObject *object, const QString &fileName) const
@@ -843,6 +845,36 @@ static QScriptValue ActiveXObjectConstructor(QScriptContext *context,
     return engine->newQObject(object, QScriptEngine::ScriptOwnership);
 }
 
+static QScriptValue MyAxConstructor(QScriptContext *context,
+                                         QScriptEngine *engine)
+{
+    QObject *object = 0;
+    QScriptValue c = context->argument(0);
+    if(c.isUndefined())
+    {
+        QVariant v = ttglobal()->CreateObject(QString(), engine);
+        return engine->newVariant(v);
+    }
+//        object = ttglobal()->CreateObject().value<QObject *>();
+    else if(c.isString())
+    {
+        QVariant v = ttglobal()->CreateObject(c.toString(), engine);
+        int type = v.type();
+        QString typeName = v.typeName();
+        object = v.value<QAxObject *>();
+        return engine->newVariant(v);
+        //QVariant v = object->property("Application");
+        //IDispatch *disp = v.value<IDispatch*>();
+    }
+    else //if(c.isVariant())
+    {
+        QVariant v = c.toVariant();
+        IDispatch *disp = v.value<IDispatch*>();
+        object = new QAxObject(disp, engine);
+    }
+    return engine->newQObject(object, QScriptEngine::ScriptOwnership);
+}
+
 
 QScriptEngine *TTGlobal::newScriptEngine()
 {
@@ -855,9 +887,11 @@ QScriptEngine *TTGlobal::newScriptEngine()
     QScriptValue globalObj = engine->newQObject(this);
     engine->globalObject().setProperty("Global", globalObj);
 
-    QScriptValue ctor = engine->newFunction(ActiveXObjectConstructor);
+//    QScriptValue ctor = engine->newFunction(ActiveXObjectConstructor);
+    //QScriptValue ctor = engine->newFunction(MyAxConstructor);
 //    QScriptValue metaObject = engine.newQMetaObject(&QAxObject::staticMetaObject, ctor);
-    engine->globalObject().setProperty("ActiveXObject", ctor);
+//    engine->globalObject().setProperty("ActiveXObject", ctor);
+    d->proc->populateScriptEngine(engine);
     return engine;
 }
 
@@ -871,3 +905,8 @@ QScriptEngine *TTGlobal::newScriptEngine()
 }*/
 
 
+
+void TTMainProc::populateScriptEngine(QScriptEngine *engine)
+{
+    Q_UNUSED(engine);
+}

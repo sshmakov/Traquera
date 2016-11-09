@@ -38,10 +38,11 @@ class QAbstractMessageHandler;
 
 typedef QVariant (*TQActiveXCreator)(const QString &objectName);
 
-class TTMainProc
+class TQPLUGIN_SHARED TTMainProc
 {
 public:
     virtual ~TTMainProc() {}
+    virtual void populateScriptEngine(QScriptEngine *engine);
     virtual QMainWindow *mainWindow() = 0;
     virtual TQAbstractProject *currentProject() = 0;
     virtual bool insertViewTab(QWidget *view, QWidget *tab, const QString &title) = 0;
@@ -89,7 +90,7 @@ public:
     Q_INVOKABLE bool registerOptionsWidget(const QString &path, void *funcPtr);
     Q_INVOKABLE QNetworkAccessManager *networkManager() const;
     QMap<QString, GetOptionsWidgetFunc> optionsWidgets() const;
-    Q_INVOKABLE QVariant CreateObject(const QString &objectName);
+    Q_INVOKABLE QVariant CreateObject(const QString &objectName = QString(), QObject *parent = 0);
     Q_INVOKABLE QString saveObjectDocumentation(QObject *object, const QString &fileName = QString()) const;
     Q_INVOKABLE QVariant optionDefaultValue(const QString &option) const;
     Q_INVOKABLE QString dataDir() const;

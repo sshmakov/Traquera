@@ -26,6 +26,7 @@ public:
     QString makeXmlQuery(QXmlQuery *xquery, const QString &xqCodePath, const QObjectList &records) const;
     QString makeXmlQuery(QXmlQuery *xquery, const QString &xqCodePath, TQRecord *record) const;
     TQEditorFactory *fieldEditorFactory() const;
+    void populateScriptEngine(QScriptEngine *engine);
 };
 
 extern MainProc *mainProc;

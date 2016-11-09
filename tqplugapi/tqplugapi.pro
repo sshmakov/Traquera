@@ -67,3 +67,5 @@ DESTDIR = ../client
 
 win32:INCLUDEPATH += C:/OpenSSL-Win32/include
 win32:LIBS += -LC:/OpenSSL-Win32/lib -LC:/OpenSSL-Win32/bin -llibeay32 -lssleay32
+
+

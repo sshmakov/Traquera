@@ -49,7 +49,8 @@ return
     <col width="30%"/>
     <col width="20%"/>
     <col width="30%"/>
-     {for $panel in doc($def)/*/panels/panel
+    <!--
+     { for $panel in doc($def)/*/panels/panel
          return (
 	<span class="dummy">
                <tr class="fieldGroup"> <td colspan="4" align="left">{ $panel/string(@title) }</td> </tr>
@@ -76,7 +77,7 @@ return
               }
               </span>
          </span>)
-     }
+     } -->
     </table>
     <p class="noteTitle">Description:</p>
     <blockquote><PRE class="description">

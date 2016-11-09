@@ -5,6 +5,7 @@
 #include "ttdelegate.h"
 
 #include <QtCore>
+#include <axscriptable.h>
 
 MainProc *mainProc;
 
@@ -71,7 +72,11 @@ bool MainProc::addPropWidget(QWidget *widget)
 
 QVariant MainProc::createActiveX(const QString &objectName, QObject *parent)
 {
-    QAxObject *obj = new ActiveXObject(objectName, parent);
+    QAxObject *obj;
+    if(objectName.isEmpty())
+        obj = new ActiveXObject(parent);
+    else
+        obj = new ActiveXObject(objectName, parent);
     return obj->asVariant();
 }
 
@@ -229,5 +234,10 @@ QString MainProc::makeXmlQuery(QXmlQuery *xquery, const QString &xqCodePath, TQR
 TQEditorFactory *MainProc::fieldEditorFactory() const
 {
     return d->factory;
+}
+
+void MainProc::populateScriptEngine(QScriptEngine *engine)
+{
+    AxScriptable::initEngine(engine);
 }
 
