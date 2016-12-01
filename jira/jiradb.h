@@ -148,7 +148,8 @@ struct JiraFilter {
     QString name;
     QString jql;
     bool isSystem;
-    bool isServerStored;
+    int serverId;
+    bool isFavorite;
 };
 
 class JiraFilterModel;
@@ -226,6 +227,8 @@ public:
     Q_INVOKABLE QVariant serverPut(const QString &urlPath, const QVariantMap &bodyMap);
     Q_INVOKABLE QVariant serverPost(const QString &urlPath, const QVariantMap &bodyMap);
     Q_INVOKABLE QVariant serverDelete(const QString &urlPath);
+protected:
+    void checkRequestResult(const QVariant &result);
 protected:
     QVariantList fieldList;
     QVariantList typesList;

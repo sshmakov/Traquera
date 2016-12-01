@@ -2039,6 +2039,7 @@ QHash<int, QString> JiraProject::baseRecordFields(int rectype)
 
 bool JiraProject::isSystemModel(QAbstractItemModel *model) const
 {
+    Q_UNUSED(model);
     return false;
 }
 
@@ -2064,20 +2065,28 @@ TQQueryGroups JiraProject::queryGroups(int type)
 {
     TQQueryGroups list;
     TQQueryGroup item;
-    item.name = tr("Избранные выборки");
-    item.filterString = "fav";
-    item.isCreateEnabled = false;
-    item.isModifyEnabled = false;
-    item.isDeleteEnabled = false;
-    list.append(item);
-
-    item.name = tr("Личные выборки");
-    item.filterString = "local";
+    item.name = tr("Фильтры");
+    item.filterString = "all";
     item.isCreateEnabled = true;
     item.isModifyEnabled = true;
     item.isDeleteEnabled = true;
     list.append(item);
 
+    /*
+    item.name = tr("Серверные фильтры");
+    item.filterString = "server";
+    item.isCreateEnabled = true;
+    item.isModifyEnabled = true;
+    item.isDeleteEnabled = true;
+    list.append(item);
+
+    item.name = tr("Личные фильтры");
+    item.filterString = "local";
+    item.isCreateEnabled = true;
+    item.isModifyEnabled = true;
+    item.isDeleteEnabled = true;
+    list.append(item);
+*/
     return list;
 }
 
@@ -2115,19 +2124,23 @@ bool JiraProject::saveQueryDefinition(TQQueryDef *queryDefinition, const QString
     if(!def)
         return false;
     QString oldName;
+    int serverId = 0;
     bool isModify = false;
+
+
     QSqlDatabase udb = ttglobal()->userDatabase();
     if(!udb.open())
         return false;
     QSqlQuery query(udb);
     udb.transaction();
-    query.prepare("select name from jiraqueries where project = ? and login = ?");
+    query.prepare("select name, serverId from jiraqueries where project = ? and login = ?");
     query.bindValue(0, strValue(this->projectName()));
     query.bindValue(1, strValue(this->currentUser()));
     query.exec();
     while(query.next())
     {
         oldName = query.value(0).toString();
+        int oldServerId = query.value(1).toInt();
         if(oldName.compare(queryName,Qt::CaseInsensitive) == 0)
         {
             QSqlQuery q(udb);
@@ -2137,14 +2150,16 @@ bool JiraProject::saveQueryDefinition(TQQueryDef *queryDefinition, const QString
             q.bindValue(2, strValue(oldName));
             q.exec();
             isModify = true;
+            serverId = oldServerId;
             break;
         }
     }
-    query.prepare("insert into jiraqueries(project, login, name, jql) values(?,?,?,?)");
+    query.prepare("insert into jiraqueries(project, login, name, jql, serverId) values(?,?,?,?,?)");
     query.bindValue(0, strValue(this->projectName()));
     query.bindValue(1, strValue(this->currentUser()));
     query.bindValue(2, strValue(queryName));
     query.bindValue(3, strValue(def->queryLine()));
+    query.bindValue(4, serverId);
     if(!query.exec())
     {
         udb.rollback();
@@ -2157,15 +2172,42 @@ bool JiraProject::saveQueryDefinition(TQQueryDef *queryDefinition, const QString
             const JiraFilter &f = filters->at(r);
             if(f.name.compare(oldName, Qt::CaseInsensitive) == 0)
             {
+                if(f.serverId)
+                    serverId = f.serverId;
                 filters->removeRow(r);
                 break;
             }
         }
     JiraFilter f;
-    f.isServerStored = false;
+    f.serverId = serverId;
     f.isSystem = false;
     f.jql = def->queryLine();
     f.name = queryName;
+    if(f.serverId)
+    {
+        QVariantMap body;
+        body["name"] = f.name;
+        body["jql"] = f.jql;
+        body["favourite"] = true;
+        serverPut("rest/api/2/filter/" + QString::number(f.serverId), body);
+    }
+    else
+    {
+        QVariantMap body;
+        body["name"] = f.name;
+        body["jql"] = f.jql;
+        body["favourite"] = true;
+        QVariantMap map = serverPost("rest/api/2/filter", body).toMap();
+        if(map.contains("id"))
+        {
+            f.serverId = map.value("id").toInt();
+            query.prepare("update jiraqueries set serverId = ? where project = ? and login = ? and name = ?");
+            query.bindValue(0, f.serverId);
+            query.bindValue(1, strValue(this->projectName()));
+            query.bindValue(2, strValue(this->currentUser()));
+            query.bindValue(3, strValue(queryName));
+        }
+    }
     filters->append(f);
     return true;
 }
@@ -2190,6 +2232,14 @@ bool JiraProject::renameQuery(const QString &oldName, const QString &newName, in
                 filters->setData(filters->index(r,0), newName);
                 f.name = newName;
 //                filters->dataChanged(, filters->index(r,0));
+                if(f.serverId)
+                {
+                    QVariantMap body;
+                    body["name"] = f.name;
+                    body["jql"] = f.jql;
+                    body["favourite"] = true;
+                    serverPut("rest/api/2/filter/" + QString::number(f.serverId), body);
+                }
                 return true;
             }
         }
@@ -2212,6 +2262,8 @@ bool JiraProject::deleteQuery(const QString &queryName, int recordType)
             JiraFilter &f = filters->operator [](r);
             if(f.name.compare(queryName, Qt::CaseInsensitive) == 0)
             {
+                if(f.serverId)
+                    serverDelete("rest/api/2/filter/" + QString::number(f.serverId));
                 filters->removeRow(r);
                 return true;
             }
@@ -2272,33 +2324,42 @@ bool JiraProject::isAnonymousUser() const
 QVariant JiraProject::serverGet(const QString &urlPath)
 {
     QVariant res = db->sendRequest("GET", db->queryUrl(urlPath));
-    if(db->lastHTTPCode())
-        emit error(db->lastHTTPCode(), db->lastHTTPErrorString());
+    checkRequestResult(res);
     return res;
 }
 
 QVariant JiraProject::serverPut(const QString &urlPath, const QVariantMap &bodyMap)
 {
     QVariant res = db->sendRequest("PUT", db->queryUrl(urlPath), bodyMap);
-    if(db->lastHTTPCode())
-        emit error(db->lastHTTPCode(), db->lastHTTPErrorString());
+    checkRequestResult(res);
     return res;
 }
 
 QVariant JiraProject::serverPost(const QString &urlPath, const QVariantMap &bodyMap)
 {
     QVariant res = db->sendRequest("POST", db->queryUrl(urlPath), bodyMap);
-    if(db->lastHTTPCode())
-        emit error(db->lastHTTPCode(), db->lastHTTPErrorString());
+    checkRequestResult(res);
     return res;
 }
 
 QVariant JiraProject::serverDelete(const QString &urlPath)
 {
     QVariant res = db->sendRequest("DELETE", db->queryUrl(urlPath));
-    if(db->lastHTTPCode())
-        emit error(db->lastHTTPCode(), db->lastHTTPErrorString());
+    checkRequestResult(res);
     return res;
+}
+
+void JiraProject::checkRequestResult(const QVariant &result)
+{
+    if(db->lastHTTPCode())
+    {
+        QVariantMap map = result.toMap();
+        QString mes;
+        QVariant v = map.value("errorMessages");
+        if(v.isValid())
+            mes = "\n" + v.toStringList().join("\n");
+        emit error(db->lastHTTPCode(), db->lastHTTPErrorString() + mes);
+    }
 }
 
 /*TQAbstractRecordTypeDef *JiraProject::loadRecordTypeDef(int recordType)
@@ -2676,6 +2737,17 @@ TQChoiceList JiraProject::parseAllowedValues(const QVariantList &values) const
 }
 
 typedef QPair<QString,QString> QStringPair;
+struct FilterDef {
+    QString filterName;
+    QString jql;
+    int serverId;
+    inline FilterDef(const QString &a_name, const QString &a_jql, int id = 0)
+    {
+        filterName = a_name;
+        jql = a_jql;
+        serverId = id;
+    }
+};
 
 void JiraProject::loadQueries()
 {
@@ -2686,7 +2758,7 @@ void JiraProject::loadQueries()
         JiraFilter item;
         item.name = favMap.value("name").toString();
         item.jql = favMap.value("jql").toString();
-        item.isServerStored = true;
+        item.serverId = favMap.value("id").toInt();
         item.isSystem = false;
         filters->append(item);
         favSearch.insert(item.name, filters->rowCount()-1);
@@ -2700,7 +2772,7 @@ void JiraProject::loadQueries()
     {
         if(!udb.tables().contains("jiraqueries"))
         {
-            udb.exec("create table jiraqueries(project varchar(255), login varchar(255), name varchar(255), jql varchar(255))");
+            udb.exec("create table jiraqueries(project varchar(255), login varchar(255), name varchar(255), jql varchar(255), serverId int)");
             needFillDb = udb.lastError().type() == QSqlError::NoError;
             udb.exec("create index jiraqueries_1 on jiraqueries(project, login)");
         }
@@ -2713,66 +2785,73 @@ void JiraProject::loadQueries()
             q.exec();
             needFillDb = !q.next() || !q.value(0).toInt();
         }
+        QSqlRecord rec = udb.record("jiraqueries");
+        if(!rec.contains("serverId"))
+        {
+            udb.exec("alter table jiraqueries add column serverId int null");
+        }
 
     }
-    QList<QStringPair > preDef;
+    QList<FilterDef> preDef;
     if(needFillDb)
     {
         if(!an)
         {
             preDef
-                    << qMakePair(tr("Мои открытые запросы"),
+                    << FilterDef(tr("Мои открытые запросы"),
                                  QString("project = '%1' AND assignee = currentUser() AND resolution = Unresolved ORDER BY updatedDate DESC")
                                  .arg(name))
-                    << qMakePair(tr("Созданные мной"),
+                    << FilterDef(tr("Созданные мной"),
                                  QString("project = '%1' AND reporter = currentUser() ORDER BY createdDate DESC")
                                  .arg(name));
         }
         preDef
-                << qMakePair(tr("Все запросы"),
+                << FilterDef(tr("Все запросы"),
                              QString("project = '%1' ORDER BY createdDate DESC")
                              .arg(name))
-                << qMakePair(tr("Открытые запросы"),
+                << FilterDef(tr("Открытые запросы"),
                              QString("project = '%1' AND resolution = Unresolved order by priority DESC,updated DESC")
                              .arg(name))
-                << qMakePair(tr("Добавленные недавно"),
+                << FilterDef(tr("Добавленные недавно"),
                              QString("project = '%1' AND created >= -1w order by created DESC")
                              .arg(name))
-                << qMakePair(tr("Решенные недавно"),
+                << FilterDef(tr("Решенные недавно"),
                              QString("project = '%1' AND resolutiondate >= -1w order by updated DESC")
                              .arg(name))
-                << qMakePair(tr("Обновленные недавно"),
+                << FilterDef(tr("Обновленные недавно"),
                              QString("project = '%1' AND updated >= -1w order by updated DESC")
                              .arg(name))
                    ;
 
         QSqlQuery query(udb);
         query.prepare("insert into jiraqueries(project, login, name, jql) values(?,?,?,?)");
-        foreach(const QStringPair &def, preDef)
+        foreach(const FilterDef &def, preDef)
         {
             query.bindValue(0, strValue(this->projectName()));
             query.bindValue(1, strValue(this->currentUser()));
-            query.bindValue(2, strValue(def.first));
-            query.bindValue(3, strValue(def.second));
+            query.bindValue(2, strValue(def.filterName));
+            query.bindValue(3, strValue(def.jql));
             query.exec();
         }
     }
     else
     {
         QSqlQuery query(udb);
-        query.prepare("select name, jql from jiraqueries where project = ? and login = ?");
+        query.prepare("select name, jql, serverId from jiraqueries where project = ? and login = ?");
         query.bindValue(0, strValue(this->projectName()));
         query.bindValue(1, strValue(this->currentUser()));
         query.exec();
         while(query.next())
-            preDef << qMakePair(query.value(0).toString(), query.value(1).toString());
+            preDef << FilterDef(query.value(0).toString(), query.value(1).toString(), query.value(2).toInt());
     }
-    foreach(const QStringPair &def, preDef)
+    foreach(const FilterDef &def, preDef)
     {
+        if(favSearch.contains(def.filterName))
+            continue;
         JiraFilter item;
-        item.name = def.first;
-        item.jql = def.second;
-        item.isServerStored = false;
+        item.name = def.filterName;
+        item.jql = def.jql;
+        item.serverId = def.serverId;
         item.isSystem = true;
         filters->append(item);
         favSearch.insert(item.name, filters->rowCount()-1);
@@ -2949,7 +3028,7 @@ QVariant JiraFilterModel::displayColData(const JiraFilter &rec, int col) const
     case 0:
         return rec.name;
     case 1:
-        return rec.isServerStored ? "fav" : "local";
+        return "all"; //rec.serverId ? "server" : "local";
     }
     return QVariant();
 }
