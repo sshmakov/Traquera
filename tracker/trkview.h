@@ -497,6 +497,8 @@ public:
     virtual bool isOpened() const;
     virtual QString currentUser() const;
     virtual QString projectName() const;
+    QList<QAction *> actions(const TQRecordList &records);
+
 
     // Tracker specific
     QStringList queryList(TRK_RECORD_TYPE type = TRK_SCR_TYPE) const;
@@ -548,7 +550,10 @@ public:
     virtual bool renameQuery(const QString &oldName, const QString &newName, int recordType);
     virtual bool deleteQuery(const QString &queryName, int recordType);
 
+public slots:
+    void onActionTriggered(TQViewController *controller, QAction *action);
 protected:
+    bool unlockRecord(TrkToolRecord *record);
     void readProjectDatabaseName();
     /* Model manipulations */
     bool fillModel(TQRecModel *model, const QString &queryName, int type,

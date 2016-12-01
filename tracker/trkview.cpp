@@ -18,6 +18,7 @@
 #include <QXmlSimpleReader>
 #include <QXmlInputSource>
 #include <QDomDocument>
+#include <tqviewcontroller.h>
 //#include <QXmlQuery>
 #include <QAuthenticator>
 #include <tqjson.h>
@@ -432,6 +433,46 @@ QString TrkToolProject::projectName() const
 {
     return name;
 }
+
+QList<QAction *> TrkToolProject::actions(const TQRecordList &records)
+{
+    QList<QAction *> res;
+    /*
+#ifdef CLIENT_APP
+    static QAction *a = 0;
+    if(!a)
+        a = new QAction("Unlock",0);
+    res << a;
+#endif
+*/
+    return res;
+}
+
+void TrkToolProject::onActionTriggered(TQViewController *controller, QAction *action)
+{
+    /*
+    QObjectList list = controller->selectedRecords();
+    foreach (QObject *obj, list) {
+        TrkToolRecord *rec = qobject_cast<TrkToolRecord *>(obj);
+        if(!obj)
+            continue;
+        unlockRecord(rec);
+    }
+    */
+}
+
+bool TrkToolProject::unlockRecord(TrkToolRecord *record)
+{
+    TrkScopeRecHandle h(this, record);
+    TRK_RECORD_HANDLE &handle = h.nativeHandle();
+    int type = record->recordType();
+    unsigned long res = TrkUpdateRecordBeginEx(handle, true);
+    if(!isTrkOK(res))
+        return false;
+    res = TrkRecordCancelTransaction(handle);
+    return isTrkOK(res);
+}
+
 
 bool TrkToolProject::login(const QString &userName,
         const QString &password,
@@ -1798,8 +1839,13 @@ bool TrkToolProject::updateRecordBegin(TQRecord *record)
     if(!ph->isModify)
     {
         //resetRecHandler(ph);
+#ifdef CLIENT_APP
+        if(!isTrkOK(TrkUpdateRecordBeginEx(recHandle.nativeHandle(), true)))
+            return false;
+#else
         if(!isTrkOK(TrkUpdateRecordBegin(recHandle.nativeHandle())))
             return false;
+#endif
         ph->isModify = true;
     }
     record->setMode(TrkToolRecord::Edit);

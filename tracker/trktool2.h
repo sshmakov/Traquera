@@ -161,6 +161,17 @@ TRKAPI TrkGetNextGroup( //@20
                         TRK_UINT	FAR *order				// Input
                         );
 
+TRKAPI TrkRecordLock( //@12
+                      TRK_RECORD_HANDLE trkRecordHandle, // Input
+                      TRK_RECORD_TYPE				recordType,
+                      TRK_BOOL          lock
+                      );
+
+TRKAPI TrkUpdateRecordBeginEx( //@8
+                               TRK_RECORD_HANDLE trkRecordHandle, // Input
+                               TRK_BOOL          lock
+                               );
+
 
 extern "C" unsigned long TrkProjectRefresh(TRK_HANDLE	trkHandle, TRK_UINT res);
 

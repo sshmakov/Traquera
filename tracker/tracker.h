@@ -326,8 +326,8 @@ public:
 	QVariant data(const QString& fieldName) const;
 	QVariant data(int fieldNum) const;
 	void setValue(const QString& fieldName, const QVariant& value);
-	friend TrkModel;
-	friend TrkItemModel;
+        friend class TrkModel;
+        friend class TrkItemModel;
 };
 
 
