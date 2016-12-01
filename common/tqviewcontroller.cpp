@@ -1,5 +1,6 @@
 #include "tqviewcontroller.h"
 #include <tqdebug.h>
+#include <QtGui>
 
 QMetaMethod notifyMethod(QObject *object, const char *property)
 {
@@ -109,6 +110,11 @@ void TQViewController::submitModifySection()
 void TQViewController::cancelModifySection()
 {
 
+}
+
+QObject *TQViewController::viewObj() const
+{
+    return view();
 }
 
 void TQViewController::addDetailTab(QWidget *tab, const QString &title, const QIcon &icon)
