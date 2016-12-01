@@ -13,7 +13,6 @@ xquery version "1.0" encoding "utf-8";
 </script>
 <script src="e-inplace.js">
 <!--
-
 -->
 </script>
 <script src="e-widget.js">
@@ -26,19 +25,36 @@ xquery version "1.0" encoding "utf-8";
 </script>
 <script>
 <!--
-textEditor = new InplaceEditor();
+//textEditor = new InplaceEditor();
 //textEditor = new WindowEditor();
-//textEditor = new WidgetEditor();
+textEditor = new WidgetEditor();
+
+function submitNoteWidget()
+{
+  if(textEditor.isDescEditing)
+     textEditor.saveDescription();
+  else if(textEditor.isNoteEditing)
+     textEditor.saveNote(textEditor.noteIndex);
+}
+
+function closeNoteWidget()
+{
+  if(textEditor.isDescEditing)
+     textEditor.cancelDescription();
+  else if(textEditor.isNoteEditing)
+     textEditor.cancelNote(textEditor.noteIndex);
+}
+
+
+
 -->
 </script>
 </head>
 {let $scr := doc(fn:iri-to-uri(string($scrdoc)))
 return
 <body>
-Запрос {$scr/*/fields/field[@role = "id"]/node()} .  <b>{$scr/*/fields/field[@role = "title"]/node()}</b>
-<p id="debug" style="display: visible">
-	<input type="button" onclick="test();return false;" value="Text"/></p>
-
+Запрос {$scr/*/fields/field[@name = "Id"]/node()} .  <b>{$scr/*/fields/field[@name = "Title"]/node()}</b>
+<p id="debug" style="display: visible"></p>
 	<div>
                 <div>
 			<img src="qrc:/images/edit.png" onclick="textEditor.editDescription()" class="btn" width="12" height="12" title="edit"/>
@@ -85,13 +101,6 @@ return (
 <!--
 r();
 init();
-
-function test()
-{
-	var project = record.project;
-	debugInfo(project.db.get('rest/api/2/issue/TTT-1').fields.summary);
-}
-
 -->
 </script>
 </html> 

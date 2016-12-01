@@ -25,9 +25,28 @@ xquery version "1.0" encoding "utf-8";
 </script>
 <script>
 <!--
-textEditor = new InplaceEditor();
+//textEditor = new InplaceEditor();
 //textEditor = new WindowEditor();
-//textEditor = new WidgetEditor();
+textEditor = new WidgetEditor();
+
+function submitNoteWidget()
+{
+  if(textEditor.isDescEditing)
+     textEditor.saveDescription();
+  else if(textEditor.isNoteEditing)
+     textEditor.saveNote(textEditor.noteIndex);
+}
+
+function closeNoteWidget()
+{
+  if(textEditor.isDescEditing)
+     textEditor.cancelDescription();
+  else if(textEditor.isNoteEditing)
+     textEditor.cancelNote(textEditor.noteIndex);
+}
+
+
+
 -->
 </script>
 </head>
@@ -52,7 +71,7 @@ return
                 </object>
 	</div>
 {for $i in $scr/*/notes/note
-order by xs:dateTime($i/@cdatetime)
+order by xs:dateTime($i/@cdatetime), xs:integer($i/@index)
 return (
 <div class="note" index="{$i/@index}">
 <div id="block{$i/@index}">
