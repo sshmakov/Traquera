@@ -1512,6 +1512,7 @@ void MainWindow::autoConnect()
                          0, treeModel->sourceModels().size()
                          );
     prog.setWindowTitle(tr("Соединение"));
+    qApp->processEvents();
 
     TQOneProjectTree *cur = 0;
     int counter=0;
@@ -1521,9 +1522,11 @@ void MainWindow::autoConnect()
         if(prog.wasCanceled())
             break;
         prog.setValue(++counter);
+        qApp->processEvents();
         if(!pm || pm->isOpened() || !pm->isAutoOpen())
             continue;
         prog.setLabelText(tr("Соединение с проектом %1").arg(pm->projectTitle()));
+        qApp->processEvents();
         if(openProjectTree(pm) && !cur)
             cur = pm;
 //        pm->open();
