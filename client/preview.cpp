@@ -90,44 +90,6 @@ bool PreviewActiveX::setSourceFile(const QString &fileName)
     handler->DoPreview();
     handler->SetFocus();
     handler->Release();
-    /*
-  if FPreviewHandler.QueryInterface(IInitializeWithFile, FileInit) = 0 then
-  begin
-    FileInit.Initialize(StringToOleStr(FFileName), STGM_READ);
-    FInStreamMode := False;
-    FLoaded := True;
-  end else
-  if FPreviewHandler.QueryInterface(IInitializeWithStream, StreamInit) = 0 then
-  begin
-    try
-      FFileStream := TFileStream.Create(FFileName, fmOpenRead);
-    except on
-      E: EFOpenError do
-      begin
-        MessageDlg(E.Message, mtError, [mbOK], 0);
-        Result := False;
-        Exit;
-      end;
-    end;
-    FIStream := TStreamAdapter.Create(FFileStream, soOwned) as IStream;
-    StreamInit.Initialize(FIStream, STGM_READ);
-    FInStreamMode := True;
-    FLoaded := True;
-  end else
-  begin // Cannot load file
-    Result := False;
-    FPreviewHandler.Unload;
-    Exit;
-  end;
-
-  ARect := Rect(0, 0, AParentControl.Width, AParentControl.Height);
-  Parent := AParentControl;
-  Align := alClient;
-  FPreviewHandler.SetWindow(Self.Handle, ARect);
-  FPreviewHandler.SetRect(ARect);
-  FPreviewHandler.DoPreview;
-  FPreviewHandler.SetFocus;*/
-
     return true;
 }
 

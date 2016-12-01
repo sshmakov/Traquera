@@ -133,7 +133,7 @@ public:
     {
         if(list.count())
         {
-            beginInsertRows(QModelIndex(), records.count(), records.count()+list.count());
+            beginInsertRows(QModelIndex(), records.count(), records.count()+list.count()-1);
             records.append(list);
             endInsertRows();
         }

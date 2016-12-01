@@ -354,7 +354,8 @@ void QueryPage::setQueryModel(TQAbstractProject *prj, TQRecModel *model)
     }
     if(!d->tmodel->isSystemModel())
         d->tmodel->setParent(this);
-    d->proxy->setSourceModel(d->tmodel);
+//    d->proxy->setSourceModel(d->tmodel);
+    d->qryFilterModel->setSourceModel(d->tmodel);
     loadDefinition();
 #ifdef DECORATOR
     fieldEdits.clear();
@@ -429,11 +430,6 @@ QModelIndex QueryPage::mapIndexToModel(const QModelIndex &index) const
         m=qryIndex.model();
     }
     return qryIndex;
-}
-
-void QueryPage::paintEvent(QPaintEvent *ev)
-{
-    QWidget::paintEvent(ev);
 }
 
 /*void QueryPage::changedView(const QModelIndex &index, const QModelIndex &prev)

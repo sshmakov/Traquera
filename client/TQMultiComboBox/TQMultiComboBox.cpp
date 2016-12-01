@@ -48,7 +48,7 @@ void TQMultiComboBox::setDisplayText(QString text)
     const int textWidth = fontMetrics().width(text);
     setMinimumWidth(textWidth + 30);
     updateGeometry();
-    repaint();
+    update();
 }
 
 

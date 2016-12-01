@@ -1,4 +1,5 @@
 #include "tqproxyrecmodel.h"
+#include <QAbstractItemModel>
 
 TQProxyRecModel::TQProxyRecModel(QObject *parent) :
     QAbstractProxyModel(parent), isActual(false), recModel(0)
@@ -122,55 +123,55 @@ QModelIndex TQProxyRecModel::parent(const QModelIndex &child) const
     return QModelIndex();
 }
 
-void TQProxyRecModel::setSourceModel(QAbstractItemModel *sourceModel)
+void TQProxyRecModel::setSourceModel(QAbstractItemModel *sModel)
 {
     beginResetModel();
     if(recModel)
     {
         recModel->disconnect(this);
     }
-    recModel = qobject_cast<TQRecModel *>(sourceModel);
-    QAbstractProxyModel::setSourceModel(sourceModel);
-    connect(sourceModel, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
-            this, SLOT(_q_sourceDataChanged(QModelIndex,QModelIndex)));
+    recModel = qobject_cast<TQRecModel *>(sModel);
+    connect(sModel, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
+            SLOT(_q_sourceDataChanged(QModelIndex,QModelIndex)));
 
-    connect(sourceModel, SIGNAL(headerDataChanged(Qt::Orientation,int,int)),
-            this, SLOT(_q_sourceHeaderDataChanged(Qt::Orientation,int,int)));
+    connect(sModel, SIGNAL(headerDataChanged(Qt::Orientation,int,int)),
+            SLOT(_q_sourceHeaderDataChanged(Qt::Orientation,int,int)));
 
-    connect(sourceModel, SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)),
-            this, SLOT(_q_sourceRowsAboutToBeInserted(QModelIndex,int,int)));
+    connect(sModel, SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)),
+            SLOT(_q_sourceRowsAboutToBeInserted(QModelIndex,int,int)));
 
-    connect(sourceModel, SIGNAL(rowsInserted(QModelIndex,int,int)),
-            this, SLOT(_q_sourceRowsInserted(QModelIndex,int,int)));
+    connect(sModel, SIGNAL(rowsInserted(QModelIndex,int,int)),
+            SLOT(_q_sourceRowsInserted(QModelIndex,int,int)));
 
-    connect(sourceModel, SIGNAL(columnsAboutToBeInserted(QModelIndex,int,int)),
-            this, SLOT(_q_sourceColumnsAboutToBeInserted(QModelIndex,int,int)));
+    connect(sModel, SIGNAL(columnsAboutToBeInserted(QModelIndex,int,int)),
+            SLOT(_q_sourceColumnsAboutToBeInserted(QModelIndex,int,int)));
 
-    connect(sourceModel, SIGNAL(columnsInserted(QModelIndex,int,int)),
-            this, SLOT(_q_sourceColumnsInserted(QModelIndex,int,int)));
+    connect(sModel, SIGNAL(columnsInserted(QModelIndex,int,int)),
+            SLOT(_q_sourceColumnsInserted(QModelIndex,int,int)));
 
-    connect(sourceModel, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
-            this, SLOT(_q_sourceRowsAboutToBeRemoved(QModelIndex,int,int)));
+    connect(sModel, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
+            SLOT(_q_sourceRowsAboutToBeRemoved(QModelIndex,int,int)));
 
-    connect(sourceModel, SIGNAL(rowsRemoved(QModelIndex,int,int)),
-            this, SLOT(_q_sourceRowsRemoved(QModelIndex,int,int)));
+    connect(sModel, SIGNAL(rowsRemoved(QModelIndex,int,int)),
+            SLOT(_q_sourceRowsRemoved(QModelIndex,int,int)));
 
-    connect(sourceModel, SIGNAL(columnsAboutToBeRemoved(QModelIndex,int,int)),
-            this, SLOT(_q_sourceColumnsAboutToBeRemoved(QModelIndex,int,int)));
+    connect(sModel, SIGNAL(columnsAboutToBeRemoved(QModelIndex,int,int)),
+            SLOT(_q_sourceColumnsAboutToBeRemoved(QModelIndex,int,int)));
 
-    connect(sourceModel, SIGNAL(columnsRemoved(QModelIndex,int,int)),
-            this, SLOT(_q_sourceColumnsRemoved(QModelIndex,int,int)));
+    connect(sModel, SIGNAL(columnsRemoved(QModelIndex,int,int)),
+            SLOT(_q_sourceColumnsRemoved(QModelIndex,int,int)));
 
-    connect(sourceModel, SIGNAL(layoutAboutToBeChanged()),
-            this, SLOT(_q_sourceLayoutAboutToBeChanged()));
+    connect(sModel, SIGNAL(layoutAboutToBeChanged()),
+            SLOT(_q_sourceLayoutAboutToBeChanged()));
 
-    connect(sourceModel, SIGNAL(layoutChanged()),
-            this, SLOT(_q_sourceLayoutChanged()));
+    connect(sModel, SIGNAL(layoutChanged()),
+            SLOT(_q_sourceLayoutChanged()));
 
-    connect(sourceModel, SIGNAL(modelAboutToBeReset()), this, SLOT(_q_sourceAboutToBeReset()));
-    connect(sourceModel, SIGNAL(modelReset()), this, SLOT(_q_sourceReset()));
+    connect(sModel, SIGNAL(modelAboutToBeReset()), this, SLOT(_q_sourceAboutToBeReset()));
+    connect(sModel, SIGNAL(modelReset()), this, SLOT(_q_sourceReset()));
 
 //    d->_q_clearMapping();
+    QAbstractProxyModel::setSourceModel(sModel);
     endResetModel();
 }
 
