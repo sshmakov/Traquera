@@ -621,7 +621,7 @@ void PlansPlugin::onViewOpened(QWidget *widget, TQViewController* controller)
     tab->controller = controller;
     connect(tab->controller,SIGNAL(selectedRecordsChanged()),tab,SLOT(selectingRecordsChanged()));
     QString title = "Plans";
-    tab->controller->addDetailWidgets(tab, 0, title);
+    tab->controller->addDetailWidgets(tab, 0, title, QIcon());
 //    QMetaObject::invokeMethod(widget,"addDetailTab",
 //                              Q_ARG(QWidget *,tab),
 //                              Q_ARG(QString,title));

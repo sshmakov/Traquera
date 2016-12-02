@@ -487,7 +487,7 @@ void MainWindow::slotViewOpened(QWidget *widget, TQViewController *controller)
     if(!controller)
         return;
     FilesPage *tab = new FilesPage();
-    controller->addDetailTab(tab, "Files");
+    controller->addDetailTab(tab, "Files", QIcon());
     tab->setViewController(controller);
 }
 
