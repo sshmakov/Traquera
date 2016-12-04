@@ -97,14 +97,6 @@ TextAreaEditor.prototype = {
         return true;
     },
 
-    /*
-  connectWidget : function (widget)
-  {
-    widget.submitTriggered.connect(submitNoteWidget);
-    widget.cancelTriggered.connect(cancelNoteWidget);
-  }
-  */
-
     cancelAll: function()
     {
         if(this.isDescEditing)
@@ -213,5 +205,3 @@ TextAreaEditor.prototype = {
         this.insertButtons();
     }
 }
-
-textEditor = new TextAreaEditor();

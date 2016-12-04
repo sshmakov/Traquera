@@ -53,11 +53,10 @@ function r()
     }
 }
 
-
 function init()
 {
     if(record.isInsertMode())
-        initNoteWidget(-1);
+        textEditor.showEditor(-1,true);
     editor.noteChanged.connect(onNoteChanged);
 }
 

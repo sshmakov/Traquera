@@ -26,24 +26,20 @@
       <widget class="QWidget" name="titleWidget" native="true">
        <layout class="QFormLayout" name="formLayout">
         <property name="horizontalSpacing">
+         <number>3</number>
+        </property>
+        <property name="leftMargin">
          <number>0</number>
         </property>
-        <property name="margin">
+        <property name="topMargin">
          <number>0</number>
         </property>
-        <item row="0" column="0">
-         <widget class="QLabel" name="label">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>Нота</string>
-          </property>
-         </widget>
-        </item>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
         <item row="0" column="1">
          <widget class="QComboBox" name="titleEdit">
           <property name="sizePolicy">
@@ -75,6 +71,19 @@
           </property>
          </widget>
         </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="label">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>Нота</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
      </item>
@@ -95,16 +104,9 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="submitButton">
-       <property name="text">
-        <string>Сохранить</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="cancelButton">
-       <property name="text">
-        <string>Отмена</string>
+      <widget class="QDialogButtonBox" name="buttonBox">
+       <property name="standardButtons">
+        <set>QDialogButtonBox::Cancel|QDialogButtonBox::Save</set>
        </property>
       </widget>
      </item>

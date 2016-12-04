@@ -33,8 +33,26 @@ WidgetEditor.prototype = {
 	blockNode.after(objHtml);
         widgetNode = $('#'+widgetId);
       }
+      var obj = widgetNode.get(0);
+      obj.titleVisible = (index !== -1);
       blockNode.hide();
       widgetNode.show();
+
+      obj.submitTriggered.connect(function(index, title, text)
+      {
+        if(textEditor.isDescEditing)
+           textEditor.saveDescription();
+        else if(textEditor.isNoteEditing)
+           textEditor.saveNote(index);
+      });
+
+      obj.cancelTriggered.connect(function(index)
+      {
+        if(textEditor.isDescEditing)
+           textEditor.cancelDescription();
+        else if(textEditor.isNoteEditing)
+           textEditor.cancelNote(index);
+      });
     }
     else
     {
@@ -46,14 +64,6 @@ WidgetEditor.prototype = {
     this.isNoteEditing = index !== -1 && visible;
     this.noteIndex = index;
   },
-
-  /*
-  connectWidget : function (widget)
-  {
-    widget.submitTriggered.connect(submitNoteWidget);
-    widget.cancelTriggered.connect(cancelNoteWidget);
-  }
-  */
 
   /* закрыть все окна редактирования текста без сохранения */
   cancelAll: function()
@@ -94,7 +104,7 @@ WidgetEditor.prototype = {
     {
        if(widgetDesc)
        {	
-         var newDesc = widgetDesc.noteText();
+         var newDesc = widgetDesc.noteText;
          if(editor.setDescription(newDesc))
          {
            descText.textContent = newDesc;
@@ -106,8 +116,8 @@ WidgetEditor.prototype = {
     {
        var widgetId = 'widget'+index;
        var widgetNode = document.getElementById(widgetId);
-       var newTitle = widgetNode.noteTitle();
-       var newText = widgetNode.noteText();
+       var newTitle = widgetNode.noteTitle;
+       var newText = widgetNode.noteText;
        if(editor.setNote(index, newTitle, newText))
        {
          var titleNode = document.getElementById('title'+index);
@@ -135,21 +145,5 @@ WidgetEditor.prototype = {
   {
     this.cancelNote(-1);
   }
-}
 
-function submitNoteWidget()
-{
-  if(textEditor.isDescEditing)
-     textEditor.saveDescription();
-  else if(textEditor.isNoteEditing)
-     textEditor.saveNote(textEditor.noteIndex);
 }
-
-function closeNoteWidget()
-{
-  if(textEditor.isDescEditing)
-     textEditor.cancelDescription();
-  else if(textEditor.isNoteEditing)
-     textEditor.cancelNote(textEditor.noteIndex);
-}
-

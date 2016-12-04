@@ -35,7 +35,7 @@ QObject *ScrPluginFactory::create(const QString &mimeType, const QUrl &url, cons
     NoteWidget *view = new NoteWidget(record, 0); //argumentValues[argumentNames.indexOf("type")]);
     QNetworkRequest request(url);
     QNetworkReply *reply = manager->get(request);
-    connect(reply, SIGNAL(finished()), view, SLOT(updateModel()));
+//    connect(reply, SIGNAL(finished()), view, SLOT(updateModel()));
     connect(reply, SIGNAL(finished()), reply, SLOT(deleteLater()));
     if(noteIndex ==-1)
     {
@@ -50,11 +50,11 @@ QObject *ScrPluginFactory::create(const QString &mimeType, const QUrl &url, cons
     view->setNoteIndex(noteIndex);
     views->append(view);
     //connect(view,SIGNAL(changedNoteTitle(QString))
-    connect(view,SIGNAL(submitTriggered(int,QString,QString)),SLOT(saveNote(int,QString,QString)));
-    connect(view,SIGNAL(cancelTriggered(int)),SLOT(resetNote(int)));
+//    connect(view,SIGNAL(submitTriggered(int,QString,QString)),SLOT(saveNote(int,QString,QString)));
+//    connect(view,SIGNAL(cancelTriggered(int)),SLOT(resetNote(int)));
     connect(view,SIGNAL(destroyed()),this,SLOT(destroyedEdit()));
-    connect(view,SIGNAL(changedNoteTitle(int,QString)),SLOT(changedNote(int)));
-    connect(view,SIGNAL(changedNoteText(int)),SLOT(changedNote(int)));
+//    connect(view,SIGNAL(changedNoteTitle(int,QString)),SLOT(changedNote(int)));
+//    connect(view,SIGNAL(changedNoteText(int)),SLOT(changedNote(int)));
     QWebFrame *frame = web->page()->mainFrame();
     QString obj = "wid" + QString::number(noteIndex);
     view->setProperty("JSObject", obj);

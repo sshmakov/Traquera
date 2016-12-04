@@ -10,19 +10,19 @@ declare function functx:if-empty
  } ;
 <html>
 <head>
-<!-- <link rel="stylesheet" href="style.css"/> -->
-<link rel="stylesheet" href="top.css"/>
+<link rel="stylesheet" href="../../../data/top.css"/>
+<link rel="stylesheet" href="../../../data/editor.css"/>
 <link rel="stylesheet" href="jira-style.css"/>
 <link rel="stylesheet" href="menu.css"/>
 <script src="qrc:/js/jquery.js">
 <!--
 -->
 </script>
-<script src="jira-funcs.js"><!-- --></script>
-<script src="e-textarea.js"><!-- --></script>
-<script src="w-controller.js"><!-- --></script>
-<script src="t-decorator.js"><!-- --></script>
+<script src="../../../data/e-textarea.js"><!-- --></script>
+<script src="../../../data/w-controller.js"><!-- --></script>
+<script src="../../../data/t-decorator.js"><!-- --></script>
 <script src="jira-decorator.js"><!-- --></script>
+<script src="jira-funcs.js"><!-- --></script>
 <style>
 <!--
 .test-note-block {
@@ -51,13 +51,6 @@ z-index: 20;
 .debug {
 display: visible;
 position: fixed;
-}
-
-.noteEditArea {
-width: 80%; 
-max-width: 95%; 
-min-height: 100px;
-max-height: 95%;
 }
 
 

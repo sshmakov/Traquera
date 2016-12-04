@@ -45,8 +45,7 @@ function menuSCR(key, evt) {
     var summary = "(-)", fix = "", state = "";
     
     var project = record.project;
-    var db = project.db;
-    var rec = db.get('rest/api/2/issue/'+key);
+    var rec = project.serverGet('rest/api/2/issue/'+key);
     
     //var rec = global.getRecord(scrid);
     //debugInfo(JSON.stringify(rec));
@@ -143,4 +142,5 @@ function restoreSelection(range) {
 
 }
 
+window.textDecorator = new JiraDecorator();
 

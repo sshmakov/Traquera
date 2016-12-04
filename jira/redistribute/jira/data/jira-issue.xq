@@ -3,7 +3,6 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <link rel="stylesheet" href="jira-style.css"/>
-<link rel="stylesheet" href="menu.css"/>
 <style>
 <!--
 .noteT {
@@ -14,10 +13,10 @@ font-weight: bold;
 -->
 </style>
 <script src="qrc:/js/jquery.js"><!-- --></script>
-<script src="jira-funcs.js"><!-- --></script>
-<script src="w-controller.js"><!-- --></script>
-<script src="t-decorator.js"><!-- --></script>
+<script src="../../../data/w-controller.js"><!-- --></script>
+<script src="../../../data/t-decorator.js"><!-- --></script>
 <script src="jira-decorator.js"><!-- --></script>
+<script src="jira-funcs.js"><!-- --></script>
 </head>
 {let $scr := doc(fn:iri-to-uri(string($scrdoc)))
 return

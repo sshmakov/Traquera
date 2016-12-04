@@ -3,10 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <link rel="stylesheet" href="style.css"/>
-<script src="qrc:/js/jquery.js">
-<!--
--->
-</script>
+<script src="qrc:/js/jquery.js"><!-- --></script>
 <style>
 <!--
 .noteT {
@@ -98,18 +95,9 @@ max-width: 50%;
 
 -->
 </style>
-<script src="funcs.js" LANGUAGE="JScript">
-<!--
--->
-</script>
-<script src="funcs2.js">
-<!--
--->
-</script>
-<script src="funcs3.js">
-<!--
--->
-</script>
+<script src="funcs.js" LANGUAGE="JScript"><!-- --></script>
+<script src="funcs2.js"><!-- --></script>
+<script src="funcs3.js"><!-- --></script>
 </head>
 {let $scr := doc(fn:iri-to-uri(string($scrdoc)))
 return
@@ -150,13 +138,6 @@ return (
 
 <!-- Остальной текст -->
 <p id="debug"><!-- --></p>
-<!--
-<a href="#" onclick="javascript:global.shell('C:\\Windows\\system32\\cmd.exe /c c:\\1\\1.bat лорлрлрлор'); return false;">Run</a> 
-<a href="#" onclick="javascript:global.shellLocale('C:\\Windows\\system32\\cmd.exe /c c:\\1\\1.bat лорлрлрлор'); return false;">RunLocale</a> 
-<a href="#" onclick="javascript:global.shellLocale('C:\\Windows\\system32\\cmd.exe /c c:\\1\\1.bat лорлрлрлор','IBM 866'); return false;">Run866</a> 
-<a href="#" onclick="javascript:global.shellLocale('C:\\Windows\\system32\\cmd.exe /c c:\\1\\1.bat лорлрлрлор','Windows-1251'); return false;">Run1251</a> 
-<a href="#" onclick="javascript:global.shellLocale('C:\\Windows\\system32\\cmd.exe /c c:\\1\\1.bat лорлрлрлор','UTF-8'); return false;">RunUTF-8</a> 
--->
 <p id="debug2"/>
 	<div>
                 <p class="noteHeader"><span class="noteTitle"><!-- {$scr/*/Description/string(@name)} -->Description</span> ({$scr/*/fields/field[@name = "Submitter"]/node()})</p>

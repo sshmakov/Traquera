@@ -3,6 +3,7 @@
 //#include <trkview.h>
 #include "tqbase.h"
 #include <QPlainTextEdit>
+#include <QPushButton>
 
 NoteWidget::NoteWidget(TQRecord *rec, QWidget *parent) :
     QWidget(parent),
@@ -13,8 +14,21 @@ NoteWidget::NoteWidget(TQRecord *rec, QWidget *parent) :
     ui->titleEdit->addItems(record->typeDef()->noteTitleList());
     connect(ui->titleEdit,SIGNAL(editTextChanged(QString)),SLOT(onTitleChanged(QString)));
     connect(ui->noteEdit,SIGNAL(textChanged()),SLOT(onTextChanged()));
-    connect(ui->submitButton,SIGNAL(clicked()),SLOT(onSubmitClicked()));
-    connect(ui->cancelButton,SIGNAL(clicked()),SLOT(onCancelClicked()));
+    connect(ui->buttonBox,SIGNAL(clicked(QAbstractButton*)),SLOT(onButtonClicked(QAbstractButton*)));
+    QAction *a;
+    a = new QAction(this);
+    a->setShortcut(QKeySequence("Ctrl+Return"));
+    a->setShortcutContext(Qt::WidgetShortcut);
+    connect(a, SIGNAL(triggered(bool)), SLOT(submit()));
+    ui->titleEdit->addAction(a);
+    ui->noteEdit->addAction(a);
+
+    a = new QAction(this);
+    a->setShortcut(QKeySequence("Escape"));
+    a->setShortcutContext(Qt::WidgetShortcut);
+    connect(a, SIGNAL(triggered(bool)), SLOT(cancel()));
+    ui->titleEdit->addAction(a);
+    ui->noteEdit->addAction(a);
 }
 
 NoteWidget::~NoteWidget()
@@ -39,12 +53,20 @@ int NoteWidget::noteIndex() const
 
 void NoteWidget::submit()
 {
-    onSubmitClicked();
+    QPushButton *btn;
+    btn = ui->buttonBox->button(QDialogButtonBox::Save);
+    if(!btn)
+        btn = ui->buttonBox->button(QDialogButtonBox::Ok);
+    if(btn)
+        btn->click();
 }
 
 void NoteWidget::cancel()
 {
-    onCancelClicked();
+    QPushButton *btn;
+    btn = ui->buttonBox->button(QDialogButtonBox::Cancel);
+    if(btn)
+        btn->click();
 }
 
 void NoteWidget::setNoteIndex(int newIndex)
@@ -64,24 +86,45 @@ void NoteWidget::setNoteText(const QString &text)
     ui->noteEdit->setPlainText(text);
 }
 
-
-void NoteWidget::onSubmitClicked()
+bool NoteWidget::isButtonsVisible() const
 {
-    emit submitTriggered(noteIndex(), noteTitle(), noteText());
+    return ui->buttonBox->isVisible();
 }
 
-void NoteWidget::onCancelClicked()
+void NoteWidget::setButtonsVisible(bool value)
 {
-    emit cancelTriggered(noteIndex());
+    ui->buttonBox->setVisible(value);
+}
+
+bool NoteWidget::isTitleVisible() const
+{
+    return ui->titleWidget->isVisible();
+}
+
+void NoteWidget::setTitleVisible(bool value)
+{
+    ui->titleWidget->setVisible(value);
+}
+
+
+void NoteWidget::onButtonClicked(QAbstractButton *button)
+{
+    QDialogButtonBox::StandardButton sb = ui->buttonBox->standardButton(button);
+    if(sb == QDialogButtonBox::NoButton)
+        return;
+    if(sb == QDialogButtonBox::Save || sb == QDialogButtonBox::Ok)
+        emit submitTriggered(noteIndex(), noteTitle(), noteText());
+    else if(sb == QDialogButtonBox::Cancel)
+        emit cancelTriggered(noteIndex());
 }
 
 
 void NoteWidget::onTitleChanged(const QString &title)
 {
-    emit changedNoteTitle(noteIndex(), title);
+    emit noteTitleChanged(noteIndex(), title);
 }
 
 void NoteWidget::onTextChanged()
 {
-    emit changedNoteText(noteIndex());
+    emit noteTextChanged(noteIndex());
 }

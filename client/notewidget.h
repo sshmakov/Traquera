@@ -12,35 +12,46 @@ namespace Ui {
 class NoteWidget;
 }
 
+class QAbstractButton;
+
 class NoteWidget : public QWidget
 {
     Q_OBJECT
-    
+    Q_PROPERTY(QString noteTitle READ noteTitle WRITE setNoteTitle NOTIFY noteTitleChanged)
+    Q_PROPERTY(QString noteText READ noteText WRITE setNoteText NOTIFY noteTextChanged)
+    Q_PROPERTY(int noteIndex READ noteIndex WRITE setNoteIndex)
+    Q_PROPERTY(bool buttonsVisible READ isButtonsVisible WRITE setButtonsVisible)
+    Q_PROPERTY(bool titleVisible READ isTitleVisible WRITE setTitleVisible)
 public:
     explicit NoteWidget(TQRecord *rec, QWidget *parent = 0);
     ~NoteWidget();
-    Q_INVOKABLE QString noteTitle() const;
-    Q_INVOKABLE QString noteText() const;
-    Q_INVOKABLE int noteIndex() const;
-    void submit();
-    void cancel();
+    QString noteTitle() const;
+    QString noteText() const;
+    int noteIndex() const;
 
-public slots:
     void setNoteIndex(int newIndex);
     void setNoteTitle(const QString &title);
     void setNoteText(const QString &text);
-    
+
+    bool isButtonsVisible() const;
+    void setButtonsVisible(bool value);
+    bool isTitleVisible() const;
+    void setTitleVisible(bool value);
+
+public slots:
+    void submit();
+    void cancel();
+
 signals:
-    void changedNoteTitle(int index, const QString &title);
-    void changedNoteText(int index);
+    void noteTitleChanged(int index, const QString &title);
+    void noteTextChanged(int index);
     void submitTriggered(int index, const QString &title, const QString &text);
     void cancelTriggered(int index);
 
 protected slots:
     void onTitleChanged(const QString &title);
     void onTextChanged();
-    void onSubmitClicked();
-    void onCancelClicked();
+    void onButtonClicked(QAbstractButton *button);
 
 public:
     TQRecord *record;
