@@ -988,11 +988,16 @@ void QueryPage::sendEmail2(const QObjectList &records)
 {
     if(!records.count())
         return;
+    TQRecord *rec = qobject_cast<TQRecord*>(records[0]);
+    if(!rec)
+        return;
+    TQAbstractProject *prj = rec->project();
+    QString fileName = prj->optionValue(TQOPTION_EMAIL_SCRIPT).toString();
+    if(fileName.isEmpty())
+        fileName = "data/email.js";
     QScopedPointer<QScriptEngine>engine(ttglobal()->newScriptEngine());
     QScriptEngineDebugger debugger;
     debugger.attachTo(engine.data());
-    QString fileName("data/email.js");
-//    QString fileName(":/js/email.js");
     QFile js(fileName);
     js.open(QFile::ReadOnly);
     QByteArray buf = js.readAll();
