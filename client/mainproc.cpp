@@ -161,7 +161,8 @@ QString MainProc::makeXmlQuery(QXmlQuery *xquery, const QString &xqCodePath, con
             continue;
         if(!firstRecord)
             firstRecord = rec;
-        rec->refresh();
+        if(!rec->isEditing())
+            rec->refresh();
         QDomDocument recxml = rec->toXML();
         root.appendChild(recxml);
     }
