@@ -66,6 +66,8 @@ int TQProjectOptionsDialog::exec()
                                    QDir::fromNativeSeparators(ui->leView->text()));
         d->project->setOptionValue(TQOPTION_EDIT_TEMPLATE,
                                    QDir::fromNativeSeparators(ui->leEdit->text()));
+        d->project->setOptionValue(TQOPTION_PRINT_TEMPLATE,
+                                   QDir::fromNativeSeparators(ui->lePrint->text()));
         d->project->setOptionValue(TQOPTION_EMAIL_TEMPLATE,
                                    QDir::fromNativeSeparators(ui->leEmail->text()));
         d->project->setOptionValue(TQOPTION_EMAIL_SCRIPT,
