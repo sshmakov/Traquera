@@ -99,7 +99,9 @@ public:
         SubmitDateTimeField,
         SubmitterField,
         OwnerField,
-        IdFriendlyField
+        IdFriendlyField,
+        PriorityField,
+        RecordTypeField
     };
 
     virtual QStringList fieldNames() const = 0;

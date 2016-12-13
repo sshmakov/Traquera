@@ -232,13 +232,15 @@ static int findColumn(QHeaderView *hv, const QString &label)
     return -1;
 }
 
-static const TQAbstractRecordTypeDef::TQFieldRole basicRoles[6] = {
+static const TQAbstractRecordTypeDef::TQFieldRole basicRoles[8] = {
     TQAbstractRecordTypeDef::IdField,
     TQAbstractRecordTypeDef::StateField,
     TQAbstractRecordTypeDef::SubmitDateTimeField,
     TQAbstractRecordTypeDef::SubmitterField,
     TQAbstractRecordTypeDef::OwnerField,
-    TQAbstractRecordTypeDef::TitleField
+    TQAbstractRecordTypeDef::TitleField,
+    TQAbstractRecordTypeDef::RecordTypeField,
+    TQAbstractRecordTypeDef::PriorityField
 };
 
 
@@ -274,7 +276,7 @@ void TQDecorator::loadViewDef(QueryPage *page)
             if(def)
             {
                 int nextCol = 0;
-                for(int i=0; i<6; i++)
+                for(int i=0; i<sizeof(basicRoles); i++)
                 {
                     int vid = def->roleVid(basicRoles[i]);
                     if(vid != TQ::TQ_NO_VID)
@@ -688,7 +690,7 @@ bool FieldGroupsDef::loadDefault(const TQAbstractRecordTypeDef *recDef)
     QStringList fieldList = recDef->fieldNames();
     QStringList baseList = recDef->project()->baseRecordFields(recDef->recordType()).values();
     QStringList flist;
-    for(int i=0; i<6; i++)
+    for(int i=0; i<sizeof(basicRoles); i++)
     {
         int vid = recDef->roleVid(basicRoles[i]);
         if(vid != TQ::TQ_NO_VID)

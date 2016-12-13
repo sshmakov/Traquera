@@ -251,6 +251,8 @@ JiraRecTypeDef::JiraRecTypeDef(JiraProject *project)
     d->roleFields.insert(TQAbstractRecordTypeDef::SubmitterField, "creator");
     d->roleFields.insert(TQAbstractRecordTypeDef::OwnerField, "assignee");
     d->roleFields.insert(TQAbstractRecordTypeDef::IdFriendlyField,"key");
+    d->roleFields.insert(TQAbstractRecordTypeDef::RecordTypeField,"issuetype");
+    d->roleFields.insert(TQAbstractRecordTypeDef::PriorityField,"priority");
 
     /*
     d->systemChoices
