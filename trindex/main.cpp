@@ -65,7 +65,7 @@ MainClass::MainClass(QObject *parent, char *iniFile)
             user = sets.value("user").toString(),
             password = sets.value("password").toString();
 
-    db=new TrkToolDB(this);
+    db=new TrkToolDB(0,this);
     db->setDbmsType(dbType);
     db->setDbmsServer(dbServer);
     db->setDbmsUser(sets.value("dbmsUser").toString(),

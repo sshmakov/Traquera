@@ -412,6 +412,7 @@ protected:
 };
 
 class QSqlDatabase;
+class TrkPlugin;
 
 class TrkToolDB: public TQAbstractDB
 {
@@ -420,7 +421,7 @@ public:
 	TRK_HANDLE handle;
 //    QString dbmsType, serverName;
 //	QString dbmsName, dbmsUser, dbmsPassword;
-	TrkToolDB(QObject *parent = 0);
+    TrkToolDB(TrkPlugin *pluginObject, QObject *parent=0);
 	~TrkToolDB();
     void setDbmsType(const QString &dbType);
     virtual QStringList dbmsTypes();
@@ -435,6 +436,8 @@ public:
     virtual TQAbstractProject *openConnection(const QString &connectString
             );
     TQAbstractProject *getProject(const QString &projectName);
+    QDir dataDir() const;
+
 protected:
     QSqlDatabase openSqlDatabase();
 protected:
@@ -442,6 +445,7 @@ protected:
 	QHash<QString, QStringList> projectList; // by DBMStype
 	static QHash<QString, TrkToolProject *> openedProjects;
     QString odbcDSN, odbcServer;
+    TrkPlugin *plugin;
     friend class TrkToolProject;
 };
 
@@ -515,6 +519,7 @@ public:
     TQRecModel *openIdsModel(const QList<int> &ids, int type, bool emitEvent = true);
     TQRecModel *openRecords(const QString &queryText, int recType, bool emitEvent = true);
     void refreshModel(QAbstractItemModel *model);
+    QVariant optionValue(const QString &option) const;
     //NotesCol getNotes(int recId, TRK_RECORD_TYPE type) const;
     Q_INVOKABLE QStringList noteTitleList();
 public:

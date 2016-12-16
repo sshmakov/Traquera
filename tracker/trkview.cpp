@@ -13,6 +13,7 @@
 #endif
 #include "ttutils.h"
 #include "trkcond.h"
+#include "trkplugin.h"
 
 #include <QSettings>
 #include <QXmlSimpleReader>
@@ -253,10 +254,11 @@ static QString findRegServer(const QString &desc)
 }
 
 // =============== TrkToolDB =================
-TrkToolDB::TrkToolDB(QObject *parent)
+TrkToolDB::TrkToolDB(TrkPlugin *pluginObject, QObject *parent)
     :TQAbstractDB(parent), dbmsTypeList()
 {
 	TrkHandleAlloc(TRK_VERSION_ID, &handle);
+    plugin = pluginObject;
 }
 
 TrkToolDB::~TrkToolDB()
@@ -387,6 +389,13 @@ QHash<QString, TrkToolProject *> TrkToolDB::openedProjects;
 TQAbstractProject *TrkToolDB::getProject(const QString &projectName)
 {
     return openedProjects[projectName];
+}
+
+QDir TrkToolDB::dataDir() const
+{
+    if(plugin)
+        return plugin->dataDir;
+    return "data";
 }
 
 QSqlDatabase TrkToolDB::openSqlDatabase()
@@ -1531,6 +1540,30 @@ void TrkToolProject::refreshModel(QAbstractItemModel *model)
     {
         refreshQueryList();
     }
+}
+
+QVariant TrkToolProject::optionValue(const QString &option) const
+{
+    QSettings *sets = projectSettings();
+    QVariant v = sets->value(option);
+    delete sets;
+    if(v.isValid())
+        return v;
+
+    if(option == TQOPTION_VIEW_TEMPLATE
+            || option == TQOPTION_PRINT_TEMPLATE
+            || option == TQOPTION_EMAIL_TEMPLATE
+            )
+        return db->dataDir().absoluteFilePath("pvcs-scr.xq");
+    if(option == TQOPTION_EDIT_TEMPLATE)
+        return db->dataDir().absoluteFilePath("pvcs-edit.xq");
+    if(option == TQOPTION_GROUP_FILE)
+        return db->dataDir().absoluteFilePath("tracker.xml");
+#ifdef CLIENT_APP
+    return ttglobal()->optionDefaultValue(option);
+#else
+    return QVariant();
+#endif
 }
 
 QStringList TrkToolProject::noteTitleList()

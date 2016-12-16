@@ -8,13 +8,14 @@ static TrkPlugin *plugin;
 
 TrkPlugin::TrkPlugin()
 {
+    plugin = this;
 //    QTextCodec::setCodecForTr(QTextCodec::codecForName("CP1251"));
 }
 
 static TQAbstractDB *newTrkToolDB(QObject *parent)
 {
 
-    return new TrkToolDB(parent);
+    return new TrkToolDB(plugin, parent);
 }
 
 void TrkPlugin::initPlugin(QObject *obj, const QString &modulePath)
@@ -56,6 +57,15 @@ void TrkPlugin::initPlugin(QObject *obj, const QString &modulePath)
 
     QFileInfo fi(modulePath);
     pluginModule = fi.absoluteFilePath();
+    QDir pDir;
+    pDir = pluginModule; //fi.absoluteDir();
+    if(pDir.dirName().compare("debug",Qt::CaseInsensitive) == 0)
+    {
+        pDir = QDir(pDir.filePath(".."));
+        pDir.makeAbsolute();
+    }
+    pluginDir = pDir;
+    dataDir = QDir(pDir.filePath("data"));
 
     QCoreApplication *app = QCoreApplication::instance();
     QLocale locale = QLocale::system();
