@@ -13,7 +13,7 @@ declare function functx:if-empty
 <link rel="stylesheet" href="../../../data/top.css"/>
 <link rel="stylesheet" href="../../../data/editor.css"/>
 <link rel="stylesheet" href="jira-style.css"/>
-<link rel="stylesheet" href="menu.css"/>
+<link rel="stylesheet" href="../../../data/menu.css"/>
 <script src="qrc:/js/jquery.js">
 <!--
 -->

@@ -203,5 +203,8 @@ TextAreaEditor.prototype = {
     init : function()
     {
         this.insertButtons();
+        if((typeof record.isInsertMode === "function" && record.isInsertMode())
+           || record.mode === 2)
+           textEditor.showEditor(-1,true);
     }
 }

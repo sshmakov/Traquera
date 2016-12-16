@@ -44,45 +44,6 @@ function openQueryPage(numbers)
 }
 
 
-function replaceNumbers()
-{
-    //var re = /([\s\b,.])#([0-9]+)/g;
-    var re1 = /^#([0-9]+)/g;
-    var re2 = /([\s\b,.^])#([0-9]+)/g;
-    var pro1 = '<a href="#" onclick="javascript:query.openRecordId(';
-    var pro21 = ');" oncontextmenu="javascript:return menuSCR(';
-    var pro22 = ', event);" >';
-    var pro3 = '<a href="#" onclick="javascript:query.appendId(';
-    var pro4 = ');">';
-    var ep = '</a>';
-    var notes = document.getElementsByClassName('replNums'); //noteText
-    for(var i = 0; i < notes.length; i++)
-    {
-        var s = notes[i].innerHTML;
-        var ns;
-        ns = s.replace(re1,pro1+'$1'+pro21+'$1'+pro22+'#$1'+ep
-                       //+'<img src="plus-m.png" onClick="javascript:query.appendId($1);"/>'
-                       );
-        ns = ns.replace(re2,'$1'+pro1+'$2'+pro21+'$2'+pro22+'#$2'+ep
-                        //+'<img src="plus-m.png" onClick="javascript:query.appendId($2);"/>'
-                        );
-        notes[i].innerHTML = ns;
-    }
-}
-
-
-function showPerforceFile(filename)
-{
-    //debug.innerHTML = 'starting';
-    var WshShell = filename;
-    //debug.innerHTML = 'creating';
-    WshShell = new window.ActiveXObject("WScript.Shell");
-    //debug.innerHTML = 'result';
-    //debug2.innerHTML = "("+ WshShell + ")";
-    WshShell.Run("%comspec% ");
-    //debug.innerHTML = 'started';
-}
-
 // Функция для определения координат указателя мыши 
 function defPosition(event) { 
     var x = y = 0;
