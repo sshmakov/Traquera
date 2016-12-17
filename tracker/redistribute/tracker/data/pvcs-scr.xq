@@ -1,8 +1,9 @@
-﻿xquery version "1.0" encoding "utf-8";
+xquery version "1.0" encoding "utf-8";
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <link rel="stylesheet" href="../../../data/style.css"/>
+<link rel="stylesheet" href="pvcs-style.css"/>
 <script src="qrc:/js/jquery.js"><!-- --></script>
 <script src="../../../data/w-controller.js"><!-- --></script>
 <script src="../../../data/t-decorator.js"><!-- --></script>
@@ -60,29 +61,28 @@ return (
 for $i in $scr/*/notes/note
 order by xs:dateTime($i/string(@cdatetime)), xs:integer($i/@index)
 return (
-<div index="{$i/@index}" class="note"><a name="notePoint{$i/@index}" class="ref2"><!-- --></a>
-<p  class="noteHeader"><span id="title{$i/@index}" class="noteTitle">{$i/string(@title)}</span> [{$i/string(@createdate)} ({$i/string(@author)})]</p>
-	<pre class="noteText replNums">{string($i)}</pre>
-</div>
+        <div index="{$i/@index}" class="note"><a name="notePoint{$i/@index}" class="ref2"><!-- --></a>
+        <p  class="noteHeader"><span id="title{$i/@index}" class="noteTitle">{$i/string(@title)}</span> [{$i/string(@createdate)} ({$i/string(@author)})]</p>
+                <pre class="noteText replNums">{string($i)}</pre>
+        </div>
 )
 }
 <h4><a name="changes" class="ref2"><!-- --></a>Changes:</h4>
 <table cols="3" width="100%">
-<col width="150"/>
-<col width="150"/>
-{
-for $i in $scr/*/history/change
-order by (:xs:dateTime($i/string(@datetime)) descending,:) xs:integer($i/@index) descending
-return (
-<tr><td valign="top">{string($i/@createdate)}</td><td valign="top">{fn:concat(string($i/@author),":")}</td><td valign="top">{string($i/@action)}</td></tr>
-)
-}
+    <col width="150"/>
+    <col width="150"/>
+    {
+    for $i in $scr/*/history/change
+    order by (:xs:dateTime($i/string(@datetime)) descending,:) xs:integer($i/@index) descending
+    return (
+        <tr><td valign="top">{string($i/@createdate)}</td><td valign="top">{fn:concat(string($i/@author),":")}</td><td valign="top">{string($i/@action)}</td></tr>
+    )
+    }
 </table>
 <script type="text/javascript">
 <!--
 window.textDecorator = new TrkDecorator();
 textDecorator.decorateAll();
-
 
 function onScroll(e) {
   var off = toc.offsetTop + toc.offsetHeight;

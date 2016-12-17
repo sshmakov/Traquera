@@ -38,9 +38,12 @@ function copyToClip(text)
 
 function openQueryPage(numbers)
 {
+    window.winContr.openRecordList(numbers);
+    /*
     var g = global;
     var m = g.mainWindowObj;
-    m.openQueryById(numbers,false);
+    m.openQueryById(numbers, false);
+    */
 }
 
 

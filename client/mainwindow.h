@@ -141,8 +141,8 @@ public slots:
     void readDbms();
 	void readProjects();
     void openQueryByIdClip();
-    void openQueryById(const QString &numbers, int recordType=0, bool reusePage=true);
-    void openQueryById(const QList<int> &idList, const QString &title = QString(), int recordType = -1, bool reusePage=true);
+    void openQueryById(const QString &numbers, int recordType=-1, bool reusePage=true);
+    void openQueryByIntList(const QList<int> &idList, const QString &title = QString(), int recordType = -1, bool reusePage=true);
     void openRecordId(int id, int recordType = -1);
     void connectTracker();
 //    void connectTrackerParams(const ConnectParams &params);

@@ -1,4 +1,4 @@
-﻿xquery version "1.0" encoding "utf-8";
+xquery version "1.0" encoding "utf-8";
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
@@ -62,24 +62,13 @@ return (
 )
 }
 <h4><a name="changes">Changes:</a></h4>
-<table cols="3" width="100%">
-<col width="150"/>
-<col width="150"/>
-{
-for $i in $scr/*/history/change
-order by (:xs:dateTime($i/string(@datetime)) descending,:) xs:integer($i/@index) descending
-return (
-<tr><td valign="top">{string($i/@createdate)}</td><td valign="top">{fn:concat(string($i/@author),":")}</td><td valign="top">{string($i/@action)}</td></tr>
-)
-}
-</table>
+<div id="changelog"><!-- --></div>
+
 <script type="text/javascript">
 <!--
 initJiraFunc();
-//replaceKeys();
+window.textDecorator = new JiraDecorator();
 textDecorator.decorateAll();
-//hideNeed();
-
 
 
 function onScroll(e) {

@@ -455,7 +455,7 @@ void MainWindow::repeatLastChanges()
 
 void MainWindow::slotOpenRecordsClicked(QSet<int> res)
 {
-    openQueryById(res.toList(),intListToString(res.toList()),false);
+    openQueryByIntList(res.toList(),intListToString(res.toList()),false);
 }
 
 void MainWindow::showRecordInList(TQRecord *record)
@@ -729,7 +729,7 @@ void MainWindow::finishedSearch(QNetworkReply *reply)
                         continue;
                     ids << id;
                 }
-                openQueryById(ids.toList(),query,reuse);
+                openQueryByIntList(ids.toList(),query,reuse);
             }
         }
     }
@@ -1031,6 +1031,10 @@ void MainWindow::openQueryByIdClip()
 void MainWindow::openQueryById(const QString &numbers, int recordType, bool reusePage)
 {
     TQAbstractProject *prj = currentProject();
+    if(!prj)
+        return;
+    if(recordType == -1)
+        recordType = prj->defaultRecType();
     QueryPage *page=NULL; // = qobject_cast<QueryPage *>(w);
     QObject *w = tabWidget->currentWidget();
     page = qobject_cast<QueryPage *>(w);
@@ -1045,7 +1049,7 @@ void MainWindow::openQueryById(const QString &numbers, int recordType, bool reus
     hideProgressBar();
 }
 
-void MainWindow::openQueryById(const QList<int> &idList, const QString &title, int recordType, bool reusePage)
+void MainWindow::openQueryByIntList(const QList<int> &idList, const QString &title, int recordType, bool reusePage)
 {
     TQAbstractProject *prj = currentProject();
     if(!prj || !prj->isOpened())

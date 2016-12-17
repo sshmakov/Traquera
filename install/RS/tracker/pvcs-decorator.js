@@ -7,13 +7,20 @@ function TrkDecorator()
     this.record = winContr.record;
     winContr.record.changedState.connect(this.onRecordStateChanged);
     if(winContr.record.mode !== 0)
-        $("issueTitle").html("Новый запрос"); 
+        $("issueTitle").html("Новый запрос");
     var arr = [
-      [/^#([0-9]+)/g, '<a href="#" class="scrLink">#$1</a>'],
-      [/([\s\b,.^])#([0-9]+)/g, '$1<a href="#" class="scrLink">#$2</a>'],
-    ];
+                [/^#([0-9]+)/g, '<a href="#" class="scrLink">#$1</a>'],
+                [/([\s\b,.^])#([0-9]+)/g, '$1<a href="#" class="scrLink">#$2</a>'],
+
+                // RS-specific
+                [/(\/\/RS[^<>"'\n]+)(#[0-9]+)/g, '<a href="#" class="perforce">$1</a>'],
+                [/(I-)(0*)([1-9][0-9]*)/ig, '<a href="http://support.softlab.ru/Portal/InterSupport/Redirector/topic.asp?Id=$3" class="url">$1$2$3</a>'],
+                [/(I-Support[ -]+)(0*)([1-9][0-9]*)/ig, '<a href="http://support.softlab.ru/Portal/InterSupport/Redirector/topic.asp?Id=$3" class="url">$1$2$3</a>'],
+                [/(HotFix )([1-9][0-9][0-9][0-9]).([0-9][0-9]).([0-9]*)_([0-9]*)/ig, '<a href="file://corvus/Dst_build/RSBankV6/Work.60/RsBank/HFX_$2/$2.$3.$4/$5" class="url">$1$2.$3.$4_$5</a>'],
+                [/(хотфикс )(5).([1-9])([0-9]*).([0-9][0-9]*).([0-9]*)_([0-9]*)/ig, '<a href="file://corvus/Dst_build/RSBank55/HFX_$2$3.$5/$6/$7" class="url">$1$2.$3$4.$5.$6_$7</a>']
+            ];
     if(typeof this.replaceArray !== "object")
-      this.replaceArray = [];
+        this.replaceArray = [];
     this.replaceArray = this.replaceArray.concat(arr);
 }
 
@@ -26,40 +33,30 @@ TrkDecorator.prototype.init = function ()
 
 TrkDecorator.prototype.decorateNote = function (index)
 {
-/*
-  var re1 = new RegExp("(\\b" + this.key + "-[0-9]+\\b)", "g");
-  var pro1 = '<span class="jiraIssueLink">';
-  var pro2 = '</span>';
-  $(".test-note-text").html(function(noteIndex, html) {
-    return html.replace(re1, '' + pro1 + '$1' + pro2);
-  });
-
-  $(".jiraIssueLink").contextmenu(function(event) {
-      var key = this.issue;
-      menuSCR(key,event);
-      return false;
-   })
-*/
 }
 
 TrkDecorator.prototype.decorateAll = function()
 {
     if(typeof this.txtDecorateAll === "function")
-       this.txtDecorateAll();
+        this.txtDecorateAll();
 
-  // oncontextmenu="javascript:return menuSCR($1, event);"
-  $(".scrLink").contextmenu(function(event) {
-      var id = this.textContent;
-      id = id.replace(/#/,"");
-      return textDecorator.menuSCR(id,event);
-   });
+    // oncontextmenu="javascript:return menuSCR($1, event);"
+    $(".scrLink").contextmenu(function(event) {
+        var id = this.textContent;
+        return textDecorator.menuSCR(id,event);
+    });
 
-   // onclick="javascript:query.openRecordId($1);"
-  $(".scrLink").click(function(event) {
-      var id = this.textContent;
-      id = id.replace(/#/,"");
-      return query.openRecordId(id,event);
-   });
+    // onclick="javascript:query.openRecordId($1);"
+    $(".scrLink").click(function(event) {
+        var id = this.textContent;
+        return query.openRecordId(id,event);
+    });
+
+    $(".perforce").click(function(event) {
+        var doc = this.textContent;
+        textDecorator.showPerforce(doc);
+        return false;
+    });
 
 }
 
@@ -81,14 +78,17 @@ TrkDecorator.prototype.menuSCR = function(scrid, evt)
     if(rec)
     {
         title = rec.title;
-        state = rec.value("State");
+        state = rec.value("State") + " " + rec.value("Current State");
+        fix = rec.value("Fixed In Build Eng.");
     }
     else
         title = "<i>(не найден)</i>";
-    if(fix && fix !== "0")
+    if(fix && fix != "0")
     {
         state = state + " " + fix;
     }
+    //alert(menu);
+    //alert(type);
     var html = "";
     html = '<ul class="SimpleContextMenu">';
     html += "<li><b>Запрос " + scrid + '</b> <span class="shortInfo">' + state +"</span><br/>"
