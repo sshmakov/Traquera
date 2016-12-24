@@ -49,24 +49,16 @@ TrkDecorator.prototype.decorateAll = function()
 
   // oncontextmenu="javascript:return menuSCR($1, event);"
   $(".scrLink").contextmenu(function(event) {
-      var id = this.textContent;
-      id = id.replace(/#/,"");
+      var id = this.textContent.replace(/#/,"");
       return textDecorator.menuSCR(id,event);
    });
 
    // onclick="javascript:query.openRecordId($1);"
   $(".scrLink").click(function(event) {
-      var id = this.textContent;
-      id = id.replace(/#/,"");
+      var id = this.textContent.replace(/#/,"");
       return query.openRecordId(id,event);
    });
 
-}
-
-TrkDecorator.prototype.showPerforce = function(filename)
-{
-    var cmd = 'cmd /c start p4v -t history -s "'+filename+'"';
-    global.shellLocale(cmd,'UTF-8');
 }
 
 TrkDecorator.prototype.menuSCR = function(scrid, evt) 

@@ -13,7 +13,7 @@ function TrkDecorator()
                 [/([\s\b,.^])#([0-9]+)/g, '$1<a href="#" class="scrLink">#$2</a>'],
 
                 // RS-specific
-                [/(\/\/RS[^<>"'\n]+)(#[0-9]+)/g, '<a href="#" class="perforce">$1</a>'],
+                [/(\/\/RS[^<>"'\n]+)(#[0-9]+)/g, '<a href="#" class="perforce">$1$2</a>'],
                 [/(I-)(0*)([1-9][0-9]*)/ig, '<a href="http://support.softlab.ru/Portal/InterSupport/Redirector/topic.asp?Id=$3" class="url">$1$2$3</a>'],
                 [/(I-Support[ -]+)(0*)([1-9][0-9]*)/ig, '<a href="http://support.softlab.ru/Portal/InterSupport/Redirector/topic.asp?Id=$3" class="url">$1$2$3</a>'],
                 [/(HotFix )([1-9][0-9][0-9][0-9]).([0-9][0-9]).([0-9]*)_([0-9]*)/ig, '<a href="file://corvus/Dst_build/RSBankV6/Work.60/RsBank/HFX_$2/$2.$3.$4/$5" class="url">$1$2.$3.$4_$5</a>'],
@@ -42,18 +42,18 @@ TrkDecorator.prototype.decorateAll = function()
 
     // oncontextmenu="javascript:return menuSCR($1, event);"
     $(".scrLink").contextmenu(function(event) {
-        var id = this.textContent;
+        var id = this.textContent.replace(/#/,"");
         return textDecorator.menuSCR(id,event);
     });
 
     // onclick="javascript:query.openRecordId($1);"
     $(".scrLink").click(function(event) {
-        var id = this.textContent;
+        var id = this.textContent.replace(/#/,"");
         return query.openRecordId(id,event);
     });
 
     $(".perforce").click(function(event) {
-        var doc = this.textContent;
+        var doc = this.textContent.replace(/(#[0-9]+)/g,"");
         textDecorator.showPerforce(doc);
         return false;
     });
@@ -64,6 +64,7 @@ TrkDecorator.prototype.showPerforce = function(filename)
 {
     var cmd = 'cmd /c start p4v -t history -s "'+filename+'"';
     global.shellLocale(cmd,'UTF-8');
+    return false;
 }
 
 TrkDecorator.prototype.menuSCR = function(scrid, evt) 
