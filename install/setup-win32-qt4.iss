@@ -4,9 +4,9 @@
 #define AppName "TraQuera"
 #endif
 
-#ifndef AppVer
-#define AppVer "3.3"
-#endif
+;#ifndef AppVer
+;#define AppVer "3.3"
+;#endif
 
 #ifndef Publisher
 #define Publisher ("Sergey Shmakov")
@@ -18,10 +18,8 @@
 
 #ifndef BuildPath
 //#error BuildPath must be defined
-#define BuildPath ".."
+#define BuildPath "C:\gits\build\traquera-4_8_7-Release"
 #endif
-
-#pragma warning "BuildPath = " + BuildPath
 
 #ifndef QTDIR
 #define QTDIR = GetEnv("QTDIR")
@@ -35,6 +33,18 @@
 #define VARIANT "FULL"
 #endif
 
+#ifdef ProtectFile
+#define ApplicationExe (BuildPath + "\client\release\traquera-protect.exe")
+#else
+#define ApplicationExe (BuildPath + "\client\release\traquera.exe")
+#endif
+
+#define AppVer GetStringFileInfo(ApplicationExe,PRODUCT_VERSION)
+
+#pragma warning "BuildPath = " + BuildPath
+#pragma warning "AppVer = " + AppVer
+
+
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
 ; Do not use the same AppId value in installers for other applications.
@@ -43,6 +53,7 @@ AppId={{A55FF037-34CA-4879-A4C3-14D36230A800}
 AppName={#AppName}
 AppVersion={#AppVer}
 ;AppVerName=TrackTasks 2.0
+AppVerName={#AppName} {#AppVer}
 AppPublisher={#Publisher}
 DefaultDirName={pf}\{#AppName}
 DefaultGroupName={#AppName}
@@ -66,11 +77,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 0,6.1
 
 [Files]
-#ifdef ProtectFile
-Source: "{#BuildPath}\client\release\traquera-protect.exe"; DestName: "traquera.exe"; DestDir: "{app}"; Components: main; Flags: ignoreversion
-#else
-Source: "{#BuildPath}\client\release\traquera.exe"; DestName: "traquera.exe"; DestDir: "{app}"; Components: main; Flags: ignoreversion
-#endif
+Source: {#ApplicationExe}; DestName: "traquera.exe"; DestDir: "{app}"; Components: main; Flags: ignoreversion
 Source: "{#BuildPath}\client\*.dll"; DestDir: "{app}"; Components: main; Flags: ignoreversion
 Source: "redistribute\*"; DestDir: "{app}"; Components: main; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#QTDIR}\bin\phonon4.dll"; DestDir: "{app}"; Components: main; Flags: ignoreversion

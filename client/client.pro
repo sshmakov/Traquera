@@ -78,7 +78,8 @@ HEADERS += \
     logform.h \
     queryfields.h \
     TQMultiComboBox/TQMultiComboBox.h \
-    tqapplication.h
+    tqapplication.h \
+    version.h
 
 #    plans.h planproxy.h \
 #    planfiles.h \

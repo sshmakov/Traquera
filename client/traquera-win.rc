@@ -1,1 +1,34 @@
 IDI_ICON1               ICON    DISCARDABLE     "baloons.ico"
+
+#include <windows.h>
+#include "../common/settings.h"
+#include "version.h"
+
+VS_VERSION_INFO VERSIONINFO
+//FILEVERSION     VER_FILEVERSION
+//PRODUCTVERSION  3,4,1,0
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "041904E3"
+        BEGIN
+            VALUE "CompanyName",        COMPANY_NAME
+            //VALUE "FileDescription",    VER_FILEDESCRIPTION_STR
+            VALUE "FileVersion",        VERSION
+            //VALUE "FileVersion",        VER_FILEVERSION_STR
+            //VALUE "InternalName",       VER_INTERNALNAME_STR
+            //VALUE "LegalCopyright",     VER_LEGALCOPYRIGHT_STR
+            //VALUE "LegalTrademarks1",   VER_LEGALTRADEMARKS1_STR
+            //VALUE "LegalTrademarks2",   VER_LEGALTRADEMARKS2_STR
+            //VALUE "OriginalFilename",   VER_ORIGINALFILENAME_STR
+            VALUE "ProductName",        PRODUCT_NAME
+            VALUE "ProductVersion",     VERSION
+            //VALUE "ProductVersion",     VER_PRODUCTVERSION_STR
+        END
+    END
+
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x419, 1251
+    END
+END

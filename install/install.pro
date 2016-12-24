@@ -54,7 +54,7 @@ win32:CONFIG(release, debug|release): {
     iss_rs.depends = $$aspr.target
 
     iss_full.target  = $(DESTDIR)\\$${SETUP}_full.exe
-    iss_full.commands = $$INNO /O"$(DESTDIR)"  $$replace(PWD,/,\\)\\$$ISS_FILES /dOutputBaseFilename=$${SETUP}_full /dVARIANT=FULL /dBuildPath=$$BUILDPATH
+    iss_full.commands = $$INNO /O"$(DESTDIR)"  $$replace(PWD,/,\\)\\$$ISS_FILES /dOutputBaseFilename=$${SETUP}_full /dVARIANT=FULL /dBuildPath=$$BUILDPATH /dProtectFile
     iss_full.depends = $$aspr.target
 
     iss_fullrs.target  = $(DESTDIR)\\$${SETUP}_fullrs.exe
