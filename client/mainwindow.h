@@ -302,6 +302,7 @@ private slots:
     void on_cbCurrentProjectName_currentIndexChanged(int index);
     void on_actionProjectOptions_triggered();
     void on_actionCopy_triggered();
+    void on_actionAbout_triggered();
 };
 
 

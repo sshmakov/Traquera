@@ -35,7 +35,8 @@ FORMS += ui/tracksmain.ui ui/querypage.ui ui/filters.ui ui/scrwidg.ui \
     tqprjoptdlg.ui \
     filespage.ui \
     logform.ui \
-    queryfields.ui
+    queryfields.ui \
+    aboutdialog.ui
 #    tqqrywid.ui \
 #    ui/planfilesform.ui \
 #    ui/projectpage.ui
@@ -79,7 +80,8 @@ HEADERS += \
     queryfields.h \
     TQMultiComboBox/TQMultiComboBox.h \
     tqapplication.h \
-    version.h
+    version.h \
+    aboutdialog.h
 
 #    plans.h planproxy.h \
 #    planfiles.h \
@@ -125,7 +127,8 @@ SOURCES += database.cpp main.cpp mainwindow.cpp querypage.cpp \
     queryfields.cpp \
     ../common/ttutils.cpp \
     TQMultiComboBox/TQMultiComboBox.cpp \
-    tqapplication.cpp
+    tqapplication.cpp \
+    aboutdialog.cpp
 
 #    planfilesform.cpp \
 #    project.cpp projectpage.cpp plans.cpp planproxy.cpp planfiles.cpp \
@@ -172,7 +175,9 @@ datafolder.source = data
 datafolder.target = .
 langfolder.source = lang
 langfolder.target = .
-DEPLOYMENTFOLDERS = datafolder langfolder
+libfolder.source = ../aspr/lib
+libfolder.target = .
+DEPLOYMENTFOLDERS = datafolder langfolder libfolder
 
 include(deploy.pri)
 qtcAddDeployment()
@@ -184,6 +189,10 @@ RC_FILE = traquera-win.rc
 
 INCLUDEPATH += ../tqaxfactory
 LIBS += -ltqaxfactory
+
+# Protecting
+win32:INCLUDEPATH += ../aspr/include
+win32:LIBS += -Llib -laspr_ide
 
 #INCLUDEPATH += /Projects/ImageMagick-6.8.7-Q16/include
 #LIBS += -L/Projects/ImageMagick-6.8.7-Q16/lib -lCORE_RL_Magick++_

@@ -257,10 +257,17 @@
     <addaction name="actionNewRequest"/>
     <addaction name="actionPrint_Preview"/>
    </widget>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>Справка</string>
+    </property>
+    <addaction name="actionAbout"/>
+   </widget>
    <addaction name="menuProject"/>
    <addaction name="menuQuery"/>
    <addaction name="menuRecord"/>
    <addaction name="menuView"/>
+   <addaction name="menu"/>
   </widget>
   <widget class="QDockWidget" name="dockQueries">
    <property name="features">
@@ -635,6 +642,11 @@
   <action name="actionProjectOptions">
    <property name="text">
     <string>Настройки проекта</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>О программе...</string>
    </property>
   </action>
  </widget>

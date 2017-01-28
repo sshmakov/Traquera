@@ -1,7 +1,10 @@
 #include "mainwindow.h"
+#include "version.h"
 //#include "planfiles.h"
 #include "database.h"
 //#include "tracker.h"
+#include "aboutdialog.h"
+#include <aspr_api.h>
 #include "querypage.h"
 //#include "projectpage.h"
 //#include "dialog.h"
@@ -2392,4 +2395,48 @@ void MainWindow::on_actionProjectOptions_triggered()
 void MainWindow::on_actionCopy_triggered()
 {
 
+}
+
+void MainWindow::on_actionAbout_triggered()
+{
+    AboutDialog dlg;
+    char *keyP="";
+    char *nameP = "";
+    char *modeP = "";
+    MODE_STATUS status;
+    qMemSet(&status, 0, sizeof(status));
+#ifndef QT_DEBUG
+    GetRegistrationInformation(0, &keyP, &nameP);
+    GetModeInformation(0, &modeP, &status);
+#endif
+    QString key(keyP), name(nameP);
+    if(status.IsRegistered && !key.isEmpty())
+        key = key.left(5)+"-xxxx-"+key.right(5);
+    QString mode(modeP);
+    dlg.setText(tr("Allrecall Traquera %1\n%2\n%3")
+                .arg(VERSION)
+                .arg(mode)
+                .arg(status.IsRegistered ? tr("Зарегистрировано") : tr("Незарегистрировано")));
+    dlg.setRegKey(key);
+    dlg.setRegName(name);
+    dlg.setEditEnabled(!status.IsRegistered);
+    if(dlg.exec() && !status.IsRegistered)
+    {
+#ifndef QT_DEBUG
+        key = dlg.regKey();
+        name = dlg.regName();
+        char keyBuf[256];
+        char nameBuf[256];
+        qstrncpy(keyBuf, key.toLocal8Bit().constData(), 255);
+        qstrncpy(nameBuf, name.toLocal8Bit().constData(), 255);
+        if(CheckKeyAndDecrypt(keyBuf, nameBuf, true))
+        {
+            GetModeInformation(0, &modeP, &status);
+            QString mode(modeP);
+            QMessageBox::information(this, tr("Регистрация"), tr("Успешно зарегистрировано для %1\n%2").arg(name, mode));
+        }
+        else
+            QMessageBox::critical(this, tr("Регистрация"), tr("Не удалось зарегистрировать для %1").arg(name, mode));
+#endif
+    }
 }

@@ -48,22 +48,30 @@ win32:CONFIG(release, debug|release): {
     aspr.target = ..\\client\\release\\traquera-protect.exe
     aspr.commands = $$ASPROTECT -process $$replace(PWD,/,\\)\\TraQuera.aspr2
     aspr.depends = ..\\client\\release\\traquera.exe
+    QMAKE_EXTRA_TARGETS += aspr
 
-    iss_rs.target  = $(DESTDIR)\\$${SETUP}.exe
-    iss_rs.commands = $$INNO /O"$(DESTDIR)"  $$replace(PWD,/,\\)\\$$ISS_FILES /dOutputBaseFilename=$${SETUP} /dVARIANT=RS /dBuildPath=$$BUILDPATH
-    iss_rs.depends = $$aspr.target
+#    iss_rs.target  = $(DESTDIR)\\$${SETUP}_rs.exe
+#    iss_rs.commands = $$INNO /O"$(DESTDIR)"  $$replace(PWD,/,\\)\\$$ISS_FILES /dOutputBaseFilename=$${SETUP}_rs /dVARIANT=RS /dBuildPath=$$BUILDPATH
+#    iss_rs.depends = $$aspr.target
+#    QMAKE_EXTRA_TARGETS += iss_rs
 
     iss_full.target  = $(DESTDIR)\\$${SETUP}_full.exe
     iss_full.commands = $$INNO /O"$(DESTDIR)"  $$replace(PWD,/,\\)\\$$ISS_FILES /dOutputBaseFilename=$${SETUP}_full /dVARIANT=FULL /dBuildPath=$$BUILDPATH /dProtectFile
     iss_full.depends = $$aspr.target
+    QMAKE_EXTRA_TARGETS += iss_full
 
     iss_fullrs.target  = $(DESTDIR)\\$${SETUP}_fullrs.exe
     iss_fullrs.commands = $$INNO /O"$(DESTDIR)"  $$replace(PWD,/,\\)\\$$ISS_FILES /dOutputBaseFilename=$${SETUP}_fullrs /dVARIANT=FULLRS /dBuildPath=$$BUILDPATH
     iss_fullrs.depends = $$aspr.target
+    QMAKE_EXTRA_TARGETS += iss_fullrs
 
-    QMAKE_EXTRA_TARGETS += aspr iss_rs iss_full iss_fullrs
+    iss_jira.target  = $(DESTDIR)\\$${SETUP}.exe
+    iss_jira.commands = $$INNO /O"$(DESTDIR)"  $$replace(PWD,/,\\)\\$$ISS_FILES /dOutputBaseFilename=$${SETUP} /dVARIANT=JIRA /dBuildPath=$$BUILDPATH /dProtectFile
+    iss_jira.depends = $$aspr.target
+    QMAKE_EXTRA_TARGETS += iss_jira
+
     QMAKE_EXTRA_COMPILERS +=
 
-    OBJECTS = $$iss_rs.target  $$iss_full.target $$iss_fullrs.target
+    OBJECTS = $$iss_rs.target  $$iss_full.target $$iss_fullrs.target $$iss_jira.target
 }
 

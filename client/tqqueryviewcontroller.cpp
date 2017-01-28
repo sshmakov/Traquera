@@ -1,6 +1,7 @@
 #include "tqqueryviewcontroller.h"
 #include "querypage.h"
 #include <tqdebug.h>
+#include <asprotect.h>
 
 class TQQVCPrivate
 {
@@ -47,10 +48,20 @@ bool TQQueryViewController::beginModifySection()
 {
     if(!d->record)
         return false;
-    if(!d->record->isEditing() && !d->record->updateBegin())
-        return false;
-    d->modifyLocks++;
-    return true;
+    REG_CRYPT_BEGIN1
+
+    if(d->record->isEditing())
+    {
+        d->modifyLocks++;
+        return true;
+    }
+    if(d->record->updateBegin())
+    {
+        d->modifyLocks++;
+        return true;
+    }
+    REG_CRYPT_END1
+    return false;
 }
 
 void TQQueryViewController::submitModifySection()
