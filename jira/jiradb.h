@@ -335,6 +335,10 @@ protected:
     */
 
 public:
+    enum JiraFieldRole {
+        ProjectField = TQAbstractRecordTypeDef::NextRole
+    };
+
     JiraRecTypeDef(JiraProject *project);
     JiraRecTypeDef(JiraRecTypeDef *src);
     virtual ~JiraRecTypeDef();

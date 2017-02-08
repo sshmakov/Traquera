@@ -7,6 +7,16 @@ class JiraLoginPrivate
 {
 public:
     JiraPlugin *plugin;
+    QString fineUrl(const QString &url)
+    {
+        QUrl serverUrl = QUrl::fromUserInput(url);
+        if(serverUrl.scheme().isEmpty())
+            serverUrl.setScheme("http");
+        QString server = serverUrl.toString();
+        if(server.right(1) != "/")
+            server += "/";
+        return server;
+    }
 };
 
 JiraLogin::JiraLogin(QWidget *parent) :
@@ -57,7 +67,8 @@ QString JiraLogin::connectString() const
     QVariantMap params;
     params.insert(DBPARAM_CLASS, "Jira");
 //    params.insert(DBPARAM_TYPE, "");
-    params.insert(DBPARAM_SERVER,  ui->cbServerLink->currentText());
+    QString server = d->fineUrl(ui->cbServerLink->currentText());
+    params.insert(DBPARAM_SERVER,  server);
     params.insert(JIRAPARAM_METHOD, ui->cbMethod->currentIndex());
     if(!ui->chAnonimus->isChecked())
     {
@@ -75,7 +86,8 @@ QString JiraLogin::connectSaveString() const
     QVariantMap params;
     params.insert(DBPARAM_CLASS, "Jira");
 //    params.insert("DBType", "");
-    params.insert(DBPARAM_SERVER,  ui->cbServerLink->currentText());
+    QString server = d->fineUrl(ui->cbServerLink->currentText());
+    params.insert(DBPARAM_SERVER,  server);
     params.insert(JIRAPARAM_METHOD, ui->cbMethod->currentIndex());
     if(!ui->chAnonimus->isChecked())
     {

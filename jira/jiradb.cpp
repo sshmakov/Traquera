@@ -233,7 +233,7 @@ JiraRecTypeDef::JiraRecTypeDef(JiraProject *project)
     d->schemaToSimple.insert("option", TQ::TQ_FIELD_TYPE_CHOICE);
     d->schemaToSimple.insert("priority", TQ::TQ_FIELD_TYPE_CHOICE);
     d->schemaToSimple.insert("progress", TQ::TQ_FIELD_TYPE_CHOICE);
-    d->schemaToSimple.insert("project", TQ::TQ_FIELD_TYPE_STRING);
+    d->schemaToSimple.insert("project", TQ::TQ_FIELD_TYPE_CHOICE);
     d->schemaToSimple.insert("resolution", TQ::TQ_FIELD_TYPE_CHOICE);
     d->schemaToSimple.insert("securitylevel", TQ::TQ_FIELD_TYPE_CHOICE);
     d->schemaToSimple.insert("status", TQ::TQ_FIELD_TYPE_CHOICE);
@@ -253,6 +253,7 @@ JiraRecTypeDef::JiraRecTypeDef(JiraProject *project)
     d->roleFields.insert(TQAbstractRecordTypeDef::IdFriendlyField,"key");
     d->roleFields.insert(TQAbstractRecordTypeDef::RecordTypeField,"issuetype");
     d->roleFields.insert(TQAbstractRecordTypeDef::PriorityField,"priority");
+    d->roleFields.insert(ProjectField,"project");
 
     /*
     d->systemChoices
@@ -1972,6 +1973,18 @@ TQRecord *JiraProject::newRecord(int rectype)
 {
     JiraRecord *rec = new JiraRecord(this, rectype, 0);
     rec->setMode(TQRecord::Insert);
+    int vid;
+    QList<int> vids = rec->typeDef()->fieldVids();
+    foreach(vid, vids)
+    {
+        QVariant v = rec->typeDef()->fieldDefaultValue(vid);
+        if(v.isValid())
+            rec->setValue(vid,v);
+    }
+    vid = rec->typeDef()->roleVid(JiraRecTypeDef::ProjectField);
+    QVariant v = rec->typeDef()->displayToValue(vid,projectName());
+    rec->setValue(vid,v);
+    rec->setModified(false);
     return rec;
 }
 
@@ -2325,7 +2338,10 @@ bool JiraProject::isAnonymousUser() const
 
 QVariant JiraProject::serverGet(const QString &urlPath)
 {
-    QVariant res = db->sendRequest("GET", db->queryUrl(urlPath));
+    QUrl url(urlPath);
+    if(url.isRelative())
+        url = db->queryUrl(urlPath);
+    QVariant res = db->sendRequest("GET", url);
     checkRequestResult(res);
     return res;
 }
@@ -2460,15 +2476,13 @@ void JiraProject::readRecordDef2(JiraRecTypeDef *rdef, const QVariantMap &fields
             rdef->d->nativeTypes.insert(f.schemaType, nativeType++);
         }
         f.nativeType = rdef->d->schemaTypes.indexOf(f.schemaType); // not work for issuekey
+
         f.simpleType = rdef->schemaToSimpleType(f.schemaType);
         if(f.simpleType == TQ::TQ_FIELD_TYPE_USER)
             f.choiceTable = "Users";
         else if(f.simpleType == TQ::TQ_FIELD_TYPE_CHOICE || f.simpleType == TQ::TQ_FIELD_TYPE_ARRAY)
         {
             f.choiceTable = "Table_" + f.id;
-            /*if(map.contains("allowedValues"))
-                f.choices = parseAllowedValues(map.value("allowedValue").toList());
-            else*/
             if(systemChoices.contains(f.id))
             {
                 if(systemChoicesList.contains(f.id))
@@ -2479,6 +2493,12 @@ void JiraProject::readRecordDef2(JiraRecTypeDef *rdef, const QVariantMap &fields
                     systemChoicesList.insert(f.id, f.choices);
                 }
             }
+        }
+        else if(map.contains("allowedValues"))
+        {
+            f.simpleType = TQ::TQ_FIELD_TYPE_CHOICE;
+            f.choiceTable = "Table_" + f.id;
+            f.choices = parseAllowedValues(map.value("allowedValue").toList());
         }
         else
             f.choiceTable = QString();

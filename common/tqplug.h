@@ -101,7 +101,8 @@ public:
         OwnerField,
         IdFriendlyField,
         PriorityField,
-        RecordTypeField
+        RecordTypeField,
+        NextRole
     };
 
     virtual QStringList fieldNames() const = 0;
