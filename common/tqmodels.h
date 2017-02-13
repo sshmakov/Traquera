@@ -167,6 +167,7 @@ public:
         for(int i=row+count-1; i>=row; i--)
             records.removeAt(i);
         endRemoveRows();
+        return true;
     }
 
     virtual const R & at(int row) const
