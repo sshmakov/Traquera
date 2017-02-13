@@ -332,8 +332,13 @@ void JiraRecord::storeReadedField(const QString &fid, const QVariant &value)
         }
         else if(value.type() == QVariant::Map)
         {
-            int id = value.toMap().value("id").toInt();
-            QString display = value.toMap().value("name").toString();
+            QVariantMap vmap = value.toMap();
+            int id = vmap.value("id").toInt();
+            QString display;
+            if(vmap.contains("name"))
+                display = vmap.value("name").toString();
+            else
+                display = vmap.value("value").toString();
             values.insert(fvid, id);
             displayValues.insert(fvid, display);
         }

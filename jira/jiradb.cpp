@@ -1967,6 +1967,7 @@ bool JiraProject::cancelRecord(TQRecord *record)
     JiraRecord *rec = qobject_cast<JiraRecord *>(record);
     record->setMode(TQRecord::View);
     emit rec->changed(record->recordId());
+    return true;
 }
 
 TQRecord *JiraProject::newRecord(int rectype)
@@ -2494,12 +2495,12 @@ void JiraProject::readRecordDef2(JiraRecTypeDef *rdef, const QVariantMap &fields
                 }
             }
         }
-        else if(map.contains("allowedValues"))
+        /*else if(map.contains("allowedValues"))
         {
             f.simpleType = TQ::TQ_FIELD_TYPE_CHOICE;
             f.choiceTable = "Table_" + f.id;
             f.choices = parseAllowedValues(map.value("allowedValue").toList());
-        }
+        }*/
         else
             f.choiceTable = QString();
         if(fieldsMap.contains(f.id))
@@ -2512,6 +2513,11 @@ void JiraProject::readRecordDef2(JiraRecTypeDef *rdef, const QVariantMap &fields
             {
                 QVariantList values = createMeta.value("allowedValues").toList();
                 f.choices = parseAllowedValues(values);
+                if(f.simpleType != TQ::TQ_FIELD_TYPE_CHOICE && f.simpleType != TQ::TQ_FIELD_TYPE_ARRAY)
+                {
+                    f.simpleType = TQ::TQ_FIELD_TYPE_CHOICE;
+                    f.choiceTable = "Table_" + f.id;
+                }
                 /*
                 int pos=0;
                 foreach(QVariant v, values)
