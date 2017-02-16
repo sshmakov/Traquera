@@ -62,10 +62,6 @@ display: visible;
 display: none;
 }
 
-.title {
-font-weight: bold;
-}
-
 -->
 </style>
 </head>

@@ -34,7 +34,7 @@ function replaceKeys()
 }
 */
 
-function menuSCR(key, evt) { 
+function menuIssue(key, evt) { 
     var scrid = key.replace(/\w+-([0-9]+)/,'$1');
     // Блокируем всплывание события contextmenu
     evt = evt || window.event;
@@ -61,14 +61,20 @@ function menuSCR(key, evt) {
     {
 	state = state + " " + fix;
     }
+    var projectkey = key.replace(/(\w+)-[0-9]+/,'$1');
+    var isCurProject = projectkey === winContr.record.project.jiraProjectKey();
     var html = "";
     html = '<ul class="SimpleContextMenu">';
     html += "<li><b>" + key + '</b> <span class="shortInfo">' + state +"</span><br/>"
             + summary + "</li>";
     html += '<li><a href="#" onclick="copyToClip(\''+key+'\'); return false;">Копировать номер</a></li>';
-    html += '<li><a href="#" onclick="winContr.openRecord('+scrid+'); return false;">Открыть</a></li>';
-    html += '<li><a href="#" onclick="query.appendId('+scrid+'); return false;">Добавить в список</a></li>';
-    html += '<li><a href="#" onclick="winContr.openRecordList('+scrid+'); return false;">Открыть в новом списке</a></li>';
+    if(isCurProject)
+    {
+      html += '<li><a href="#" onclick="openIssue(\''+key+'\'); return false;">Открыть</a></li>';
+      html += '<li><a href="#" onclick="appendIssueToQuery(\''+key+'\'); return false;">Добавить в список</a></li>';
+      html += '<li><a href="#" onclick="openInNewList(\''+key+'\'); return false;">Открыть в новом списке</a></li>';
+    }
+    html += '<li><a href="#" onclick="openExtIssue(\''+key+'\'); return false;">Открыть в браузере</a></li>';
     html += '</ul>';
     // Если есть что показать - показываем
     //if (html) {
@@ -141,6 +147,38 @@ function restoreSelection(range) {
     sel.addRange(range);
 
 }
+
+function openIssue(issuekey) {
+   var projectkey = issuekey.replace(/(\w+)-[0-9]+/,'$1');
+   var scrid = issuekey.replace(/\w+-([0-9]+)/,'$1');
+   if(projectkey === winContr.record.project.jiraProjectKey())   
+     winContr.openRecord(scrid);
+   return false;
+};
+
+function openExtIssue(issuekey) {
+   var url = winContr.record.project.db.dbmsServer() + "browse/" + issuekey;
+   global.shell('cmd /c start '+url);
+   return false;
+};
+
+function appendIssueToQuery(issuekey) {
+   var projectkey = issuekey.replace(/(\w+)-[0-9]+/,'$1');
+   var scrid = issuekey.replace(/\w+-([0-9]+)/,'$1');
+   if(projectkey === winContr.record.project.jiraProjectKey())   
+     query.appendId(scrid);
+   return false;
+};
+
+function openInNewList(issuekey) {
+   var projectkey = issuekey.replace(/(\w+)-[0-9]+/,'$1');
+   var scrid = issuekey.replace(/\w+-([0-9]+)/,'$1');
+   if(projectkey === winContr.record.project.jiraProjectKey())   
+     winContr.openRecordList(scrid)
+   return false;
+};
+
+
 
 window.textDecorator = new JiraDecorator();
 

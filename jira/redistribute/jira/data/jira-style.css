@@ -47,6 +47,10 @@ margin: 60px 5px 5px 5px;
 max-width: 50%;
 }
 
+.topMargin {
+margin: 20px 5px 5px 5px; 
+}
+
 
 
 /*
@@ -237,4 +241,7 @@ vertical-align: middle;
     vertical-align:middle;
 }
 
+.title {
+font-weight: bold;
+}
 

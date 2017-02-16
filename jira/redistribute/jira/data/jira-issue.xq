@@ -10,12 +10,26 @@ xquery version "1.0" encoding "utf-8";
 font-weight: bold;
 }
 
+.debug {
+display: visible;
+position: fixed;
+}
+
+.topIR {
+    float: right;
+    -z-index: 6;
+    margin: 0px 10px;
+    line-height: 50px;
+    white-space: pre;
+}
+
 
 -->
 </style>
 <script src="qrc:/js/jquery.js"><!-- --></script>
 <script src="../../../data/w-controller.js"><!-- --></script>
 <script src="../../../data/t-decorator.js"><!-- --></script>
+<script src="../../../data/toc.js"><!-- --></script>
 <script src="jira-decorator.js"><!-- --></script>
 <script src="jira-funcs.js"><!-- --></script>
 </head>
@@ -23,9 +37,9 @@ font-weight: bold;
 return
 <body>
 
-<a href="#top" class="totop hidden contLink" id="ttt">Наверх</a>
+<a href="#top" class="totop hidden contLink contMenu2" id="ttt">Наверх</a>
 <p id="contextMenuId" class="contMenu"/>
-<div class="contents" id="toc">Содержание:<span class="tocswitch">[<a href="javascript:toctog()" id="tocswitch"  >убрать</a>]</span>
+<div class="contents contMenu2" id="toc">Содержание:<span class="tocswitch">[<a href="javascript:toctog()" id="tocswitch"  >убрать</a>]</span>
 <div id="contentsBody">
 <ul>
 {for $i in $scr/*/notes/note
@@ -34,15 +48,29 @@ return (
 <li><a href="#notePoint{$i/@index}" class="contLink">{$i/string(@author)} ({$i/string(@createdate)})</a></li>
 )
 }
+<li><a href="#links" class="contLink">{$scr/*/fields/field[@id = "issuelinks"]/string(@name)}</a></li>
+<li><a href="#subtask" class="contLink">{$scr/*/fields/field[@id = "subtasks"]/string(@name)}</a></li>
+<li><a href="#changes" class="contLink" id="tocLast">Changes</a></li>
 </ul>
-<a href="#changes" class="contLink" id="tocLast">Changes</a>
 </div>
 </div>
-
-<a name="top">{$scr/*/fields/field[@id = "issuekey"]/node()}. <b>{$scr/*/fields/field[@id = "summary"]/node()}</b></a>
+<div>
+<div class="topWr">
+  <div class="topPanel">
+    <div class="topRel">
+      <span id="issueTitle">
+          <a href="#" class="jiraExtLink" target="_blank">{$scr/*/fields/field[@role = "id"]/node()}</a>.  
+          <span class="title">{$scr/*/fields/field[@role = "title"]/node()}</span>
+      </span>
+    </div>
+    <div class="topIR" id="parentLink">-</div>
+  </div>
+</div>
+<!-- <a name="top"><a href="#" class="jiraExtLink" target="_blank">{$scr/*/fields/field[@id = "issuekey"]/node()}</a>. <b>{$scr/*/fields/field[@id = "summary"]/node()}</b></a> -->
 <p id="debug" style="display: none"></p>
 <p id="debug2" style="display: none"/>
-	<div>
+       <a name="top"/>
+	<div class="topMargin">
                 <div><span class="noteTitle">{$scr/*/Description/string(@name)}</span> ({$scr/*/fields/field[@id = "creator"]/node()})</div>
 
 		<blockquote><pre style="white-space: pre-wrap; font-family: serif" class="noteText">
@@ -61,6 +89,10 @@ return (
 </div>
 )
 }
+<h4><a name="links">{$scr/*/fields/field[@id = "issuelinks"]/string(@name)}</a></h4>
+<div id="linksBody"><!-- --></div>
+<h4><a name="subtask">{$scr/*/fields/field[@id = "subtasks"]/string(@name)}</a></h4>
+<div id="tasksBody"><!-- --></div>
 <h4><a name="changes">Changes:</a></h4>
 <div id="changelog"><!-- --></div>
 
@@ -80,7 +112,12 @@ function onScroll(e) {
 }
 
 document.addEventListener('scroll', onScroll);
+
+if(global.tochidden)
+	tocshow(0);
+
 -->
 </script>
+</div>
 </body>}
 </html> 
