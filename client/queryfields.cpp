@@ -19,6 +19,7 @@ QueryFields::QueryFields(QWidget *parent) :
     connect(modifyPanel, SIGNAL(editButtonClicked()), SLOT(startChange()));
     connect(modifyPanel, SIGNAL(resetButtonClicked()), SLOT(cancelChanges()));
     connect(modifyPanel, SIGNAL(activatedField(QString)), SLOT(activatedField(QString)));
+    connect(modifyPanel, SIGNAL(groupsDefChanged()), SLOT(onGroupsDefChanged()));
     new QShortcut(QKeySequence("Escape"),this,SLOT(cancelChanges()));
     ui->buttonBox->hide();
 }
@@ -50,6 +51,15 @@ void QueryFields::setViewController(TQViewController *viewController, int viewMo
         modifyPanel->setRecordDef(0,mode);
         modifyPanel->resetAll();
     }
+}
+
+void QueryFields::onGroupsDefChanged()
+{
+//    modifyPanel->readDef();
+//    modifyPanel->fillTable();
+    modifyPanel->resetAll();
+    if(controller)
+        modifyPanel->fillValues(controller->selectedRecords());
 }
 
 void QueryFields::on_buttonBox_clicked(QAbstractButton *button)

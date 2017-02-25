@@ -355,7 +355,7 @@ bool TQDecorator::saveState(QueryPage *page)
 FieldGroupsDef TQDecorator::loadGroups(const TQAbstractRecordTypeDef *recDef)
 {
     FieldGroupsDef res;
-    res.setRecordType(recDef);
+    res.loadGroupsDef(recDef);
     return res;
     /*
     FieldGroupsDef res = loadGroupsXML(recDef);
@@ -662,7 +662,7 @@ void FieldGroupsDef::clear()
     other.clear();
 }
 
-void FieldGroupsDef::setRecordType(const TQAbstractRecordTypeDef *recDef)
+void FieldGroupsDef::loadGroupsDef(const TQAbstractRecordTypeDef *recDef)
 {
     clear();
     if(!recDef)
@@ -673,18 +673,20 @@ void FieldGroupsDef::setRecordType(const TQAbstractRecordTypeDef *recDef)
     {
         QString fileName = recDef->project()->optionValue(TQOPTION_GROUP_FILE).toString();
         QFile file(fileName);
-        if(!file.exists() || !file.open(QFile::ReadOnly))
-        {
-            loadDefault(recDef);
-            return;
-        }
-        buf = file.readAll();
+        if(file.exists() && file.open(QFile::ReadOnly))
+            buf = file.readAll();
     }
-    if(buf.isEmpty() || !loadXML(recDef, buf))
-        loadDefault(recDef);
+    if(buf.isEmpty() || !setGroupsDef(recDef, buf))
+        setDefaultGroupsDef(recDef);
 }
 
-bool FieldGroupsDef::loadDefault(const TQAbstractRecordTypeDef *recDef)
+void FieldGroupsDef::saveGroupsDef(const TQAbstractRecordTypeDef *recDef)
+{
+    QByteArray buf = groupsDef();
+    recDef->setOptionValue(TQOPTION_GROUP_XML, buf);
+}
+
+bool FieldGroupsDef::setDefaultGroupsDef(const TQAbstractRecordTypeDef *recDef)
 {
     clear();
     QStringList fieldList = recDef->fieldNames();
@@ -712,7 +714,7 @@ bool FieldGroupsDef::loadDefault(const TQAbstractRecordTypeDef *recDef)
     return true;
 }
 
-bool FieldGroupsDef::loadXML(const TQAbstractRecordTypeDef *recDef, QByteArray &buf)
+bool FieldGroupsDef::setGroupsDef(const TQAbstractRecordTypeDef *recDef, QByteArray &buf)
 {
     clear();
     /*
@@ -767,15 +769,17 @@ bool FieldGroupsDef::loadXML(const TQAbstractRecordTypeDef *recDef, QByteArray &
         }
         if(f_in_p.count())
         {
-            groups.append(panel.attribute("title", tr("Группа %1").arg(groups.count()+1)));
+            QString t = panel.attribute("title", tr("Группа %1").arg(groups.count()+1));
+            groups.append(t);
             fieldsByGroup.append(f_in_p);
             used.append(f_in_p);
         }
     }
+    /*
     if(other.isEmpty())
     {
         QStringList f_in_p;
-        other = tr("Другое");
+        other = tr("Другие");
         for(int i=0; i<fieldList.count(); i++)
         {
             QString fname = fieldList[i].trimmed();
@@ -790,10 +794,11 @@ bool FieldGroupsDef::loadXML(const TQAbstractRecordTypeDef *recDef, QByteArray &
             fieldsByGroup.append(f_in_p);
         }
     }
+    */
     return true;
 }
 
-QByteArray FieldGroupsDef::toXML() const
+QByteArray FieldGroupsDef::groupsDef() const
 {
     /*
 <?xml version="1.0" encoding="utf-8"?>
@@ -821,14 +826,15 @@ QByteArray FieldGroupsDef::toXML() const
     <panel title="Другое" type="other"/>
   </panels>
      */
-    QDomDocument doc("panels");
-    QDomElement root = doc.createElement("panels");
+    QDomDocument doc("groups");
+    QDomElement root = doc.createElement("groups");
     doc.appendChild(root);
+    QDomElement panels = doc.createElement("panels");
+    root.appendChild(panels);
     for(int i =0; i<groups.size(); i++)
     {
         QString group = groups.value(i);
         QDomElement tagGroup = doc.createElement("panel");
-        root.appendChild(tagGroup);
         tagGroup.setAttribute("title", group);
         if(group == other)
             tagGroup.setAttribute("type","other");
@@ -842,6 +848,7 @@ QByteArray FieldGroupsDef::toXML() const
                 tagGroup.appendChild(tagField);
             }
         }
+        panels.appendChild(tagGroup);
     }
     return doc.toByteArray();
 }

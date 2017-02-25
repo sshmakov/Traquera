@@ -36,7 +36,8 @@ FORMS += ui/tracksmain.ui ui/querypage.ui ui/filters.ui ui/scrwidg.ui \
     filespage.ui \
     logform.ui \
     queryfields.ui \
-    aboutdialog.ui
+    aboutdialog.ui \
+    fieldgroupdialog.ui
 #    tqqrywid.ui \
 #    ui/planfilesform.ui \
 #    ui/projectpage.ui
@@ -81,7 +82,8 @@ HEADERS += \
     TQMultiComboBox/TQMultiComboBox.h \
     tqapplication.h \
     version.h \
-    aboutdialog.h
+    aboutdialog.h \
+    fieldgroupdialog.h
 
 #    plans.h planproxy.h \
 #    planfiles.h \
@@ -128,7 +130,8 @@ SOURCES += database.cpp main.cpp mainwindow.cpp querypage.cpp \
     ../common/ttutils.cpp \
     TQMultiComboBox/TQMultiComboBox.cpp \
     tqapplication.cpp \
-    aboutdialog.cpp
+    aboutdialog.cpp \
+    fieldgroupdialog.cpp
 
 #    planfilesform.cpp \
 #    project.cpp projectpage.cpp plans.cpp planproxy.cpp planfiles.cpp \

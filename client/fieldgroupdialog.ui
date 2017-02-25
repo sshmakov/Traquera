@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>FieldGroupDialog</class>
+ <widget class="QDialog" name="FieldGroupDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>645</width>
+    <height>476</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Настройка групп полей</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="7" column="5" rowspan="4">
+      <spacer name="verticalSpacer_4">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="2" column="1" rowspan="2">
+      <spacer name="verticalSpacer">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>100</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="7" column="1" rowspan="4">
+      <spacer name="verticalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>100</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="6" column="1">
+      <widget class="QToolButton" name="btnDel">
+       <property name="text">
+        <string>← Удалить</string>
+       </property>
+       <property name="shortcut">
+        <string>Del</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1" colspan="2">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>&amp;Новая</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+       <property name="buddy">
+        <cstring>leNewGroup</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="11" column="0">
+      <widget class="QCheckBox" name="cHideUsed">
+       <property name="text">
+        <string>Скрыть использованные</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QPushButton" name="btnAdd">
+       <property name="text">
+        <string>Вставить →</string>
+       </property>
+       <property name="shortcut">
+        <string>Ins</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_2">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>&amp;Поля:</string>
+       </property>
+       <property name="buddy">
+        <cstring>lvFields</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2" colspan="3">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>&amp;Группы:</string>
+       </property>
+       <property name="buddy">
+        <cstring>twGroups</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="3">
+      <widget class="QLineEdit" name="leNewGroup"/>
+     </item>
+     <item row="1" column="4" colspan="2">
+      <widget class="QPushButton" name="btnAddGroup">
+       <property name="text">
+        <string>Добавить</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0" rowspan="10">
+      <widget class="QListView" name="lvFields">
+       <property name="selectionMode">
+        <enum>QAbstractItemView::ExtendedSelection</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="5">
+      <widget class="QToolButton" name="btnDown">
+       <property name="text">
+        <string>↓ Ниже</string>
+       </property>
+       <property name="shortcut">
+        <string>Ctrl+Down</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="5" rowspan="2">
+      <spacer name="verticalSpacer_3">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="2" column="2" rowspan="9" colspan="3">
+      <widget class="QTreeWidget" name="twGroups">
+       <property name="editTriggers">
+        <set>QAbstractItemView::NoEditTriggers</set>
+       </property>
+       <property name="selectionMode">
+        <enum>QAbstractItemView::ExtendedSelection</enum>
+       </property>
+       <attribute name="headerVisible">
+        <bool>false</bool>
+       </attribute>
+       <column>
+        <property name="text">
+         <string notr="true">1</string>
+        </property>
+       </column>
+      </widget>
+     </item>
+     <item row="4" column="5">
+      <widget class="QToolButton" name="btnUp">
+       <property name="text">
+        <string>↑ Выше</string>
+       </property>
+       <property name="shortcut">
+        <string>Ctrl+Up</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <tabstops>
+  <tabstop>lvFields</tabstop>
+  <tabstop>btnAdd</tabstop>
+  <tabstop>leNewGroup</tabstop>
+  <tabstop>btnAddGroup</tabstop>
+  <tabstop>twGroups</tabstop>
+  <tabstop>btnUp</tabstop>
+  <tabstop>btnDown</tabstop>
+  <tabstop>btnDel</tabstop>
+  <tabstop>cHideUsed</tabstop>
+ </tabstops>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>leNewGroup</sender>
+   <signal>returnPressed()</signal>
+   <receiver>btnAddGroup</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>553</x>
+     <y>49</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>634</x>
+     <y>51</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>FieldGroupDialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>357</x>
+     <y>466</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>5</x>
+     <y>398</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>FieldGroupDialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>441</x>
+     <y>466</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>614</x>
+     <y>347</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

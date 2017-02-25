@@ -11,6 +11,8 @@ namespace Ui {
 class ModifyPanel;
 }
 
+class TQViewController;
+
 class ModifyPanel : public QWidget
 {
     Q_OBJECT
@@ -18,8 +20,9 @@ class ModifyPanel : public QWidget
 protected:
 //    TrkToolModel *a_model;
     const TQAbstractRecordTypeDef *rdef;
+    FieldGroupsDef groupsDef;
     QueryPage *queryPage;
-
+//    TQViewController *controller;
     QStringList fieldGroups;
     QList<QStringList> groupFields;
     struct ModifyRow
@@ -44,6 +47,7 @@ public:
     
 //    void setQueryPage(QueryPage *page);
 //    void setModel(TrkToolModel *newModel);
+//    void setViewController(TQViewController *contr);
     void setRecordDef(const TQAbstractRecordTypeDef *typeDef, int mode);
     //void fillValues(TrkToolRecord *record);
     void fillValues(const QObjectList &records);
@@ -68,7 +72,9 @@ signals:
     void editButtonClicked();
     void dataChanged();
     void activatedField(const QString fieldName);
+    void groupsDefChanged();
 protected:
+    void readDef();
     void fillTable();
     void setItemData(QTableWidgetItem * item, const QString &displayText, const QVariant &value);
 public slots:
@@ -76,6 +82,8 @@ public slots:
     void resetField(const QString& fieldName);
     void resetAll();
     void clearField(const QString& fieldName);
+protected slots:
+//    void readSelectedRecords();
 private slots:
     void onModeChanged();
     void on_actionApplyChanges_triggered();
@@ -99,6 +107,8 @@ private slots:
     void on_tbEdit_clicked();
 
     void on_actionEdit_triggered();
+
+    void on_actionFieldGroups_triggered();
 
 private:
     Ui::ModifyPanel *ui;

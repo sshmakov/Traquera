@@ -12,6 +12,8 @@
 #include "trkdecorator.h"
 #include "ttdelegate.h"
 #include "ttglobal.h"
+#include "fieldgroupdialog.h"
+#include "tqviewcontroller.h"
 
 
 ModifyPanel::ModifyPanel(QWidget *parent) :
@@ -22,6 +24,7 @@ ModifyPanel::ModifyPanel(QWidget *parent) :
     rdef(0),
     a_readOnly(false),
     curMode(TQRecord::View)
+//    controller(0)
 {
     ui->setupUi(this);
 
@@ -40,6 +43,10 @@ ModifyPanel::ModifyPanel(QWidget *parent) :
 //    ui->fieldsTableWidget->addAction(ui->actionRepeatChanges);
     ui->fieldsTableWidget->addAction(ui->actionRevertField);
     ui->fieldsTableWidget->addAction(ui->actionClearField);
+    QAction *sep = new QAction(this);
+    sep->setSeparator(true);
+    ui->fieldsTableWidget->addAction(sep);
+    ui->fieldsTableWidget->addAction(ui->actionFieldGroups);
     //loadDefinitions();
 }
 
@@ -47,6 +54,15 @@ ModifyPanel::~ModifyPanel()
 {
     delete ui;
 }
+
+//void ModifyPanel::setViewController(TQViewController *contr)
+//{
+//    if(controller)
+//        controller->disconnect(this);
+//    controller = contr;
+//    if(controller)
+//        connect(controller,SIGNAL(selectedRecordsChanged()), SLOT(readSelectedRecords()));
+//}
 
 /*
 void ModifyPanel::setQueryPage(QueryPage *page)
@@ -94,45 +110,8 @@ void ModifyPanel::setRecordDef(const TQAbstractRecordTypeDef *typeDef, int mode)
     rows.clear();
     if(rdef)
     {
-        FieldGroupsDef def;
-        def = decorator->loadGroups(typeDef);
-        for(int p=0; p<def.groups.count(); p++)
-        {
-            QString pname = def.groups[p];
-            ModifyRow mrow;
-            mrow.isGroup = true;
-            mrow.fieldName = pname;
-            //mrow.editor = 0;
-            mrow.displayValue = "";
-            mrow.isChanged = false;
-            mrow.isEditable = false;
-            //mrow.resetBtn = 0;
-            rows.append(mrow);
-            const QStringList &flist = def.fieldsByGroup[p];
-            for(int f=0; f<flist.count(); f++)
-            {
-                QString fname = flist[f];
-                TQAbstractFieldType fType = typeDef->getFieldType(fname);
-                ModifyRow frow;
-                frow.isGroup = false;
-                frow.fieldName = fname;
-//                if(fType.nativeType() == TQ::TQ_FIELD_TYPE_DATE)
-//                    frow.fieldType = QVariant::DateTime;
-//                else
-                    frow.fieldType = fType.nativeType();
-                //frow.editor = 0;
-                frow.displayValue = "";
-                frow.isChanged = false;
-                if(mode == TQRecord::Insert)
-                    frow.isEditable = fType.canSubmit();
-                else if(mode == TQRecord::Edit)
-                    frow.isEditable = fType.canUpdate();
-                else
-                    frow.isEditable = false;
-                //frow.resetBtn = 0;
-                rows.append(frow);
-            }
-        }
+        groupsDef = decorator->loadGroups(rdef);
+        readDef();
     }
     fillTable();
 }
@@ -384,6 +363,47 @@ void ModifyPanel::setButtonsVisible(bool visible)
     ui->buttonsPanel->setVisible(visible);
 }
 
+void ModifyPanel::readDef()
+{
+    for(int p=0; p<groupsDef.groups.count(); p++)
+    {
+        QString pname = groupsDef.groups[p];
+        ModifyRow mrow;
+        mrow.isGroup = true;
+        mrow.fieldName = pname;
+        //mrow.editor = 0;
+        mrow.displayValue = "";
+        mrow.isChanged = false;
+        mrow.isEditable = false;
+        //mrow.resetBtn = 0;
+        rows.append(mrow);
+        const QStringList &flist = groupsDef.fieldsByGroup[p];
+        for(int f=0; f<flist.count(); f++)
+        {
+            QString fname = flist[f];
+            TQAbstractFieldType fType = rdef->getFieldType(fname);
+            ModifyRow frow;
+            frow.isGroup = false;
+            frow.fieldName = fname;
+//                if(fType.nativeType() == TQ::TQ_FIELD_TYPE_DATE)
+//                    frow.fieldType = QVariant::DateTime;
+//                else
+                frow.fieldType = fType.nativeType();
+            //frow.editor = 0;
+            frow.displayValue = "";
+            frow.isChanged = false;
+            if(curMode == TQRecord::Insert)
+                frow.isEditable = fType.canSubmit();
+            else if(curMode == TQRecord::Edit)
+                frow.isEditable = fType.canUpdate();
+            else
+                frow.isEditable = false;
+            //frow.resetBtn = 0;
+            rows.append(frow);
+        }
+    }
+}
+
 void ModifyPanel::resetField(const QString &fieldName)
 {
     for(int row=0; row<rows.count(); row++)
@@ -448,6 +468,11 @@ void ModifyPanel::clearField(const QString &fieldName)
     else
         setFieldValue(fieldName, fieldDef(fieldName).defaultValue());
 }
+
+//void ModifyPanel::readSelectedRecords()
+//{
+//    controller->selectedRecords();
+//}
 
 void ModifyPanel::onModeChanged()
 {
@@ -518,4 +543,26 @@ void ModifyPanel::on_tbEdit_clicked()
 void ModifyPanel::on_actionEdit_triggered()
 {
     emit editButtonClicked();
+}
+
+void ModifyPanel::on_actionFieldGroups_triggered()
+{
+    if(!rdef)
+        return;
+    FieldGroupDialog dlg;
+    dlg.setFieldList(rdef->fieldNames());
+    QByteArray buf = groupsDef.groupsDef();
+//    qDebug() << buf;
+    dlg.setGroupsDef(buf);
+    if(dlg.exec())
+    {
+        rows.clear();
+        buf = dlg.groupsDef();
+//        qDebug() << buf;
+        groupsDef.setGroupsDef(rdef, buf);
+        readDef();
+        fillTable();
+        groupsDef.saveGroupsDef(rdef);
+        emit groupsDefChanged();
+    }
 }

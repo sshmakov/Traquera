@@ -75,10 +75,11 @@ public:
         return *this;
     }
     void clear();
-    void setRecordType(const TQAbstractRecordTypeDef *recDef);
-    bool loadDefault(const TQAbstractRecordTypeDef *recDef);
-    bool loadXML(const TQAbstractRecordTypeDef *recDef, QByteArray &buf);
-    QByteArray toXML() const;
+    void loadGroupsDef(const TQAbstractRecordTypeDef *recDef);
+    void saveGroupsDef(const TQAbstractRecordTypeDef *recDef);
+    bool setDefaultGroupsDef(const TQAbstractRecordTypeDef *recDef);
+    bool setGroupsDef(const TQAbstractRecordTypeDef *recDef, QByteArray &buf);
+    QByteArray groupsDef() const;
 };
 
 class QueryPage;

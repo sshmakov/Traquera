@@ -30,6 +30,8 @@ public slots:
     void startChange();
     void selectedRecordsChanged();
     void setViewController(TQViewController *viewController, int viewMode = -1);
+protected slots:
+    void onGroupsDefChanged();
 private slots:
     void on_buttonBox_clicked(QAbstractButton *button);
     void controllerDestroyed();
