@@ -66,34 +66,32 @@ return (
     <div class="topIR" id="parentLink">-</div>
   </div>
 </div>
-<!-- <a name="top"><a href="#" class="jiraExtLink" target="_blank">{$scr/*/fields/field[@id = "issuekey"]/node()}</a>. <b>{$scr/*/fields/field[@id = "summary"]/node()}</b></a> -->
 <p id="debug" style="display: none"></p>
-<p id="debug2" style="display: none"/>
-       <a name="top"/>
-	<div class="topMargin">
-                <div><span class="noteTitle">{$scr/*/Description/string(@name)}</span> ({$scr/*/fields/field[@id = "creator"]/node()})</div>
-
-		<blockquote><pre style="white-space: pre-wrap; font-family: serif" class="noteText">
-			{string($scr/*/Description)}
-		</pre></blockquote>
-	</div>
+<p id="debug2" style="display: none"><!-- --></p>
+<a name="top" class="issueAnchor"><!-- --></a>
+<div class="topMargin">
+        <p class="noteTitle"><span class="noteAuthor">{$scr/*/Description/string(@name)}</span> ({$scr/*/fields/field[@id = "creator"]/node()})</p>
+        <blockquote><pre class="noteText">
+                {string($scr/*/Description)}
+        </pre></blockquote>
+</div>
 {
 for $i in $scr/*/notes/note
 order by xs:dateTime($i/string(@cdatetime)), xs:integer($i/@index)
 return (
-<div index="{$i/@index}" class="note"><a name="notePoint{$i/@index}"/>
-<span id="title{$i/@index}" class="noteTitle">{$i/string(@author)}</span> ({$i/string(@createdate)})
-		<blockquote><pre style="white-space: pre-wrap; font-family: serif" class="noteText">
+<div index="{$i/@index}" class="note"><a name="notePoint{$i/@index}" class="issueAnchor"><!-- --></a>
+<p class="noteTitle"><span id="title{$i/@index}" class="noteAuthor">{$i/string(@author)}</span> ({$i/string(@createdate)})</p>
+		<blockquote><pre class="noteText">
 	{string($i)}
 		</pre></blockquote>
 </div>
 )
 }
-<h4><a name="links">{$scr/*/fields/field[@id = "issuelinks"]/string(@name)}</a></h4>
+<h4><a name="links" class="issueAnchor"><!-- --></a>{$scr/*/fields/field[@id = "issuelinks"]/string(@name)}</h4>
 <div id="linksBody"><!-- --></div>
-<h4><a name="subtask">{$scr/*/fields/field[@id = "subtasks"]/string(@name)}</a></h4>
+<h4><a name="subtask" class="issueAnchor"><!-- --></a>{$scr/*/fields/field[@id = "subtasks"]/string(@name)}</h4>
 <div id="tasksBody"><!-- --></div>
-<h4><a name="changes">Changes:</a></h4>
+<h4><a name="changes" class="issueAnchor"><!-- --></a>Changes:</h4>
 <div id="changelog"><!-- --></div>
 
 <script type="text/javascript">
