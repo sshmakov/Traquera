@@ -76,6 +76,7 @@ OutputDir=.
 OutputBaseFilename={#OutputBaseFilename}
 Compression=lzma
 SolidCompression=yes
+LicenseFile=license.txt
 
 [Components]
 Name: "main"; Description: "{cm:NameAndVersion,{#AppName},{#AppVer}}"; Types: full custom compact; Flags: fixed
@@ -122,6 +123,7 @@ Source: "{#QTDIR}\plugins\imageformats\*"; DestDir: "{app}\imageformats"; Compon
 Source: "{#QTDIR}\plugins\sqldrivers\*"; DestDir: "{app}\sqldrivers"; Components: main; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\client\data\*"; DestDir: "{app}\data"; Components: main; Flags: ignoreversion recursesubdirs createallsubdirs 
 Source: "..\client\lang\*"; DestDir: "{app}\lang"; Components: main; Flags: ignoreversion recursesubdirs createallsubdirs 
+Source: "license.txt"; DestDir: "{app}"; Components: main;
 
 #ifdef PLUGIN_JIRA
 ; Jira
