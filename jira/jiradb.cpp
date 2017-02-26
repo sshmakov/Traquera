@@ -909,8 +909,15 @@ void JiraDB::setConnectString(const QString &connectString)
 {
     TQAbstractDB::setConnectString(connectString);
     QVariantMap params = parser->toVariant(connectString).toMap();
-    int method = params.value("ConnectMethod").toInt();
+    int method = params.value(JIRAPARAM_METHOD).toInt();
     setConnectMethod((JiraConnectMethod)method);
+    QString proxy = params.value(JIRAPARAM_PROXY,"Default").toString();
+    if(proxy == "NoProxy")
+    {
+        QNetworkProxy p;
+        p.setType(QNetworkProxy::NoProxy);
+        man->setProxy(p);
+    }
 }
 
 QVariant JiraDB::sendRequest(const QString &method, const QUrl &url, QVariantMap bodyMap)

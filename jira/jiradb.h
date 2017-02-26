@@ -12,6 +12,7 @@
 #include <QtNetwork>
 
 #define JIRAPARAM_METHOD "ConnectMethod"
+#define JIRAPARAM_PROXY "Proxy"
 
 class QNetworkReply;
 

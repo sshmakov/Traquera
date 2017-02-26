@@ -70,6 +70,8 @@ QString JiraLogin::connectString() const
     QString server = d->fineUrl(ui->cbServerLink->currentText());
     params.insert(DBPARAM_SERVER,  server);
     params.insert(JIRAPARAM_METHOD, ui->cbMethod->currentIndex());
+    if(ui->cNoProxy->isChecked())
+        params.insert(JIRAPARAM_PROXY, "NoProxy");
     if(!ui->chAnonimus->isChecked())
     {
         params.insert(DBPARAM_USER, ui->leUser->text());
@@ -89,6 +91,8 @@ QString JiraLogin::connectSaveString() const
     QString server = d->fineUrl(ui->cbServerLink->currentText());
     params.insert(DBPARAM_SERVER,  server);
     params.insert(JIRAPARAM_METHOD, ui->cbMethod->currentIndex());
+    if(ui->cNoProxy->isChecked())
+        params.insert(JIRAPARAM_PROXY, "NoProxy");
     if(!ui->chAnonimus->isChecked())
     {
         params.insert(DBPARAM_USER, ui->leUser->text());
@@ -111,6 +115,7 @@ void JiraLogin::setConnectString(const QString &string)
     QVariantMap params = parser.toVariant(string).toMap();
     ui->cbServerLink->setEditText(params.value(DBPARAM_SERVER).toString());
     ui->cbMethod->setCurrentIndex(params.value(JIRAPARAM_METHOD,(int)JiraDB::CookieAuth).toInt());
+    ui->cNoProxy->setChecked(params.value(JIRAPARAM_PROXY) == "NoProxy");
     QString user = params.value(DBPARAM_USER).toString().trimmed();
     ui->leUser->setText(user);
     ui->lePassword->setText(params.value(DBPARAM_PASSWORD).toString());
