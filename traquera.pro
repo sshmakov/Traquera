@@ -26,7 +26,6 @@ client.depends = tqplugapi tqtests
 
 
 TARGET = traquera
-#TRANSLATIONS =
 CODECFORTR = UTF-8
 CODECFORSRC = UTF-8
 

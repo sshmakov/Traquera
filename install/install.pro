@@ -75,3 +75,6 @@ win32:CONFIG(release, debug|release): {
     OBJECTS = $$iss_rs.target  $$iss_full.target $$iss_fullrs.target $$iss_jira.target
 }
 
+DISTFILES += \
+    license.txt
+
