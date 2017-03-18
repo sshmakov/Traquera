@@ -77,7 +77,24 @@ QVariant MainProc::createActiveX(const QString &objectName, QObject *parent)
         obj = new ActiveXObject(parent);
     else
         obj = new ActiveXObject(objectName, parent);
+    if(obj)
+        obj->connect(obj,SIGNAL(exception(int, const QString &, const QString &, const QString &)),
+                                //"_exception(int,QString,QString,QString)",
+                                mainWin,SLOT(onAxException(int,QString,QString,QString)));
     return obj->asVariant();
+}
+
+QObject *MainProc::createActiveXObj(const QString &objectName, QObject *parent)
+{
+    QAxObject *obj;
+    if(objectName.isEmpty())
+        return 0;
+    obj = new ActiveXObject(objectName, parent);
+    if(obj)
+        obj->connect(obj,SIGNAL(exception(int, const QString &, const QString &, const QString &)),
+                                //"_exception(int,QString,QString,QString)",
+                                mainWin,SLOT(onAxException(int,QString,QString,QString)));
+    return obj;
 }
 
 QAbstractMessageHandler *MainProc::messager() const

@@ -2440,3 +2440,8 @@ void MainWindow::on_actionAbout_triggered()
 #endif
     }
 }
+
+void MainWindow::onAxException(int code, const QString &error, const QString &source, const QString &desc)
+{
+    tqCritical() << "Error" << QString::number(code) << error << "-" << source << "-" << desc;
+}

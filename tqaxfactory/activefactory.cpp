@@ -95,33 +95,102 @@ QAxBase *qax_create_object_wrapper(QObject *object)
 QT_END_NAMESPACE
 */
 
+class ActiveXObjectPrivate
+{
+public:
+    bool isWebKit;
+    ActiveXObjectPrivate()
+    {
+        isWebKit = false;
+    }
+    ~ActiveXObjectPrivate()
+    {
+
+    }
+};
+
 ActiveXObject::ActiveXObject(QObject *parent)
-    :QAxObject(parent)
+    :QAxObject(parent), d(new ActiveXObjectPrivate)
 {
 }
 
 ActiveXObject::ActiveXObject(const QString &c, QObject *parent)
-    :QAxObject(c, parent)
+    :QAxObject(c, parent), d(new ActiveXObjectPrivate)
 {
 }
 
 ActiveXObject::ActiveXObject(IUnknown *iface, QObject *parent)
-    :QAxObject(iface, parent)
+    :QAxObject(iface, parent), d(new ActiveXObjectPrivate)
 {
 }
 
 ActiveXObject::~ActiveXObject()
 {
+    delete d;
 }
 
 int ActiveXObject::qt_metacall(QMetaObject::Call call, int id, void **v)
 {
-    int res = QAxBase::qt_metacall(call, id, v);
+//    int res = QAxBase::qt_metacall(call, id, v);
     if(call == QMetaObject::ReadProperty)
     {
         const QMetaObject *mo = metaObject();
         QMetaProperty mprop = mo->property(id);
+        QVariant::Type t = mprop.type();
+        QString pname(mprop.name());
         QString ptype(mprop.typeName());
+        if(t == QVariant::Int || t == QVariant::String || ptype == "IDispatch*" || t == QVariant::Invalid)
+        {
+            IDispatch *disp;
+            queryInterface(QUuid(IID_IDispatch), (void**)&disp);
+            LPOLESTR p = const_cast<LPOLESTR>(pname.utf16());
+            DISPID dispid;
+            disp->GetIDsOfNames(IID_NULL, &p, 1, LOCALE_USER_DEFAULT, &dispid);
+            if (dispid != DISPID_UNKNOWN)
+            {
+                //                return index;
+
+                // property found, so everthing that goes wrong now should not bother the caller
+                //            index -= mo->propertyCount();
+
+                VARIANTARG arg;
+                VariantInit(&arg);
+                DISPPARAMS params;
+                EXCEPINFO excepinfo;
+                memset(&excepinfo, 0, sizeof(excepinfo));
+                HRESULT hres = E_FAIL;
+
+                params.cArgs = 0;
+                params.cNamedArgs = 0;
+                params.rgdispidNamedArgs = 0;
+                params.rgvarg = 0;
+
+                hres = disp->Invoke(dispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_PROPERTYGET, &params, &arg, &excepinfo, 0);
+                QVariant &var = *(QVariant *)v[0];
+                switch(t) {
+                case QVariant::Int:
+                case QVariant::Invalid:
+                    var = arg.intVal;
+                    break;
+                case QVariant::String:
+                    var = QString::fromUtf16(arg.bstrVal);
+                    break;
+                case QVariant::UserType:
+                    if(ptype == "IDispatch*")
+                    {
+                        v[0] = createComWrapper(arg.pdispVal);
+//                        *(ActiveXObject **)v = new ActiveXObject(arg.pdispVal, this);
+                    }
+                    break;
+                }
+
+                disp->Release();
+                return 1;
+            }
+            disp->Release();
+
+        }
+        int res = QAxBase::qt_metacall(call, id, v);
         if(ptype == "IDispatch*")
         {
 //            VARIANT *var = (VARIANT *)v[0];
@@ -134,14 +203,16 @@ int ActiveXObject::qt_metacall(QMetaObject::Call call, int id, void **v)
         if(var.isValid())
         {
             IDispatch *disp = var.value<IDispatch*>();
-            if(disp)
-            {
-                ActiveXObject *object = new ActiveXObject(disp, this);
-                v[0] = object;
-            }
+            v[0] = createComWrapper(disp);
+//            if(disp)
+//            {
+//                ActiveXObject *object = new ActiveXObject(disp, this);
+//                v[0] = object;
+//            }
         }
         return res;
     }
+    int res = QAxBase::qt_metacall(call, id, v);
     if(call != QMetaObject::InvokeMetaMethod)
         return res;
     const QMetaObject *mo = metaObject();
@@ -156,5 +227,18 @@ int ActiveXObject::qt_metacall(QMetaObject::Call call, int id, void **v)
         p = (char*)v[0];
     }
     return res;
+}
+
+const char *ActiveXObject::className() const
+{
+    return "dd";
+}
+
+QObject *ActiveXObject::createComWrapper(IDispatch *disp)
+{
+    if(!disp)
+        return 0;
+    ActiveXObject *object = new ActiveXObject(disp, this);
+    return object;
 }
 

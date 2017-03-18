@@ -76,6 +76,8 @@ protected:
     QList<ProjectRec> projectRecords;
     MainProc proc;
 
+    friend class MainProc;
+
 private slots:
     void about();
 private:
@@ -303,6 +305,7 @@ private slots:
     void on_actionProjectOptions_triggered();
     void on_actionCopy_triggered();
     void on_actionAbout_triggered();
+    void onAxException(int code, const QString &error,const QString &source, const QString &desc);
 };
 
 

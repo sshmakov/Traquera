@@ -30,14 +30,31 @@ public slots:
 };
 //#endif
 
+class ActiveXObjectPrivate;
+
 class TQAXFACTORYSHARED_EXPORT ActiveXObject :public QAxObject
 {
+private:
+    ActiveXObjectPrivate *d;
 public:
      ActiveXObject( QObject * parent = 0 );
      ActiveXObject( const QString & c, QObject * parent = 0 );
      ActiveXObject( IUnknown * iface, QObject * parent = 0 );
      ~ActiveXObject();
      int qt_metacall(QMetaObject::Call call, int id, void **v);
+     const char *className() const;
+protected:
+     virtual QObject *createComWrapper(IDispatch *disp);
 };
+
+class TQAXFACTORYSHARED_EXPORT AXWebKitObject :public QAxObject
+{
+public:
+    AXWebKitObject(const QString & c, QObject * parent);
+    int qt_metacall(QMetaObject::Call call, int id, void **v);
+protected:
+    QObject *createObjectWrapper(IDispatch *disp);
+};
+
 
 #endif // ACTIVEFACTORY_H
