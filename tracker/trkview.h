@@ -576,7 +576,7 @@ protected:
     bool commitRecord(TQRecord *record);
     bool cancelRecord(TQRecord *record);
     QList<TQAttachedFile> attachedFiles(TQRecord *record);
-    QStringList historyList(TQRecord *record);
+    QVariantList historyList(TQRecord *record);
     QHash<int,QString> baseRecordFields(int rectype);
     bool saveFileFromRecord(TQRecord *record, int fileIndex, const QString &dest);
     int attachFileToRecord(TQRecord *record, const QString &filePath);
@@ -715,7 +715,7 @@ protected:
     // void freeRecHandle();
     bool readed;
     bool historyReaded;
-    QStringList historyListMem;
+    QVariantList historyListMem;
     bool filesReaded;
     QList<TQAttachedFile> files, filesAdded;
 //    QList<TQAttachedFile> filesAdded;
@@ -749,7 +749,7 @@ public:
     Q_INVOKABLE bool isEditMode() const;
     QDomDocument toXML();
 //    Q_INVOKABLE QString toHTML(const QString &xqCodeFile);
-    Q_INVOKABLE QStringList historyList() const;
+    Q_INVOKABLE QVariantList historyList() const;
     QString description() const;
     Q_INVOKABLE bool setDescription(const QString &newDesc);
     Q_INVOKABLE const QStringList & fields() const;

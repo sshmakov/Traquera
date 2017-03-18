@@ -926,7 +926,7 @@ QDomDocument TQRecord::toXML() const
     QDomElement notes = xml.createElement("notes");
 
     TQNotesCol notesCol = this->notes();
-    int index=0;
+    int index=0;    
     foreach(const TQNote &tn, notesCol)
     {
         QDomElement note = xml.createElement("note");
@@ -958,6 +958,22 @@ QDomDocument TQRecord::toXML() const
     // fill <history>
     QDomElement history = xml.createElement("history");
     index=0;
+    foreach(const QVariant &item, historyList())
+    {
+        QVariantMap map = item.toMap();
+        QDomElement change = xml.createElement("change");
+        QDateTime changeDateTime = map.value("datetime").toDateTime();
+        QString changeDateTimeString = changeDateTime.toString(def->dateTimeFormat());
+        QString changeAuthor = map.value("author").toString();
+        QString changeDesc = map.value("action").toString();
+        change.setAttribute("author", changeAuthor);
+        change.setAttribute("datetime", changeDateTime.toString(Qt::ISODate));
+        change.setAttribute("createdate", changeDateTimeString);
+        change.setAttribute("action", changeDesc);
+        change.setAttribute("index",index++);
+        history.appendChild(change);
+    }
+    /*
     foreach(const QString &item, historyList())
     {
         QDomElement change = xml.createElement("change");
@@ -977,6 +993,7 @@ QDomDocument TQRecord::toXML() const
         change.appendChild(v);
         history.appendChild(change);
     }
+    */
     root.appendChild(history);
     return xml;
 }
@@ -1075,9 +1092,9 @@ QString TQRecord::toJSON()
     return res;
 }
 
-QStringList TQRecord::historyList() const
+QVariantList TQRecord::historyList() const
 {
-    return QStringList();
+    return QVariantList();
 }
 
 bool TQRecord::isFieldReadOnly(const QString &field) const

@@ -316,7 +316,7 @@ public:
     Q_INVOKABLE virtual bool saveFileFromRecord(TQRecord *record, int fileIndex, const QString &dest) = 0;
     Q_INVOKABLE virtual int attachFileToRecord(TQRecord *record, const QString &filePath) = 0;
     Q_INVOKABLE virtual bool removeFileFromRecord(TQRecord *record, int fileIndex) = 0;
-    Q_INVOKABLE virtual QStringList historyList(TQRecord *record) = 0;
+//    Q_INVOKABLE virtual QStringList historyList(TQRecord *record) = 0;
     Q_INVOKABLE virtual QHash<int,QString> baseRecordFields(int rectype) = 0;
     virtual bool isSystemModel(QAbstractItemModel *model) const = 0;
     virtual TQQueryDef *queryDefinition(const QString &queryName, int rectype) = 0;
@@ -518,7 +518,7 @@ public:
     Q_INVOKABLE virtual QDomDocument toXML() const;
     Q_INVOKABLE virtual QString toJSON();
 //    Q_INVOKABLE virtual QString toHTML(const QString &xqCodeFile);
-    Q_INVOKABLE virtual QStringList historyList() const;
+    Q_INVOKABLE virtual QVariantList historyList() const;
     Q_INVOKABLE bool isFieldReadOnly(const QString &field) const;
 
     Q_INVOKABLE virtual void addLink();

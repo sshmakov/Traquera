@@ -1970,15 +1970,35 @@ QList<TQAttachedFile> TrkToolProject::attachedFiles(TQRecord *record)
     return res;
 }
 
-QStringList TrkToolProject::historyList(TQRecord *record)
+QVariantList TrkToolProject::historyList(TQRecord *record)
 {
     TrkToolRecord *trec = qobject_cast<TrkToolRecord *>(record);
     if(!trec)
-        return QStringList();
+        return QVariantList();
     TrkScopeRecHandle recHandle(this, trec);
     if(!recHandle.isValid())
-        return QStringList();
-    return doGetHistoryList(*recHandle);
+        return QVariantList();
+    QStringList changes = doGetHistoryList(*recHandle);
+    QVariantList history;
+    int index = 0;
+    foreach(const QString &item, changes)
+    {
+        QVariantMap map;
+        QStringList sections = item.split(QChar(' '));
+        QString changeDate = sections[0];
+        QString changeTime = sections[1];//item.left(10+1+5);
+        QDateTime changeDateTime = QDateTime::fromString(changeDate + " " + changeTime, TT_DATETIME_FORMAT);
+        QString changeAuthor = sections[2].mid(1,sections[2].length()-3);
+        QString changeDesc = QStringList(sections.mid(5)).join(" ");
+
+        map.insert("author", changeAuthor);
+        map.insert("datetime", changeDateTime);
+        map.insert("createdate", changeDate + " " + changeTime);
+        map.insert("action", changeDesc);
+        map.insert("index",index++);
+        history.append(map);
+    }
+    return history;
 }
 
 QHash<int, QString> TrkToolProject::baseRecordFields(int rectype)
@@ -2948,33 +2968,39 @@ QDomDocument TrkToolRecord::toXML()
     // fill <history>
     QDomElement history = xml.createElement("history");
     index=0;
-    foreach(const QString &item, historyList())
+    foreach(const QVariant &item, historyList())
     {
+        QVariantMap map = item.toMap();
         QDomElement change = xml.createElement("change");
-        QStringList sections = item.split(QChar(' '));
-        QString changeDate = sections[0];
-        QString changeTime = sections[1];//item.left(10+1+5);
-        QDateTime changeDateTime = QDateTime::fromString(changeDate + " " + changeTime, TT_DATETIME_FORMAT);
-        QString changeAuthor = sections[2].mid(1,sections[2].length()-3);
+//        QStringList sections = item.split(QChar(' '));
+//        QString changeDate = sections[0];
+//        QString changeTime = sections[1];//item.left(10+1+5);
+//        QString changeDateTimeString = changeDate + " " + changeTime;
+//        QDateTime changeDateTime = QDateTime::fromString(changeDateTimeString, TT_DATETIME_FORMAT);
+//        QString changeAuthor = sections[2].mid(1,sections[2].length()-3);
+//        QString changeDesc = QStringList(sections.mid(5)).join(" ");
 
-        QString changeDesc = QStringList(sections.mid(5)).join(" ");
+        QDateTime changeDateTime = map.value("datetime").toDateTime();
+        QString changeDateTimeString = changeDateTime.toString(typeDef()->dateTimeFormat());
+        QString changeAuthor = map.value("author").toString();
+        QString changeDesc = map.value("action").toString();
         change.setAttribute("author", changeAuthor);
         change.setAttribute("datetime", changeDateTime.toString(Qt::ISODate));
-        change.setAttribute("createdate", changeDate + " " + changeTime);
+        change.setAttribute("createdate", changeDateTimeString);
         change.setAttribute("action", changeDesc);
         change.setAttribute("index",index++);
-        QDomText v = xml.createTextNode(item);
-        change.appendChild(v);
+        //QDomText v = xml.createTextNode(item);
+        //change.appendChild(v);
         history.appendChild(change);
     }
     root.appendChild(history);
     return xml;
 }
 
-QStringList TrkToolRecord::historyList() const
+QVariantList TrkToolRecord::historyList() const
 {
     if(mode() == Insert)
-        return QStringList();
+        return QVariantList();
     if(historyReaded)
         return historyListMem;
     TrkToolRecord *rec = const_cast<TrkToolRecord *>(this);

@@ -740,8 +740,8 @@ JiraDB::JiraDB(QObject *parent)
 {
     parser->setCharset("UTF-8");
     man =
-            //new QNetworkAccessManager(this);
-            ttglobal()->networkManager();
+            new QNetworkAccessManager(this);
+//            ttglobal()->networkManager();
     connect(man, SIGNAL(finished(QNetworkReply*)), SLOT(replyFinished(QNetworkReply*)));
 
     /*QObject *obj;
@@ -2030,10 +2030,10 @@ bool JiraProject::saveFileFromRecord(TQRecord *record, int fileIndex, const QStr
     return true;
 }
 
-QStringList JiraProject::historyList(TQRecord *record)
-{
-    return QStringList();
-}
+//QStringList JiraProject::historyList(TQRecord *record)
+//{
+//    return QStringList();
+//}
 
 QHash<int, QString> JiraProject::baseRecordFields(int rectype)
 {

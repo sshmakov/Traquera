@@ -207,7 +207,7 @@ public:
     Q_INVOKABLE TQRecord *newRecord(int rectype);
     QList<TQAttachedFile> attachedFiles(TQRecord *record);
     Q_INVOKABLE bool saveFileFromRecord(TQRecord *record, int fileIndex, const QString &dest);
-    Q_INVOKABLE QStringList historyList(TQRecord *record);
+//    Q_INVOKABLE QStringList historyList(TQRecord *record);
     QHash<int,QString> baseRecordFields(int rectype);
     bool isSystemModel(QAbstractItemModel *model) const;
     QSettings *projectSettings() const;

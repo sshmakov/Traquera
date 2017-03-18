@@ -275,6 +275,16 @@ QVariant TTGlobal::CreateObject(const QString &objectName, QObject *parent)
     return d->proc->createActiveX(objectName, p);
 }
 
+QObject *TTGlobal::CreateAxObject(const QString &objectName)
+{
+    if(!d->proc)
+        return 0;
+    QObject *p = this;
+    QObject *obj = d->proc->createActiveXObj(objectName, p);
+    return obj;
+}
+
+
 QString TTGlobal::saveObjectDocumentation(QObject *object, const QString &fileName) const
 {
     QAxBase *ax = qobject_cast<QAxBase *>(object);
