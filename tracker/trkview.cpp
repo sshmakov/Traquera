@@ -2793,7 +2793,7 @@ bool TrkToolRecord::removeFile(int fileIndex)
     return prj->removeFileFromRecord(this, fileIndex);
 }
 
-void TrkToolRecord::refresh()
+void TrkToolRecord::refreshForce()
 {
     if(mode() == Insert)
         return;

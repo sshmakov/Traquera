@@ -448,6 +448,7 @@ class TQPLUGIN_SHARED TQRecord: public QObject
     Q_PROPERTY(int recordId READ recordId)
     Q_PROPERTY(QVariantHash values READ values WRITE setValues)
     Q_PROPERTY(int noteCount READ noteCount)
+    Q_PROPERTY(QDateTime lastReaded READ lastReaded WRITE setLastReaded)
 public:
     enum TQRecMode {View, Edit, Insert};
 private:
@@ -519,6 +520,7 @@ public:
     Q_INVOKABLE virtual QString toJSON();
 //    Q_INVOKABLE virtual QString toHTML(const QString &xqCodeFile);
     Q_INVOKABLE virtual QVariantList historyList() const;
+    Q_INVOKABLE virtual QVariantList recordLinks() const;
     Q_INVOKABLE bool isFieldReadOnly(const QString &field) const;
 
     Q_INVOKABLE virtual void addLink();
@@ -526,6 +528,9 @@ public:
     virtual bool isSelected() const;
     virtual void setSelected(bool value);
     Q_INVOKABLE virtual void refresh();
+    Q_INVOKABLE virtual void refreshForce();
+    virtual QDateTime lastReaded() const;
+    virtual void setLastReaded(const QDateTime &datetime);
 //    virtual QList<QAction *> actionList() const;
 protected:
     virtual void doSetMode(int newMode) const;

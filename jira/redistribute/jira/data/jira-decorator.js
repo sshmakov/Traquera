@@ -53,7 +53,7 @@ JiraDecorator.prototype.decorateAll = function()
     });
     */
     
-    this.loadInfo();
+    //this.loadInfo();
 
     $(".jiraIssueLink").contextmenu(function(event) {
         var key = this.textContent;

@@ -1616,7 +1616,7 @@ bool JiraProject::readRecordWhole(TQRecord *record)
     const JiraRecTypeDef *rdef = dynamic_cast<const JiraRecTypeDef *>(record->typeDef());
     if(!rdef)
         return false;
-    QVariantMap issue = serverGet(QString("rest/api/2/issue/%1?fields=*all&expand=attachment").arg(rec->jiraKey())).toMap();
+    QVariantMap issue = serverGet(QString("rest/api/2/issue/%1?fields=*all&expand=attachment,changelog").arg(rec->jiraKey())).toMap();
     QVariantMap fields = issue.value("fields").toMap();
     QVariantMap::iterator i;
     rec->clearReadedFields();
@@ -1644,6 +1644,10 @@ bool JiraProject::readRecordWhole(TQRecord *record)
             rec->files.append(file);
         }
     }
+    QVariantMap changelog = issue.value("changelog").toMap();
+    doParseChangelog(rec, changelog);
+    QVariantList issueLinks = fields.value("issuelinks").toList();
+    doParseLinks(rec, issueLinks);
 //    emit recordChanged(rec->recordId());
 //    emit rec->changed(rec->recordId());
     return true;
@@ -1967,6 +1971,63 @@ void JiraProject::doParseComments(JiraRecord *rec, const QVariantMap &issue)
     }
 }
 
+void JiraProject::doParseChangelog(JiraRecord *rec, const QVariantMap &changelog)
+{
+    QVariantList res;
+    QVariantList hist = changelog.value("histories").toList();
+    foreach(QVariant v, hist)
+    {
+        QVariantMap m = v.toMap();
+        QVariantList items = m.value("items").toList();
+        foreach(QVariant vi, items)
+        {
+            QVariantMap item = vi.toMap();
+            QVariantMap hi;
+            hi["author"] = m.value("author").toMap().value("displayName").toString();
+            hi["datetime"] = QDateTime::fromString(m.value("created").toString(), Qt::ISODate);
+            QString field = item.value("field").toString();
+            hi["field"] = field;
+            hi["fromValue"] = item.value("from");
+            QString fromS = item.value("fromString").toString();
+            hi["fromString"] = fromS;
+            hi["toValue"] = item.value("to");
+            QString toS = item.value("toString").toString();
+            hi["toString"] = toS;
+            hi["action"] = field + ": " + fromS + " ==> " + toS;
+            res.append(hi);
+        }
+    }
+    rec->historyArray = res;
+}
+
+void JiraProject::doParseLinks(JiraRecord *rec, const QVariantList &issuelinks)
+{
+    QVariantList res;
+    foreach(QVariant v, issuelinks)
+    {
+        QVariantMap m = v.toMap();
+        QVariantMap li;
+        QVariantMap t = m.value("type").toMap();
+        QVariantMap issue;
+        if(m.contains("outwardIssue"))
+        {
+            issue = m.value("outwardIssue").toMap();
+            li["type"] = t.value("outward").toString();
+        }
+        else
+        {
+            issue = m.value("inwardIssue").toMap();
+            li["type"] = t.value("inward").toString();
+        }
+        li["id"] = issue.value("key").toString();
+        li["url"] = issue.value("self").toString();
+        li["title"] = issue.value("fields").toMap().value("summary").toString();
+        li["status"] = issue.value("fields").toMap().value("status").toMap().value("name").toString();
+        res.append(li);
+    }
+    rec->issueLinks = res;
+}
+
 bool JiraProject::cancelRecord(TQRecord *record)
 {
     if(record->mode() == TQRecord::View)
@@ -2030,9 +2091,15 @@ bool JiraProject::saveFileFromRecord(TQRecord *record, int fileIndex, const QStr
     return true;
 }
 
-//QStringList JiraProject::historyList(TQRecord *record)
+//QVariantList JiraProject::historyList(TQRecord *record)
 //{
-//    return QStringList();
+//    QVariantList hist;
+//    JiraRecord *rec = qobject_cast<JiraRecord *>(record);
+//    if(rec)
+//    {
+//        return rec->historyList();
+//    }
+//    return hist;
 //}
 
 QHash<int, QString> JiraProject::baseRecordFields(int rectype)

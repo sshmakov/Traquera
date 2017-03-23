@@ -499,6 +499,7 @@ public:
     int links;
     bool modified;
     QHash<int, QVariant> vidChanges;
+    QDateTime lastReaded;
 
     TQRecordPrivate() : m_prj(0), recType(0), recMode(TQRecord::View), recId(0), links(0), modified(false) {}
 };
@@ -971,8 +972,14 @@ QDomDocument TQRecord::toXML() const
         change.setAttribute("createdate", changeDateTimeString);
         change.setAttribute("action", changeDesc);
         change.setAttribute("index",index++);
+        foreach(QString key, map.keys())
+        {
+            if(!change.hasAttribute(key))
+                change.setAttribute(key, map.value(key).toString());
+        }
         history.appendChild(change);
     }
+
     /*
     foreach(const QString &item, historyList())
     {
@@ -995,6 +1002,21 @@ QDomDocument TQRecord::toXML() const
     }
     */
     root.appendChild(history);
+    QDomElement links = xml.createElement("links");
+    index=0;
+    foreach(QVariant link, recordLinks())
+    {
+        QVariantMap map = link.toMap();
+        QDomElement item = xml.createElement("link");
+        foreach(QString key, map.keys())
+        {
+            if(!item.hasAttribute(key))
+                item.setAttribute(key, map.value(key).toString());
+        }
+        links.appendChild(item);
+        index++;
+    }
+    root.appendChild(links);
     return xml;
 }
 
@@ -1097,6 +1119,11 @@ QVariantList TQRecord::historyList() const
     return QVariantList();
 }
 
+QVariantList TQRecord::recordLinks() const
+{
+    return QVariantList();
+}
+
 bool TQRecord::isFieldReadOnly(const QString &field) const
 {
     if(mode() == TQRecord::View)
@@ -1146,7 +1173,27 @@ void TQRecord::refresh()
 {
     if(mode() == Insert)
         return;
+    if(lastReaded().msecsTo(QDateTime::currentDateTime()) > 30000)
+    {
+        refreshForce();
+        setLastReaded(QDateTime::currentDateTime());
+    }
+}
+
+void TQRecord::refreshForce()
+{
     project()->readRecordWhole(this);
+    setLastReaded(QDateTime::currentDateTime());
+}
+
+QDateTime TQRecord::lastReaded() const
+{
+    return d->lastReaded;
+}
+
+void TQRecord::setLastReaded(const QDateTime &datetime)
+{
+    d->lastReaded = datetime;
 }
 
 //QList<QAction *> TQRecord::actionList() const

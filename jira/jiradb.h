@@ -207,7 +207,7 @@ public:
     Q_INVOKABLE TQRecord *newRecord(int rectype);
     QList<TQAttachedFile> attachedFiles(TQRecord *record);
     Q_INVOKABLE bool saveFileFromRecord(TQRecord *record, int fileIndex, const QString &dest);
-//    Q_INVOKABLE QStringList historyList(TQRecord *record);
+//    Q_INVOKABLE QVariantList historyList(TQRecord *record);
     QHash<int,QString> baseRecordFields(int rectype);
     bool isSystemModel(QAbstractItemModel *model) const;
     QSettings *projectSettings() const;
@@ -235,6 +235,8 @@ protected:
     QVariantList typesList;
     bool doCommitUpdateRecord(TQRecord *record);
     void doParseComments(JiraRecord *rec, const QVariantMap &issue);
+    void doParseChangelog(JiraRecord *rec, const QVariantMap &changelog);
+    void doParseLinks(JiraRecord *rec, const QVariantList &issuelinks);
 //    TQAbstractRecordTypeDef *loadRecordTypeDef(int recordType);
     void readRecordDef(JiraRecTypeDef *rdef, int recordType, const QVariantMap &typeMap);
     void readRecordDef2(JiraRecTypeDef *rdef, const QVariantMap &fieldsMap);

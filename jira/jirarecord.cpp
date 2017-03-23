@@ -214,6 +214,16 @@ JiraProject *JiraRecord::jiraProject() const
     return qobject_cast<JiraProject *>(project());
 }
 
+QVariantList JiraRecord::historyList() const
+{
+    return historyArray;
+}
+
+QVariantList JiraRecord::recordLinks() const
+{
+    return issueLinks;
+}
+
 int JiraRecord::appendFile(const QString &filePath)
 {
     QString tempFile = QDir(jiraProject()->jiraDb()->tempFolder()).absoluteFilePath(QUuid::createUuid().toString());

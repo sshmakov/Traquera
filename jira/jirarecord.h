@@ -21,6 +21,7 @@ protected:
     int internalId;
     QList<TQAttachedFile> files;
     bool isFieldsReaded, isTextsReaded;
+    QVariantList historyArray, issueLinks;
 public:
     JiraRecord();
     JiraRecord(TQAbstractProject *prj, int rtype, int id);
@@ -40,6 +41,8 @@ public:
     Q_INVOKABLE const TQAbstractRecordTypeDef *typeDef() const;
     Q_INVOKABLE const TQAbstractRecordTypeDef *typeEditDef() const;
     Q_INVOKABLE JiraProject *jiraProject()const;
+    QVariantList historyList() const;
+    QVariantList recordLinks() const;
     int appendFile(const QString &filePath);
     bool removeFile(int fileIndex);
     bool commit();

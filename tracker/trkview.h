@@ -801,7 +801,7 @@ public:
         return prj;
     }
 
-    Q_INVOKABLE void refresh();
+    Q_INVOKABLE void refreshForce();
     Q_INVOKABLE void releaseBuffer();
 //    TRK_RECORD_TYPE recordType() const { return rectype; }
 protected slots:
