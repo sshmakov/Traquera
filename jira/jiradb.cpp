@@ -2790,8 +2790,21 @@ JiraRecTypeDef *JiraProject::loadEditRecordDef(const JiraRecord *record)
         {
             JiraFieldDesc *fdesc = rdef->d->fields[vid];
             fdesc->editable = true;
+            fdesc->autoCompleteUrl = map.value("autoCompleteUrl").toString();
+            //f.createRequired = createMeta.value("required","false").toString() == "true";
+            if(!systemChoices.contains(fdesc->id) && map.contains("allowedValues"))
+            {
+                QVariantList values = map.value("allowedValues").toList();
+                fdesc->choices = parseAllowedValues(values);
+                if(fdesc->simpleType != TQ::TQ_FIELD_TYPE_CHOICE && fdesc->simpleType != TQ::TQ_FIELD_TYPE_ARRAY)
+                {
+                    fdesc->simpleType = TQ::TQ_FIELD_TYPE_CHOICE;
+                    fdesc->choiceTable = "Table_" + fdesc->id;
+                }
+            }
         }
     }
+
     return rdef;
 }
 
