@@ -1973,8 +1973,10 @@ void JiraProject::doParseComments(JiraRecord *rec, const QVariantMap &issue)
 
 void JiraProject::doParseChangelog(JiraRecord *rec, const QVariantMap &changelog)
 {
+    bool noFiles = rec->files.size() == 0;
     QVariantList res;
     QVariantList hist = changelog.value("histories").toList();
+    QList<TQAttachedFile> files;
     foreach(QVariant v, hist)
     {
         QVariantMap m = v.toMap();
@@ -1984,7 +1986,8 @@ void JiraProject::doParseChangelog(JiraRecord *rec, const QVariantMap &changelog
             QVariantMap item = vi.toMap();
             QVariantMap hi;
             hi["author"] = m.value("author").toMap().value("displayName").toString();
-            hi["datetime"] = QDateTime::fromString(m.value("created").toString(), Qt::ISODate);
+            QDateTime created = QDateTime::fromString(m.value("created").toString(), Qt::ISODate);
+            hi["datetime"] = created;
             QString field = item.value("field").toString();
             hi["field"] = field;
             hi["fromValue"] = item.value("from");
@@ -1995,9 +1998,46 @@ void JiraProject::doParseChangelog(JiraRecord *rec, const QVariantMap &changelog
             hi["toString"] = toS;
             hi["action"] = field + ": " + fromS + " ==> " + toS;
             res.append(hi);
+            if(noFiles && field == "Attachment" && item.value("fieldtype").toString() == "jira")
+            {
+                if(fromS.isEmpty()) // added
+                {
+                    TQAttachedFile file;
+                    file.fileName = toS;
+                    file.index = rec->files.size() + files.size();
+//                    file.size = map.value("size").toInt();
+                    file.data = item;
+                    file.createDateTime = created;
+                    file.isAdded = false;
+                    file.isChanged = false;
+                    file.isDeleted = false;
+                    files.append(file);
+                }
+                else if(toS.isEmpty()) //deleted
+                {
+                    for(int i=0; i<files.size(); i++)
+                    {
+                        const TQAttachedFile &file = files.at(i);
+                        if(file.fileName == fromS)
+                        {
+                            files.removeAt(i);
+                            break;
+                        }
+                    }
+                }
+            }
         }
     }
     rec->historyArray = res;
+    if(noFiles && files.size())
+    {
+        rec->files.append(files);
+        for(int i = 0; i<rec->files.size();i++)
+        {
+            TQAttachedFile &file = rec->files[i];
+            file.index = i;
+        }
+    }
 }
 
 void JiraProject::doParseLinks(JiraRecord *rec, const QVariantList &issuelinks)
