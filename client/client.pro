@@ -83,7 +83,8 @@ HEADERS += \
     tqapplication.h \
     version.h \
     aboutdialog.h \
-    fieldgroupdialog.h
+    fieldgroupdialog.h \
+    incbuild.cmd
 
 #    plans.h planproxy.h \
 #    planfiles.h \
