@@ -2006,11 +2006,14 @@ void JiraProject::doParseChangelog(JiraRecord *rec, const QVariantMap &changelog
                     file.fileName = toS;
                     file.index = rec->files.size() + files.size();
 //                    file.size = map.value("size").toInt();
-                    file.data = item;
                     file.createDateTime = created;
                     file.isAdded = false;
                     file.isChanged = false;
                     file.isDeleted = false;
+                    QVariantMap map;
+                    map["id"] = item.value("to");
+                    map["filename"] = file.fileName;
+                    file.data = map;
                     files.append(file);
                 }
                 else if(toS.isEmpty()) //deleted
@@ -2113,7 +2116,13 @@ bool JiraProject::saveFileFromRecord(TQRecord *record, int fileIndex, const QStr
     if(fileIndex<0 || fileIndex >= rec->files.size())
         return false;
     const TQAttachedFile &f = rec->files.at(fileIndex);
-    QNetworkReply *r = db->sendRequestNative(f.data.toMap().value("content").toString(), "GET");
+    QVariantMap map = f.data.toMap();
+    QUrl url = map.value("content").toString();
+    if(url.isEmpty() && map.contains("id"))
+        url = db->queryUrl("/rest/api/2/attachment/" + map["id"].toString());
+    if(url.isEmpty())
+        return false;
+    QNetworkReply *r = db->sendRequestNative(url, "GET");
     if(!r)
         return false;
     QFile destFile(dest);
