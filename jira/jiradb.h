@@ -139,6 +139,8 @@ protected:
 protected slots:
     void replyFinished(QNetworkReply * reply);
     void callbackClicked();
+private slots:
+     void onSslErrors( QNetworkReply * reply, const QList<QSslError> & errors );
 private:
 
 };

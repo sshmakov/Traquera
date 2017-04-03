@@ -743,6 +743,7 @@ JiraDB::JiraDB(QObject *parent)
             new QNetworkAccessManager(this);
 //            ttglobal()->networkManager();
     connect(man, SIGNAL(finished(QNetworkReply*)), SLOT(replyFinished(QNetworkReply*)));
+    connect(man,SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)), SLOT(onSslErrors(QNetworkReply*,QList<QSslError>)));
 
     /*QObject *obj;
 
@@ -1458,6 +1459,13 @@ void JiraDB::callbackClicked()
     webForm = 0;
 }
 
+void JiraDB::onSslErrors(QNetworkReply *reply, const QList<QSslError> &errors)
+{
+    foreach(const QSslError &err, errors)
+        tqInfo() << err.errorString();
+    reply->ignoreSslErrors(errors);
+}
+
 // ======================== JiraProject ==================================
 class JiraProjectPrivate
 {
@@ -2115,11 +2123,21 @@ bool JiraProject::saveFileFromRecord(TQRecord *record, int fileIndex, const QStr
         return false;
     if(fileIndex<0 || fileIndex >= rec->files.size())
         return false;
-    const TQAttachedFile &f = rec->files.at(fileIndex);
+    TQAttachedFile f = rec->files.at(fileIndex);
     QVariantMap map = f.data.toMap();
     QUrl url = map.value("content").toString();
     if(url.isEmpty() && map.contains("id"))
-        url = db->queryUrl("/rest/api/2/attachment/" + map["id"].toString());
+    {
+        QVariant att = db->sendRequest("GET", db->queryUrl("rest/api/2/attachment/" + map["id"].toString()));
+        QString content = att.toMap().value("content").toString();
+        if(!content.isEmpty())
+        {
+            url = content;
+            map["content"] = content;
+            f.data = map;
+            rec->files[fileIndex] = f;
+        }
+    }
     if(url.isEmpty())
         return false;
     QNetworkReply *r = db->sendRequestNative(url, "GET");
