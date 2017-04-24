@@ -125,6 +125,8 @@ void QueryFields::applyChanges()
 
 void QueryFields::cancelChanges()
 {
+    if(!controller)
+        return;
     modifyPanel->setRecordDef(controller->recordDef(), mode);
     modifyPanel->resetAll();
     modifyPanel->fillValues(controller->selectedRecords());
