@@ -367,7 +367,7 @@ void JiraRecord::storeReadedField(const QString &fid, const QVariant &value)
                 displayList.append(display);
             }
             values.insert(fvid, idList);
-            displayValues.insert(fvid, displayList.join(", "));
+            displayValues.insert(fvid, displayList.join("; "));
         }
         else
         {

@@ -588,7 +588,7 @@ QVariant JiraRecTypeDef::displayToValue(int vid, const QString &text) const
     }
     case TQ::TQ_FIELD_TYPE_ARRAY:
     {
-        QStringList displayList = text.split(QRegExp("\\s;\\s"));
+        QStringList displayList = text.split(QRegExp("\\s*;\\s*"));
         QString table = fieldChoiceTable(vid);
         if(table.isEmpty())
             return QVariant();
