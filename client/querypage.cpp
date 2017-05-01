@@ -1032,7 +1032,7 @@ void QueryPage::recordOpen(const QModelIndex & index)
 void QueryPage::openQuery(TQAbstractProject *prj, const QString &queryName, int recType)
 {
     d->itIsFolder = false;
-    TQRecModel *newmodel = prj->openQueryModel(queryName, recType);
+    TQRecModel *newmodel = prj->openQuery(queryName, recType);
 	if(!newmodel)
 		return;
     setQueryModel(prj,newmodel);
@@ -1046,8 +1046,8 @@ void QueryPage::openQuery(TQAbstractProject *prj, const QString &queryName, int 
 void QueryPage::openIds(TQAbstractProject *prj, const QString &ids, const QString &title, int recType)
 {
     d->itIsFolder = false;
-    QList<int> idlist = toIntList(ids);
-    TQRecModel *newmodel = qobject_cast<TQRecModel *>(prj->openIdsModel(idlist, recType));
+    //QList<int> idlist = toIntList(ids);
+    TQRecModel *newmodel = qobject_cast<TQRecModel *>(prj->query(ids, recType));
 	if(!newmodel)
 		return;
     setQueryModel(prj, newmodel);
@@ -1068,7 +1068,7 @@ void QueryPage::openIds(TQAbstractProject *prj, const QString &ids, const QStrin
 void QueryPage::openIds(TQAbstractProject *prj, const QList<int> &idlist, const QString &title, int recType)
 {
     d->itIsFolder = false;
-    TQRecModel *newmodel = qobject_cast<TQRecModel *>(prj->openIdsModel(idlist, recType));
+    TQRecModel *newmodel = qobject_cast<TQRecModel *>(prj->queryIds(idlist, recType));
     if(!newmodel)
         return;
     setQueryModel(prj, newmodel);
@@ -1098,7 +1098,7 @@ void QueryPage::openFolder(TQAbstractProject *prj, const TTFolder &afolder, int 
     QList<int> idlist = afolder.folderContent();
     d->itIsFolder = true;
     d->folder = afolder;
-    TQRecModel *newmodel = qobject_cast<TQRecModel *>(prj->openIdsModel(idlist, recType, false));
+    TQRecModel *newmodel = qobject_cast<TQRecModel *>(prj->queryIds(idlist, recType, false));
     if(!newmodel)
         return;
     setQueryModel(prj, newmodel);
@@ -1130,7 +1130,7 @@ void QueryPage::openHistoryItem(int pos)
         TQAbstractProject *prj = TQAbstractDB::getProject(item.projectName);
         if(!prj)
 			return;
-        TQRecModel *newmodel = prj->openQueryModel(item.queryName, item.rectype);
+        TQRecModel *newmodel = prj->openQuery(item.queryName, item.rectype);
 		if(!newmodel)
 			return;
         setQueryModel(prj, newmodel);
@@ -1144,7 +1144,7 @@ void QueryPage::openHistoryItem(int pos)
         TQAbstractProject *prj = TQAbstractDB::getProject(item.projectName);
 		if(!prj)
 			return;
-        TQRecModel *newmodel = qobject_cast<TQRecModel *>(prj->openIdsModel(stringToIntList(item.queryName), item.rectype));
+        TQRecModel *newmodel = qobject_cast<TQRecModel *>(prj->queryIds(stringToIntList(item.queryName), item.rectype));
 		if(!newmodel)
 			return;
         setQueryModel(prj, newmodel);

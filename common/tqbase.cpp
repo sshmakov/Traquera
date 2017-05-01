@@ -306,7 +306,7 @@ TQRecModel *TQBaseProject::selectedModel(int recType)
     if(!model)
     {
         TQSelectedSet set = selected.value(recType);
-        model = openIdsModel(set.toList(), recType);
+        model = queryIds(set.toList(), recType);
         selectedModels.insert(recType, model);
     }
     return model;

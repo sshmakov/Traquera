@@ -192,7 +192,7 @@ public:
     int lastHTTPCode;
     QString lastHTTPError;
     QString tempFolder;
-
+    QStringList knownProjects;
 
     JiraDBPrivate() : isLogged(false), lastHTTPCode(0)
     {
@@ -784,7 +784,13 @@ QStringList JiraDB::projects(const QString &dbmsType, const QString &user, const
     {
         res.append(info.name);
     }
+    d->knownProjects = res;
     return res;
+}
+
+QStringList JiraDB::knownProjects()
+{
+    return d->knownProjects;
 }
 
 #define JIRA_REQTOKEN_PATH "/plugins/servlet/oauth/request-token"
@@ -1514,7 +1520,7 @@ int JiraProject::defaultRecType() const
     return recordDefs.keys().first();
 }
 
-TQRecModel *JiraProject::openQueryModel(const QString &queryName, int recType)
+TQRecModel *JiraProject::openQuery(const QString &queryName, int recType)
 {
     const JiraFilter *fitem = filters->filter(queryName);
     if(!fitem)
@@ -1526,7 +1532,7 @@ TQRecModel *JiraProject::openQueryModel(const QString &queryName, int recType)
     return model;
 }
 
-TQRecModel *JiraProject::openIdsModel(const IntList &ids, int recType, bool emitEvent)
+TQRecModel *JiraProject::queryIds(const IntList &ids, int recType, bool emitEvent)
 {
     TQAbstractRecordTypeDef *rdef = recordTypeDef(recType);
     if(!rdef)
@@ -1534,55 +1540,52 @@ TQRecModel *JiraProject::openIdsModel(const IntList &ids, int recType, bool emit
     QStringList list;
     foreach(int i, ids)
         list.append(projectKey + "-" + QString::number(i));
-    QString jql = QString("Key in (%1)").arg(list.join(","));
-    QVariantMap map = serverGet(QString("rest/api/2/search?jql=%1&fields=key,id").arg(jql)).toMap();
-    QVariantList issueList = map.value("issues").toList();
-    TQRecModel *model = new TQRecModel(this, recType, this);
-    model->setHeaders(rdef->fieldNames());
-    QList<TQRecord*> records;
-    int pos = projectKey.length()+1;
-    foreach(QVariant i, issueList)
+    return queryKeys(list, recType, emitEvent);
+}
+
+TQRecModel *JiraProject::queryKeys(const QStringList &keys, int recType, bool emitEvent)
+{
+    TQAbstractRecordTypeDef *rdef = recordTypeDef(recType);
+    if(!rdef)
+        return 0;
+    QString jql = QString("Key in (%1)").arg(keys.join(","));
+    return queryJQL(jql, recType);
+}
+
+TQRecModel *JiraProject::query(const QString &queryText, int recType)
+{
+    if(isIntListOnly(queryText))
+        return queryIds(stringToIntList(queryText), recType);
+    QString proj = db->knownProjects().join("|");
+    // try ids
+    QString s = QString("\\s*(\\w+-\\d+)(?:\\s*,\\s*(\\w+-\\d+))*\\s*");
+    QRegExp re(s);
+    if(re.exactMatch(queryText))
     {
-        QVariantMap issue = i.toMap();
-        QString key = issue.value("key").toString();
-        int id = key.mid(pos).toInt();
-        JiraRecord *rec = new JiraRecord(this, recType, id);
-        rec->key = key;
-        rec->internalId = issue.value("id").toInt();
-        readRecordFields(rec);
-        records.append(rec);
+        QStringList keys, groups = re.capturedTexts().mid(1);
+        foreach(QString s, groups)
+            if(!s.trimmed().isEmpty())
+                keys << s.trimmed();
+        if(keys.isEmpty())
+            return 0;
+        return queryKeys(keys, recType);
     }
-    model->append(records);
+    return queryJQL(queryText, recType);
+}
+
+TQRecModel *JiraProject::queryJQL(const QString &jql, int recType)
+{
+    JiraRecModel *model = new JiraRecModel(this, recType, this);
+    model->setJQuery(jql);
+    model->open();
     return model;
 }
 
 TQRecModel *JiraProject::openRecords(const QString &queryText, int recType, bool emitEvent)
 {
     if(isIntListOnly(queryText))
-        return openIdsModel(stringToIntList(queryText), recType, emitEvent);
-    TQAbstractRecordTypeDef *rdef = recordTypeDef(recType);
-    if(!rdef)
-        return 0;
-    QString jql = queryText;
-    QVariantMap map = serverGet(QString("rest/api/2/search?jql=%1&fields=key,id").arg(jql)).toMap();
-    QVariantList issueList = map.value("issues").toList();
-    TQRecModel *model = new TQRecModel(this, recType, this);
-    model->setHeaders(rdef->fieldNames());
-    QList<TQRecord*> records;
-    int pos = projectKey.length()+1;
-    foreach(QVariant i, issueList)
-    {
-        QVariantMap issue = i.toMap();
-        QString key = issue.value("key").toString();
-        int id = key.mid(pos).toInt();
-        JiraRecord *rec = new JiraRecord(this, recType, id);
-        rec->key = key;
-        rec->internalId = issue.value("id").toInt();
-        readRecordFields(rec);
-        records.append(rec);
-    }
-    model->append(records);
-    return model;
+        return queryIds(stringToIntList(queryText), recType, emitEvent);
+    return queryJQL(queryText, recType);
 }
 
 TQRecord *JiraProject::createRecordById(int id, int rectype)

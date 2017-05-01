@@ -967,7 +967,7 @@ TQRecModel *TrkToolProject::selectedModel(int recType)
     if(!selectedModels.contains(recType))
     {
         QList<int> ids = selected[recType].toList();
-        TQRecModel *model = (TQRecModel *)openIdsModel(ids,recType,false);
+        TQRecModel *model = (TQRecModel *)queryIds(ids,recType,false);
         selectedModels.insert(recType,model);
         return model;
     }
@@ -1457,13 +1457,19 @@ QAbstractItemModel *TrkToolProject::createProxyQueryModel(int filter, QObject *p
     */
 #endif
 
-TQRecModel *TrkToolProject::openQueryModel(const QString &name, int type)
+TQRecModel *TrkToolProject::openQuery(const QString &name, int type)
 {
     TQRecModel *model = new TQRecModel(this, type, this);
     fillModel(model, name, type);
 //    if(emitEvent)
 //        emit openedModel(model);
     return model;
+}
+
+TQRecModel *TrkToolProject::query(const QString &queryText, int recType)
+{
+    QList<int> idlist = toIntList(queryText);
+    return queryIds(idlist, recType);
 }
 
 QList<int> TrkToolProject::getQueryIds(const QString &name, int type, qint64 afterTransId)
@@ -1498,7 +1504,7 @@ TrkToolModel *TrkToolProject::openRecentModel(int afterTransId, const QString &n
 }
 */
 
-TQRecModel *TrkToolProject::openIdsModel(const QList<int> &ids, int type, bool emitEvent)
+TQRecModel *TrkToolProject::queryIds(const QList<int> &ids, int type, bool emitEvent)
 {
     TQRecModel *model = new TQRecModel(this, type, this);
     //beginResetModel();
@@ -1525,7 +1531,7 @@ TQRecModel *TrkToolProject::openIdsModel(const QList<int> &ids, int type, bool e
 TQRecModel *TrkToolProject::openRecords(const QString &queryText, int recType, bool emitEvent)
 {
     QList<int> ids = stringToIntList(queryText);
-    return openIdsModel(ids, recType, emitEvent);
+    return queryIds(ids, recType, emitEvent);
 }
 
 void TrkToolProject::refreshModel(QAbstractItemModel *model)

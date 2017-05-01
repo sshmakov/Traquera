@@ -292,10 +292,11 @@ public:
     Q_INVOKABLE virtual TQAbstractRecordTypeDef *recordTypeDef(int rectype) = 0;
     Q_INVOKABLE virtual QDomDocument recordTypeDefDoc(int rectype) = 0;
 
-    virtual TQRecModel *openQueryModel(const QString &queryName, int recType) = 0;
+    virtual TQRecModel *query(const QString &queryText, int recType) = 0;
+    virtual TQRecModel *openQuery(const QString &queryName, int recType) = 0;
     virtual bool renameQuery(const QString &oldName, const QString &newName, int recordType);
     virtual bool deleteQuery(const QString &queryName, int recordType);
-    Q_INVOKABLE virtual TQRecModel *openIdsModel(const IntList &ids, int recType, bool emitEvent = true) = 0;
+    Q_INVOKABLE virtual TQRecModel *queryIds(const IntList &ids, int recType, bool emitEvent = true) = 0;
     Q_INVOKABLE virtual TQRecModel *openRecords(const QString &queryText, int recType, bool emitEvent = true) = 0;
     virtual void refreshModel(QAbstractItemModel *model) = 0;
     virtual QAbstractItemModel *queryModel(int type) = 0;

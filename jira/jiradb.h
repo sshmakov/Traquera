@@ -96,6 +96,7 @@ public:
     virtual QStringList projects(const QString &dbmsType,
                                  const QString &user = QString(),
                                  const QString &pass = QString());
+    Q_INVOKABLE QStringList knownProjects();
     virtual TQAbstractProject *openProject(
             const QString &projectName,
             const QString &user = QString(),
@@ -192,8 +193,11 @@ public:
     //Redefine
     TQAbstractRecordTypeDef *recordTypeDef(int recordType);
     int defaultRecType() const;
-    TQRecModel *openQueryModel(const QString &queryName, int recType);
-    TQRecModel *openIdsModel(const IntList &ids, int recType, bool emitEvent = true);
+    TQRecModel *openQuery(const QString &queryName, int recType);
+    TQRecModel *queryIds(const IntList &ids, int recType, bool emitEvent = true);
+    TQRecModel *queryKeys(const QStringList &keys, int recType, bool emitEvent = true);
+    TQRecModel *query(const QString &queryText, int recType);
+    TQRecModel *queryJQL(const QString &jql, int recType);
     TQRecModel *openRecords(const QString &queryText, int recType, bool emitEvent = true);
     TQRecord *createRecordById(int id, int rectype);
     void refreshModel(QAbstractItemModel *model);

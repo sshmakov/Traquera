@@ -512,11 +512,12 @@ public:
 #ifdef CLIENT_APP
     //QAbstractItemModel *createProxyQueryModel(int filter, QObject *parent=0, int type);
 #endif
-    TQRecModel *openQueryModel(const QString &name, int type);
+    TQRecModel *openQuery(const QString &name, int type);
+    TQRecModel *query(const QString &queryText, int recType);
     QList<int> getQueryIds(const QString &name, int type,
                            qint64 afterTransId = 0);
     //TrkToolModel *openRecentModel(int afterTransId, const QString &name, TRK_RECORD_TYPE type = TRK_SCR_TYPE);
-    TQRecModel *openIdsModel(const QList<int> &ids, int type, bool emitEvent = true);
+    TQRecModel *queryIds(const QList<int> &ids, int type, bool emitEvent = true);
     TQRecModel *openRecords(const QString &queryText, int recType, bool emitEvent = true);
     void refreshModel(QAbstractItemModel *model);
     QVariant optionValue(const QString &option) const;

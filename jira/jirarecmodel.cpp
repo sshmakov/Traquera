@@ -26,6 +26,7 @@ JiraRecModel::JiraRecModel(TQAbstractProject *project, int type, QObject *parent
     d->db = d->project->jiraDb();
     d->recType = type;
     d->rdef = (JiraRecTypeDef *)d->project->recordTypeDef(type);
+    setHeaders(d->rdef->fieldNames());
 }
 
 
@@ -43,9 +44,9 @@ void JiraRecModel::setJQuery(const QString &jql)
 
 void JiraRecModel::open()
 {
-    d->nextIndex = 0;
+    d->nextIndex = -1;
     d->totalCount = 0;
-    fetchMore(QModelIndex());
+    //fetchMore(QModelIndex());
 }
 
 void JiraRecModel::fetchMore(const QModelIndex &parent)
@@ -54,7 +55,7 @@ void JiraRecModel::fetchMore(const QModelIndex &parent)
         return;
     QVariantMap body;
     body["jql"] = d->jql;
-    body["startAt"] = d->nextIndex;
+    body["startAt"] = d->nextIndex < 0? 0 : d->nextIndex;
     QVariantList fList;
     const JiraRecTypeDef *rdef = (JiraRecTypeDef *)d->project->recordTypeDef(d->recType);
     QList<int> baseFields = d->project->baseRecordFields(d->recType).keys();
@@ -66,7 +67,6 @@ void JiraRecModel::fetchMore(const QModelIndex &parent)
     body["fields"] = fList;
     QVariantMap map = d->project->serverPost("rest/api/2/search", body).toMap();
     QVariantList issueList = map.value("issues").toList();
-    setHeaders(d->rdef->fieldNames());
     QList<TQRecord*> records;
 
     foreach(QVariant i, issueList)
