@@ -17,7 +17,10 @@ JiraUserModel::JiraUserModel(JiraProject *project) :
     d(new JiraUserModelPrivate())
 {
     d->prj = project;
-    d->autoCompleteUrl = d->prj->jiraDb()->queryUrl("rest/api/2/user/search?username=").toString();
+    d->autoCompleteUrl = d->prj->jiraDb()->queryUrl(
+                // "rest/api/2/user/search?username="
+                "rest/api/2/user/picker?query="
+                ).toString();
 }
 
 JiraUserModel::~JiraUserModel()
@@ -52,13 +55,19 @@ void JiraUserModel::refresh(const QString &firstChars)
     d->users.clear();
     d->keys.clear();
     QVariant reply = d->prj->serverGet(QString(d->autoCompleteUrl +"%1").arg(firstChars));
+    if(reply.type() == QVariant::Hash)
+        reply = reply.toHash().value("users");
     if(reply.type() == QVariant::List)
     {
         QVariantList list = reply.toList();
         foreach(QVariant v, list)
         {
             QVariantMap userMap = v.toMap();
-            QString key = userMap.value("key").toString();
+            QString key;
+            if(userMap.contains("key"))
+                key = userMap.value("key").toString();
+            else
+                key = userMap.value("name").toString();
             QString displayName = userMap.value("displayName").toString();
             tqDebug() << "key:" << key << "displayName:" << displayName;
             d->keys.append(key);
