@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>697</width>
-    <height>195</height>
+    <width>533</width>
+    <height>252</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -17,7 +17,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>Комментарий</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -80,7 +80,7 @@
            </sizepolicy>
           </property>
           <property name="text">
-           <string>Нота</string>
+           <string>Комментарий</string>
           </property>
          </widget>
         </item>
@@ -105,6 +105,12 @@
      </item>
      <item>
       <widget class="QDialogButtonBox" name="buttonBox">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="standardButtons">
         <set>QDialogButtonBox::Cancel|QDialogButtonBox::Save</set>
        </property>
