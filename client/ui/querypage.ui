@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>655</width>
-    <height>370</height>
+    <width>638</width>
+    <height>384</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -292,7 +292,7 @@
   </action>
   <action name="actionAdd_Note">
    <property name="text">
-    <string>Добавить ноту...</string>
+    <string>Комментировать...</string>
    </property>
   </action>
   <action name="actionFilter">

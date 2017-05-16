@@ -1101,9 +1101,9 @@ QString TrkKeywordCond::condSubString() const
     QString scase = isKeyCase ? tr("с учетом регистра") : tr("без учета регистра"); //2
     QString sinrt = isKeyInRecTitles ? tr(", в заголовке") : ""; //3
     QString sind = isKeyInDesc ? tr(", в описании") : ""; //4
-    QString sinnt = isKeyInNoteTitles ? tr(", в заголовках нот") : ""; //3
-    QString sinn = isKeyInNoteText ? tr(", во всех нотах") : ""; //6
-    QString sinn1 = isKeyInNoteOnly ? tr(", только в ноте '%1'").arg(noteTitleSearch) : ""; //7
+    QString sinnt = isKeyInNoteTitles ? tr(", в заголовках комментариев") : ""; //3
+    QString sinn = isKeyInNoteText ? tr(", во всех комментариях") : ""; //6
+    QString sinn1 = isKeyInNoteOnly ? tr(", только в комментарии '%1'").arg(noteTitleSearch) : ""; //7
     QString res = templ.arg(keys.join(sop),scase,sinrt,sind,sinnt,sinn,sinn1);
 
     return res;

@@ -234,7 +234,7 @@ TrkChangeCondDialog::TrkChangeCondDialog(QWidget *parent)
 
     connect(ui->lwNoteTitles,SIGNAL(itemSelectionChanged()),SLOT(noteTitlesSelected()));
 
-    noteChangeTypes = tr("Любое изменение,0;Нота добавлена,1;Нота изменена,2;Нота удалена,3");
+    noteChangeTypes = tr("Любое изменение,0;Комментарий добавлен,1;Комментарий изменен,2;Комментарий удален,3");
     fileChangeTypes = tr("Любое изменение,0;Файл добавлен,1;Файл удален,3");
     moduleChangeTypes = tr("Любое изменение,0;Модуль добавлен,1;Модуль изменен,2;Модуль удален,3;"
                            "Модуль check-in,4;Модуль check-out,5;Модулю присвоена метка версии,6");;
