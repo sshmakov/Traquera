@@ -23,6 +23,8 @@
 
 Q_EXPORT_PLUGIN2("jira", JiraPlugin)
 
+#define JIRA_KNOWN_FIELDS "KnownFields"
+
 static JiraPlugin *jira = 0;
 
 static bool isIntListOnly(const QString &text)
@@ -1478,6 +1480,7 @@ class JiraProjectPrivate
 public:
     QHash<QString, QAction *> actions; // actions by id
     bool hasLocalDb;
+    QMap<QString, int> knownFields;
 };
 
 
@@ -1494,6 +1497,12 @@ JiraProject::JiraProject(TQAbstractDB *db)
 //            << "issueLinkTypes"
                ;
     d->hasLocalDb = false;
+    QByteArray buf = optionValue(JIRA_KNOWN_FIELDS).toByteArray();
+    if(!buf.isEmpty())
+    {
+        QDataStream ds(&buf, QIODevice::ReadOnly);
+        ds >> d->knownFields;
+    }
 }
 
 void JiraProject::loadDefinition()
@@ -2580,6 +2589,8 @@ void JiraProject::readRecordDef2(JiraRecTypeDef *rdef, const QVariantMap &fields
 {
     int vid = 1;
     int nativeType = 1;
+    bool wasKnownChanged = false;
+    QList<int> knownVids = d->knownFields.values();
     foreach(QVariant v, fieldList)
     {
         QVariantMap map = v.toMap();
@@ -2599,7 +2610,18 @@ void JiraProject::readRecordDef2(JiraRecTypeDef *rdef, const QVariantMap &fields
         f.schemaType = s.value("type").toString();
         f.schemaItems = s.value("items").toString();
         f.schemaSystem = s.value("system").toString();
-        f.vid = ++vid;
+        if(d->knownFields.contains(f.id))
+            f.vid = d->knownFields.value(f.id);
+        else
+        {
+            int v = ++vid;
+            while(knownVids.contains(v))
+                v = ++vid;
+            f.vid = v;
+            d->knownFields.insert(f.id, f.vid);
+            knownVids.append(f.vid);
+            wasKnownChanged = true;
+        }
         if(f.id == "issuekey")
         {
             f.schemaType = "issuekey";
@@ -2692,6 +2714,13 @@ void JiraProject::readRecordDef2(JiraRecTypeDef *rdef, const QVariantMap &fields
             rdef->d->vids.insert(f.name, f.vid);
             JiraFieldDesc *item = new JiraFieldDesc(f);
             rdef->d->fields.insert(f.vid, item);
+        }
+        if(wasKnownChanged)
+        {
+            QByteArray buf;
+            QDataStream ds(&buf, QIODevice::WriteOnly);
+            ds << d->knownFields;
+            setOptionValue(JIRA_KNOWN_FIELDS, buf);
         }
     }
 }
