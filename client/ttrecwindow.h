@@ -29,6 +29,8 @@ class TTRecordWindow : public QMainWindow
     Q_PROPERTY(QString description READ description WRITE setDescription)
     Q_PROPERTY(bool changed READ isChanged WRITE setChanged)
     Q_PROPERTY(int mode READ mode NOTIFY modeChanged)
+    Q_PROPERTY(bool canCommit READ canCommit WRITE setCanCommit)
+    Q_PROPERTY(bool canCancel READ canCancel WRITE setCanCancel)
     Q_PROPERTY(QObject *controller READ controller)
     Q_PROPERTY(const TQAbstractRecordTypeDef *recordTypeDef READ recordTypeDef)
 private:
@@ -51,6 +53,10 @@ public:
     bool writeDraftChanges();
     bool isChanged();
     void setChanged(bool value);
+    bool canCommit() const;
+    void setCanCommit(bool value);
+    bool canCancel() const;
+    void setCanCancel(bool value);
     int mode();
     TQViewController *controller();
 
@@ -71,6 +77,8 @@ signals:
     void recordModified(TQRecord *record);
     void recordChanged(TQRecord *newRecord);
     void modeChanged(int mode);
+    void beforeCommit();
+    void beforeCancel();
 
 protected:
     ModifyPanel *props;
@@ -124,8 +132,8 @@ private slots:
 
 public slots:
     void populateJavaScriptWindowObject();
-    void cancel();
-    void commit();
+    bool cancel();
+    bool commit();
     void addDetailTab(QWidget *tab, const QString &title, const QIcon &icon = QIcon());
     void addDetailWidgets(QWidget *topWidget, QWidget *pageWidget, const QString &title, const QIcon &icon);
     void setDetailTabTitle(QWidget *tab, const QString &title);

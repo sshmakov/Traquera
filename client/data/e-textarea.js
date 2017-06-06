@@ -6,7 +6,16 @@
 
 function TextAreaEditor()
 {
-    record.changedState.connect(this.recordChangedState);
+    $(document).ready(function() {
+        if(typeof winContr === "object") {
+            winContr.beforeCommit(function() {
+                textEditor.saveAll();
+            });
+            winContr.beforeCancel(function() {
+                textEditor.cancelAll();
+            });
+        }
+    });
 }
 
 TextAreaEditor.prototype = {
@@ -105,6 +114,15 @@ TextAreaEditor.prototype = {
             this.cancelNote(this.noteIndex);
     },
 
+    saveAll: function()
+    {
+        alert("saveAll");
+        if(this.isDescEditing)
+            this.saveDescription();
+        if(this.isNoteEditing)
+            this.saveNote(this.noteIndex);
+    },
+
     closeAnother : function(index)
     {
         if(this.isDescEditing && (index !== -1))
@@ -168,6 +186,7 @@ TextAreaEditor.prototype = {
 
     saveDescription : function()
     {
+        alert("saveDescription");
         this.saveNote(-1);
     },
 
@@ -202,9 +221,12 @@ TextAreaEditor.prototype = {
 
     init : function()
     {
+        record.changedState.connect(this.recordChangedState);
         this.insertButtons();
         if((typeof record.isInsertMode === "function" && record.isInsertMode())
            || record.mode === 2)
            textEditor.showEditor(-1,true);
     }
 }
+
+textEditor = new TextAreaEditor();

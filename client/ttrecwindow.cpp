@@ -24,6 +24,8 @@ public:
     const TQAbstractRecordTypeDef *recDef;
     QWebInspector *inspector;
     bool isClosing;
+    bool canCommit;
+    bool canCancel;
 };
 
 
@@ -140,9 +142,17 @@ void TTRecordWindow::closeEvent(QCloseEvent *event)
 //            a_record->cancel();
         d->isClosing = true;
         if(needCommit)
-            commit();
+            if(!commit())
+            {
+                event->ignore();
+                return;
+            }
         else
-            cancel();
+            if(!cancel())
+            {
+                event->ignore();
+                return;
+            }
     }
     QSettings *settings = ttglobal()->settings();
     settings->setValue(TTRecordState, saveState());
@@ -484,8 +494,12 @@ void TTRecordWindow::fullReload()
     refreshValues();
 }
 
-void TTRecordWindow::cancel()
+bool TTRecordWindow::cancel()
 {
+    d->canCancel = true;
+    emit beforeCancel();
+    if(!d->canCancel)
+        return false;
     if(a_record->cancel())
     {
         /*
@@ -496,10 +510,12 @@ void TTRecordWindow::cancel()
         refreshValues();
     }
     refreshState();
+    return true;
 }
 
-void TTRecordWindow::commit()
+bool TTRecordWindow::commit()
 {
+    bool res = false;
     int mode = a_record->mode();
     if(writeChanges() && a_record->commit())
     {
@@ -510,9 +526,10 @@ void TTRecordWindow::commit()
             emit recordAdded(a_record);
         if(mode == TQRecord::Edit)
             emit recordModified(a_record);
-
+        res = true;
     }
     refreshState();
+    return res;
 }
 
 void TTRecordWindow::addDetailTab(QWidget *tab, const QString &title, const QIcon &icon)
@@ -596,6 +613,10 @@ bool TTRecordWindow::writeChanges()
 {
     if(a_record->mode() == TQRecord::View)
         return false;
+    d->canCommit=true;
+    emit beforeCommit();
+    if(!d->canCommit)
+        return false;
     //applyNewNote();
     factory->closeEdits(true);
     a_record->setValues(props->changes());
@@ -642,6 +663,26 @@ bool TTRecordWindow::isChanged()
 void TTRecordWindow::setChanged(bool value)
 {
     changed = value;
+}
+
+bool TTRecordWindow::canCommit() const
+{
+    return d->canCommit;
+}
+
+void TTRecordWindow::setCanCommit(bool value)
+{
+    d->canCommit = value;
+}
+
+bool TTRecordWindow::canCancel() const
+{
+    return d->canCancel;
+}
+
+void TTRecordWindow::setCanCancel(bool value)
+{
+    d->canCancel = value;
 }
 
 int TTRecordWindow::mode()

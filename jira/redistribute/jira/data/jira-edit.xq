@@ -100,7 +100,6 @@ return (
 </body>}
 <script  type="text/javascript">
 <!--
-textEditor = new TextAreaEditor();
 
 if(typeof textEditor.init === "function")
   textEditor.init();
