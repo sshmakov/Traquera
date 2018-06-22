@@ -1,4 +1,4 @@
-# Traquera
+# Allrecall Traquera
 
 Desktop client for any tracker (now has plugins for Atlassian JIRA and PVCS Tracker)
 
