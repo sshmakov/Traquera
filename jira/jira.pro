@@ -23,7 +23,9 @@ SOURCES += jiradb.cpp \
     jirausermodel.cpp \
     jirarecmodel.cpp \
     jirarecord.cpp \
-    uniondevice.cpp
+    uniondevice.cpp \
+    jirarlcontroller.cpp \
+    jiranet.cpp
 
 HEADERS += jiradb.h\
         jira_global.h \
@@ -37,7 +39,9 @@ HEADERS += jiradb.h\
     jirausermodel.h \
     jirarecmodel.h \
     jirarecord.h \
-    uniondevice.h
+    uniondevice.h \
+    jirarlcontroller.h \
+    jiranet.h
 
 INCLUDEPATH += ../common
 

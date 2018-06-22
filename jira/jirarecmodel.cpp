@@ -1,5 +1,6 @@
 #include "jirarecmodel.h"
 #include "jiradb.h"
+#include "jirarlcontroller.h"
 
 class JiraRecModelPrivate
 {
@@ -11,6 +12,8 @@ public:
     JiraProject *project;
     JiraRecTypeDef *rdef;
     int recType;
+    JiraRLController *loader;
+    QTimer timer;
 
     JiraRecModelPrivate()
     {
@@ -26,6 +29,10 @@ JiraRecModel::JiraRecModel(TQAbstractProject *project, int type, QObject *parent
     d->db = d->project->jiraDb();
     d->recType = type;
     d->rdef = (JiraRecTypeDef *)d->project->recordTypeDef(type);
+    d->loader = new JiraRLController(this);
+    d->timer.setInterval(200);
+    connect(&d->timer,SIGNAL(timeout()),SLOT(loadFields()));
+    d->timer.start();
     setHeaders(d->rdef->fieldNames());
 }
 
@@ -81,9 +88,9 @@ void JiraRecModel::fetchMore(const QModelIndex &parent)
         JiraRecord *rec = new JiraRecord(d->project, d->recType, id);
         rec->key = key;
         rec->internalId = issue.value("id").toInt();
-        QVariantMap fieldsMap = issue.value("fields").toMap();
-        for(QVariantMap::iterator i = fieldsMap.begin(); i!=fieldsMap.end(); i++)
-            rec->storeReadedField(i.key(), i.value());
+        storeFields(rec, issue.value("fields").toMap());
+//        for(QVariantMap::iterator i = fieldsMap.begin(); i!=fieldsMap.end(); i++)
+//            rec->storeReadedField(i.key(), i.value());
 //        d->project->readRecordFields(rec);  // !!! надо убрать !!!
         records.append(rec);
     }
@@ -93,3 +100,49 @@ void JiraRecModel::fetchMore(const QModelIndex &parent)
     append(records);
 }
 
+void JiraRecModel::storeFields(JiraRecord *rec, QVariantMap fieldMap)
+{
+    for(QVariantMap::iterator i = fieldMap.begin(); i!=fieldMap.end(); i++)
+        rec->storeReadedField(i.key(), i.value());
+}
+
+JiraRecord *JiraRecModel::recordByKey(const QString &key)
+{
+    foreach(TQRecord *r, this->records)
+    {
+        JiraRecord *j = qobject_cast<JiraRecord *>(r);
+        if(j && j->key == key)
+            return j;
+    }
+    return 0;
+}
+
+JiraProject *JiraRecModel::jiraProject() const
+{
+    return  qobject_cast<JiraProject *>(project());
+}
+
+void JiraRecModel::loadFields()
+{
+    QStringList issues;
+    foreach(TQRecord *r, this->records)
+    {
+        JiraRecord *j = qobject_cast<JiraRecord *>(r);
+        if(j && j->isNeedFields())
+            issues.append(j->key);
+    }
+    if(issues.isEmpty())
+        return;
+    d->loader->start(issues);
+}
+
+void JiraRecModel::updateIssue(const QString &key, QVariantMap fieldMap)
+{
+    JiraRecord *rec = recordByKey(key);
+    if(!rec || fieldMap.isEmpty())
+        return;
+    storeFields(rec, fieldMap);
+    rec->clearNeedFields();
+    int r = rowOfRecordId(rec->recordId());
+    emit dataChanged(index(r,0), index(r, columnCount()-1));
+}

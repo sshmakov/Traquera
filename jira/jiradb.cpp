@@ -18,12 +18,15 @@
 #include <tqdebug.h>
 #include <QtCore>
 #include "jirafinduser.h"
+#include "jiranet.h"
 #include <QtSql>
 //#include <ttutils.h>
 
 Q_EXPORT_PLUGIN2("jira", JiraPlugin)
 
 #define JIRA_KNOWN_FIELDS "KnownFields"
+#define JIRA_NEXT_VID "NextVid"
+
 
 static JiraPlugin *jira = 0;
 
@@ -195,6 +198,7 @@ public:
     QString lastHTTPError;
     QString tempFolder;
     QStringList knownProjects;
+    JiraNet net;
 
     JiraDBPrivate() : isLogged(false), lastHTTPCode(0)
     {
@@ -967,7 +971,7 @@ QVariant JiraDB::sendRequest(const QString &method, const QUrl &url, QVariantMap
         req.setRawHeader("Authorization", v);
         r = sendWait(method, req, body);
     }
-    QScopedPointer<QNetworkReply> reply(r);
+    //QScopedPointer<QNetworkReply> reply(r);
     /*
     QDateTime endTime = QDateTime::currentDateTime().addSecs(10);
     while(!readyReplies.contains(reply.data()))
@@ -978,19 +982,19 @@ QVariant JiraDB::sendRequest(const QString &method, const QUrl &url, QVariantMap
     }
     readyReplies.removeAll(reply.data());
     */
-    d->lastHTTPCode = reply->error();
-    d->lastHTTPError = reply->errorString();
+    d->lastHTTPCode = r->error();
+    d->lastHTTPError = r->errorString();
     QVariantMap errorMap;
     errorMap.insert("code", d->lastHTTPCode);
     errorMap.insert("message", d->lastHTTPError);
 //    if(d->lastHTTPCode != QNetworkReply::NoError)
 //        emit
-    QString contType = reply->header(QNetworkRequest::ContentTypeHeader).toString();
+    QString contType = r->header(QNetworkRequest::ContentTypeHeader).toString();
     if(contType.contains(';'))
         contType = contType.split(';').value(0);
     contType = contType.trimmed();
     d->lastCookies = r->header(QNetworkRequest::SetCookieHeader).value<QList<QNetworkCookie> >();    
-    QByteArray buf = reply->readAll();
+    QByteArray buf = r->readAll();
 
     dumpReply(r, buf);
 //    QString s(buf.constData());
@@ -1005,6 +1009,73 @@ QVariant JiraDB::sendRequest(const QString &method, const QUrl &url, QVariantMap
         obj = parser->toVariant(buf);
     r->deleteLater();
     return obj; //QVariantList() << obj << errorMap;
+}
+
+QByteArray JiraDB::sendRequestBinary(const QString &method, const QUrl &url, QByteArray body)
+{
+//    QString link(dbmsServer() + url);
+//    QUrl url(link);
+    QNetworkRequest req;
+    req.setUrl(url);
+    req.setHeader(QNetworkRequest::ContentTypeHeader,"application/json");
+
+    QNetworkReply *r;
+    if(connectMethod == OAuth)
+    {
+        dumpRequest(&req, method, body);
+        r = oa->signedGet(&req);
+    }
+    else if(connectMethod == CookieAuth)
+    {
+        if(false && d->isLogged)
+        {
+            QVariantMap headers; // = bodyMap.value("headers", QVariantMap()).toMap();
+            if(!d->session.jsessionId.isEmpty())
+                headers.insert("cookie", QString("JSESSIONID=") + d->session.jsessionId);
+            //bodyMap.insert("headers", headers);
+        }
+        //QByteArray body = parser->toByteArray(bodyMap);
+        QList<QNetworkCookie> list = man->cookieJar()->cookiesForUrl(dbmsServer());
+        if(list.size())
+            req.setHeader(QNetworkRequest::SetCookieHeader, QVariant::fromValue(list));
+        dumpRequest(&req, method, body);
+        r = sendWait(method, req, body);
+    }
+    else //if(connectMethod == BaseAuth)
+    {
+        //QByteArray body = parser->toByteArray(bodyMap);
+        QByteArray v = QByteArray("Basic ") + QString(dbmsUser() + ":" + dbmsPass()).toLocal8Bit().toBase64();
+        req.setRawHeader("Authorization", v);
+        r = sendWait(method, req, body);
+    }
+    //QScopedPointer<QNetworkReply> reply(r);
+    /*
+    QDateTime endTime = QDateTime::currentDateTime().addSecs(10);
+    while(!readyReplies.contains(reply.data()))
+    {
+        qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+        if(QDateTime::currentDateTime() > endTime)
+            return QVariant();
+    }
+    readyReplies.removeAll(reply.data());
+    */
+    d->lastHTTPCode = r->error();
+    d->lastHTTPError = r->errorString();
+    QVariantMap errorMap;
+    errorMap.insert("code", d->lastHTTPCode);
+    errorMap.insert("message", d->lastHTTPError);
+//    if(d->lastHTTPCode != QNetworkReply::NoError)
+//        emit
+    QString contType = r->header(QNetworkRequest::ContentTypeHeader).toString();
+    if(contType.contains(';'))
+        contType = contType.split(';').value(0);
+    contType = contType.trimmed();
+    d->lastCookies = r->header(QNetworkRequest::SetCookieHeader).value<QList<QNetworkCookie> >();
+    QByteArray buf = r->readAll();
+
+    dumpReply(r, buf);
+    r->deleteLater();
+    return buf;
 }
 
 /*
@@ -1161,8 +1232,9 @@ static int method2op(const QString &method)
 
 QNetworkReply *JiraDB::sendWait(const QString &method, QNetworkRequest &request, const QByteArray &body)
 {
-    int op = method2op(method);
-    return sendWaitOp((QNetworkAccessManager::Operation)op, request, body);
+    return d->net.sendWait(method, request, body);
+//    int op = method2op(method);
+//    return sendWaitOp((QNetworkAccessManager::Operation)op, request, body);
 }
 
 QNetworkReply *JiraDB::sendWaitOp(QNetworkAccessManager::Operation op, QNetworkRequest &request, const QByteArray &body)
@@ -1190,7 +1262,10 @@ QNetworkReply *JiraDB::sendWaitOp(QNetworkAccessManager::Operation op, QNetworkR
     case QNetworkAccessManager::CustomOperation:
         return 0;
     }
-    waitReply(reply);
+    QEventLoop loop;
+    connect(man, SIGNAL(finished(QNetworkReply*)), &loop, SLOT(quit()));
+    loop.exec();
+    //waitReply(reply);
     return reply;
 }
 
@@ -1481,6 +1556,7 @@ public:
     QHash<QString, QAction *> actions; // actions by id
     bool hasLocalDb;
     QMap<QString, int> knownFields;
+    int nextVid;
 };
 
 
@@ -1497,6 +1573,10 @@ JiraProject::JiraProject(TQAbstractDB *db)
 //            << "issueLinkTypes"
                ;
     d->hasLocalDb = false;
+    bool ok = false;
+    d->nextVid = optionValue(JIRA_NEXT_VID).toInt(&ok);
+    if(!ok)
+        d->nextVid = false;
     QByteArray buf = optionValue(JIRA_KNOWN_FIELDS).toByteArray();
     if(!buf.isEmpty())
     {
@@ -2587,7 +2667,6 @@ void JiraProject::checkRequestResult(const QVariant &result)
 
 void JiraProject::readRecordDef2(JiraRecTypeDef *rdef, const QVariantMap &fieldsMap)
 {
-    int vid = 1;
     int nativeType = 1;
     bool wasKnownChanged = false;
     QList<int> knownVids = d->knownFields.values();
@@ -2614,9 +2693,9 @@ void JiraProject::readRecordDef2(JiraRecTypeDef *rdef, const QVariantMap &fields
             f.vid = d->knownFields.value(f.id);
         else
         {
-            int v = ++vid;
+            int v = ++d->nextVid;
             while(knownVids.contains(v))
-                v = ++vid;
+                v = ++d->nextVid;
             f.vid = v;
             d->knownFields.insert(f.id, f.vid);
             knownVids.append(f.vid);
@@ -2721,6 +2800,7 @@ void JiraProject::readRecordDef2(JiraRecTypeDef *rdef, const QVariantMap &fields
             QDataStream ds(&buf, QIODevice::WriteOnly);
             ds << d->knownFields;
             setOptionValue(JIRA_KNOWN_FIELDS, buf);
+            setOptionValue(JIRA_NEXT_VID, d->nextVid);
         }
     }
 }

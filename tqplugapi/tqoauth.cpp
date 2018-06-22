@@ -78,7 +78,8 @@ public:
     {
         isPrivateKeyLoaded = false;
         BIO *mem = BIO_new(BIO_s_mem());
-        BIO_puts(mem, key.toAscii().constData());
+        //BIO_puts(mem, key.toAscii().constData());
+        BIO_puts(mem, key.toLocal8Bit().constData()); // for 5.5.1
         rsa_private = PEM_read_bio_RSAPrivateKey(mem, NULL, 0, pempass.toLocal8Bit().data());
         BIO_free(mem);
         if (rsa_private == NULL)
@@ -424,7 +425,8 @@ bool TQOAuth::loadPrivateKey(const QString &fileName, const QString &filePasswor
 {
     d->isPrivateKeyLoaded = false;
     FILE *priv_key_file=NULL;
-    priv_key_file=fopen(fileName.toAscii(), "rb");
+    //priv_key_file=fopen(fileName.toAscii(), "rb");
+    priv_key_file=fopen(fileName.toLocal8Bit().constData(), "rb"); // for Qt 5.5.1
     if(priv_key_file)
     {
         d->rsa_private=PEM_read_RSAPrivateKey(priv_key_file, NULL, 0, filePassword.toLocal8Bit().data());

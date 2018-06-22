@@ -107,6 +107,7 @@ public:
     virtual TQAbstractProject *openConnection(const QString &connectString);
     void setConnectString(const QString &connectString);
     QVariant sendRequest(const QString &method, const QUrl &url, QVariantMap bodyMap = QVariantMap());
+    QByteArray sendRequestBinary(const QString &method, const QUrl &url, QByteArray body = QByteArray());
 //    Q_INVOKABLE QVariant get(const QString &query, QVariantMap bodyMap = QVariantMap());
 //    Q_INVOKABLE QVariant post(const QString &query, QVariantMap bodyMap = QVariantMap());
 //    Q_INVOKABLE QVariant put(const QString &query, QVariantMap bodyMap = QVariantMap());

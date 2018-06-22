@@ -47,9 +47,14 @@ public:
     bool removeFile(int fileIndex);
     bool commit();
 
+public slots:
+    void markNeedFields() const;
+    void clearNeedFields() const;
 protected:
     void storeReadedField(const QString &fid, const QVariant &value);
     void clearReadedFields();
+    bool isNeedFields() const;
+
 
     friend class JiraProject;
     friend class JiraRecModel;

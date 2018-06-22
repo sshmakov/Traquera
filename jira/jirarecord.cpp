@@ -9,10 +9,12 @@ class JiraRecordPrivate
 public:
     JiraRecTypeDef *def, *editDef;
     QHash<int, bool> readedFields;
+    bool needFields;
 
     JiraRecordPrivate()
     {
         def = editDef = 0;
+        needFields = false;
     }
     ~JiraRecordPrivate()
     {
@@ -86,10 +88,15 @@ QVariant JiraRecord::value(int vid, int role) const
 #ifdef QT_DEBUG
     QString fname = d->def->fieldName(vid);
 #endif
+
     if(!d->readedFields.value(vid, false) && !isFieldsReaded)
     {
+        markNeedFields();
+        return QVariant();
+        /* !!!!
         TQRecord *rec = const_cast<JiraRecord *>(this);
         project()->readRecordFields(rec);
+        */
     }
     if(role != Qt::DisplayRole && role != Qt::EditRole)
         return QVariant();
@@ -386,4 +393,17 @@ void JiraRecord::clearReadedFields()
     d->readedFields.clear();
 }
 
+void JiraRecord::markNeedFields() const
+{
+    d->needFields = true;
+}
 
+void JiraRecord::clearNeedFields() const
+{
+    d->needFields = false;
+}
+
+bool JiraRecord::isNeedFields() const
+{
+    return d->needFields;
+}

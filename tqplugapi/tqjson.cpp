@@ -1,11 +1,14 @@
 #include "tqjson.h"
 #include <QtScript>
+#include <QMutex>
+#include <QMutexLocker>
 
 class TQJsonPrivate
 {
 public:
     QScriptEngine *engine;
     QTextCodec *codec;
+    QMutex mutex;
 };
 
 TQJson::TQJson(QObject *parent) :
@@ -21,6 +24,7 @@ TQJson::~TQJson()
 
 QString TQJson::charset() const
 {
+    QMutexLocker locker(&d->mutex);
     if(!d->codec)
         return QString();
     return d->codec->name();
@@ -28,11 +32,13 @@ QString TQJson::charset() const
 
 void TQJson::setCharset(const QString &charset)
 {
+    QMutexLocker locker(&d->mutex);
     d->codec = QTextCodec::codecForName(charset.toLocal8Bit().constData());
 }
 
 void TQJson::reset()
 {
+    QMutexLocker locker(&d->mutex);
     if(d->engine)
     {
         delete d->engine;
@@ -50,6 +56,7 @@ void TQJson::reset()
 
 QString TQJson::toString(const QVariant &value)
 {
+    QMutexLocker locker(&d->mutex);
     if(!d->engine)
         return QString();
     QScriptValue toString = d->engine->globalObject().property("toString");
@@ -59,6 +66,7 @@ QString TQJson::toString(const QVariant &value)
 
 QByteArray TQJson::toByteArray(const QVariant &value)
 {
+    //QMutexLocker locker(&d->mutex);
     QString string = toString(value);
     QByteArray buf = d->codec->fromUnicode(string);
     return buf;
@@ -66,12 +74,14 @@ QByteArray TQJson::toByteArray(const QVariant &value)
 
 QVariant TQJson::toVariant(const QString &string)
 {
+    QMutexLocker locker(&d->mutex);
     QScriptValue val = d->engine->evaluate("("+string+")");
     return val.toVariant();
 }
 
 QVariant TQJson::toVariant(const QByteArray &buf)
 {
+    QMutexLocker locker(&d->mutex);
     if(!d->engine)
         return QVariant();
     QString string = d->codec->toUnicode(buf);
@@ -82,6 +92,7 @@ QVariant TQJson::toVariant(const QByteArray &buf)
 
 bool TQJson::isError() const
 {
+    QMutexLocker locker(&d->mutex);
     if(!d->engine)
         return true;
     return d->engine->hasUncaughtException();
@@ -89,6 +100,7 @@ bool TQJson::isError() const
 
 QString TQJson::errorString() const
 {
+    QMutexLocker locker(&d->mutex);
     if(!d->engine)
         return tr("Not initialized");
     QScriptValue v = d->engine->uncaughtException();
