@@ -1,0 +1,12 @@
+project = Traquera
+    sourcedirs = ../client
+#    exampledirs = <path to examples directory>
+#    imagedirs = <path to image directory>
+
+    sources.fileextensions = "*.cpp *.qdoc *.mm *.qml"
+    headers.fileextensions = "*.h *.ch *.h++ *.hh *.hpp *.hxx"
+#    examples.fileextensions = "*.cpp *.h *.js *.xq *.svg *.xml *.ui *.qhp *.qhcp *.qml"
+#    examples.imageextensions = "*.png *.jpeg *.jpg *.gif *.mng"
+
+    outputdir  =    ./doc/html
+    outputformats = HTML
