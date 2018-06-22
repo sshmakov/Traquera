@@ -1,4 +1,13 @@
-.local
+.local/
+aspr/
+*.aspr2
+*.vcproj
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.sln
+*.sdf
+HttpExt.h
 
 ### Standard for Qt
 
@@ -46,6 +55,8 @@ target_wrapper.*
 # QtCreator CMake
 CMakeLists.txt.user*
 
+
+### Standard for VS
 
 #Ignore thumbnails created by Windows
 Thumbs.db
