@@ -1628,8 +1628,11 @@ TQRecModel *JiraProject::queryIds(const IntList &ids, int recType, bool emitEven
         return 0;
     QStringList list;
     foreach(int i, ids)
-        list.append(projectKey + "-" + QString::number(i));
-    return queryKeys(list, recType, emitEvent);
+//        list.append(projectKey + "-" + QString::number(i));
+        list.append(QString::number(i));
+    QString jql = QString("id in (%1)").arg(list.join(","));
+    return queryJQL(jql, recType);
+//    return queryKeys(list, recType, emitEvent);
 }
 
 TQRecModel *JiraProject::queryKeys(const QStringList &keys, int recType, bool emitEvent)
@@ -1680,8 +1683,8 @@ TQRecModel *JiraProject::openRecords(const QString &queryText, int recType, bool
 TQRecord *JiraProject::createRecordById(int id, int rectype)
 {
     JiraRecord *rec = new JiraRecord(this, rectype, id);
-    rec->key = projectKey + "-" + QString::number(id);
-    rec->internalId = 0;
+//    rec->key = projectKey + "-" + QString::number(id);
+//    rec->internalId = 0;
 //    connect(rec, SIGNAL(changed(int)), this, SIGNAL(recordChanged(int)));
     readRecordFields(rec);
     return rec;
@@ -1763,10 +1766,15 @@ bool JiraProject::readRecordFields(TQRecord *record)
     const JiraRecTypeDef *rdef = dynamic_cast<const JiraRecTypeDef *>(record->typeDef());
     if(!rdef)
         return false;
-    QVariantMap issue = serverGet(QString("rest/api/2/issue/%1?fields=*all,-description,-comment").arg(rec->jiraKey())).toMap();
+    QVariantMap issue;
+    if(rec->recordInternalId())
+        issue = serverGet(QString("rest/api/2/issue/%1?fields=*all,-description,-comment").arg(rec->recordInternalId())).toMap();
+    else
+        issue = serverGet(QString("rest/api/2/issue/%1?fields=*all,-description,-comment").arg(rec->jiraKey())).toMap();
     if(!issue.contains("id"))
         return false;
     rec->internalId = issue.value("id").toInt();
+    rec->key = issue.value("key").toString();
     QVariantMap fields = issue.value("fields").toMap();
     QVariantMap::iterator i;
     rec->clearReadedFields();

@@ -34,7 +34,7 @@ JiraRecord::JiraRecord()
 }
 
 JiraRecord::JiraRecord(TQAbstractProject *prj, int rtype, int id)
-    : TQRecord(prj, rtype, id), d(new JiraRecordPrivate())
+    : TQRecord(prj, rtype, id), internalId(id), d(new JiraRecordPrivate())
 {
     isFieldsReaded = false;
     isTextsReaded = false;
@@ -63,7 +63,8 @@ QString JiraRecord::jiraKey() const
 
 int JiraRecord::recordId() const
 {
-    return TQRecord::recordId();
+//    return TQRecord::recordId();
+    return internalId;
 }
 
 int JiraRecord::recordInternalId() const
