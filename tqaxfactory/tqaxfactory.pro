@@ -43,3 +43,8 @@ INCLUDEPATH += ../common
 LIBS += -L../client -ltqplugapi
 
 DESTDIR = ../client
+
+DISTFILES += \
+    qaxserver.rc \
+    qaxserver.ico \
+    qaxserver.def

@@ -179,9 +179,8 @@ datafolder.source = data
 datafolder.target = .
 langfolder.source = lang
 langfolder.target = .
-libfolder.source = ../aspr/lib
-libfolder.target = .
-DEPLOYMENTFOLDERS = datafolder langfolder libfolder
+
+DEPLOYMENTFOLDERS = datafolder langfolder
 
 include(deploy.pri)
 qtcAddDeployment()
