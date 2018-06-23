@@ -47,3 +47,6 @@ unix:!symbian {
 
 RESOURCES += \
     tqservice.qrc
+
+DISTFILES += \
+    tqservice.def
